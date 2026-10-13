@@ -14,3 +14,5 @@
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.
 - Added printing from the editor (Ctrl+P) and the tray, with shrink, enlarge and rotate options.
+- Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.
+- Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.

@@ -35,6 +35,7 @@ namespace KillerShot.Shell
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
             if (AboutOverlay.Visibility == Visibility.Visible) AboutOverlay.Visibility = Visibility.Collapsed;
+            if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
             SyncCaptureOptions();
             BuildShortcutRows();
             CaptureSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110);
@@ -173,17 +174,25 @@ namespace KillerShot.Shell
 
         private void BuildShortcutRows()
         {
-            ShortcutRows.Children.Clear();
-            ShortcutRows.RowDefinitions.Clear();
+            BuildRecorderRows(ShortcutRows, ShortcutActions);
+            BuildRecorderRows(VideoShortcutRows, [(ShortcutAction.Video, "Str_VS_ShortcutLabel")]);
+            RefreshConflictText();
+        }
+
+        /// <summary>One label and recorder button per action, in a two-column grid.</summary>
+        private void BuildRecorderRows(Grid grid, (ShortcutAction Action, string LabelKey)[] actions)
+        {
+            grid.Children.Clear();
+            grid.RowDefinitions.Clear();
             var tray = App.Instance.Tray;
             int row = 0;
-            foreach (var (action, labelKey) in ShortcutActions)
+            foreach (var (action, labelKey) in actions)
             {
-                ShortcutRows.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 var label = new TextBlock { Text = Loc(labelKey), FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 3, 12, 3) };
                 label.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
                 Grid.SetRow(label, row);
-                ShortcutRows.Children.Add(label);
+                grid.Children.Add(label);
 
                 var button = new Button
                 {
@@ -197,10 +206,9 @@ namespace KillerShot.Shell
                 button.Click += (_, _) => StartRecording(button);
                 Grid.SetRow(button, row);
                 Grid.SetColumn(button, 1);
-                ShortcutRows.Children.Add(button);
+                grid.Children.Add(button);
                 row++;
             }
-            RefreshConflictText();
         }
 
         private void SetRecorderText(Button b, ShortcutAction action, bool failed)

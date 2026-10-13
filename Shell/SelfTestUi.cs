@@ -36,6 +36,7 @@ internal static class SelfTestUi
         {
             var pattern = TestPattern(960, 600);
             CheckModel(pattern, log);
+            await CheckVideo(dir, log);
 
             var doc = new EditorDocument(pattern, null, new DateTime(2026, 10, 13, 9, 30, 0));
             doc.Add(new StrokeAnnotation([new(80, 420), new(140, 380), new(220, 430), new(300, 370)], Color.FromRgb(0xE5, 0x39, 0x35), 6, false));
@@ -78,6 +79,8 @@ internal static class SelfTestUi
             w.TestCloseOverlays();
             w.TestShowCaptureSettings(); await Shot("capture-settings");
             w.TestCloseOverlays();
+            w.TestShowVideoSettings(); await Shot("video-settings");
+            w.TestCloseOverlays();
             w.TestSetLabels(true); await Shot("toolbar-labels");
             w.TestSetLabels(false);
 
@@ -114,6 +117,88 @@ internal static class SelfTestUi
     }
 
     private static Task Wait(int ms) => Task.Delay(ms);
+
+    /// <summary>Encodes synthetic frames to GIF and MP4, reads them back, and records one second
+    /// of a small screen rectangle in each format through the real recorder.</summary>
+    private static async Task CheckVideo(string dir, StringBuilder log)
+    {
+        const int W = 320, H = 240;
+        byte[] Frame(int t)
+        {
+            var f = new byte[W * H * 4];
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    int o = (y * W + x) * 4;
+                    bool top = y < H / 2;
+                    f[o] = (byte)(top ? 0 : 255); f[o + 1] = 0; f[o + 2] = (byte)(top ? 255 : 0); f[o + 3] = 255;   // red top, blue bottom
+                    if (x >= t * 10 && x < t * 10 + 30 && y > 100 && y < 140) { f[o] = 255; f[o + 1] = 255; f[o + 2] = 255; }
+                }
+            return f;
+        }
+
+        string gifPath = Path.Combine(dir, "synthetic.gif");
+        var gif = new KillerShot.Video.GifEncoder(gifPath, 255, 1.0, true);
+        await gif.StartAsync(W, H, 10);
+        for (int t = 0; t < 20; t++) gif.AddFrame(Frame(t), TimeSpan.FromMilliseconds(t * 100));
+        await gif.FinishAsync(TimeSpan.FromSeconds(2));
+        var dec = new GifBitmapDecoder(new Uri(gifPath), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        log.AppendLine($"gif_frames={dec.Frames.Count} bytes={new FileInfo(gifPath).Length}");
+        if (dec.Frames.Count != 20) throw new InvalidOperationException("GIF frame count is wrong.");
+
+        string mp4Path = Path.Combine(dir, "synthetic.mp4");
+        var mp4 = new KillerShot.Video.Mp4Encoder(mp4Path, 0.2, 128_000);
+        await mp4.StartAsync(W, H, 10);
+        // Two seconds of a 440 Hz tone in 20 ms chunks alongside the frames.
+        int chunk = KillerShot.Video.AudioCapture.Rate / 50;
+        for (int c = 0; c < 100; c++)
+        {
+            var pcm = new byte[chunk * 4];
+            for (int i = 0; i < chunk; i++)
+            {
+                short v = (short)(Math.Sin(2 * Math.PI * 440 * (c * chunk + i) / KillerShot.Video.AudioCapture.Rate) * 8000);
+                pcm[i * 4] = (byte)v; pcm[i * 4 + 1] = (byte)(v >> 8); pcm[i * 4 + 2] = (byte)v; pcm[i * 4 + 3] = (byte)(v >> 8);
+            }
+            mp4.AddAudio(pcm, TimeSpan.FromMilliseconds(c * 20));
+            if (c % 5 == 0) mp4.AddFrame(Frame(c / 5), TimeSpan.FromMilliseconds(c * 20));
+        }
+        await mp4.FinishAsync(TimeSpan.FromSeconds(2));
+        long mp4Bytes = new FileInfo(mp4Path).Length;
+        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(mp4Path);
+        var clip = await Windows.Media.Editing.MediaClip.CreateFromFileAsync(file);
+        var comp = new Windows.Media.Editing.MediaComposition();
+        comp.Clips.Add(clip);
+        var thumb = await comp.GetThumbnailAsync(TimeSpan.FromMilliseconds(500), W, H, Windows.Media.Editing.VideoFramePrecision.NearestFrame);
+        var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(thumb);
+        var data = await decoder.GetPixelDataAsync(Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8, Windows.Graphics.Imaging.BitmapAlphaMode.Ignore,
+            new Windows.Graphics.Imaging.BitmapTransform(), Windows.Graphics.Imaging.ExifOrientationMode.IgnoreExifOrientation, Windows.Graphics.Imaging.ColorManagementMode.DoNotColorManage);
+        var px = data.DetachPixelData();
+        int tw = (int)decoder.PixelWidth;
+        int o1 = (20 * tw + 20) * 4;
+        bool topRed = px[o1 + 2] > 150 && px[o1] < 100;
+        log.AppendLine($"mp4_audio_tracks={clip.EmbeddedAudioTracks.Count}");
+        if (clip.EmbeddedAudioTracks.Count != 1) throw new InvalidOperationException("MP4 has no sound track.");
+        log.AppendLine($"mp4_bytes={mp4Bytes} duration={clip.OriginalDuration.TotalSeconds:F1}s top_pixel_bgr={px[o1]},{px[o1 + 1]},{px[o1 + 2]} upright={topRed}");
+        if (mp4Bytes < 1000) throw new InvalidOperationException("MP4 is empty.");
+        if (!topRed) throw new InvalidOperationException("MP4 frames are upside down.");
+
+        // The real recorder on a small rectangle of the primary monitor, one second each.
+        var rect = new KillerShot.Native.Win32.RECT(0, 0, 320, 240);
+        foreach (var fmt in new[] { "gif", "mp4" })
+        {
+            string path = Path.Combine(dir, "recorded." + fmt);
+            KillerShot.Video.IVideoSink sink = fmt == "gif"
+                ? new KillerShot.Video.GifEncoder(path, 255, 1.0, true)
+                : new KillerShot.Video.Mp4Encoder(path, 0.09, 128_000);
+            var rec = new KillerShot.Video.Recorder(rect, sink, fmt == "gif" ? 10 : 30, true,
+                fmt == "gif" ? KillerShot.Video.SoundSource.None : KillerShot.Video.SoundSource.System);
+            await rec.StartAsync();
+            await Task.Delay(1000);
+            await rec.StopAsync();
+            log.AppendLine($"recorded_{fmt} frames={rec.Frames} dropped={rec.Dropped} bytes={new FileInfo(path).Length}");
+            if (rec.Frames < 5 || new FileInfo(path).Length < 500) throw new InvalidOperationException("Recording produced no video.");
+        }
+    }
 
     /// <summary>Model checks that need no window: exact export of an unedited capture, mark
     /// export size, crop and undo.</summary>

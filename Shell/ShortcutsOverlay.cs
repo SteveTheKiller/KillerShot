@@ -75,6 +75,7 @@ namespace KillerShot.Shell
             new("Arrows",   "Str_KS_Nudge",     KsCat.Appt, false, "Left", "Up", "Right", "Down"),
 
             new("Ctrl+N",   "Str_KS_NewCapture", KsCat.File, true, "N"),
+            new("Ctrl+R",   "Str_KS_Record",     KsCat.File, true, "R"),
             new("Ctrl+O",   "Str_KS_Open",       KsCat.File, true, "O"),
             new("Ctrl+S",   "Str_KS_Save",       KsCat.File, true, "S"),
             new("Ctrl+Shift+S", "Str_KS_SaveAs", KsCat.File, true, "S"),
@@ -98,6 +99,7 @@ namespace KillerShot.Shell
                     (KillerShot.Capture.ShortcutAction.Window, "Str_KS_CaptureWindow"),
                     (KillerShot.Capture.ShortcutAction.Monitor, "Str_KS_CaptureMonitor"),
                     (KillerShot.Capture.ShortcutAction.AllMonitors, "Str_KS_CaptureAll"),
+                    (KillerShot.Capture.ShortcutAction.Video, "Str_KS_Record"),
                 })
                 {
                     var text = CaptureSettings.ShortcutText(action);
@@ -173,7 +175,8 @@ namespace KillerShot.Shell
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) { FadeOverlayOut(ShortcutsOverlay); return; }
             // Only one overlay at a time - About and this one would otherwise stack.
-            if (AboutOverlay.Visibility == Visibility.Visible) AboutOverlay.Visibility = Visibility.Collapsed;
+            foreach (var o in new UIElement[] { AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay })
+                if (o.Visibility == Visibility.Visible) o.Visibility = Visibility.Collapsed;
             ApplyShortcutView(read: true);
             FadeOverlayIn(ShortcutsOverlay);
         }

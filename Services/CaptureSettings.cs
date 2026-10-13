@@ -12,6 +12,7 @@ internal static class CaptureSettings
         [ShortcutAction.Window] = "Alt+Print Screen",
         [ShortcutAction.Monitor] = "Ctrl+Print Screen",
         [ShortcutAction.AllMonitors] = "Shift+Print Screen",
+        [ShortcutAction.Video] = "Ctrl+Shift+Print Screen",
     };
 
     public static CaptureMode LastMode

@@ -109,7 +109,7 @@ internal sealed class FrozenDesktop
     }
 
     /// <summary>Draws the current mouse pointer into the desktop copy at its hotspot.</summary>
-    private static void DrawCursor(IntPtr dc, int originX, int originY)
+    internal static void DrawCursor(IntPtr dc, int originX, int originY)
     {
         var ci = new Win32.CURSORINFO { cbSize = Marshal.SizeOf<Win32.CURSORINFO>() };
         if (!Win32.GetCursorInfo(ref ci) || (ci.flags & Win32.CURSOR_SHOWING) == 0 || ci.hCursor == IntPtr.Zero) return;

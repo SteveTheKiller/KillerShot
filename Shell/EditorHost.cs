@@ -59,6 +59,12 @@ namespace KillerShot.Shell
             Closed += (_, _) => _pixelTimer.Stop();
 
             BuildCaptureMenu();
+            if (App.Instance.Video is { } video)
+            {
+                void OnVideoState() => Dispatcher.BeginInvoke(RefreshRecordButton);
+                video.StateChanged += OnVideoState;
+                Closed += (_, _) => video.StateChanged -= OnVideoState;
+            }
             BindDocument(App.Instance.Document);
             HighlightActiveTool();
         }
@@ -148,6 +154,14 @@ namespace KillerShot.Shell
             RefreshWidthButton();
         }
 
+        /// <summary>The Record button reads Stop, in the accent, while a recording runs.</summary>
+        private void RefreshRecordButton()
+        {
+            bool on = App.Instance.Video?.IsRecording == true;
+            RecordBtn.Content = BuildToolbarContent(_iconSize, _labelMode, on ? 0xE71A : 0xE7C8, Loc(on ? "Str_Rec_Stop" : "Str_Btn_Record"));
+            if (on) RecordBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush"); else RecordBtn.ClearValue(ForegroundProperty);
+        }
+
         private void RefreshWidthButton() =>
             WidthBtn.Content = BuildToolbarContent(_iconSize, _labelMode, 0, Loc("Str_Btn_Width"), DrawnIcon(WidthBtn));
 
@@ -161,6 +175,7 @@ namespace KillerShot.Shell
         private string? ShortcutFor(Button b)
         {
             if (b == CaptureBtn) return "Ctrl+N";
+            if (b == RecordBtn) return "Ctrl+R";
             if (b == OpenBtn) return "Ctrl+O";
             if (b == SaveBtn) return "Ctrl+S";
             if (b == SaveAsBtn) return "Ctrl+Shift+S";

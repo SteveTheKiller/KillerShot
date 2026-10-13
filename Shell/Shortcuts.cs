@@ -17,6 +17,7 @@ namespace KillerShot.Shell
 
         private bool AnyOverlayOpen =>
             ShortcutsOverlay.Visibility == Visibility.Visible ||
+            VideoSettingsOverlay.Visibility == Visibility.Visible ||
             AboutOverlay.Visibility == Visibility.Visible ||
             CaptureSettingsOverlay.Visibility == Visibility.Visible;
 
@@ -33,6 +34,7 @@ namespace KillerShot.Shell
             if (e.Key == Key.Escape)
             {
                 if (CaptureSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(CaptureSettingsOverlay);
+                else if (VideoSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(VideoSettingsOverlay);
                 else if (ShortcutsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(ShortcutsOverlay);
                 else if (AboutOverlay.Visibility == Visibility.Visible) FadeOverlayOut(AboutOverlay);
                 else if (!Editor.CancelGesture()) return;
@@ -50,6 +52,7 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.R: App.Instance.Video?.Toggle(); break;
                     case Key.O: OpenFile(); break;
                     case Key.S when shift: SaveAs(); break;
                     case Key.S: Save(); break;

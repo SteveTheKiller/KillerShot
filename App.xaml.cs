@@ -16,6 +16,7 @@ public partial class App : Application
     internal static App Instance => (App)Current;
     internal TrayHost? Tray { get; private set; }
     internal CaptureController? Capture { get; private set; }
+    internal VideoController? Video { get; private set; }
 
     /// <summary>The picture in the editor. It lives here rather than in the window, so closing the
     /// editor keeps the work and its undo history until the next capture replaces it.</summary>
@@ -50,6 +51,8 @@ public partial class App : Application
         Tray = new TrayHost();
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
         Capture.Captured += OnCaptured;
+        Video = new VideoController(Tray) { HideEditor = HideEditorForCapture };
+        Tray.RecordRequested += () => Video.Toggle();
         Tray.OpenEditorRequested += ShowEditor;
         Tray.BalloonClicked += ShowEditor;
         Tray.Start();

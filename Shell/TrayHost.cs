@@ -34,6 +34,10 @@ internal sealed class TrayHost : IDisposable
     public event Action? SaveLastRequested;
     public event Action? OpenEditorRequested;
     public event Action? PrintLastRequested;
+    /// <summary>Record video from the menu, or stop the recording in progress.</summary>
+    public event Action? RecordRequested;
+    private bool _recording;
+    private Action? _balloonAction;
     /// <summary>The user clicked the last notification.</summary>
     public event Action? BalloonClicked;
     public Func<bool>? HasLastCapture { get; set; }
@@ -130,9 +134,17 @@ internal sealed class TrayHost : IDisposable
         {
             int mouse = lParam.ToInt32() & 0xFFFF;
             var last = CaptureSettings.LastMode;
-            if (mouse == Win32.WM_LBUTTONUP) DeferCapture(null, last == CaptureMode.Window ? CaptureMode.Region : last);
+            if (mouse == Win32.WM_LBUTTONUP)
+            {
+                if (_recording) RecordRequested?.Invoke();   // a click on the tray stops a recording
+                else DeferCapture(null, last == CaptureMode.Window ? CaptureMode.Region : last);
+            }
             else if (mouse == Win32.WM_RBUTTONUP) ShowMenu();
-            else if (mouse == NIN_BALLOONUSERCLICK) BalloonClicked?.Invoke();
+            else if (mouse == NIN_BALLOONUSERCLICK)
+            {
+                if (_balloonAction != null) _balloonAction();
+                else BalloonClicked?.Invoke();
+            }
             handled = true;
         }
         else if (_taskbarCreated != 0 && msg == (int)_taskbarCreated)
@@ -172,6 +184,18 @@ internal sealed class TrayHost : IDisposable
         Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
         Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
         Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
+        menu.Items.Add(new Separator());
+        Item(Loc(_recording ? "Str_Tray_StopRecording" : "Str_Tray_Record"), Gesture(ShortcutAction.Video), () =>
+        {
+            if (_recording) RecordRequested?.Invoke();
+            else
+            {
+                // Wait for the menu to fade so it is not frozen into the region picker.
+                var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+                t.Tick += (_, _) => { t.Stop(); RecordRequested?.Invoke(); };
+                t.Start();
+            }
+        });
         menu.Items.Add(new Separator());
         Item(Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
         Item(Loc("Str_Tray_PrintLast"), "", () => PrintLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
@@ -223,8 +247,16 @@ internal sealed class TrayHost : IDisposable
         szInfoTitle = "",
     };
 
+    /// <summary>Shows that a recording is running in the tooltip, and makes a left click stop it.</summary>
+    public void SetRecording(bool recording)
+    {
+        _recording = recording;
+        UpdateTip();
+    }
+
     private string TipText()
     {
+        if (_recording) return "KillerShot: " + Loc("Str_Tray_Recording");
         string g = Gesture(ShortcutAction.LastMode);
         string tip = g.Length > 0 ? $"KillerShot ({g})" : "KillerShot";
         return tip.Length > 127 ? tip[..127] : tip;
@@ -244,8 +276,20 @@ internal sealed class TrayHost : IDisposable
         Win32.Shell_NotifyIcon(Win32.NIM_MODIFY, ref d);
     }
 
-    public void ShowInfo(string title, string text) => Balloon(title, text, Win32.NIIF_INFO);
-    public void ShowWarning(string title, string text) => Balloon(title, text, Win32.NIIF_WARNING);
+    public void ShowInfo(string title, string text) => ShowInfo(title, text, null);
+
+    /// <summary>A notification whose click runs <paramref name="onClick"/> instead of opening the editor.</summary>
+    public void ShowInfo(string title, string text, Action? onClick)
+    {
+        _balloonAction = onClick;
+        Balloon(title, text, Win32.NIIF_INFO);
+    }
+
+    public void ShowWarning(string title, string text)
+    {
+        _balloonAction = null;
+        Balloon(title, text, Win32.NIIF_WARNING);
+    }
 
     private void Balloon(string title, string text, uint kind)
     {

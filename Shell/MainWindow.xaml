@@ -127,6 +127,7 @@
                                 <ContextMenu x:Name="CaptureMenu"/>
                             </Button.ContextMenu>
                         </Button>
+                        <Button x:Name="RecordBtn" Style="{StaticResource ToolbarButton}" Click="RecordBtn_Click"/>
                         <Button x:Name="RecentBtn" Style="{StaticResource ToolbarButton}" Click="RecentBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="RecentMenu"/>
@@ -240,6 +241,9 @@
                         <Button x:Name="CaptureSettingsButton" Style="{StaticResource RailButton}"
                                 Click="CaptureSettingsButton_Click" Content="&#xE713;" Margin="2,0,0,6"
                                 ToolTip="{DynamicResource Str_TT_CaptureSettings}"/>
+                        <Button x:Name="VideoSettingsButton" Style="{StaticResource RailButton}"
+                                Click="VideoSettingsButton_Click" Content="&#xE714;" Margin="2,0,0,6"
+                                ToolTip="{DynamicResource Str_TT_VideoSettings}"/>
                     </StackPanel>
 
                     <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,6">
@@ -500,6 +504,160 @@
                                         <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================= VIDEO SETTINGS OVERLAY ================= -->
+        <Grid x:Name="VideoSettingsOverlay" Grid.RowSpan="3" Panel.ZIndex="8800" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="VideoSettingsOverlay_Click">
+            <Grid.Resources>
+                <Style x:Key="VsHeading" TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource DimTextBrush}"/>
+                    <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
+                    <Setter Property="FontSize" Value="10"/>
+                    <Setter Property="Margin" Value="0,0,0,6"/>
+                </Style>
+                <Style x:Key="VsLabel" TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+                <Style x:Key="VsCheck" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                    <Setter Property="FontSize" Value="11"/>
+                    <Setter Property="Margin" Value="0,0,0,8"/>
+                    <EventSetter Event="Checked" Handler="VideoOption_Changed"/>
+                    <EventSetter Event="Unchecked" Handler="VideoOption_Changed"/>
+                </Style>
+                <Style x:Key="VsCombo" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                    <Setter Property="Margin" Value="0,3,0,3"/>
+                    <EventSetter Event="SelectionChanged" Handler="VideoCombo_Changed"/>
+                </Style>
+            </Grid.Resources>
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
+                <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
+                    </Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
+                    <Grid>
+                        <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
+                                Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+                        <Button Content="&#x2715;" Click="VideoSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="28" Height="26" Margin="0,6,6,0" Panel.ZIndex="2"
+                                Visibility="{DynamicResource AboutModernCloseVisibility}"/>
+                        <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
+                                Visibility="{DynamicResource AboutCaptionVisibility}"
+                                Background="{DynamicResource DialogTitleBarBrush}">
+                            <Grid Margin="4,0,2,0">
+                                <TextBlock Text="{DynamicResource Str_VS_Title}" VerticalAlignment="Center"
+                                           FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource ChromeTextBrush}"/>
+                                <Button Content="&#xE8BB;" Click="VideoSettingsClose_Click"
+                                        Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Margin="{DynamicResource AboutCaptionCloseMargin}"/>
+                            </Grid>
+                        </Border>
+
+                        <ScrollViewer x:Name="VideoSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource Str_VS_Title}" Foreground="{DynamicResource TextBrush}"
+                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+                                <WrapPanel Orientation="Horizontal" MaxWidth="900">
+                                    <StackPanel Width="420" Margin="0,0,24,0">
+                                        <TextBlock Text="{DynamicResource Str_VS_Format}" Style="{StaticResource VsHeading}"/>
+                                        <ComboBox x:Name="VideoFormatCombo" Style="{StaticResource VsCombo}"/>
+
+                                        <TextBlock Text="{DynamicResource Str_VS_Mp4}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{DynamicResource Str_VS_Fps}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="Mp4FpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <TextBlock Grid.Row="1" Text="{DynamicResource Str_VS_Quality}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="Mp4QualityCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <TextBlock Grid.Row="2" Text="{DynamicResource Str_VS_Sound}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="SoundCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <TextBlock Grid.Row="3" Text="{DynamicResource Str_VS_SoundQuality}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="AudioKbpsCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                        </Grid>
+                                        <TextBlock Text="{DynamicResource Str_VS_GifNoSound}" Foreground="{DynamicResource DimTextBrush}"
+                                                   FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
+
+                                        <TextBlock Text="{DynamicResource Str_VS_Gif}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{DynamicResource Str_VS_Fps}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="GifFpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <TextBlock Grid.Row="1" Text="{DynamicResource Str_VS_Colors}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="GifColorsCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <TextBlock Grid.Row="2" Text="{DynamicResource Str_VS_Size}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="GifSizeCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                        </Grid>
+                                        <CheckBox x:Name="GifLoopToggle" Content="{DynamicResource Str_VS_Loop}" Style="{StaticResource VsCheck}" Margin="0,8,0,8"/>
+                                    </StackPanel>
+
+                                    <StackPanel Width="420">
+                                        <TextBlock Text="{DynamicResource Str_VS_Recording}" Style="{StaticResource VsHeading}"/>
+                                        <CheckBox x:Name="VideoCursorToggle" Content="{DynamicResource Str_VS_Cursor}" Style="{StaticResource VsCheck}"/>
+                                        <CheckBox x:Name="VideoCountdownToggle" Content="{DynamicResource Str_VS_Countdown}" Style="{StaticResource VsCheck}"/>
+                                        <CheckBox x:Name="VideoCopyToggle" Content="{DynamicResource Str_VS_CopyFile}" Style="{StaticResource VsCheck}"/>
+                                        <CheckBox x:Name="VideoNotifyToggle" Content="{DynamicResource Str_VS_Notify}" Style="{StaticResource VsCheck}"/>
+
+                                        <TextBlock Text="{DynamicResource Str_VS_Shortcut}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
+                                        <Grid x:Name="VideoShortcutRows">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="190"/>
+                                            </Grid.ColumnDefinitions>
+                                        </Grid>
+
+                                        <TextBlock Text="{DynamicResource Str_CS_Output}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
+                                        <TextBlock Text="{DynamicResource Str_CS_Folder}" Style="{StaticResource VsLabel}"/>
+                                        <Grid Margin="0,2,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="VideoFolderBox" FontSize="12" LostKeyboardFocus="VideoFolderBox_LostFocus"/>
+                                            <Button Grid.Column="1" Content="{DynamicResource Str_CS_Browse}" Style="{StaticResource OutlineButton}"
+                                                    Padding="10,3" Margin="6,0,0,0" Click="VideoBrowseFolder_Click"/>
+                                            <Button Grid.Column="2" Content="{DynamicResource Str_CS_Default}" Style="{StaticResource OutlineButton}"
+                                                    Padding="10,3" Margin="6,0,0,0" Click="VideoDefaultFolder_Click"/>
+                                        </Grid>
+                                        <TextBlock Text="{DynamicResource Str_CS_FileName}" Style="{StaticResource VsLabel}"/>
+                                        <TextBox x:Name="VideoFileNameBox" FontSize="12" Margin="0,2,0,2" TextChanged="VideoFileNameBox_TextChanged"/>
+                                        <TextBlock x:Name="VideoFileNameExampleText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
                                     </StackPanel>
                                 </WrapPanel>
                             </StackPanel>

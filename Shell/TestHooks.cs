@@ -17,9 +17,11 @@ namespace KillerShot.Shell
 
         internal void TestShowCaptureSettings() => ShowCaptureSettings();
 
+        internal void TestShowVideoSettings() => ShowVideoSettings();
+
         internal void TestCloseOverlays()
         {
-            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay })
+            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay })
             {
                 o.BeginAnimation(OpacityProperty, null);
                 o.Visibility = Visibility.Collapsed;

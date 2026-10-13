@@ -89,7 +89,8 @@ internal sealed class RegionSelector
         }
         else if (_start == null || _windowOnly)
         {
-            var hover = _frozen.WindowAt(p);
+            // Over the bare desktop the whole monitor is the target.
+            var hover = _frozen.WindowAt(p) ?? new WindowBounds(IntPtr.Zero, _frozen.MonitorAt(p).Bounds);
             if (hover == _hover && _selection != null) return;
             _hover = hover;
             _selection = hover?.Bounds;
@@ -106,7 +107,7 @@ internal sealed class RegionSelector
         // A click without a drag takes the highlighted window.
         if (_hover is { } w)
         {
-            PickedWindow = w.Handle;
+            PickedWindow = w.Handle;   // zero for a whole monitor
             Finish(w.Bounds);
             return;
         }

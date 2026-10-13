@@ -29,7 +29,11 @@ internal sealed class CaptureController
     public CaptureController(TrayHost tray)
     {
         _tray = tray;
-        _tray.CaptureRequested += (action, mode, fg) => _ = RunAsync(action, mode, fg);
+        _tray.CaptureRequested += (action, mode, fg) =>
+        {
+            if (action == ShortcutAction.Video) App.Instance.Video?.Toggle();
+            else _ = RunAsync(action, mode, fg);
+        };
         _tray.SaveLastRequested += SaveLast;
         _tray.PrintLastRequested += PrintLast;
         _tray.HasLastCapture = () => Last != null;
@@ -48,7 +52,7 @@ internal sealed class CaptureController
 
     private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground)
     {
-        if (_busy) return;
+        if (_busy || App.Instance.Video?.IsRecording == true) return;
         _busy = true;
         Action? restore = null;
         try
