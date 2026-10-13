@@ -119,6 +119,19 @@ internal static class SelfTestUi
     /// export size, crop and undo.</summary>
     private static void CheckModel(BitmapSource pattern, StringBuilder log)
     {
+        var when = new DateTime(2026, 10, 13, 9, 5, 7);
+        var fname = OutputFiles.FileName("Shot {yyyy}-{MM}-{dd} {HH}{mm}{ss} {mode} {width}x{height} a:b", when, KillerShot.Capture.CaptureMode.Window, 800, 600, "png");
+        log.AppendLine($"file_name={fname}");
+        if (fname != "Shot 2026-10-13 090507 window 800x600 a_b.png") throw new InvalidOperationException("File name pattern expanded wrongly.");
+        string tmp = Path.Combine(Path.GetTempPath(), "KillerShot-selftest-names");
+        Directory.CreateDirectory(tmp);
+        foreach (var f in Directory.GetFiles(tmp)) File.Delete(f);
+        File.WriteAllText(Path.Combine(tmp, "a.png"), "");
+        var next = OutputFiles.NextPath(tmp, "a.png");
+        log.AppendLine($"collision_path={Path.GetFileName(next)}");
+        if (Path.GetFileName(next) != "a (2).png") throw new InvalidOperationException("Existing file would be overwritten.");
+        log.AppendLine($"default_folder={OutputFiles.DefaultFolder}");
+
         var doc = new EditorDocument(pattern);
         bool same = ReferenceEquals(doc.Render(), pattern);
         log.AppendLine($"unedited_export_is_capture={same}");

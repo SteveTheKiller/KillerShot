@@ -35,6 +35,100 @@ internal static class CaptureSettings
         set => Settings.SetBool("OpenEditorAfterCapture", value);
     }
 
+    /// <summary>Copy each capture to the clipboard. On by default: the clipboard is the point.</summary>
+    public static bool CopyToClipboard
+    {
+        get => Settings.GetBool("CopyToClipboard", true);
+        set => Settings.SetBool("CopyToClipboard", value);
+    }
+
+    /// <summary>Save each capture straight to the output folder, with no dialog.</summary>
+    public static bool SaveToFolder
+    {
+        get => Settings.GetBool("SaveToFolder", true);
+        set => Settings.SetBool("SaveToFolder", value);
+    }
+
+    /// <summary>The output folder, or Windows' own Screenshots folder when none is chosen.</summary>
+    public static string OutputFolder
+    {
+        get => Settings.Get("OutputFolder") is { Length: > 0 } f ? f : OutputFiles.DefaultFolder;
+        set => Settings.Set("OutputFolder", value);
+    }
+
+    public const string DefaultFileNamePattern = "KillerShot {yyyy}-{MM}-{dd} {HH}{mm}{ss}";
+
+    public static string FileNamePattern
+    {
+        get => Settings.Get("FileNamePattern") is { Length: > 0 } p ? p : DefaultFileNamePattern;
+        set => Settings.Set("FileNamePattern", value);
+    }
+
+    /// <summary>"png" or "jpg".</summary>
+    public static string Format
+    {
+        get => Settings.Get("Format") == "jpg" ? "jpg" : "png";
+        set => Settings.Set("Format", value == "jpg" ? "jpg" : "png");
+    }
+
+    public static int JpegQuality
+    {
+        get => int.TryParse(Settings.Get("JpegQuality"), out int q) ? Math.Clamp(q, 10, 100) : 90;
+        set => Settings.Set("JpegQuality", Math.Clamp(value, 10, 100).ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>Seconds to wait before freezing the desktop, so a menu or hover state can be opened.</summary>
+    public static int DelaySeconds
+    {
+        get => int.TryParse(Settings.Get("DelaySeconds"), out int d) ? Math.Clamp(d, 0, 30) : 0;
+        set => Settings.Set("DelaySeconds", Math.Clamp(value, 0, 30).ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>Show the save dialog after each capture.</summary>
+    public static bool AskToSave
+    {
+        get => Settings.GetBool("AskToSave", false);
+        set => Settings.SetBool("AskToSave", value);
+    }
+
+    public static bool IncludeCursor
+    {
+        get => Settings.GetBool("IncludeCursor", false);
+        set => Settings.SetBool("IncludeCursor", value);
+    }
+
+    public static bool PlaySound
+    {
+        get => Settings.GetBool("PlaySound", false);
+        set => Settings.SetBool("PlaySound", value);
+    }
+
+    /// <summary>Window mode lets the user click the window to capture instead of taking the
+    /// active one.</summary>
+    public static bool PickWindow
+    {
+        get => Settings.GetBool("PickWindow", false);
+        set => Settings.SetBool("PickWindow", value);
+    }
+
+    public static bool PrintShrink
+    {
+        get => Settings.GetBool("PrintShrink", true);
+        set => Settings.SetBool("PrintShrink", value);
+    }
+
+    public static bool PrintEnlarge
+    {
+        get => Settings.GetBool("PrintEnlarge", false);
+        set => Settings.SetBool("PrintEnlarge", value);
+    }
+
+    public static bool PrintRotate
+    {
+        get => Settings.GetBool("PrintRotate", true);
+        set => Settings.SetBool("PrintRotate", value);
+    }
+
     /// <summary>Show a notification after each capture.</summary>
     public static bool Notify
     {

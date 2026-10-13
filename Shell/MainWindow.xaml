@@ -137,6 +137,7 @@
                         <Button x:Name="SaveBtn" Style="{StaticResource ToolbarButton}" Click="SaveBtn_Click"/>
                         <Button x:Name="SaveAsBtn" Style="{StaticResource ToolbarButton}" Click="SaveAsBtn_Click"/>
                         <Button x:Name="CopyBtn" Style="{StaticResource ToolbarButton}" Click="CopyBtn_Click"/>
+                        <Button x:Name="PrintBtn" Style="{StaticResource ToolbarButton}" Click="PrintBtn_Click"/>
                         <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="UndoBtn" Style="{StaticResource ToolbarButton}" Click="UndoBtn_Click"/>
                         <Button x:Name="RedoBtn" Style="{StaticResource ToolbarButton}" Click="RedoBtn_Click"/>
@@ -369,6 +370,24 @@
              Shortcut recorders and capture options. Same card chrome as About. -->
         <Grid x:Name="CaptureSettingsOverlay" Grid.RowSpan="3" Panel.ZIndex="8800" Visibility="Collapsed"
               Background="#88000000" MouseLeftButtonDown="CaptureSettingsOverlay_Click">
+            <Grid.Resources>
+                <Style x:Key="CsHeading" TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource DimTextBrush}"/>
+                    <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
+                    <Setter Property="FontSize" Value="10"/>
+                    <Setter Property="Margin" Value="0,0,0,6"/>
+                </Style>
+                <Style x:Key="CsLabel" TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                    <Setter Property="FontSize" Value="12"/>
+                </Style>
+                <Style x:Key="CsCheck" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                    <Setter Property="FontSize" Value="11"/>
+                    <Setter Property="Margin" Value="0,0,0,8"/>
+                    <EventSetter Event="Checked" Handler="CaptureOption_Changed"/>
+                    <EventSetter Event="Unchecked" Handler="CaptureOption_Changed"/>
+                </Style>
+            </Grid.Resources>
             <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
                 <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
                     <Border.Effect>
@@ -399,32 +418,92 @@
                             </Grid>
                         </Border>
 
-                        <StackPanel Margin="{DynamicResource AboutBodyMargin}" Width="480">
-                            <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
-                                       FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+                        <!-- Two panels that wrap to one column on a narrow window; the scroller covers
+                             a short one. -->
+                        <ScrollViewer x:Name="CaptureSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
+                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+                                <WrapPanel x:Name="SettingsColumns" Orientation="Horizontal" MaxWidth="900">
+                                    <StackPanel Width="420" Margin="0,0,24,0">
+                                        <TextBlock Text="{DynamicResource Str_CS_Shortcuts}" Style="{StaticResource CsHeading}"/>
+                                        <Grid x:Name="ShortcutRows" Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="190"/>
+                                            </Grid.ColumnDefinitions>
+                                        </Grid>
+                                        <TextBlock Text="{DynamicResource Str_CS_RecordHint}" Foreground="{DynamicResource DimTextBrush}"
+                                                   FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        <TextBlock x:Name="ShortcutConflictText" Visibility="Collapsed" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
+                                                   Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
 
-                            <TextBlock Text="{DynamicResource Str_CS_Shortcuts}" Foreground="{DynamicResource DimTextBrush}"
-                                       FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,6"/>
-                            <Grid x:Name="ShortcutRows" Margin="0,0,0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="190"/>
-                                </Grid.ColumnDefinitions>
-                            </Grid>
-                            <TextBlock Text="{DynamicResource Str_CS_RecordHint}" Foreground="{DynamicResource DimTextBrush}"
-                                       FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                            <TextBlock x:Name="ShortcutConflictText" Visibility="Collapsed" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
-                                       Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
+                                        <TextBlock Text="{DynamicResource Str_CS_AfterCapture}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <CheckBox x:Name="CopyToggle" Content="{DynamicResource Str_CS_Copy}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="SaveToFolderToggle" Content="{DynamicResource Str_CS_SaveToFolder}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="AskToSaveToggle" Content="{DynamicResource Str_CS_AskToSave}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="StartupToggle" Content="{DynamicResource Str_CS_Startup}" Style="{StaticResource CsCheck}"/>
+                                    </StackPanel>
 
-                            <Rectangle Height="1" Fill="{DynamicResource CardBorderBrush}" Margin="0,14,0,12"/>
+                                    <StackPanel Width="420">
+                                        <TextBlock Text="{DynamicResource Str_CS_Output}" Style="{StaticResource CsHeading}"/>
+                                        <TextBlock Text="{DynamicResource Str_CS_Folder}" Style="{StaticResource CsLabel}"/>
+                                        <Grid Margin="0,2,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="OutputFolderBox" FontSize="12" LostKeyboardFocus="OutputFolderBox_LostFocus"/>
+                                            <Button Grid.Column="1" Content="{DynamicResource Str_CS_Browse}" Style="{StaticResource OutlineButton}"
+                                                    Padding="10,3" Margin="6,0,0,0" Click="BrowseFolder_Click"/>
+                                            <Button Grid.Column="2" Content="{DynamicResource Str_CS_Default}" Style="{StaticResource OutlineButton}"
+                                                    Padding="10,3" Margin="6,0,0,0" Click="DefaultFolder_Click"/>
+                                        </Grid>
+                                        <TextBlock Text="{DynamicResource Str_CS_FileName}" Style="{StaticResource CsLabel}"/>
+                                        <TextBox x:Name="FileNamePatternBox" FontSize="12" Margin="0,2,0,2" TextChanged="FileNamePatternBox_TextChanged"/>
+                                        <TextBlock x:Name="FileNamePlaceholdersText" Foreground="{DynamicResource DimTextBrush}" FontSize="10" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="FileNameExampleText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
+                                        <Grid Margin="0,0,0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{DynamicResource Str_CS_Format}" Style="{StaticResource CsLabel}"/>
+                                                <ComboBox x:Name="FormatCombo" Margin="0,2,0,0" SelectionChanged="CaptureCombo_Changed"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{DynamicResource Str_CS_Quality}" Style="{StaticResource CsLabel}"/>
+                                                <ComboBox x:Name="QualityCombo" Margin="0,2,0,0" SelectionChanged="CaptureCombo_Changed"/>
+                                            </StackPanel>
+                                        </Grid>
 
-                            <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" FontSize="11" Margin="0,0,0,8"
-                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
-                            <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" FontSize="11" Margin="0,0,0,8"
-                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
-                            <CheckBox x:Name="StartupToggle" Content="{DynamicResource Str_CS_Startup}" FontSize="11"
-                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
-                        </StackPanel>
+                                        <TextBlock Text="{DynamicResource Str_CS_Capture}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="140"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{DynamicResource Str_CS_Delay}" Style="{StaticResource CsLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <ComboBox x:Name="DelayCombo" Grid.Column="1" SelectionChanged="CaptureCombo_Changed"/>
+                                        </Grid>
+                                        <CheckBox x:Name="CursorToggle" Content="{DynamicResource Str_CS_Cursor}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="SoundToggle" Content="{DynamicResource Str_CS_Sound}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PickWindowToggle" Content="{DynamicResource Str_CS_PickWindow}" Style="{StaticResource CsCheck}"/>
+
+                                        <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
                 <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>

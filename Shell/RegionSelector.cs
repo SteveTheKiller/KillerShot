@@ -14,7 +14,8 @@ namespace KillerShot.Shell;
 /// <summary>Region selection across every monitor. Each monitor gets its own borderless overlay
 /// showing that monitor's slice of the frozen desktop at one image pixel per device pixel, and
 /// all overlays share one selection in physical virtual-desktop coordinates, so a drag can cross
-/// monitors with different scaling.</summary>
+/// monitors with different scaling. Hovering highlights the window under the pointer, and a
+/// click without a drag takes that window. In window-pick mode a click is the only gesture.</summary>
 internal sealed class RegionSelector
 {
     private readonly FrozenDesktop _frozen;
@@ -22,9 +23,19 @@ internal sealed class RegionSelector
     private readonly TaskCompletionSource<Win32.RECT?> _result = new();
     private Win32.POINT? _start;
     private Win32.RECT? _selection;
+    private WindowBounds? _hover;
+    private bool _dragged;
     private bool _finished;
+    private readonly bool _windowOnly;
 
-    public RegionSelector(FrozenDesktop frozen) => _frozen = frozen;
+    /// <summary>The window chosen by a click, or zero when the result is a dragged region.</summary>
+    public IntPtr PickedWindow { get; private set; }
+
+    public RegionSelector(FrozenDesktop frozen, bool windowOnly = false)
+    {
+        _frozen = frozen;
+        _windowOnly = windowOnly;
+    }
 
     public Task<Win32.RECT?> RunAsync()
     {
@@ -49,6 +60,7 @@ internal sealed class RegionSelector
             home.Activate();
             home.Focus();
             Keyboard.Focus(home);
+            Move();   // highlight the window already under the pointer
         }
         catch
         {
@@ -63,23 +75,41 @@ internal sealed class RegionSelector
     {
         Win32.GetCursorPos(out var p);
         _start = p;
-        _selection = null;
-        RedrawAll();
+        _dragged = false;
     }
 
     public void Move()
     {
-        if (_start is not { } s) return;
         Win32.GetCursorPos(out var p);
-        _selection = new Win32.RECT(Math.Min(s.X, p.X), Math.Min(s.Y, p.Y), Math.Max(s.X, p.X) + 1, Math.Max(s.Y, p.Y) + 1);
+        if (_start is { } s && !_windowOnly)
+        {
+            if (!_dragged && Math.Abs(p.X - s.X) < 4 && Math.Abs(p.Y - s.Y) < 4) return;
+            _dragged = true;
+            _selection = new Win32.RECT(Math.Min(s.X, p.X), Math.Min(s.Y, p.Y), Math.Max(s.X, p.X) + 1, Math.Max(s.Y, p.Y) + 1);
+        }
+        else if (_start == null || _windowOnly)
+        {
+            var hover = _frozen.WindowAt(p);
+            if (hover == _hover && _selection != null) return;
+            _hover = hover;
+            _selection = hover?.Bounds;
+        }
         RedrawAll();
     }
 
     public void End()
     {
-        if (_selection is { Width: >= 3, Height: >= 3 } sel) { Finish(sel); return; }
-        // A click without a drag keeps the overlay open for another try.
+        bool dragged = _dragged;
         _start = null;
+        _dragged = false;
+        if (dragged && _selection is { Width: >= 3, Height: >= 3 } sel) { Finish(sel); return; }
+        // A click without a drag takes the highlighted window.
+        if (_hover is { } w)
+        {
+            PickedWindow = w.Handle;
+            Finish(w.Bounds);
+            return;
+        }
         _selection = null;
         RedrawAll();
     }

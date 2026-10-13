@@ -46,10 +46,10 @@ internal static class ImageOutput
 
     /// <summary>Writes PNG, or JPEG for a .jpg or .jpeg path, through a temporary file so a failed
     /// write never leaves a truncated image behind.</summary>
-    public static void Save(BitmapSource bmp, string path)
+    public static void Save(BitmapSource bmp, string path, int jpegQuality = 95)
     {
         string ext = Path.GetExtension(path).ToLowerInvariant();
-        BitmapEncoder enc = ext is ".jpg" or ".jpeg" ? new JpegBitmapEncoder { QualityLevel = 95 } : new PngBitmapEncoder();
+        BitmapEncoder enc = ext is ".jpg" or ".jpeg" ? new JpegBitmapEncoder { QualityLevel = jpegQuality } : new PngBitmapEncoder();
         enc.Frames.Add(BitmapFrame.Create(bmp));
         string tmp = path + ".tmp";
         using (var fs = File.Create(tmp)) enc.Save(fs);

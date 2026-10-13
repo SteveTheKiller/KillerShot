@@ -35,6 +35,7 @@ namespace KillerShot.Shell
             yield return (SaveBtn,            0xE74E, "Str_Btn_Save");        // Save
             yield return (SaveAsBtn,          0xE792, "Str_Btn_SaveAs");      // SaveAs
             yield return (CopyBtn,            0xE8C8, "Str_Btn_Copy");        // Copy
+            yield return (PrintBtn,           0xE749, "Str_Btn_Print");       // Print
             yield return (UndoBtn,            0xE7A7, "Str_Btn_Undo");        // Undo
             yield return (RedoBtn,            0xE7A6, "Str_Btn_Redo");        // Redo
             yield return (ToolSelectBtn,      0xE7C9, "Str_Tool_Select");     // TouchPointer

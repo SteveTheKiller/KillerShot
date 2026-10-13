@@ -33,6 +33,7 @@ internal sealed class TrayHost : IDisposable
     public event Action<ShortcutAction?, CaptureMode?, IntPtr>? CaptureRequested;
     public event Action? SaveLastRequested;
     public event Action? OpenEditorRequested;
+    public event Action? PrintLastRequested;
     /// <summary>The user clicked the last notification.</summary>
     public event Action? BalloonClicked;
     public Func<bool>? HasLastCapture { get; set; }
@@ -168,10 +169,22 @@ internal sealed class TrayHost : IDisposable
         open.FontWeight = FontWeights.SemiBold;
         menu.Items.Add(new Separator());
         Item(Loc("Str_Mode_Region"), "", () => DeferCapture(null, CaptureMode.Region));
+        Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
         Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
         Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
         menu.Items.Add(new Separator());
         Item(Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
+        Item(Loc("Str_Tray_PrintLast"), "", () => PrintLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
+        Item(Loc("Str_Tray_OpenFolder"), "", () =>
+        {
+            try
+            {
+                var folder = CaptureSettings.OutputFolder;
+                System.IO.Directory.CreateDirectory(folder);
+                Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+            }
+            catch { }
+        });
         menu.Items.Add(new Separator());
         if (_failed.Count > 0)
         {

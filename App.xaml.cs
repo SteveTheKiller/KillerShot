@@ -80,9 +80,10 @@ public partial class App : Application
         LocaleManager.Initialize();
     }
 
-    private void OnCaptured(BitmapSource bmp, DateTime taken)
+    private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath)
     {
-        SetDocument(new EditorDocument(bmp, null, taken));
+        // A capture saved to the folder opens as that file, so Save in the editor updates it.
+        SetDocument(new EditorDocument(bmp, savedPath, taken));
         if (CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }
 

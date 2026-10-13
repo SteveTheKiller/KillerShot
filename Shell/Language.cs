@@ -27,7 +27,7 @@ namespace KillerShot.Shell
             RelocalizeToolbar();
             BuildCaptureMenu();
             RefreshDocumentUi();
-            if (CaptureSettingsOverlay.Visibility == Visibility.Visible) BuildShortcutRows();
+            if (CaptureSettingsOverlay.Visibility == Visibility.Visible) { SyncCaptureOptions(); BuildShortcutRows(); }
             StatusText.Text = Loc("Str_Status_Ready");
             App.Instance.Tray?.Relocalize();
         }

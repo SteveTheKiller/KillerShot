@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Media.Imaging;
 using KillerShot.Capture;
 using KillerShot.Native;
@@ -15,7 +16,10 @@ internal sealed class CaptureController
     public BitmapSource? Last { get; private set; }
 
     /// <summary>Raised on the UI thread with each finished capture and when it was taken.</summary>
-    public event Action<BitmapSource, DateTime>? Captured;
+    public event Action<BitmapSource, DateTime, string?>? Captured;
+
+    /// <summary>The file the last capture was saved to, when saving to the folder is on.</summary>
+    public string? LastSavedPath { get; private set; }
 
     /// <summary>Hides the editor before the desktop is frozen; returns how to bring it back.</summary>
     public Func<Task<Action?>>? HideEditor { get; set; }
@@ -27,6 +31,7 @@ internal sealed class CaptureController
         _tray = tray;
         _tray.CaptureRequested += (action, mode, fg) => _ = RunAsync(action, mode, fg);
         _tray.SaveLastRequested += SaveLast;
+        _tray.PrintLastRequested += PrintLast;
         _tray.HasLastCapture = () => Last != null;
     }
 
@@ -51,13 +56,25 @@ internal sealed class CaptureController
             var mode = Resolve(action, requested);
             // Our own editor never belongs in the picture.
             if (HideEditor != null) restore = await HideEditor();
-            var frozen = FrozenDesktop.Capture();
+            int delay = CaptureSettings.DelaySeconds;
+            if (delay > 0) await Task.Delay(delay * 1000);
+            var frozen = FrozenDesktop.Capture(CaptureSettings.IncludeCursor);
+            if (CaptureSettings.PlaySound) ShutterSound.Play();
             BitmapSource? result;
             switch (mode)
             {
                 case CaptureMode.Region:
                     var rect = await new RegionSelector(frozen).RunAsync();
                     result = rect is { } r ? frozen.Crop(r) : null;
+                    break;
+                case CaptureMode.Window when CaptureSettings.PickWindow || foreground == IntPtr.Zero:
+                    // Pick by clicking. Started from a menu there is no meaningful active window.
+                    var picker = new RegionSelector(frozen, windowOnly: true);
+                    var picked = await picker.RunAsync();
+                    if (picked == null) { result = null; break; }
+                    result = picker.PickedWindow != IntPtr.Zero
+                        ? (await WindowCapture.CaptureAsync(picker.PickedWindow, frozen)).Bitmap
+                        : frozen.Crop(picked.Value);
                     break;
                 case CaptureMode.Window:
                     var target = WindowCapture.CapturableRoot(foreground);
@@ -86,12 +103,47 @@ internal sealed class CaptureController
             Last = result;
             var taken = DateTime.Now;
             RecentCaptures.Add(result, taken);
-            bool copied = ImageOutput.TryCopy(result, out var error);
-            Captured?.Invoke(result, taken);
-            if (!copied)
+
+            bool wantCopy = CaptureSettings.CopyToClipboard;
+            bool copied = false;
+            string? error = null;
+            if (wantCopy) copied = ImageOutput.TryCopy(result, out error);
+
+            string? saved = null;
+            if (CaptureSettings.SaveToFolder)
+            {
+                try
+                {
+                    string ext = CaptureSettings.Format;
+                    string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, result.PixelWidth, result.PixelHeight, ext);
+                    saved = OutputFiles.NextPath(CaptureSettings.OutputFolder, name);
+                    ImageOutput.Save(result, saved, CaptureSettings.JpegQuality);
+                    LastSavedPath = saved;
+                }
+                catch (Exception ex)
+                {
+                    saved = null;
+                    _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), ex.Message);
+                }
+            }
+
+            if (CaptureSettings.AskToSave)
+            {
+                var asked = AskAndSave(result, taken, mode);
+                if (asked != null) saved = asked;
+            }
+
+            Captured?.Invoke(result, taken, saved);
+            if (wantCopy && !copied)
                 _tray.ShowWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
-            else if (CaptureSettings.Notify)
-                _tray.ShowInfo(Loc("Str_Tray_CopiedTitle"), string.Format(Loc("Str_Tray_Copied"), result.PixelWidth, result.PixelHeight));
+            else if (CaptureSettings.Notify && (copied || saved != null))
+            {
+                string title = copied && saved != null ? Loc("Str_Tray_CopiedSavedTitle")
+                    : copied ? Loc("Str_Tray_CopiedTitle") : Loc("Str_Tray_SavedTitle");
+                string body = string.Format(Loc("Str_Tray_Copied"), result.PixelWidth, result.PixelHeight);
+                if (saved != null) body += "\n" + Path.GetFileName(saved);
+                _tray.ShowInfo(title, body);
+            }
         }
         catch (Exception ex)
         {
@@ -102,6 +154,40 @@ internal sealed class CaptureController
             _busy = false;
             restore?.Invoke();
         }
+    }
+
+    /// <summary>The save dialog for one capture, starting in the output folder with the pattern's name.</summary>
+    private string? AskAndSave(BitmapSource bmp, DateTime taken, CaptureMode mode)
+    {
+        var dlg = new Controls.FileDialog(Controls.FileDialogMode.Save)
+        {
+            Title = Loc("Str_Dlg_SaveTitle"),
+            Filter = Loc("Str_Dlg_ImageFilter"),
+            FilterIndex = CaptureSettings.Format == "jpg" ? 2 : 1,
+            DefaultExt = "." + CaptureSettings.Format,
+            FileName = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, bmp.PixelWidth, bmp.PixelHeight, CaptureSettings.Format),
+            InitialDirectory = CaptureSettings.OutputFolder,
+        };
+        if (dlg.ShowDialog(null) != true) return null;
+        try
+        {
+            ImageOutput.Save(bmp, dlg.FileName, CaptureSettings.JpegQuality);
+            LastSavedPath = dlg.FileName;
+            return dlg.FileName;
+        }
+        catch (Exception ex)
+        {
+            _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>Prints the last capture from the tray.</summary>
+    public void PrintLast()
+    {
+        if (Last == null) return;
+        try { PrintOutput.Print(Last, "KillerShot"); }
+        catch (Exception ex) { _tray.ShowWarning(Loc("Str_Tray_PrintFailedTitle"), ex.Message); }
     }
 
     private void SaveLast()

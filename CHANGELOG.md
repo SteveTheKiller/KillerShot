@@ -11,3 +11,6 @@
 - Added Open, Save, Save as and Copy, and a Recent list that keeps the last 20 captures.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture, show a notification, and start with Windows.
 - Added the family window, rail, toolbar styles, all 13 themes with Black and Teal as the default, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
+- Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
+- Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.
+- Added printing from the editor (Ctrl+P) and the tray, with shrink, enlarge and rotate options.

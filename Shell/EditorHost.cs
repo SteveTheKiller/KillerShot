@@ -86,7 +86,7 @@ namespace KillerShot.Shell
             EmptyState.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
             EditorScroll.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
             EmptyHintText.Text = string.Format(Loc("Str_Empty_Hint"), Shortcut.TryParse(CaptureSettings.ShortcutText(ShortcutAction.LastMode), out var sc) ? sc.Short : "PrtScn");
-            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
             UndoBtn.IsEnabled = _doc?.CanUndo == true;
@@ -165,6 +165,7 @@ namespace KillerShot.Shell
             if (b == SaveBtn) return "Ctrl+S";
             if (b == SaveAsBtn) return "Ctrl+Shift+S";
             if (b == CopyBtn) return "Ctrl+C";
+            if (b == PrintBtn) return "Ctrl+P";
             if (b == UndoBtn) return "Ctrl+Z";
             if (b == RedoBtn) return "Ctrl+Y";
             if (b == FitBtn) return "Ctrl+0";
@@ -385,6 +386,22 @@ namespace KillerShot.Shell
         private void SaveBtn_Click(object sender, RoutedEventArgs e) => Save();
         private void SaveAsBtn_Click(object sender, RoutedEventArgs e) => SaveAs();
         private void CopyBtn_Click(object sender, RoutedEventArgs e) => CopyResult();
+        private void PrintBtn_Click(object sender, RoutedEventArgs e) => PrintResult();
+
+        private void PrintResult()
+        {
+            if (_doc == null) return;
+            Editor.CommitText();
+            try
+            {
+                if (PrintOutput.Print(_doc.Render(), _doc.FilePath != null ? System.IO.Path.GetFileName(_doc.FilePath) : "KillerShot"))
+                    StatusText.Text = Loc("Str_Status_Printed");
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = string.Format(Loc("Str_Status_PrintFailed"), ex.Message);
+            }
+        }
         private void UndoBtn_Click(object sender, RoutedEventArgs e) => Undo();
         private void RedoBtn_Click(object sender, RoutedEventArgs e) => Redo();
         private void FitBtn_Click(object sender, RoutedEventArgs e) => ZoomToFit();
@@ -445,7 +462,7 @@ namespace KillerShot.Shell
             Editor.CommitText();
             try
             {
-                ImageOutput.Save(_doc.Render(), path);
+                ImageOutput.Save(_doc.Render(), path, CaptureSettings.JpegQuality);
                 _doc.FilePath = path;
                 _doc.MarkSaved();
                 RefreshDocumentUi();

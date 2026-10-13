@@ -54,6 +54,7 @@ namespace KillerShot.Shell
                     case Key.S when shift: SaveAs(); break;
                     case Key.S: Save(); break;
                     case Key.C when !TypingInField(): CopyResult(); break;
+                    case Key.P: PrintResult(); break;
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;

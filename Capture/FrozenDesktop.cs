@@ -8,6 +8,9 @@ namespace KillerShot.Capture;
 /// <summary>One monitor in physical virtual-desktop coordinates.</summary>
 internal sealed record MonitorBounds(IntPtr Handle, Win32.RECT Bounds, bool Primary);
 
+/// <summary>A capturable top-level window and its visible frame, recorded at freeze time.</summary>
+internal sealed record WindowBounds(IntPtr Handle, Win32.RECT Bounds);
+
 /// <summary>A copy of the whole virtual desktop taken the moment a capture starts. Region,
 /// monitor and all-monitor modes crop from it, so open menus and tooltips stay in the picture
 /// and the selection overlay can never appear in the result.</summary>
@@ -15,13 +18,41 @@ internal sealed class FrozenDesktop
 {
     public Win32.RECT Bounds { get; }
     public IReadOnlyList<MonitorBounds> Monitors { get; }
+    /// <summary>Capturable windows, topmost first, as they were when the desktop was frozen.</summary>
+    public IReadOnlyList<WindowBounds> Windows { get; }
     private readonly byte[] _pixels;   // BGRA rows, top-down, stride Bounds.Width * 4
 
-    private FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors)
+    private FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors, IReadOnlyList<WindowBounds> windows)
     {
         Bounds = bounds;
         _pixels = pixels;
         Monitors = monitors;
+        Windows = windows;
+    }
+
+    /// <summary>Visible, capturable top-level windows in z-order, topmost first.</summary>
+    public static IReadOnlyList<WindowBounds> EnumerateWindows()
+    {
+        var list = new List<WindowBounds>();
+        Win32.EnumWindows((h, _) =>
+        {
+            if (WindowCapture.CapturableRoot(h) == h && WindowCapture.FrameBounds(h) is { IsEmpty: false } r)
+                list.Add(new WindowBounds(h, r));
+            return true;
+        }, IntPtr.Zero);
+        return list;
+    }
+
+    /// <summary>The topmost recorded window under a point, clipped to the desktop.</summary>
+    public WindowBounds? WindowAt(Win32.POINT p)
+    {
+        foreach (var w in Windows)
+            if (w.Bounds.Contains(p))
+            {
+                var r = Win32.RECT.Intersect(w.Bounds, Bounds);
+                return r.IsEmpty ? null : w with { Bounds = r };
+            }
+        return null;
     }
 
     public static IReadOnlyList<MonitorBounds> EnumerateMonitors()
@@ -37,7 +68,7 @@ internal sealed class FrozenDesktop
         return list;
     }
 
-    public static FrozenDesktop Capture()
+    public static FrozenDesktop Capture(bool includeCursor = false)
     {
         int x = Win32.GetSystemMetrics(Win32.SM_XVIRTUALSCREEN);
         int y = Win32.GetSystemMetrics(Win32.SM_YVIRTUALSCREEN);
@@ -63,9 +94,10 @@ internal sealed class FrozenDesktop
             old = Win32.SelectObject(mem, dib);
             if (!Win32.BitBlt(mem, 0, 0, w, h, screen, x, y, Win32.SRCCOPY | Win32.CAPTUREBLT))
                 throw new InvalidOperationException("Windows refused to copy the desktop.");
+            if (includeCursor) DrawCursor(mem, x, y);
             var pixels = new byte[(long)w * h * 4];
             Marshal.Copy(bits, pixels, 0, pixels.Length);
-            return new FrozenDesktop(new Win32.RECT(x, y, x + w, y + h), pixels, EnumerateMonitors());
+            return new FrozenDesktop(new Win32.RECT(x, y, x + w, y + h), pixels, EnumerateMonitors(), EnumerateWindows());
         }
         finally
         {
@@ -74,6 +106,21 @@ internal sealed class FrozenDesktop
             if (mem != IntPtr.Zero) Win32.DeleteDC(mem);
             Win32.ReleaseDC(IntPtr.Zero, screen);
         }
+    }
+
+    /// <summary>Draws the current mouse pointer into the desktop copy at its hotspot.</summary>
+    private static void DrawCursor(IntPtr dc, int originX, int originY)
+    {
+        var ci = new Win32.CURSORINFO { cbSize = Marshal.SizeOf<Win32.CURSORINFO>() };
+        if (!Win32.GetCursorInfo(ref ci) || (ci.flags & Win32.CURSOR_SHOWING) == 0 || ci.hCursor == IntPtr.Zero) return;
+        int hx = 0, hy = 0;
+        if (Win32.GetIconInfo(ci.hCursor, out var info))
+        {
+            hx = info.xHotspot; hy = info.yHotspot;
+            if (info.hbmMask != IntPtr.Zero) Win32.DeleteObject(info.hbmMask);
+            if (info.hbmColor != IntPtr.Zero) Win32.DeleteObject(info.hbmColor);
+        }
+        Win32.DrawIconEx(dc, ci.ptScreenPos.X - hx - originX, ci.ptScreenPos.Y - hy - originY, ci.hCursor, 0, 0, 0, IntPtr.Zero, Win32.DI_NORMAL);
     }
 
     public MonitorBounds MonitorAt(Win32.POINT p) =>

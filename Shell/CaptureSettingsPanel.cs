@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using KillerShot.Capture;
+using CaptureMode = KillerShot.Capture.CaptureMode;
 using KillerShot.Services;
 using Shortcut = KillerShot.Services.Shortcut;
 
@@ -27,17 +28,113 @@ namespace KillerShot.Shell
 
         private void CaptureSettingsButton_Click(object sender, RoutedEventArgs e) => ShowCaptureSettings();
 
+        private static readonly int[] DelayChoices = [0, 1, 2, 3, 5, 10];
+        private static readonly int[] QualityChoices = [100, 95, 90, 85, 80, 70, 60];
+
         private void ShowCaptureSettings()
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
             if (AboutOverlay.Visibility == Visibility.Visible) AboutOverlay.Visibility = Visibility.Collapsed;
+            SyncCaptureOptions();
+            BuildShortcutRows();
+            CaptureSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110);
+            FadeOverlayIn(CaptureSettingsOverlay);
+        }
+
+        /// <summary>Puts the stored choices into every control without firing their handlers.</summary>
+        private void SyncCaptureOptions()
+        {
             _syncingOptions = true;
+            CopyToggle.IsChecked = CaptureSettings.CopyToClipboard;
+            SaveToFolderToggle.IsChecked = CaptureSettings.SaveToFolder;
+            AskToSaveToggle.IsChecked = CaptureSettings.AskToSave;
             OpenEditorToggle.IsChecked = CaptureSettings.OpenEditorAfterCapture;
             NotifyToggle.IsChecked = CaptureSettings.Notify;
             StartupToggle.IsChecked = StartupRegistration.Enabled;
+            CursorToggle.IsChecked = CaptureSettings.IncludeCursor;
+            SoundToggle.IsChecked = CaptureSettings.PlaySound;
+            PickWindowToggle.IsChecked = CaptureSettings.PickWindow;
+            PrintShrinkToggle.IsChecked = CaptureSettings.PrintShrink;
+            PrintEnlargeToggle.IsChecked = CaptureSettings.PrintEnlarge;
+            PrintRotateToggle.IsChecked = CaptureSettings.PrintRotate;
+
+            OutputFolderBox.Text = CaptureSettings.OutputFolder;
+            FileNamePatternBox.Text = CaptureSettings.FileNamePattern;
+            FileNamePlaceholdersText.Text = string.Format(Loc("Str_CS_Placeholders"), OutputFiles.Placeholders);
+
+            FormatCombo.Items.Clear();
+            FormatCombo.Items.Add(new ComboBoxItem { Content = "PNG", Tag = "png" });
+            FormatCombo.Items.Add(new ComboBoxItem { Content = "JPEG", Tag = "jpg" });
+            FormatCombo.SelectedIndex = CaptureSettings.Format == "jpg" ? 1 : 0;
+
+            QualityCombo.Items.Clear();
+            foreach (var q in QualityChoices) QualityCombo.Items.Add(new ComboBoxItem { Content = q + "%", Tag = q });
+            int qi = Array.IndexOf(QualityChoices, CaptureSettings.JpegQuality);
+            QualityCombo.SelectedIndex = qi >= 0 ? qi : 2;
+            QualityCombo.IsEnabled = CaptureSettings.Format == "jpg";
+
+            DelayCombo.Items.Clear();
+            foreach (var d in DelayChoices)
+                DelayCombo.Items.Add(new ComboBoxItem { Content = d == 0 ? Loc("Str_CS_DelayNone") : string.Format(Loc("Str_CS_Seconds"), d), Tag = d });
+            int di = Array.IndexOf(DelayChoices, CaptureSettings.DelaySeconds);
+            DelayCombo.SelectedIndex = di >= 0 ? di : 0;
+
             _syncingOptions = false;
-            BuildShortcutRows();
-            FadeOverlayIn(CaptureSettingsOverlay);
+            RefreshFileNameExample();
+        }
+
+        private void RefreshFileNameExample()
+        {
+            var name = OutputFiles.FileName(CaptureSettings.FileNamePattern, DateTime.Now, CaptureMode.Region, 1920, 1080, CaptureSettings.Format);
+            FileNameExampleText.Text = string.Format(Loc("Str_CS_Example"), name);
+        }
+
+        private void FileNamePatternBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_syncingOptions) return;
+            var text = FileNamePatternBox.Text.Trim();
+            CaptureSettings.FileNamePattern = text.Length > 0 ? text : CaptureSettings.DefaultFileNamePattern;
+            RefreshFileNameExample();
+        }
+
+        private void OutputFolderBox_LostFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            var text = OutputFolderBox.Text.Trim().Trim('"');
+            if (text.Length == 0) { DefaultFolder_Click(sender, e); return; }
+            try { CaptureSettings.OutputFolder = System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables(text)); }
+            catch { }
+            OutputFolderBox.Text = CaptureSettings.OutputFolder;
+        }
+
+        private void BrowseFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Controls.FileDialog(Controls.FileDialogMode.Folder)
+            {
+                Title = Loc("Str_Dlg_FolderTitle"),
+                InitialDirectory = System.IO.Directory.Exists(CaptureSettings.OutputFolder) ? CaptureSettings.OutputFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+            };
+            if (dlg.ShowDialog(this) != true) return;
+            CaptureSettings.OutputFolder = dlg.FileName;
+            OutputFolderBox.Text = dlg.FileName;
+        }
+
+        private void DefaultFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Set("OutputFolder", "");
+            OutputFolderBox.Text = CaptureSettings.OutputFolder;
+        }
+
+        private void CaptureCombo_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (_syncingOptions || sender is not ComboBox { SelectedItem: ComboBoxItem { Tag: var tag } }) return;
+            if (sender == FormatCombo && tag is string f)
+            {
+                CaptureSettings.Format = f;
+                QualityCombo.IsEnabled = f == "jpg";
+                RefreshFileNameExample();
+            }
+            else if (sender == QualityCombo && tag is int q) CaptureSettings.JpegQuality = q;
+            else if (sender == DelayCombo && tag is int d) CaptureSettings.DelaySeconds = d;
         }
 
         private void CloseCaptureSettings()
@@ -53,10 +150,20 @@ namespace KillerShot.Shell
 
         private void CaptureOption_Changed(object sender, RoutedEventArgs e)
         {
-            if (_syncingOptions) return;
-            if (sender == OpenEditorToggle) CaptureSettings.OpenEditorAfterCapture = OpenEditorToggle.IsChecked == true;
-            else if (sender == NotifyToggle) CaptureSettings.Notify = NotifyToggle.IsChecked == true;
-            else if (sender == StartupToggle && !StartupRegistration.Set(StartupToggle.IsChecked == true))
+            if (_syncingOptions || sender is not CheckBox box) return;
+            bool on = box.IsChecked == true;
+            if (box == CopyToggle) CaptureSettings.CopyToClipboard = on;
+            else if (box == SaveToFolderToggle) CaptureSettings.SaveToFolder = on;
+            else if (box == AskToSaveToggle) CaptureSettings.AskToSave = on;
+            else if (box == OpenEditorToggle) CaptureSettings.OpenEditorAfterCapture = on;
+            else if (box == NotifyToggle) CaptureSettings.Notify = on;
+            else if (box == CursorToggle) CaptureSettings.IncludeCursor = on;
+            else if (box == SoundToggle) CaptureSettings.PlaySound = on;
+            else if (box == PickWindowToggle) CaptureSettings.PickWindow = on;
+            else if (box == PrintShrinkToggle) CaptureSettings.PrintShrink = on;
+            else if (box == PrintEnlargeToggle) CaptureSettings.PrintEnlarge = on;
+            else if (box == PrintRotateToggle) CaptureSettings.PrintRotate = on;
+            else if (box == StartupToggle && !StartupRegistration.Set(on))
             {
                 _syncingOptions = true;
                 StartupToggle.IsChecked = StartupRegistration.Enabled;
