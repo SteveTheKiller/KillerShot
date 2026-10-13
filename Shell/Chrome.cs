@@ -1,0 +1,245 @@
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Navigation;
+using KillerShot.Controls;
+
+// Window-message plumbing for a WindowStyle="None" window, and the caption buttons. This stays a
+// partial of MainWindow on purpose: every method here needs the window's own HWND, its WindowState
+// or its named caption buttons, so there is nothing to inject and nothing to test in isolation.
+//
+// The pieces that were NOT window-specific now live as real classes:
+//   Controls/DwmChrome        - rounded corners and the themed frame border
+//   Controls/WindowPlacement  - size/position persistence
+//   Controls/GrainTexture     - the shared film-grain tile
+//
+// MainWindow.xaml is expected to name: RootGrid (Opacity="0" so FadeInContent can reveal it),
+// MinimizeBtn / MaximizeBtn / CloseBtn, ResizeGrip, and any *GrainBrush layers.
+namespace KillerShot.Shell
+{
+    public partial class MainWindow
+    {
+        // The first close request is held while the whole window fades. The helper sets this
+        // before issuing its own deferred Close(), so Alt+F4, the caption button, the system
+        // menu and Application.Shutdown all share the same exit animation without recursion.
+        private bool _closeFaded;
+        private WindowState _stateBeforeMinimize = WindowState.Normal;
+        private bool _restoringFromMinimize;
+
+        // Grain brush layers in MainWindow.xaml. All optional - Apply skips the ones absent.
+        // FlyoutGrainBrush is gone: flyouts share the GrainTileBrush resource through the
+        // FlyoutGrain style (Controls.xaml), so they no longer need a private brush wired up here.
+        private static readonly string[] GrainBrushNames =
+            ["GrainBrush", "TitleGrainBrush", "ToolbarGrainBrush", "StatusGrainBrush"];
+
+        private void MainWindow_SourceInitialized(object? sender, EventArgs e)
+        {
+            if (WindowState != WindowState.Minimized) _stateBeforeMinimize = WindowState;
+            var hwnd = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
+            DwmChrome.SetRoundedCorners(this, rounded: Services.ThemeManager.Current != Services.Theme.SE98
+                                                       && WindowState == WindowState.Normal);
+            DwmChrome.SetThemeBorder(this);
+        }
+
+        private void ApplyGrainTexture() => GrainTexture.Apply(this, GrainBrushNames);
+
+        /// <summary>Content fade-in on open; RootGrid starts at Opacity="0" in XAML.</summary>
+        private void FadeInContent() => Anim.FadeIn(RootGrid);
+
+        private void RestoreWindowPlacement()
+            => WindowPlacement.Restore(this, Services.ThemeManager.GetSetting);
+
+        protected override void OnClosed(EventArgs e)
+        {
+            WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
+            base.OnClosed(e);
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (Anim.FadeOutAndClose(this, ref _closeFaded))
+            {
+                e.Cancel = true;
+                return;
+            }
+            base.OnClosing(e);
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            base.OnStateChanged(e);
+            if (WindowState == WindowState.Minimized)
+            {
+                _restoringFromMinimize = true;
+            }
+            else
+            {
+                if (_restoringFromMinimize && WindowState == WindowState.Normal &&
+                    _stateBeforeMinimize == WindowState.Maximized)
+                {
+                    _restoringFromMinimize = false;
+                    WindowState = WindowState.Maximized;
+                    return;
+                }
+                _restoringFromMinimize = false;
+                _stateBeforeMinimize = WindowState;
+            }
+            // Square the corners when maximized (flush to the screen edges), round when floating.
+            DwmChrome.SetRoundedCorners(this, rounded: Services.ThemeManager.Current != Services.Theme.SE98
+                                                       && WindowState == WindowState.Normal);
+            // Maximize glyph (Segoe MDL2) toggles to a restore glyph when maximized.
+            MaximizeBtn?.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE922";
+        }
+
+        // ---- window messages ----
+
+        private const int WM_GETMINMAXINFO = 0x0024;
+        private const int WM_ERASEBKGND    = 0x0014;
+        private const int WM_NCLBUTTONDOWN = 0x00A1;
+        private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+        private const int HTBOTTOMRIGHT = 17;
+        private const int HTCAPTION = 2;
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            // First: swallow the two messages that raise Windows' stock white system menu and
+            // show the themed one instead. (SystemMenu.cs)
+            if (TryHandleSystemMenu(msg, wParam, lParam))
+            {
+                handled = true;
+                return IntPtr.Zero;
+            }
+            if (msg == WM_ERASEBKGND)
+            {
+                // WPF paints the whole client area itself, so nothing should erase the background to
+                // a flat fill during a resize - that erase IS the white flash. Claim the message.
+                handled = true;
+                return new IntPtr(1);
+            }
+            if (msg == WM_GETMINMAXINFO)
+            {
+                // A WindowStyle="None" window maximizes over the taskbar unless we clamp it to the
+                // monitor's work area ourselves.
+                WmGetMinMaxInfo(hwnd, lParam);
+                handled = true;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
+        {
+            var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+            IntPtr monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            if (monitor == IntPtr.Zero) return;
+
+            var info = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+            GetMonitorInfo(monitor, ref info);
+            RECT work = info.rcWork;
+            RECT mon = info.rcMonitor;
+
+            mmi.ptMaxPosition.x = Math.Abs(work.left - mon.left);
+            mmi.ptMaxPosition.y = Math.Abs(work.top - mon.top);
+            mmi.ptMaxSize.x = Math.Abs(work.right - work.left);
+            mmi.ptMaxSize.y = Math.Abs(work.bottom - work.top);
+            mmi.ptMaxTrackSize.x = mmi.ptMaxSize.x;
+            mmi.ptMaxTrackSize.y = mmi.ptMaxSize.y;
+
+            // ptMinTrackSize MUST be filled in here too. This handler sets handled = true, which
+            // takes WM_GETMINMAXINFO away from WPF - and WM_GETMINMAXINFO is exactly how WPF
+            // enforces MinWidth/MinHeight during a drag-resize. Leaving these two fields at the OS
+            // default let the window be dragged far below MinWidth 820 / MinHeight 560, at which
+            // point the fixed chrome (36px title + 42px toolbar + 24px footer, and the 330px
+            // appointment panel) no longer fits and the calendar card is clipped rather than
+            // resized. That is the "resizing cuts off the content" bug. (2026-07-30)
+            //
+            // MINMAXINFO is in DEVICE pixels and MinWidth/MinHeight are in DIPs, so this has to go
+            // through the window's own transform or the limit is wrong on any display that is not
+            // at 100%.
+            var src = PresentationSource.FromVisual(this);
+            double sx = src?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+            double sy = src?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+            if (!double.IsNaN(MinWidth) && MinWidth > 0)
+                mmi.ptMinTrackSize.x = (int)Math.Ceiling(MinWidth * sx);
+            if (!double.IsNaN(MinHeight) && MinHeight > 0)
+                mmi.ptMinTrackSize.y = (int)Math.Ceiling(MinHeight * sy);
+
+            Marshal.StructureToPtr(mmi, lParam, true);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr handle, uint flags);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+        /// <summary>Our own grip: WPF's CanResizeWithGrip dots land out in the transparent shadow
+        /// margin, so we draw one at the content corner and forward the resize to Windows.</summary>
+        private void ResizeGrip_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (WindowState != WindowState.Normal) return;
+            e.Handled = true;
+            SendMessage(new WindowInteropHelper(this).Handle,
+                        WM_NCLBUTTONDOWN, new IntPtr(HTBOTTOMRIGHT), IntPtr.Zero);
+        }
+
+        /// <summary>Lets the toolbar drag the window like the title bar. Interactive controls handle
+        /// their own clicks, so only the bar's empty space bubbles up here. Native HTCAPTION also
+        /// gives correct restore-from-maximized-and-drag behavior for free.</summary>
+        private void Toolbar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left) return;
+            e.Handled = true;
+            SendMessage(new WindowInteropHelper(this).Handle,
+                        WM_NCLBUTTONDOWN, new IntPtr(HTCAPTION), IntPtr.Zero);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int x; public int y; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int left, top, right, bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        // ---- caption buttons (drag and double-click-maximize are native via WindowChrome) ----
+
+        private void MinimizeBtn_Click(object sender, RoutedEventArgs e)
+            => WindowState = WindowState.Minimized;
+
+        private void MaximizeBtn_Click(object sender, RoutedEventArgs e)
+            => WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal : WindowState.Maximized;
+
+        private void CloseBtn_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
+        }
+    }
+}

@@ -42,10 +42,37 @@ internal static class ImageOutput
         return false;
     }
 
-    public static void SavePng(BitmapSource bmp, string path)
+    public static void SavePng(BitmapSource bmp, string path) => Save(bmp, path);
+
+    /// <summary>Writes PNG, or JPEG for a .jpg or .jpeg path, through a temporary file so a failed
+    /// write never leaves a truncated image behind.</summary>
+    public static void Save(BitmapSource bmp, string path)
     {
+        string ext = Path.GetExtension(path).ToLowerInvariant();
+        BitmapEncoder enc = ext is ".jpg" or ".jpeg" ? new JpegBitmapEncoder { QualityLevel = 95 } : new PngBitmapEncoder();
+        enc.Frames.Add(BitmapFrame.Create(bmp));
         string tmp = path + ".tmp";
-        File.WriteAllBytes(tmp, EncodePng(bmp));
+        using (var fs = File.Create(tmp)) enc.Save(fs);
         File.Move(tmp, path, true);
+    }
+
+    /// <summary>Loads an image at its true pixel size. WPF would otherwise lay out a 144 DPI file
+    /// at two thirds of its pixels, so the pixels are copied into a 96 DPI bitmap.</summary>
+    public static BitmapSource Load(string path)
+    {
+        var img = new BitmapImage();
+        img.BeginInit();
+        img.CacheOption = BitmapCacheOption.OnLoad;
+        img.CreateOptions = BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.PreservePixelFormat;
+        img.UriSource = new Uri(path);
+        img.EndInit();
+        BitmapSource src = img.Format == System.Windows.Media.PixelFormats.Bgra32
+            ? img : new FormatConvertedBitmap(img, System.Windows.Media.PixelFormats.Bgra32, null, 0);
+        int w = src.PixelWidth, h = src.PixelHeight;
+        var px = new byte[(long)w * h * 4];
+        src.CopyPixels(px, w * 4, 0);
+        var copy = BitmapSource.Create(w, h, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, px, w * 4);
+        copy.Freeze();
+        return copy;
     }
 }

@@ -1,0 +1,101 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:Double x:Key="GrainOpacity">0.24</sys:Double>
+    <sys:Double x:Key="IconShadowOpacity">0.9</sys:Double>
+
+    <!-- ================================================================
+         DARK theme (colors + brushes only). Tiered surface
+         hierarchy:
+           Background = chrome   (#1c1c1c) - window, titlebar, footer (blend)
+           Surface    = bar      (#333333) - scan config bar, table header
+           Pane       = content  (#3a3a3a) - devices pane + grid rows (lightest)
+         Borders (CardBorder) separate the tiers. ThemeManager swaps this
+         dictionary's keys in place at runtime - colors/brushes only here.
+         ================================================================ -->
+
+    <!-- Accent -->
+    <SolidColorBrush x:Key="PrimaryBrush"        Color="#1ea54c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush"   Color="#1ea54c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#1ea54c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HeaderLineBrush"     Color="#1ea54c" po:Freeze="True"/>
+    <!-- Near-black, matching the Black family. This is the text ON a filled accent button, and
+         Dark's accents are mid-tone rather than deep: white measures 2.38 to 3.94 across the six
+         (blue, teal, orange and purple all under 3), near-black measures 5.32 to 8.83. -->
+    <SolidColorBrush x:Key="OnPrimaryBrush"      Color="#0a0a0a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="OutlineBtnBrush"     Color="#1ea54c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="InputHoverBrush"     Color="#707070" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TextFooter"          Color="#858585" po:Freeze="True"/>
+
+    <!-- Surface tiers -->
+    <SolidColorBrush x:Key="BackgroundBrush"     Color="#1c1c1c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="SurfaceBrush"        Color="#333333" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PaneBrush"           Color="#3a3a3a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TableHeaderBrush"    Color="#333333" po:Freeze="True"/>
+    <SolidColorBrush x:Key="CardBorderBrush"     Color="#2e2e2e" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PaneBorderBrush"     Color="#3f3f3f" po:Freeze="True"/>
+    <SolidColorBrush x:Key="AppBorderBrush"      Color="#3f3f3f" po:Freeze="True"/>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextBrush"           Color="#e0e0e0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MutedTextBrush"      Color="#a0a0a0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ChromeTextBrush"     Color="#b6b6b6" po:Freeze="True"/>
+    <SolidColorBrush x:Key="DimTextBrush"        Color="#6a6a6a" po:Freeze="True"/>
+
+    <!-- Grid rows -->
+    <SolidColorBrush x:Key="RowAltBrush"         Color="#18FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="RowHoverBrush"       Color="#404040" po:Freeze="True"/>
+    <SolidColorBrush x:Key="RowSelectedBrush"    Color="#0d2a18" po:Freeze="True"/>
+    <!-- Untagged appointment chips - a neutral of its own, NOT repointed by any accent overlay,
+         so it can never collide with the accent-colored selection or hover fills. See the note
+         in Greed.xaml. Lighter than RowHoverBrush so a chip still reads inside a hovered cell. -->
+    <SolidColorBrush x:Key="ChipBrush"           Color="#4a4a4a" po:Freeze="True"/>
+    <LinearGradientBrush x:Key="SelectionBg"         po:Freeze="True" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#387552" Offset="0"/><GradientStop Color="#104E2B" Offset="1"/></LinearGradientBrush>
+    <SolidColorBrush x:Key="SelectionFg"         Color="#ffffff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TreeLineBrush"       Color="#3d3d3d" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatFile"           Color="#00fff9" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatView"           Color="#f222ff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatNav"            Color="#8c1eff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatAppt"           Color="#ffd319" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatHelp"           Color="#39ff14" po:Freeze="True"/>
+
+    <!-- Inputs / menus / scrollbar -->
+    <SolidColorBrush x:Key="InputBorderBrush"    Color="#2e2e2e" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#1e1e1e" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuBorderBrush"     Color="#404040" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuTextBrush"       Color="#a0a0a0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuHoverBrush"      Color="#404040" po:Freeze="True"/>
+    <SolidColorBrush x:Key="OutlinePressedBrush" Color="#0d2a18" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ScrollThumbBrush"    Color="#551ea54c" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#1ea54c" po:Freeze="True"/>
+
+
+    <!-- Stroke behind white-on-accent label text in picker rows. Theme-varied because the effect
+         rasterizes ClearType, so on light surfaces it is dialled back or the label reads blurry. -->
+    <DropShadowEffect x:Key="TextStroke"     Color="Black" BlurRadius="3" ShadowDepth="0.8" Direction="270" Opacity="0.7"/>
+
+    <SolidColorBrush x:Key="ComboHighlightTextBrush" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="AccentLogo"     Color="#1ea54c" po:Freeze="True"/>
+    <CornerRadius x:Key="AccentSwatchCornerRadius">9</CornerRadius>
+    <SolidColorBrush x:Key="RadioAccent"    Color="#1ea54c" po:Freeze="True"/>
+    <CornerRadius x:Key="FlyoutCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="SmallCornerRadius">3</CornerRadius>
+    <SolidColorBrush x:Key="SelectionAccent" Color="#1ea54c" po:Freeze="True"/>
+    <sys:Double x:Key="WordmarkShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.45</sys:Double>
+    <sys:Double x:Key="FlyoutShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.55</sys:Double>
+    <SolidColorBrush x:Key="DialogTitleBarBrush" Color="#FF1C1C1C" po:Freeze="True"/>
+    <CornerRadius x:Key="PanelCornerRadius">6</CornerRadius>
+    <sys:Double x:Key="TitleWordmarkSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">15</sys:Double>
+    <sys:Double x:Key="BarShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.38</sys:Double>
+    <CornerRadius x:Key="WindowCornerRadius">7</CornerRadius>
+    <sys:Double x:Key="TitleWordmarkBoldSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">22.52</sys:Double>
+    <sys:Double x:Key="TitleBarHeight" xmlns:sys="clr-namespace:System;assembly=mscorlib">32</sys:Double>
+    <sys:Double x:Key="PaneShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.6</sys:Double>
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#FF1C1C1C" po:Freeze="True"/>
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#FF404040" po:Freeze="True"/>
+    <SolidColorBrush x:Key="FooterBackgroundBrush" Color="#FF1C1C1C" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSeparatorBrush" Color="#FF2E2E2E" po:Freeze="True"/>
+</ResourceDictionary>

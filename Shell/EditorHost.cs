@@ -1,0 +1,523 @@
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using KillerShot.Capture;
+using CaptureMode = KillerShot.Capture.CaptureMode;
+using Shortcut = KillerShot.Services.Shortcut;
+using KillerShot.Controls;
+using KillerShot.Editor;
+using KillerShot.Services;
+
+// The editor half of MainWindow: the document, the toolbar actions, the tools, color and width,
+// zoom, recent captures and the footer readout.
+namespace KillerShot.Shell
+{
+    public partial class MainWindow
+    {
+        private static readonly (string Key, Color Color)[] Palette =
+        [
+            ("Str_Color_Red",    Color.FromRgb(0xE5, 0x39, 0x35)),
+            ("Str_Color_Orange", Color.FromRgb(0xFB, 0x8C, 0x00)),
+            ("Str_Color_Yellow", Color.FromRgb(0xFD, 0xD8, 0x35)),
+            ("Str_Color_Green",  Color.FromRgb(0x43, 0xA0, 0x47)),
+            ("Str_Color_Teal",   Color.FromRgb(0x2E, 0xC4, 0xB6)),
+            ("Str_Color_Blue",   Color.FromRgb(0x1E, 0x88, 0xE5)),
+            ("Str_Color_Purple", Color.FromRgb(0x8E, 0x24, 0xAA)),
+            ("Str_Color_Black",  Color.FromRgb(0x00, 0x00, 0x00)),
+            ("Str_Color_White",  Color.FromRgb(0xFF, 0xFF, 0xFF)),
+        ];
+
+        private static readonly double[] StrokeWidths = [2, 4, 6, 10, 16];
+        private static readonly double[] TextSizes = [14, 18, 24, 32, 48, 72];
+        private static readonly double[] ZoomSteps = [0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16];
+
+        private EditorDocument? _doc;
+        private bool _fitMode = true;
+        private DispatcherTimer? _pixelTimer;
+
+        private void InitEditor()
+        {
+            if (int.TryParse(Settings.Get("ColorIndex"), out int ci) && ci >= 0 && ci < Palette.Length) Editor.Color = Palette[ci].Color;
+            if (double.TryParse(Settings.Get("StrokeWidth"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sw)) Editor.StrokeWidth = sw;
+            if (double.TryParse(Settings.Get("TextSize"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ts)) Editor.TextSize = ts;
+            if (Enum.TryParse<ToolKind>(Settings.Get("Tool"), out var tool) && tool != ToolKind.Crop) Editor.SetTool(tool);
+
+            Editor.ViewChanged += RefreshFooter;
+            Editor.Status += text => StatusText.Text = text;
+            App.Instance.DocumentChanged += OnAppDocumentChanged;
+            Closed += (_, _) => App.Instance.DocumentChanged -= OnAppDocumentChanged;
+
+            // The pixel readout follows the mouse without a handler on every move.
+            _pixelTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(80) };
+            _pixelTimer.Tick += (_, _) => RefreshFooter();
+            _pixelTimer.Start();
+            Closed += (_, _) => _pixelTimer.Stop();
+
+            BuildCaptureMenu();
+            BindDocument(App.Instance.Document);
+            HighlightActiveTool();
+        }
+
+        private void OnAppDocumentChanged()
+        {
+            BindDocument(App.Instance.Document);
+            _fitMode = true;
+            ZoomToFit();
+        }
+
+        private void BindDocument(EditorDocument? doc)
+        {
+            if (_doc != null) _doc.Changed -= RefreshDocumentUi;
+            _doc = doc;
+            Editor.Document = doc;
+            if (_doc != null) _doc.Changed += RefreshDocumentUi;
+            RefreshDocumentUi();
+        }
+
+        /// <summary>Title, enabled states, empty state and footer after any document change.</summary>
+        private void RefreshDocumentUi()
+        {
+            bool has = _doc != null;
+            EmptyState.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
+            EditorScroll.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
+            EmptyHintText.Text = string.Format(Loc("Str_Empty_Hint"), Shortcut.TryParse(CaptureSettings.ShortcutText(ShortcutAction.LastMode), out var sc) ? sc.Short : "PrtScn");
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
+                                      ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
+                b.IsEnabled = has;
+            UndoBtn.IsEnabled = _doc?.CanUndo == true;
+            RedoBtn.IsEnabled = _doc?.CanRedo == true;
+            HighlightActiveTool();
+
+            string name = _doc?.FilePath is string p ? System.IO.Path.GetFileName(p) : "";
+            TitleFileLabel.Text = name + (_doc?.Dirty == true && name.Length > 0 ? " *" : "");
+            TitleFileLabel.Visibility = name.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            Title = name.Length > 0 ? name + " - KillerShot" : "KillerShot";
+            RefreshFooter();
+        }
+
+        private void RefreshFooter()
+        {
+            if (_doc == null) { ImageInfoText.Text = ""; return; }
+            string text = $"{_doc.PixelWidth} x {_doc.PixelHeight}   {Math.Round(Editor.Zoom * 100)}%";
+            if (Editor.PixelUnderMouse() is Point p) text += $"   {p.X:0}, {p.Y:0}";
+            if (ImageInfoText.Text != text) ImageInfoText.Text = text;
+        }
+
+        // ---- tools ----
+
+        private Button ToolButton(ToolKind t) => t switch
+        {
+            ToolKind.Select => ToolSelectBtn,
+            ToolKind.Pen => ToolPenBtn,
+            ToolKind.Highlighter => ToolHighlighterBtn,
+            ToolKind.Arrow => ToolArrowBtn,
+            ToolKind.Rectangle => ToolRectangleBtn,
+            ToolKind.Ellipse => ToolEllipseBtn,
+            ToolKind.Text => ToolTextBtn,
+            ToolKind.Redact => ToolRedactBtn,
+            _ => ToolCropBtn,
+        };
+
+        private void SelectTool(ToolKind tool)
+        {
+            if (_doc == null) return;
+            Editor.SetTool(tool);
+            if (tool != ToolKind.Crop) Settings.Set("Tool", tool.ToString());
+            HighlightActiveTool();
+            StatusText.Text = tool == ToolKind.Crop ? Loc("Str_Status_CropHint") : Loc(ToolLabelKey(tool));
+            Editor.Focus();
+        }
+
+        private static string ToolLabelKey(ToolKind t) => "Str_Tool_" + t;
+
+        /// <summary>The active tool's button carries the accent, the family's "this one is on" mark.</summary>
+        private void HighlightActiveTool()
+        {
+            foreach (ToolKind t in Enum.GetValues<ToolKind>())
+            {
+                var b = ToolButton(t);
+                if (t == Editor.Tool && _doc != null) b.SetResourceReference(ForegroundProperty, "PrimaryBrush");
+                else b.ClearValue(ForegroundProperty);
+            }
+            // The width button shows the text size while the text tool is active.
+            RefreshWidthButton();
+        }
+
+        private void RefreshWidthButton() =>
+            WidthBtn.Content = BuildToolbarContent(_iconSize, _labelMode, 0, Loc("Str_Btn_Width"), DrawnIcon(WidthBtn));
+
+        private void Tool_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { Tag: string tag } && Enum.TryParse<ToolKind>(tag, out var t)) SelectTool(t);
+        }
+
+        /// <summary>Single-key shortcut shown in a tool's tooltip, and the Ctrl shortcuts of the
+        /// file and edit buttons. One place, so a tooltip cannot disagree with the key handler.</summary>
+        private string? ShortcutFor(Button b)
+        {
+            if (b == CaptureBtn) return "Ctrl+N";
+            if (b == OpenBtn) return "Ctrl+O";
+            if (b == SaveBtn) return "Ctrl+S";
+            if (b == SaveAsBtn) return "Ctrl+Shift+S";
+            if (b == CopyBtn) return "Ctrl+C";
+            if (b == UndoBtn) return "Ctrl+Z";
+            if (b == RedoBtn) return "Ctrl+Y";
+            if (b == FitBtn) return "Ctrl+0";
+            if (b == ActualSizeBtn) return "Ctrl+1";
+            if (b == ToolSelectBtn) return "V";
+            if (b == ToolPenBtn) return "P";
+            if (b == ToolHighlighterBtn) return "H";
+            if (b == ToolArrowBtn) return "A";
+            if (b == ToolRectangleBtn) return "R";
+            if (b == ToolEllipseBtn) return "E";
+            if (b == ToolTextBtn) return "T";
+            if (b == ToolRedactBtn) return "X";
+            if (b == ToolCropBtn) return "C";
+            return null;
+        }
+
+        /// <summary>Icons that are drawn rather than taken from the glyph font: the current color as
+        /// a swatch and the current stroke width as a bar.</summary>
+        private Func<double, FrameworkElement>? DrawnIcon(Button b)
+        {
+            if (b == ColorBtn)
+                return size => new Border
+                {
+                    Width = size, Height = size,
+                    CornerRadius = new CornerRadius(3),
+                    Background = new SolidColorBrush(Editor.Color),
+                    BorderBrush = (Brush)FindResource("CardBorderBrush"),
+                    BorderThickness = new Thickness(1),
+                };
+            if (b == WidthBtn)
+                return size =>
+                {
+                    if (Editor.Tool == ToolKind.Text)
+                    {
+                        var t = new TextBlock { Text = Editor.TextSize.ToString("0"), FontSize = size * 0.7, FontWeight = FontWeights.SemiBold };
+                        return t;
+                    }
+                    var bar = new Rectangle
+                    {
+                        Width = size, Height = Math.Max(1.5, Math.Min(size * 0.6, Editor.StrokeWidth * size / 20)),
+                        RadiusX = 1, RadiusY = 1,
+                    };
+                    bar.SetBinding(Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = WidthBtn });
+                    return bar;
+                };
+            return null;
+        }
+
+        // ---- color and width ----
+
+        private void ColorBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ColorMenu.Items.Clear();
+            var wrap = new WrapPanel { Width = 3 * 34, Margin = new Thickness(8) };
+            for (int i = 0; i < Palette.Length; i++)
+            {
+                int index = i;
+                var (key, color) = Palette[i];
+                var swatch = new Button
+                {
+                    Width = 28, Height = 28, Margin = new Thickness(3),
+                    ToolTip = Loc(key),
+                    Style = (Style)FindResource("ToolbarButton"),
+                    Content = new Border
+                    {
+                        Width = 20, Height = 20, CornerRadius = new CornerRadius(3),
+                        Background = new SolidColorBrush(color),
+                        BorderBrush = (Brush)FindResource(color == Editor.Color ? "PrimaryBrush" : "CardBorderBrush"),
+                        BorderThickness = new Thickness(color == Editor.Color ? 2 : 1),
+                    },
+                };
+                swatch.Click += (_, _) =>
+                {
+                    Editor.Color = color;
+                    Settings.Set("ColorIndex", index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    ApplyToolbarStyle();
+                    ColorMenu.IsOpen = false;
+                    RecolorSelection(color);
+                };
+                wrap.Children.Add(swatch);
+            }
+            ColorMenu.Items.Add(new MenuItem { Header = wrap, StaysOpenOnClick = true, Style = (Style)FindResource("PanelMenuItem") });
+            OpenFlyout(ColorMenu, ColorBtn);
+        }
+
+        /// <summary>Picking a color with a mark selected recolors that mark, as one undo step.</summary>
+        private void RecolorSelection(Color color)
+        {
+            if (_doc == null || Editor.Selected is not { } a || a is ShapeAnnotation { Kind: ShapeKind.Redact }) return;
+            Annotation recolored = a switch
+            {
+                StrokeAnnotation s => s with { Color = color },
+                ShapeAnnotation s => s with { Color = color },
+                TextAnnotation t => t with { Color = color },
+                _ => a,
+            };
+            _doc.Replace(a, recolored);
+        }
+
+        private void WidthBtn_Click(object sender, RoutedEventArgs e)
+        {
+            WidthMenu.Items.Clear();
+            bool text = Editor.Tool == ToolKind.Text;
+            WidthMenu.Items.Add(new MenuItem { Header = Loc(text ? "Str_Menu_TextSize" : "Str_Menu_StrokeWidth"), IsEnabled = false });
+            WidthMenu.Items.Add(new Separator());
+            foreach (var v in text ? TextSizes : StrokeWidths)
+            {
+                double value = v;
+                var mi = new MenuItem
+                {
+                    Header = string.Format(Loc("Str_Menu_Pixels"), value),
+                    IsCheckable = true,
+                    IsChecked = text ? Math.Abs(Editor.TextSize - value) < 0.01 : Math.Abs(Editor.StrokeWidth - value) < 0.01,
+                };
+                mi.Click += (_, _) =>
+                {
+                    var inv = System.Globalization.CultureInfo.InvariantCulture;
+                    if (text) { Editor.TextSize = value; Settings.Set("TextSize", value.ToString(inv)); }
+                    else { Editor.StrokeWidth = value; Settings.Set("StrokeWidth", value.ToString(inv)); }
+                    ApplyToolbarStyle();
+                };
+                WidthMenu.Items.Add(mi);
+            }
+            OpenFlyout(WidthMenu, WidthBtn);
+        }
+
+        private static void OpenFlyout(ContextMenu menu, Button anchor)
+        {
+            menu.PlacementTarget = anchor;
+            menu.Placement = PlacementMode.Bottom;
+            menu.IsOpen = true;
+            Anim.FadeIn(menu);
+        }
+
+        // ---- capture ----
+
+        private void BuildCaptureMenu()
+        {
+            CaptureMenu.Items.Clear();
+            foreach (var (mode, key, action) in new (CaptureMode, string, ShortcutAction?)[]
+            {
+                (CaptureMode.Region, "Str_Mode_Region", null),
+                (CaptureMode.Window, "Str_Mode_Window", ShortcutAction.Window),
+                (CaptureMode.Monitor, "Str_Mode_Monitor", ShortcutAction.Monitor),
+                (CaptureMode.AllMonitors, "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
+            })
+            {
+                var m = mode;
+                string gesture = action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) ? sc.Short : "";
+                if (mode == CaptureMode.Region) gesture = "Ctrl+N";
+                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture };
+                mi.Click += (_, _) => StartCapture(m);
+                CaptureMenu.Items.Add(mi);
+            }
+        }
+
+        private void CaptureBtn_Click(object sender, RoutedEventArgs e)
+        {
+            BuildCaptureMenu();
+            OpenFlyout(CaptureMenu, CaptureBtn);
+        }
+
+        private void EmptyCaptureBtn_Click(object sender, RoutedEventArgs e) => StartCapture(CaptureMode.Region);
+
+        /// <summary>Window mode from inside the editor captures the window that was in front before
+        /// KillerShot, which is the one the user means.</summary>
+        private void StartCapture(CaptureMode mode)
+        {
+            Editor.CommitText();
+            _ = App.Instance.Capture?.Start(mode);
+        }
+
+        // ---- recent ----
+
+        private void RecentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            RecentMenu.Items.Clear();
+            var files = RecentCaptures.List();
+            if (files.Count == 0)
+                RecentMenu.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
+            foreach (var f in files)
+            {
+                var file = f;
+                var thumb = new Image { Width = 64, Height = 40, Stretch = Stretch.Uniform, Margin = new Thickness(0, 2, 10, 2) };
+                try
+                {
+                    var bi = new BitmapImage();
+                    bi.BeginInit();
+                    bi.CacheOption = BitmapCacheOption.OnLoad;
+                    bi.DecodePixelWidth = 128;
+                    bi.UriSource = new Uri(f.FullName);
+                    bi.EndInit();
+                    bi.Freeze();
+                    thumb.Source = bi;
+                }
+                catch { continue; }
+                var when = RecentCaptures.TakenFrom(f) ?? f.LastWriteTime;
+                var row = new StackPanel { Orientation = Orientation.Horizontal };
+                row.Children.Add(thumb);
+                row.Children.Add(new TextBlock { Text = when.ToString("g"), VerticalAlignment = VerticalAlignment.Center });
+                var mi = new MenuItem { Header = row };
+                mi.Click += (_, _) => OpenPath(file.FullName, recent: true, taken: when);
+                RecentMenu.Items.Add(mi);
+            }
+            if (files.Count > 0)
+            {
+                RecentMenu.Items.Add(new Separator());
+                var folder = new MenuItem { Header = Loc("Str_Recent_OpenFolder") };
+                folder.Click += (_, _) => WebLink.Open(RecentCaptures.Folder);
+                RecentMenu.Items.Add(folder);
+            }
+            OpenFlyout(RecentMenu, RecentBtn);
+        }
+
+        // ---- file ----
+
+        private void OpenBtn_Click(object sender, RoutedEventArgs e) => OpenFile();
+        private void SaveBtn_Click(object sender, RoutedEventArgs e) => Save();
+        private void SaveAsBtn_Click(object sender, RoutedEventArgs e) => SaveAs();
+        private void CopyBtn_Click(object sender, RoutedEventArgs e) => CopyResult();
+        private void UndoBtn_Click(object sender, RoutedEventArgs e) => Undo();
+        private void RedoBtn_Click(object sender, RoutedEventArgs e) => Redo();
+        private void FitBtn_Click(object sender, RoutedEventArgs e) => ZoomToFit();
+        private void ActualSizeBtn_Click(object sender, RoutedEventArgs e) => SetZoom(1.0);
+
+        private void OpenFile()
+        {
+            var dlg = new FileDialog(FileDialogMode.Open)
+            {
+                Title = Loc("Str_Dlg_OpenTitle"),
+                Filter = Loc("Str_Dlg_OpenFilter"),
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+            };
+            if (dlg.ShowDialog(this) == true) OpenPath(dlg.FileName, recent: false, taken: null);
+        }
+
+        private void OpenPath(string path, bool recent, DateTime? taken)
+        {
+            try
+            {
+                var bmp = ImageOutput.Load(path);
+                // A history file is a capture, not a document: saving it asks where to put it.
+                App.Instance.SetDocument(new EditorDocument(bmp, recent ? null : path, taken ?? System.IO.File.GetLastWriteTime(path)));
+                StatusText.Text = Loc("Str_Status_Ready");
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = string.Format(Loc("Str_Status_OpenFailed"), ex.Message);
+            }
+        }
+
+        private void Save()
+        {
+            if (_doc == null) return;
+            if (_doc.FilePath == null) { SaveAs(); return; }
+            WriteTo(_doc.FilePath);
+        }
+
+        private void SaveAs()
+        {
+            if (_doc == null) return;
+            Editor.CommitText();
+            var dlg = new FileDialog(FileDialogMode.Save)
+            {
+                Title = Loc("Str_Dlg_SaveTitle"),
+                Filter = Loc("Str_Dlg_ImageFilter"),
+                DefaultExt = ".png",
+                FileName = _doc.FilePath != null ? System.IO.Path.GetFileName(_doc.FilePath) : $"KillerShot {_doc.Taken:yyyy-MM-dd HHmmss}.png",
+                InitialDirectory = _doc.FilePath != null ? System.IO.Path.GetDirectoryName(_doc.FilePath) ?? "" : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+            };
+            if (dlg.ShowDialog(this) != true) return;
+            WriteTo(dlg.FileName);
+        }
+
+        private void WriteTo(string path)
+        {
+            if (_doc == null) return;
+            Editor.CommitText();
+            try
+            {
+                ImageOutput.Save(_doc.Render(), path);
+                _doc.FilePath = path;
+                _doc.MarkSaved();
+                RefreshDocumentUi();
+                StatusText.Text = string.Format(Loc("Str_Status_Saved"), System.IO.Path.GetFileName(path));
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = string.Format(Loc("Str_Status_SaveFailed"), ex.Message);
+            }
+        }
+
+        private void CopyResult()
+        {
+            if (_doc == null) return;
+            Editor.CommitText();
+            var bmp = _doc.Render();
+            StatusText.Text = ImageOutput.TryCopy(bmp, out var error)
+                ? string.Format(Loc("Str_Status_Copied"), bmp.PixelWidth, bmp.PixelHeight)
+                : string.Format(Loc("Str_Tray_ClipboardBusy"), error);
+        }
+
+        private void Undo() { Editor.CommitText(); _doc?.Undo(); }
+        private void Redo() { Editor.CommitText(); _doc?.Redo(); }
+
+        // ---- zoom ----
+
+        private void SetZoom(double z, Point? anchor = null)
+        {
+            if (_doc == null) return;
+            _fitMode = false;
+            // Keep the point under the mouse (or the view center) in place while zooming.
+            var view = anchor ?? new Point(EditorScroll.ViewportWidth / 2, EditorScroll.ViewportHeight / 2);
+            double old = Editor.Zoom;
+            var onCanvas = EditorScroll.TranslatePoint(view, Editor);
+            Editor.Zoom = z;
+            EditorScroll.UpdateLayout();
+            double k = Editor.Zoom / old;
+            var target = Editor.TranslatePoint(new Point(onCanvas.X * k, onCanvas.Y * k), EditorScroll);
+            EditorScroll.ScrollToHorizontalOffset(EditorScroll.HorizontalOffset + target.X - view.X);
+            EditorScroll.ScrollToVerticalOffset(EditorScroll.VerticalOffset + target.Y - view.Y);
+            RefreshFooter();
+        }
+
+        private void ZoomStep(int direction, Point? anchor = null)
+        {
+            double z = Editor.Zoom;
+            double next = direction > 0
+                ? ZoomSteps.FirstOrDefault(s => s > z + 0.001, ZoomSteps[^1])
+                : ZoomSteps.LastOrDefault(s => s < z - 0.001, ZoomSteps[0]);
+            SetZoom(next, anchor);
+        }
+
+        private void ZoomToFit()
+        {
+            if (_doc == null) return;
+            _fitMode = true;
+            // The frame keeps a 16 unit margin on every side.
+            var vp = new Size(Math.Max(1, EditorScroll.ActualWidth - 34), Math.Max(1, EditorScroll.ActualHeight - 34));
+            Editor.Zoom = Editor.FitZoom(vp);
+            RefreshFooter();
+        }
+
+        private void EditorScroll_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == 0) return;
+            e.Handled = true;
+            ZoomStep(e.Delta > 0 ? 1 : -1, e.GetPosition(EditorScroll));
+        }
+
+        private void EditorScroll_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_fitMode) ZoomToFit();
+        }
+    }
+}

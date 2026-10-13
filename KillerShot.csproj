@@ -29,4 +29,9 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Fonts\*.ttf" />
+    <Resource Include="Resources\*.cur" />
+  </ItemGroup>
+
 </Project>

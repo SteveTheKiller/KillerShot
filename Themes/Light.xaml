@@ -1,0 +1,92 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:Double x:Key="GrainOpacity">0.4</sys:Double>
+    <sys:Double x:Key="IconShadowOpacity">0.0</sys:Double>
+
+    <!-- LIGHT theme with tiered surfaces. -->
+    <SolidColorBrush x:Key="PrimaryBrush"        Color="#1b5e20" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush"   Color="#1b5e20" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#1b5e20" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HeaderLineBrush"     Color="#1b5e20" po:Freeze="True"/>
+    <SolidColorBrush x:Key="OnPrimaryBrush"      Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="OutlineBtnBrush"     Color="#1b5e20" po:Freeze="True"/>
+    <SolidColorBrush x:Key="InputHoverBrush"     Color="#8a8a8a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TextFooter"          Color="#5F5F5F" po:Freeze="True"/>
+
+    <SolidColorBrush x:Key="BackgroundBrush"     Color="#dcdcdc" po:Freeze="True"/>
+    <SolidColorBrush x:Key="SurfaceBrush"        Color="#f0f0f0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PaneBrush"           Color="#e8e8e8" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TableHeaderBrush"    Color="#f0f0f0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="CardBorderBrush"     Color="#c0c0c0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="PaneBorderBrush"     Color="#b0b0b0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="AppBorderBrush"      Color="#b0b0b0" po:Freeze="True"/>
+
+    <SolidColorBrush x:Key="TextBrush"           Color="#1a1a1a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MutedTextBrush"      Color="#555555" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ChromeTextBrush" Color="#3a3a3a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="DimTextBrush"        Color="#666666" po:Freeze="True"/>
+
+    <SolidColorBrush x:Key="RowAltBrush"         Color="#14000000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="RowHoverBrush"       Color="#b2b2b2" po:Freeze="True"/>
+    <!-- SelectionBg's color. This was #c8f5d8, the pale mint that belongs on a focused button
+         (OutlinePressedBrush, below) - as a selected-row fill it read as a highlighter stripe.
+         Light's selection is DARK on light. -->
+    <SolidColorBrush x:Key="RowSelectedBrush"    Color="#1b5e20" po:Freeze="True"/>
+    <!-- Untagged appointment chips - accent-free neutral, see the note in Greed.xaml. Brighter
+         than the page and the hover gray, so it reads as a card on both. -->
+    <SolidColorBrush x:Key="ChipBrush"           Color="#f7f7f7" po:Freeze="True"/>
+    <LinearGradientBrush x:Key="SelectionBg"         po:Freeze="True" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#37753C" Offset="0"/><GradientStop Color="#0F4E14" Offset="1"/></LinearGradientBrush>
+    <SolidColorBrush x:Key="SelectionFg"         Color="#ffffff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TreeLineBrush"       Color="#c2c2c2" po:Freeze="True"/>
+
+    <!-- Shortcut category colors - see the note in Dark.xaml. DARKENED for the light theme,
+         The product shortcut set is designed to glow on a dark panel and
+         is close to invisible on a pale one. -->
+    <SolidColorBrush x:Key="KsCatFile"           Color="#009e99" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatView"           Color="#a316b5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatNav"            Color="#6a11cc" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatAppt"           Color="#a67c00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatHelp"           Color="#128c07" po:Freeze="True"/>
+
+    <SolidColorBrush x:Key="InputBorderBrush"    Color="#c0c0c0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#ffffff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuBorderBrush"     Color="#a8a8a8" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuTextBrush"       Color="#555555" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuHoverBrush"      Color="#b2b2b2" po:Freeze="True"/>
+    <SolidColorBrush x:Key="OutlinePressedBrush" Color="#c8f5d8" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ScrollThumbBrush"    Color="#8818843d" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#1b5e20" po:Freeze="True"/>
+
+
+    <!-- No stroke on Light: the effect rasterizes ClearType and blurs the label, and dark text on
+         a light surface needs no legibility stroke. x:Null rather than omitting the key, so the
+         DynamicResource resolves instead of falling through. -->
+    <x:Null x:Key="TextStroke"/>
+
+    <SolidColorBrush x:Key="OutlineRestBrush" Color="#777777" po:Freeze="True"/>
+    <SolidColorBrush x:Key="ComboHighlightTextBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="AccentLogo"     Color="#1b5e20" po:Freeze="True"/>
+    <CornerRadius x:Key="AccentSwatchCornerRadius">9</CornerRadius>
+    <SolidColorBrush x:Key="RadioAccent"    Color="#1b5e20" po:Freeze="True"/>
+    <CornerRadius x:Key="FlyoutCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="SmallCornerRadius">3</CornerRadius>
+    <SolidColorBrush x:Key="SelectionAccent" Color="#1b5e20" po:Freeze="True"/>
+    <sys:Double x:Key="WordmarkShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.45</sys:Double>
+    <sys:Double x:Key="FlyoutShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.55</sys:Double>
+    <SolidColorBrush x:Key="DialogTitleBarBrush" Color="#FFDCDCDC" po:Freeze="True"/>
+    <CornerRadius x:Key="PanelCornerRadius">6</CornerRadius>
+    <sys:Double x:Key="TitleWordmarkSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">15</sys:Double>
+    <sys:Double x:Key="BarShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.38</sys:Double>
+    <CornerRadius x:Key="WindowCornerRadius">7</CornerRadius>
+    <sys:Double x:Key="TitleWordmarkBoldSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">22.52</sys:Double>
+    <sys:Double x:Key="TitleBarHeight" xmlns:sys="clr-namespace:System;assembly=mscorlib">32</sys:Double>
+    <sys:Double x:Key="PaneShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.6</sys:Double>
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#FFDCDCDC" po:Freeze="True"/>
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#FFB2B2B2" po:Freeze="True"/>
+    <SolidColorBrush x:Key="FooterBackgroundBrush" Color="#FFDCDCDC" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSeparatorBrush" Color="#FFC0C0C0" po:Freeze="True"/>
+</ResourceDictionary>

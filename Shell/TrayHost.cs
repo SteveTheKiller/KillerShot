@@ -6,6 +6,7 @@ using System.Windows.Interop;
 using KillerShot.Capture;
 using KillerShot.Native;
 using KillerShot.Services;
+using Shortcut = KillerShot.Services.Shortcut;
 
 namespace KillerShot.Shell;
 
@@ -16,6 +17,7 @@ internal sealed class TrayHost : IDisposable
 {
     private const int CallbackMessage = Win32.WM_APP + 1;
     private const uint IconId = 1;
+    private const int NIN_BALLOONUSERCLICK = 0x0405;
 
     private readonly HwndSource _source;
     private readonly uint _taskbarCreated;
@@ -23,14 +25,22 @@ internal sealed class TrayHost : IDisposable
     private readonly Dictionary<int, ShortcutAction> _hotkeyIds = new();
     private readonly Dictionary<ShortcutAction, Shortcut> _active = new();
     private readonly List<string> _failed = new();
+    private readonly HashSet<ShortcutAction> _failedActions = new();
     private bool _iconAdded;
+    private bool _suspended;
 
     /// <summary>Raised for a shortcut or a menu command, with the window that was in front.</summary>
     public event Action<ShortcutAction?, CaptureMode?, IntPtr>? CaptureRequested;
     public event Action? SaveLastRequested;
+    public event Action? OpenEditorRequested;
+    /// <summary>The user clicked the last notification.</summary>
+    public event Action? BalloonClicked;
     public Func<bool>? HasLastCapture { get; set; }
 
     public IReadOnlyList<string> FailedShortcuts => _failed;
+    public bool IsFailed(ShortcutAction action) => _failedActions.Contains(action);
+
+    private static string Loc(string key) => LocaleManager.Loc(key);
     public IntPtr Handle => _source.Handle;
 
     public TrayHost()
@@ -48,10 +58,33 @@ internal sealed class TrayHost : IDisposable
     {
         AddIcon();
         RegisterShortcuts();
-        if (_failed.Count > 0)
-            ShowWarning("Print Screen is not available",
-                $"{string.Join(", ", _failed)} already belongs to another program or to the Windows setting that opens Snipping Tool. Right-click the KillerShot icon to open that setting.");
+        WarnIfFailed();
     }
+
+    private void WarnIfFailed()
+    {
+        if (_failed.Count > 0)
+            ShowWarning(Loc("Str_Tray_ShortcutTakenTitle"), string.Format(Loc("Str_Tray_ShortcutTaken"), string.Join(", ", _failed)));
+    }
+
+    /// <summary>Releases every global shortcut while a recorder in the settings is listening, so
+    /// the keys reach the recorder instead of starting a capture.</summary>
+    public void Suspend()
+    {
+        if (_suspended) return;
+        _suspended = true;
+        foreach (var id in _hotkeyIds.Keys) Win32.UnregisterHotKey(Handle, id);
+        _hotkeyIds.Clear();
+    }
+
+    public void Resume()
+    {
+        if (!_suspended) return;
+        _suspended = false;
+        RegisterShortcuts();
+    }
+
+    public void Relocalize() => UpdateTip();
 
     public void RegisterShortcuts()
     {
@@ -59,12 +92,15 @@ internal sealed class TrayHost : IDisposable
         _hotkeyIds.Clear();
         _active.Clear();
         _failed.Clear();
+        _failedActions.Clear();
+        if (_suspended) { UpdateTip(); return; }
 
         int next = 1;
         foreach (ShortcutAction action in Enum.GetValues<ShortcutAction>())
         {
-            if (!Settings.Current.Shortcuts.TryGetValue(action.ToString(), out var text) || string.IsNullOrWhiteSpace(text)) continue;
-            if (!Shortcut.TryParse(text, out var sc)) { _failed.Add(text); continue; }
+            var text = CaptureSettings.ShortcutText(action);
+            if (string.IsNullOrWhiteSpace(text)) continue;   // turned off
+            if (!Shortcut.TryParse(text, out var sc)) { _failed.Add(text); _failedActions.Add(action); continue; }
             int id = next++;
             if (Win32.RegisterHotKey(Handle, id, sc.Modifiers | Win32.MOD_NOREPEAT, sc.Key))
             {
@@ -73,7 +109,8 @@ internal sealed class TrayHost : IDisposable
             }
             else
             {
-                _failed.Add(sc.Text);
+                _failed.Add(sc.Short);
+                _failedActions.Add(action);
             }
         }
         UpdateTip();
@@ -91,8 +128,10 @@ internal sealed class TrayHost : IDisposable
         else if (msg == CallbackMessage)
         {
             int mouse = lParam.ToInt32() & 0xFFFF;
-            if (mouse == Win32.WM_LBUTTONUP) DeferCapture(null, Settings.Current.LastMode == CaptureMode.Window ? CaptureMode.Region : Settings.Current.LastMode);
+            var last = CaptureSettings.LastMode;
+            if (mouse == Win32.WM_LBUTTONUP) DeferCapture(null, last == CaptureMode.Window ? CaptureMode.Region : last);
             else if (mouse == Win32.WM_RBUTTONUP) ShowMenu();
+            else if (mouse == NIN_BALLOONUSERCLICK) BalloonClicked?.Invoke();
             handled = true;
         }
         else if (_taskbarCreated != 0 && msg == (int)_taskbarCreated)
@@ -125,31 +164,34 @@ internal sealed class TrayHost : IDisposable
             return mi;
         }
 
-        Item("Capture region", "", () => DeferCapture(null, CaptureMode.Region));
-        Item("Capture monitor", Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
-        Item("Capture all monitors", Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
+        var open = Item(Loc("Str_Tray_Open"), "", () => OpenEditorRequested?.Invoke());
+        open.FontWeight = FontWeights.SemiBold;
         menu.Items.Add(new Separator());
-        Item("Save last capture as PNG...", "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
+        Item(Loc("Str_Mode_Region"), "", () => DeferCapture(null, CaptureMode.Region));
+        Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
+        Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
+        menu.Items.Add(new Separator());
+        Item(Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
         menu.Items.Add(new Separator());
         if (_failed.Count > 0)
         {
-            Item("Open the Windows Print Screen setting", "", OpenPrintScreenSetting);
-            Item("Try the shortcuts again", "", () =>
+            Item(Loc("Str_CS_OpenWindowsSetting"), "", OpenPrintScreenSetting);
+            Item(Loc("Str_Tray_Retry"), "", () =>
             {
                 RegisterShortcuts();
-                if (_failed.Count == 0) ShowInfo("Shortcuts ready", "Print Screen now opens KillerShot.");
-                else ShowWarning("Still not available", string.Join(", ", _failed));
+                if (_failed.Count == 0) ShowInfo(Loc("Str_Tray_ShortcutsReadyTitle"), Loc("Str_Tray_ShortcutsReady"));
+                else WarnIfFailed();
             });
             menu.Items.Add(new Separator());
         }
-        Item("Exit", "", () => Application.Current.Shutdown());
+        Item(Loc("Str_Tray_Exit"), "", () => Application.Current.Shutdown());
 
         // The menu closes on an outside click only when this process owns the foreground.
         Win32.SetForegroundWindow(Handle);
         menu.IsOpen = true;
     }
 
-    private static void OpenPrintScreenSetting()
+    public static void OpenPrintScreenSetting()
     {
         try { Process.Start(new ProcessStartInfo("ms-settings:easeofaccess-keyboard") { UseShellExecute = true }); }
         catch { }

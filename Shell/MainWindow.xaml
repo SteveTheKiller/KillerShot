@@ -1,0 +1,758 @@
+<Window x:Class="KillerShot.Shell.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:icons="clr-namespace:KillerShot.Controls"
+        xmlns:editor="clr-namespace:KillerShot.Editor"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="KillerShot"
+        WindowStyle="None" Background="{DynamicResource BackgroundBrush}"
+        MinWidth="640" MinHeight="460" Width="1200" Height="800"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
+        FontFamily="{DynamicResource UiFont}"
+        WindowStartupLocation="CenterScreen"
+        PreviewKeyDown="Window_PreviewKeyDown" PreviewKeyUp="Window_PreviewKeyUp">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32" ResizeBorderThickness="8" CornerRadius="0"
+                            GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid x:Name="FrameHost">
+    <!-- Opacity 0: Chrome.cs FadeInContent brings RootGrid up on Loaded. -->
+    <Grid x:Name="RootGrid" Opacity="0" Margin="{DynamicResource WindowFramePadding}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{DynamicResource TitleBarGridLength}"/>   <!-- title bar -->
+            <RowDefinition Height="*"/>    <!-- toolbar and editor -->
+            <RowDefinition Height="24"/>   <!-- footer -->
+        </Grid.RowDefinitions>
+
+        <!-- ================= TITLE BAR ================= -->
+        <!-- ZIndex 1 so the wordmark's drips can hang into the top of the content row below. -->
+        <Grid Grid.Row="0" Background="{DynamicResource TitleBarBrush}" Panel.ZIndex="1">
+            <Border IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}">
+                <Border.Background>
+                    <ImageBrush x:Name="TitleGrainBrush" TileMode="Tile" ViewportUnits="Absolute"
+                                Viewport="0,0,256,256" Stretch="None"/>
+                </Border.Background>
+            </Border>
+
+            <!-- Wordmark: "Killer" in the text color, "Shot" 1.3x in the accent.
+                 Blurred dark copy underneath is the soft drop shadow. -->
+            <StackPanel x:Name="LogoBar" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
+                        Margin="{DynamicResource TitleLogoMargin}" Background="Transparent"
+                        Visibility="{DynamicResource WordmarkVisibility}"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                        PreviewMouseWheel="LogoBar_MouseWheel"
+                        MouseLeftButtonDown="LogoBar_MouseLeftButtonDown">
+                <icons:AppIcon x:Name="WordmarkTitleIcon" Visibility="Collapsed"
+                       Width="{DynamicResource TitleIconSize}" Height="{DynamicResource TitleIconSize}"
+                       Margin="{DynamicResource TitleIconMargin}" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor" IsHitTestVisible="False"/>
+                <!-- Negative margins keep Lacquer's deep descent out of the layout so the bar never
+                     clips the drips; the 2px imbalance and the lift match KillerPDF. -->
+                <Grid Margin="0,-18,0,-22" VerticalAlignment="Center">
+                    <Grid.RenderTransform><TranslateTransform Y="-5"/></Grid.RenderTransform>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
+                               Margin="1,2,0,0" IsHitTestVisible="False"
+                               Opacity="{DynamicResource WordmarkShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="#D8000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#D8000000"/></TextBlock>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
+                               Margin="1,1,0,0" IsHitTestVisible="False"
+                               Opacity="{DynamicResource WordmarkEmbossOpacity}"><Run Text="Killer" Foreground="#70000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#70000000"/></TextBlock>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
+                               Margin="1,2,0,0" IsHitTestVisible="False"
+                               Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="Black"/></TextBlock>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"><Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Visibility="{DynamicResource PlainTitleVisibility}"
+                        HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"
+                        Background="Transparent" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                        PreviewMouseWheel="LogoBar_MouseWheel" MouseLeftButtonDown="LogoBar_MouseLeftButtonDown">
+                <icons:AppIcon x:Name="PlainTitleIcon" Visibility="Collapsed"
+                       Width="{DynamicResource TitleIconSize}" Height="{DynamicResource TitleIconSize}"
+                       Margin="{DynamicResource TitleIconMargin}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <TextBlock Text="KillerShot" VerticalAlignment="Center"
+                           FontFamily="Microsoft Sans Serif" FontSize="11" FontWeight="Bold"
+                           Foreground="{DynamicResource ChromeTextBrush}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                        Margin="{DynamicResource CaptionButtonsMargin}"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <!-- The open file's name, KillerPDF's filename treatment. -->
+                <TextBlock x:Name="TitleFileLabel" Visibility="Collapsed"
+                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
+                           TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="12,0,12,0"
+                           MaxWidth="320" TextTrimming="CharacterEllipsis"/>
+                <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}"
+                        Content="&#xE921;" ToolTip="{DynamicResource Str_Sys_Minimize}"/>
+                <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}"
+                        Content="&#xE922;" ToolTip="{DynamicResource Str_Sys_Maximize}"/>
+                <Button x:Name="CloseBtn" Click="CloseBtn_Click" Style="{StaticResource ChromeCloseButton}"
+                        Content="&#xE8BB;" ToolTip="{DynamicResource Str_Sys_Close}"/>
+            </StackPanel>
+
+        </Grid>
+        <!-- ================= CONTENT ================= -->
+        <!-- Chrome tier behind the content row so the side margins carry the grain. -->
+        <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}">
+            <Border IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}"
+                    Background="{DynamicResource GrainTileBrush}"/>
+        </Border>
+
+        <Grid x:Name="ScaleHost" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="RailCol" Width="24"/>   <!-- permanent icon rail -->
+                <ColumnDefinition Width="*"/>                     <!-- toolbar and editor -->
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" MinHeight="42"/>   <!-- toolbar, on the chrome tier -->
+                    <RowDefinition Height="*"/>                     <!-- the lifted editor card -->
+                </Grid.RowDefinitions>
+
+                <!-- Right-click anywhere on the bar picks the icon and text style (ToolbarStyle.cs).
+                     Background must be Transparent, not null, or the menu never opens. -->
+                <Grid x:Name="ToolbarGrid" Grid.Row="0" Margin="10,2,18,6" Background="Transparent"
+                      MouseLeftButtonDown="Toolbar_MouseDown">
+                    <Grid.ContextMenu>
+                        <ContextMenu x:Name="ToolbarMenu"/>
+                    </Grid.ContextMenu>
+                    <WrapPanel x:Name="ToolbarPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="CaptureBtn" Style="{StaticResource ToolbarButton}" Click="CaptureBtn_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="CaptureMenu"/>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button x:Name="RecentBtn" Style="{StaticResource ToolbarButton}" Click="RecentBtn_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="RecentMenu"/>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
+                        <Button x:Name="OpenBtn" Style="{StaticResource ToolbarButton}" Click="OpenBtn_Click"/>
+                        <Button x:Name="SaveBtn" Style="{StaticResource ToolbarButton}" Click="SaveBtn_Click"/>
+                        <Button x:Name="SaveAsBtn" Style="{StaticResource ToolbarButton}" Click="SaveAsBtn_Click"/>
+                        <Button x:Name="CopyBtn" Style="{StaticResource ToolbarButton}" Click="CopyBtn_Click"/>
+                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
+                        <Button x:Name="UndoBtn" Style="{StaticResource ToolbarButton}" Click="UndoBtn_Click"/>
+                        <Button x:Name="RedoBtn" Style="{StaticResource ToolbarButton}" Click="RedoBtn_Click"/>
+                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
+                        <Button x:Name="ToolSelectBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Select"/>
+                        <Button x:Name="ToolPenBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Pen"/>
+                        <Button x:Name="ToolHighlighterBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Highlighter"/>
+                        <Button x:Name="ToolArrowBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Arrow"/>
+                        <Button x:Name="ToolRectangleBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Rectangle"/>
+                        <Button x:Name="ToolEllipseBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Ellipse"/>
+                        <Button x:Name="ToolTextBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Text"/>
+                        <Button x:Name="ToolRedactBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Redact"/>
+                        <Button x:Name="ToolCropBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Crop"/>
+                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
+                        <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="ColorMenu"/>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button x:Name="WidthBtn" Style="{StaticResource ToolbarButton}" Click="WidthBtn_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="WidthMenu"/>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
+                        <Button x:Name="FitBtn" Style="{StaticResource ToolbarButton}" Click="FitBtn_Click"/>
+                        <Button x:Name="ActualSizeBtn" Style="{StaticResource ToolbarButton}" Click="ActualSizeBtn_Click"/>
+                    </WrapPanel>
+                </Grid>
+
+                <Border x:Name="ContentPane"
+                        Grid.Row="1" Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
+                        BorderThickness="{DynamicResource ContentPaneBaseBorderThickness}"
+                        CornerRadius="{DynamicResource PanelCornerRadius}" Margin="{DynamicResource ContentPaneMargin}" Panel.ZIndex="10">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="16" ShadowDepth="0" Opacity="{DynamicResource PaneShadowOpacity}"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Border x:Name="ContentPaneGrain" IsHitTestVisible="False" Opacity="0.20" Panel.ZIndex="-1" CornerRadius="{DynamicResource PanelCornerRadius}">
+                            <Border.Background>
+                                <ImageBrush x:Name="GrainBrush" TileMode="Tile" ViewportUnits="Absolute"
+                                            Viewport="0,0,256,256" Stretch="None"/>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- The capture. The canvas sizes itself to the picture at the current zoom;
+                             the scroller centers it when it is smaller than the pane. -->
+                        <ScrollViewer x:Name="EditorScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                      Focusable="False" Margin="1" PreviewMouseWheel="EditorScroll_PreviewMouseWheel"
+                                      SizeChanged="EditorScroll_SizeChanged">
+                            <Grid x:Name="EditorStage" Background="Transparent" MinWidth="{Binding ViewportWidth, ElementName=EditorScroll}"
+                                  MinHeight="{Binding ViewportHeight, ElementName=EditorScroll}">
+                                <Border x:Name="EditorFrame" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16"
+                                        BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="0">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="0" Opacity="{DynamicResource PaneShadowOpacity}"/>
+                                    </Border.Effect>
+                                    <editor:EditorCanvas x:Name="Editor"/>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+
+                        <!-- Shown when there is no capture yet. -->
+                        <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                            <TextBlock Text="{DynamicResource Str_Empty_Title}" Foreground="{DynamicResource TextBrush}"
+                                       FontFamily="{DynamicResource BrandSansFont}" FontSize="22" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="EmptyHintText" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
+                                       Margin="0,8,0,16" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420"/>
+                            <Button x:Name="EmptyCaptureBtn" Content="{DynamicResource Str_Btn_CaptureRegion}" Style="{StaticResource OutlineButton}"
+                                    Padding="14,6" HorizontalAlignment="Center" Click="EmptyCaptureBtn_Click"/>
+                        </StackPanel>
+
+                        <Border x:Name="ContentPaneOutline" Panel.ZIndex="99" IsHitTestVisible="False"
+                                BorderBrush="{DynamicResource PaneBorderBrush}"
+                                BorderThickness="{DynamicResource ContentPaneOutlineThickness}"
+                                CornerRadius="{DynamicResource PanelCornerRadius}"/>
+                        <Border Panel.ZIndex="100" IsHitTestVisible="False"
+                                BorderBrush="{DynamicResource PaneBevelDarkBrush}"
+                                BorderThickness="{DynamicResource PaneBevelLightThickness}"/>
+                        <Border Panel.ZIndex="100" IsHitTestVisible="False"
+                                BorderBrush="{DynamicResource PaneBevelLightBrush}"
+                                BorderThickness="{DynamicResource PaneBevelDarkThickness}"/>
+                        <Border Panel.ZIndex="100" IsHitTestVisible="False"
+                                Margin="{DynamicResource PaneBevelInnerMargin}"
+                                BorderBrush="{DynamicResource PaneBevelDark2Brush}"
+                                BorderThickness="{DynamicResource PaneBevel2LightThickness}"/>
+                        <Border Panel.ZIndex="100" IsHitTestVisible="False"
+                                Margin="{DynamicResource PaneBevelInnerMargin}"
+                                BorderBrush="{DynamicResource PaneBevelLight2Brush}"
+                                BorderThickness="{DynamicResource PaneBevel2DarkThickness}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Permanent icon rail. App toggles at the top, then shortcuts, language and theme
+                 pinned at the bottom in the family order. -->
+            <Border Grid.Column="0" Background="Transparent">
+                <Grid Margin="2,0,2,0">
+                    <StackPanel VerticalAlignment="Top" Margin="0,10,0,0">
+                        <Button x:Name="CaptureSettingsButton" Style="{StaticResource RailButton}"
+                                Click="CaptureSettingsButton_Click" Content="&#xE713;" Margin="2,0,0,6"
+                                ToolTip="{DynamicResource Str_TT_CaptureSettings}"/>
+                    </StackPanel>
+
+                    <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,6">
+                        <!-- Shortcuts: a literal ? in Consolas at 18, the family's rail standard. -->
+                        <Button x:Name="ShortcutsButton" Style="{StaticResource RailButton}"
+                                Click="ShortcutsButton_Click" Content="?" FontFamily="Consolas"
+                                FontSize="18" Margin="0,0,0,6"
+                                ToolTip="{DynamicResource Str_TT_Shortcuts}"/>
+                        <Button x:Name="LangButton" Style="{StaticResource RailButton}"
+                                Click="LangButton_Click" Content="&#xF2B7;" Margin="0,0,0,6"
+                                ToolTip="{DynamicResource Str_TT_Language}">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="LangMenu"/>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button x:Name="ThemeButton" Style="{StaticResource RailButton}"
+                                Click="ThemeButton_Click" Content="&#xE790;"
+                                ToolTip="{DynamicResource Str_TT_Theme}">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="ThemeMenu">
+                                    <ContextMenu.ItemContainerStyle>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="StaysOpenOnClick" Value="True"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="MenuItem">
+                                                        <ContentPresenter ContentSource="Header"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ContextMenu.ItemContainerStyle>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+
+        <!-- ================= FOOTER (24px) =================
+             Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
+             The overlays are declared after this and stay on top. -->
+        <Border Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.ColumnSpan="3" IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}">
+                    <Border.Background>
+                        <ImageBrush x:Name="StatusGrainBrush" TileMode="Tile" ViewportUnits="Absolute"
+                                    Viewport="0,0,256,256" Stretch="None"/>
+                    </Border.Background>
+                </Border>
+
+                <Grid Grid.Column="0" Margin="{DynamicResource FooterCellMargin}">
+                    <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}"
+                               Foreground="{DynamicResource TextFooter}"
+                               FontFamily="{DynamicResource BrandSansFont}"
+                               FontSize="16" TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center"
+                               Margin="4,0,0,0" Padding="{DynamicResource FooterCellPadding}"/>
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
+                            BorderThickness="{DynamicResource FooterCellLightThickness}"/>
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"
+                            BorderThickness="{DynamicResource FooterCellDarkThickness}"/>
+                </Grid>
+
+                <!-- Center: picture size, zoom and the pixel under the cursor. -->
+                <TextBlock x:Name="ImageInfoText" Grid.Column="1" Foreground="{DynamicResource TextFooter}"
+                           FontFamily="{DynamicResource BrandSansFont}" FontSize="16"
+                           TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="{DynamicResource FooterCellMargin}">
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
+                            BorderThickness="{DynamicResource FooterCellLightThickness}"/>
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"
+                            BorderThickness="{DynamicResource FooterCellDarkThickness}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Margin="{DynamicResource FooterCellPadding}">
+                    <!-- FontSize 14.5 in the wordmark face (Killer Sans draws small for its em). The status line on the left stays 11.5. -->
+                    <TextBlock x:Name="VersionLabel" Text="v1.0.0"
+                               Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource BrandSansFont}"
+                               FontSize="16" TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="0,0,12,0"
+                               Cursor="Hand" ToolTip="{DynamicResource Str_TT_About}"
+                               MouseLeftButtonUp="VersionLabel_Click"/>
+                    <!-- 14px trailing margin keeps the copyright clear of the corner grip. -->
+                    <TextBlock FontSize="16" TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" FontFamily="{DynamicResource BrandSansFont}" Margin="0,0,14,0">
+                        <Run Text="&#x00A9; 2026 " Foreground="{DynamicResource TextFooter}"/>
+                        <Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="Hyperlink_RequestNavigate"
+                                   Foreground="{DynamicResource TextFooter}" TextDecorations="None">
+                            <Run Text="Steve the Killer"/>
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Resize grip: six 2x2 dots, always visible. Chrome.cs no-ops the drag when maximized. -->
+        <Canvas x:Name="ResizeGripDots" Grid.Row="2" Width="13" Height="13" Panel.ZIndex="50"
+                Visibility="{DynamicResource GripDotsVisibility}"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
+                Background="Transparent" Cursor="SizeNWSE"
+                MouseLeftButtonDown="ResizeGrip_MouseDown">
+            <Rectangle Canvas.Left="10" Canvas.Top="2"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            <Rectangle Canvas.Left="6"  Canvas.Top="6"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            <Rectangle Canvas.Left="10" Canvas.Top="6"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            <Rectangle Canvas.Left="2"  Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            <Rectangle Canvas.Left="6"  Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            <Rectangle Canvas.Left="10" Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+        </Canvas>
+        <Canvas Grid.Row="2" Width="14" Height="14" Panel.ZIndex="51"
+                Visibility="{DynamicResource GripHatchVisibility}"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3"
+                Background="Transparent" Cursor="SizeNWSE" MouseLeftButtonDown="ResizeGrip_MouseDown">
+            <Line X1="12" Y1="3" X2="3" Y2="12" Stroke="{DynamicResource BevelDarkBrush}"/>
+            <Line X1="13" Y1="4" X2="4" Y2="13" Stroke="{DynamicResource BevelLightBrush}"/>
+            <Line X1="12" Y1="7" X2="7" Y2="12" Stroke="{DynamicResource BevelDarkBrush}"/>
+            <Line X1="13" Y1="8" X2="8" Y2="13" Stroke="{DynamicResource BevelLightBrush}"/>
+        </Canvas>
+
+        <!-- ================= CAPTURE SETTINGS OVERLAY =================
+             Shortcut recorders and capture options. Same card chrome as About. -->
+        <Grid x:Name="CaptureSettingsOverlay" Grid.RowSpan="3" Panel.ZIndex="8800" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="CaptureSettingsOverlay_Click">
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
+                <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
+                    </Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
+                    <Grid>
+                        <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
+                                Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+
+                        <Button Content="&#x2715;" Click="CaptureSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="28" Height="26" Margin="0,6,6,0" Panel.ZIndex="2"
+                                Visibility="{DynamicResource AboutModernCloseVisibility}"/>
+
+                        <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
+                                Visibility="{DynamicResource AboutCaptionVisibility}"
+                                Background="{DynamicResource DialogTitleBarBrush}">
+                            <Grid Margin="4,0,2,0">
+                                <TextBlock Text="{DynamicResource Str_CS_Title}" VerticalAlignment="Center"
+                                           FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource ChromeTextBrush}"/>
+                                <Button Content="&#xE8BB;" Click="CaptureSettingsClose_Click"
+                                        Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Margin="{DynamicResource AboutCaptionCloseMargin}"/>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Margin="{DynamicResource AboutBodyMargin}" Width="480">
+                            <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
+                                       FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+
+                            <TextBlock Text="{DynamicResource Str_CS_Shortcuts}" Foreground="{DynamicResource DimTextBrush}"
+                                       FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,6"/>
+                            <Grid x:Name="ShortcutRows" Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="190"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                            <TextBlock Text="{DynamicResource Str_CS_RecordHint}" Foreground="{DynamicResource DimTextBrush}"
+                                       FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="ShortcutConflictText" Visibility="Collapsed" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
+                                       Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
+
+                            <Rectangle Height="1" Fill="{DynamicResource CardBorderBrush}" Margin="0,14,0,12"/>
+
+                            <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" FontSize="11" Margin="0,0,0,8"
+                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
+                            <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" FontSize="11" Margin="0,0,0,8"
+                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
+                            <CheckBox x:Name="StartupToggle" Content="{DynamicResource Str_CS_Startup}" FontSize="11"
+                                      Checked="CaptureOption_Changed" Unchecked="CaptureOption_Changed"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================= SHORTCUTS OVERLAY (F1) =================
+             Declared BEFORE AboutOverlay so About still wins the z-order tie, the same reason the
+             footer sits at ZIndex -1. Both views are generated in Shell/ShortcutsOverlay.cs from
+             one binding table; the hosts below are just empty shells. -->
+        <Grid x:Name="ShortcutsOverlay" Grid.RowSpan="3" Panel.ZIndex="8900" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="ShortcutsOverlay_Click">
+            <Grid.Resources>
+                <!-- Segmented toggle: accent outline at rest, filled when Tag="on". Same rule as
+                     the rail's toggles, so "this one is active" reads identically everywhere. -->
+                <Style x:Key="KsToggle" TargetType="Button">
+                    <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
+                    <Setter Property="FontSize" Value="11"/>
+                    <Setter Property="Padding" Value="10,3"/>
+                    <Setter Property="Margin" Value="0,0,6,0"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource ControlCornerRadius}"
+                                        BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="Tag" Value="on">
+                                        <Setter TargetName="bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Resources>
+
+            <!-- Stretch with a margin, NOT Center, and capped by MaxWidth. Centered, the card sized
+                 itself to the keyboard map's natural width and the window simply clipped whatever
+                 did not fit - the right-hand keys were cut off on a narrow window. Stretched, the
+                 card is at most MaxWidth on a wide window (so it stays a card, not a full-width
+                 band) and shrinks with the window below that, which is what gives the Viewbox
+                 inside something smaller to scale the keyboard into. (2026-07-30) -->
+            <Grid x:Name="ShortcutCardGrid"
+                  VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="24"
+                  MaxHeight="620"
+                  MouseLeftButtonDown="ShortcutsCard_Click">
+                <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource ShortcutShadowOpacity}"/>
+                    </Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
+                    <Grid>
+                        <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
+                                Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+
+                        <Button Content="&#x2715;" Click="ShortcutsClose_Click" Style="{StaticResource OverlayCloseButton}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="28" Height="26" Margin="0,6,6,0" Panel.ZIndex="2"
+                                Visibility="{DynamicResource ShortcutModernHeaderVisibility}"/>
+
+                        <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
+                                Visibility="{DynamicResource ShortcutCaptionVisibility}"
+                                Background="{DynamicResource DialogTitleBarBrush}">
+                            <Grid Margin="4,0,2,0">
+                                <TextBlock Text="Keyboard shortcuts" VerticalAlignment="Center"
+                                           FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource ChromeTextBrush}"/>
+                                <Button Content="&#xE8BB;" Click="ShortcutsClose_Click"
+                                        Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Margin="{DynamicResource DialogCaptionCloseMargin}"/>
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="24,18,24,18">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource Str_KS_Title}" Foreground="{DynamicResource TextBrush}"
+                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0">
+                                    <Button x:Name="KsViewList" Style="{StaticResource KsToggle}" Tag="on"
+                                            Content="{DynamicResource Str_KS_ViewList}" Click="KsViewList_Click"/>
+                                    <Button x:Name="KsViewKeyboard" Style="{StaticResource KsToggle}"
+                                            Content="{DynamicResource Str_KS_ViewMap}" Click="KsViewKeyboard_Click"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" FontSize="11" MaxWidth="210" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,24,0">
+                                    <Hyperlink NavigateUri="https://killershot.net/technical.html#keyboard" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_KS_OnlineHelp}"/></Hyperlink>
+                                </TextBlock>
+                            </Grid>
+
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="{DynamicResource Str_KS_Hint}" Foreground="{DynamicResource DimTextBrush}"
+                                           FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- LIST -->
+                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False">
+                                <StackPanel x:Name="KsListHost"/>
+                            </ScrollViewer>
+
+                            <!-- MAP -->
+                            <Grid x:Name="KsMapHost" Grid.Row="2" Visibility="Collapsed">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Button x:Name="KsLayerBase" Style="{StaticResource KsToggle}" Tag="on"
+                                            Content="BASE" Click="KsLayerBase_Click"/>
+                                    <Button x:Name="KsLayerCtrl" Style="{StaticResource KsToggle}"
+                                            Content="CTRL" Click="KsLayerCtrl_Click"/>
+                                    <Button x:Name="KsLayerAlt" Style="{StaticResource KsToggle}"
+                                            Content="ALT" Click="KsLayerAlt_Click"/>
+                                    <Button x:Name="KsLayerCtrlShift" Style="{StaticResource KsToggle}"
+                                            Content="CTRL+SHIFT" Click="KsLayerCtrlShift_Click"/>
+                                </StackPanel>
+                                <!-- The keyboard map is drawn at a FIXED unit size (KbUnit), so a
+                                     full row is wider than a narrow window and the right-hand keys
+                                     were simply cut off. A Viewbox scales the whole map down to
+                                     whatever width is going.
+
+                                     StretchDirection DownOnly: it may shrink to fit, never blow up
+                                     to fill a wide window - a keyboard rendered at 200% would look
+                                     absurd and the caps carry text sized for the natural scale.
+                                     Uniform, so the keys keep their proportions. (2026-07-30) -->
+                                <!-- Centered DownOnly Viewbox, the same wrapper KillerPDF puts round
+                                     its board: it may shrink to fit a narrow window but never blows
+                                     up on a wide one, where the card's MaxWidth holds it instead. -->
+                                <Viewbox Stretch="Uniform" StretchDirection="DownOnly"
+                                         Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <StackPanel x:Name="KsMapRows"/>
+                                </Viewbox>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Border>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================= ABOUT OVERLAY (F12) ================= -->
+        <Grid x:Name="AboutOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="AboutOverlay_Click">
+            <!-- No fixed width: the SHA-256 line never wraps, so it sizes the info panel and the
+                 info panel sizes the card. The header pins its width to that panel. -->
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" MouseLeftButtonDown="AboutCard_Click">
+                <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
+                    </Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
+                    <Grid>
+                        <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
+                                Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+
+                        <Button Content="&#x2715;" Click="AboutClose_Click" Style="{StaticResource OverlayCloseButton}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="28" Height="26" Margin="0,6,6,0" Panel.ZIndex="2"
+                                Visibility="{DynamicResource AboutModernCloseVisibility}"/>
+
+                        <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
+                                Visibility="{DynamicResource AboutCaptionVisibility}"
+                                Background="{DynamicResource DialogTitleBarBrush}">
+                            <Grid Margin="4,0,2,0">
+                                <TextBlock Text="About" VerticalAlignment="Center"
+                                           FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource ChromeTextBrush}"/>
+                                <Button Content="&#xE8BB;" Click="AboutClose_Click"
+                                        Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Margin="{DynamicResource AboutCaptionCloseMargin}"/>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Margin="{DynamicResource AboutBodyMargin}">
+                            <!-- Header: icon left of the wordmark, width pinned to the info panel so a
+                                 long tagline wraps instead of widening the card. -->
+                            <Grid Margin="0,4,0,14" Width="{Binding ActualWidth, ElementName=AboutInfoGrid}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- The KillerShot icon goes here once the artwork exists. -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Grid Margin="0,0,0,4" HorizontalAlignment="Left">
+                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}" Margin="1,2,0,0" IsHitTestVisible="False"
+                                                   Opacity="{DynamicResource WordmarkShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="2"/></TextBlock.Effect><Run Text="Killer" FontSize="17.21" Foreground="#C0000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="#C0000000"/></TextBlock>
+                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}" Margin="1,2,0,0" IsHitTestVisible="False"
+                                                   Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" FontSize="17.21" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="Black"/></TextBlock>
+                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}"><Run Text="Killer" FontSize="17.21" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
+                                    </Grid>
+                                    <!-- Tagline split so GPLv3 and the Killer Tools link stay out of
+                                         translation. -->
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"><Run Text="{DynamicResource Str_About_DescA}"/><Hyperlink NavigateUri="https://killertools.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None">Killer Tools</Hyperlink><Run Text="{DynamicResource Str_About_DescB}"/></TextBlock>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid x:Name="AboutInfoGrid">
+                                <Border Background="{DynamicResource AboutPanelBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="{DynamicResource FlyoutShadowOpacity}"/>
+                                    </Border.Effect>
+                                </Border>
+                                <Border Background="{DynamicResource AboutPanelBrush}"
+                                        BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                                    <Grid>
+                                        <!-- The pane owns an opaque surface brush, so it must own
+                                             its grain too; the card grain underneath cannot show
+                                             through an opaque child. -->
+                                        <Border IsHitTestVisible="False"
+                                                CornerRadius="{DynamicResource ControlCornerRadius}"
+                                                Background="{DynamicResource GrainTileBrush}"
+                                                Opacity="{DynamicResource GrainOpacity}"/>
+                                    <StackPanel Margin="14,12,14,4">
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Version}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="10"/>
+                                            <Grid Margin="0,1,0,0">
+                                                <TextBlock x:Name="AboutVersionBlock" Foreground="{DynamicResource PrimaryBrush}"
+                                                           FontFamily="{DynamicResource UiFont}" FontSize="13" Cursor="Hand"
+                                                           HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                           MouseLeftButtonUp="AboutVersion_Click"/>
+                                                <TextBlock x:Name="AboutReleaseDateBlock" Foreground="{DynamicResource MutedTextBrush}"
+                                                           FontFamily="{DynamicResource UiFont}" FontSize="11" FontStyle="Italic"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Publisher}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="10"/>
+                                            <TextBlock x:Name="AboutPublisherBlock" Foreground="{DynamicResource TextBrush}" FontSize="12" Margin="0,1,0,0"/>
+                                            <TextBlock x:Name="AboutAkaBlock" Visibility="Collapsed" Foreground="{DynamicResource MutedTextBrush}"
+                                                       FontSize="11" Margin="0,3,0,0"><Run Text="AKA "/><Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None" ToolTip="thekiller.net"><Run x:Name="AboutAkaRun"/></Hyperlink></TextBlock>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Thumbprint}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="10"/>
+                                            <TextBlock x:Name="AboutThumbprintBlock" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="11" TextWrapping="Wrap" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Sha}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="10"/>
+                                            <TextBlock x:Name="AboutSha256Block" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource UiFont}" FontSize="11" TextWrapping="NoWrap" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Panel.ZIndex="20" IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelDarkBrush}" BorderThickness="{DynamicResource PaneBevelLightThickness}"/>
+                                <Border Panel.ZIndex="20" IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelLightBrush}" BorderThickness="{DynamicResource PaneBevelDarkThickness}"/>
+                                <Border Panel.ZIndex="20" IsHitTestVisible="False" Margin="{DynamicResource PaneBevelInnerMargin}" BorderBrush="{DynamicResource PaneBevelDark2Brush}" BorderThickness="{DynamicResource PaneBevel2LightThickness}"/>
+                                <Border Panel.ZIndex="20" IsHitTestVisible="False" Margin="{DynamicResource PaneBevelInnerMargin}" BorderBrush="{DynamicResource PaneBevelLight2Brush}" BorderThickness="{DynamicResource PaneBevel2DarkThickness}"/>
+                            </Grid>
+
+                            <!-- About options belong below the raised identity pane, matching the
+                                 shared KillerPDF/Killer Tools About hierarchy. -->
+                            <StackPanel Margin="0,12,0,0" HorizontalAlignment="Left">
+                                <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
+                                           FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="RenderAutoRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderAuto}"
+                                                 FontSize="11" Margin="8,0,6,0" Checked="RenderMode_Checked" Tag="Auto"/>
+                                    <RadioButton x:Name="RenderHardwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderHardware}"
+                                                 FontSize="11" Margin="8,0,6,0" Checked="RenderMode_Checked" Tag="Hardware"/>
+                                    <RadioButton x:Name="RenderSoftwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderSoftware}"
+                                                 FontSize="11" Margin="8,0,0,0" Checked="RenderMode_Checked" Tag="Software"/>
+                                </StackPanel>
+                                <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
+                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
+                                           TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" BorderBrush="{DynamicResource OverlayBevelOuterDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerLightBrush}" BorderThickness="{DynamicResource OverlayBevelLightThickness}"/>
+                <Border Panel.ZIndex="100" IsHitTestVisible="False" Margin="{DynamicResource OverlayBevelInnerMargin}" BorderBrush="{DynamicResource OverlayBevelInnerDarkBrush}" BorderThickness="{DynamicResource OverlayBevelDarkThickness}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+
+        <!-- The classic sizing frame is visible only in 98SE; modern palettes reset every brush
+             and thickness to transparent/zero in ThemeManager. -->
+        <Grid x:Name="ClassicFrameChrome" Panel.ZIndex="9001" IsHitTestVisible="False">
+        <Border
+                BorderBrush="{DynamicResource FrameOuterLightBrush}"
+                BorderThickness="{DynamicResource FrameOuterLightThickness}"/>
+        <Border
+                BorderBrush="{DynamicResource FrameOuterDarkBrush}"
+                BorderThickness="{DynamicResource FrameOuterDarkThickness}"/>
+        <Border
+                Margin="{DynamicResource WindowFrameMargin}"
+                BorderBrush="{DynamicResource WindowFrameBrush}"
+                BorderThickness="{DynamicResource WindowFrameThickness}"/>
+        <Border
+                Margin="{DynamicResource FrameInnerMargin}"
+                BorderBrush="{DynamicResource FrameInnerLightBrush}"
+                BorderThickness="{DynamicResource FrameInnerLightThickness}"/>
+        <Border
+                Margin="{DynamicResource FrameInnerMargin}"
+                BorderBrush="{DynamicResource FrameInnerDarkBrush}"
+                BorderThickness="{DynamicResource FrameInnerDarkThickness}"/>
+        </Grid>
+    </Grid>
+</Window>
