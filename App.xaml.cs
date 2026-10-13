@@ -25,6 +25,7 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        KillerFamily.Accessibility.AccessibleControls.Initialize();
         base.OnStartup(e);
 
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
