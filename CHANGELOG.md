@@ -17,3 +17,4 @@
 - Added printing from the editor (Ctrl+P) and the tray, with shrink, enlarge and rotate options.
 - Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.
 - Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.
+- Menu separators draw their divider line instead of leaving an empty gap.
