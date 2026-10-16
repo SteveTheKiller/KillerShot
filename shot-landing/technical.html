@@ -131,6 +131,7 @@
 <tr><td>UI</td><td data-i18n="t_ui">WPF on .NET 10, x64, with the family window chrome, rail and themes</td></tr>
 <tr><td>Desktop capture</td><td data-i18n="t_gdi">One GDI <code>BitBlt</code> of the whole virtual desktop with <code>CAPTUREBLT</code>, taken when the shortcut fires</td></tr>
 <tr><td>Window capture</td><td data-i18n="t_wgc">Windows Graphics Capture through the Windows SDK projection, composited over the frozen desktop</td></tr>
+<tr><td>Recording capture</td><td data-i18n="t_rec_wgc">Windows Graphics Capture of each monitor the recording covers, with GDI as the fallback when it is unavailable</td></tr>
 <tr><td>Video</td><td data-i18n="t_video">Windows <code>MediaTranscoder</code> to H.264 MP4, with hardware acceleration when the PC offers it</td></tr>
 <tr><td>Sound</td><td data-i18n="t_sound">WASAPI loopback of the default playback device and the default microphone, mixed to 48 kHz stereo, encoded as AAC</td></tr>
 <tr><td>GIF</td><td data-i18n="t_gifenc">An encoder written for KillerShot: per-frame palettes, changed-area frames and LZW compression</td></tr>
@@ -163,7 +164,7 @@
 <div class="tech-column">
 <div class="tech-sec" id="recording">
 <h2 data-i18n="t_rec">The recording pipeline</h2>
-<p data-i18n="t_rec_1">A capture thread copies the recorded rectangle on a steady clock and hands each frame to an encoder thread. When the encoder falls behind, frames are dropped rather than letting the clock drift, and paused time is cut out of the timestamps.</p>
+<p data-i18n="t_rec_1">A capture thread reads the recorded rectangle on a steady clock through Windows Graphics Capture, with one capture session for each monitor the rectangle covers, and hands each frame to an encoder thread. Only the recorded part of each monitor is copied off the graphics card, so recording every monitor keeps the frame rate you set. When the encoder falls behind, frames are dropped rather than letting the clock drift, and paused time is cut out of the timestamps.</p>
 <p data-i18n="t_rec_2">MP4 frames go to the H.264 encoder built into Windows. The video size is rounded down to even numbers, which H.264 needs. Sound is captured on its own clock and filled with silence when nothing is playing, so sound and picture stay in step.</p>
 <p data-i18n="t_rec_mp4"><b>Large MP4 recordings.</b> The H.264 encoder in Windows accepts frames up to 4096 x 2304 pixels: 36,864 blocks of 16 x 16 pixels with no side over 4096, the frame size limit of H.264 level 5.1. One 4K monitor fits. A larger area is scaled down to fit before it reaches the encoder, keeping its shape, so three 1920 pixel screens side by side at 5760 x 1080 come out at 4096 x 768. GIF recordings keep the full size.</p>
 <p data-i18n="t_rec_3">GIF frames are reduced to a palette per frame and only the area that changed since the last frame is stored. That keeps a recording of a mostly still screen small.</p>
