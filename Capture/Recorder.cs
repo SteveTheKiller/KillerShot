@@ -25,10 +25,14 @@ internal sealed class Recorder
     private Exception? _error;
     private readonly SoundSource _sound;
     private AudioCapture? _audio;
+    private IFrameGrabber? _grabber;
 
     public int Frames { get; private set; }
     public int Dropped { get; private set; }
     public bool IsPaused => _paused;
+
+    /// <summary>Whether frames come from Windows Graphics Capture rather than the GDI fallback.</summary>
+    public bool UsesGraphicsCapture { get; private set; }
 
     public Recorder(Win32.RECT rect, IVideoSink sink, int fps, bool includeCursor, SoundSource sound = SoundSource.None)
     {
@@ -45,6 +49,9 @@ internal sealed class Recorder
     public async Task StartAsync()
     {
         await _sink.StartAsync(_rect.Width, _rect.Height, _fps);
+        // Created off the UI thread, before the clock starts, so the first frame is ready on time.
+        _grabber = await Task.Run(() => (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
+        UsesGraphicsCapture = _grabber is MonitorGrabber;
         if (_sound != SoundSource.None)
             _audio = new AudioCapture(_sound, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at));
         _clock.Start();
@@ -85,7 +92,7 @@ internal sealed class Recorder
         Win32.timeBeginPeriod(1);
         try
         {
-            using var grabber = new ScreenGrabber(_rect, _cursor);
+            using var grabber = _grabber!;
             int size = grabber.Width * grabber.Height * 4;
             double frameMs = 1000.0 / _fps;
             double next = 0;

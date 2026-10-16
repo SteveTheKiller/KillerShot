@@ -195,8 +195,10 @@ internal static class SelfTestUi
             await rec.StartAsync();
             await Task.Delay(1000);
             await rec.StopAsync();
-            log.AppendLine($"recorded_{fmt} frames={rec.Frames} dropped={rec.Dropped} bytes={new FileInfo(path).Length}");
+            log.AppendLine($"recorded_{fmt} frames={rec.Frames} dropped={rec.Dropped} bytes={new FileInfo(path).Length} graphics_capture={rec.UsesGraphicsCapture}");
             if (rec.Frames < 5 || new FileInfo(path).Length < 500) throw new InvalidOperationException("Recording produced no video.");
+            if (KillerShot.Capture.WindowCapture.IsSupported && !rec.UsesGraphicsCapture)
+                throw new InvalidOperationException("Recording fell back to GDI although Windows Graphics Capture is available.");
         }
     }
 

@@ -3,9 +3,10 @@ using KillerShot.Native;
 
 namespace KillerShot.Capture;
 
-/// <summary>Copies one fixed screen rectangle again and again for recording. The device
-/// contexts and the DIB are created once and reused, so a frame costs one BitBlt and one copy.</summary>
-internal sealed class ScreenGrabber : IDisposable
+/// <summary>Copies one fixed screen rectangle again and again for recording, when Windows
+/// Graphics Capture is not available. The device contexts and the DIB are created once and
+/// reused, so a frame costs one BitBlt and one copy.</summary>
+internal sealed class ScreenGrabber : IFrameGrabber
 {
     private readonly Win32.RECT _rect;
     private readonly IntPtr _screen, _mem, _dib, _old, _bits;
