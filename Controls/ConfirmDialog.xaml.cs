@@ -20,8 +20,9 @@ namespace KillerShot.Controls
         public ConfirmDialog()
         {
             InitializeComponent();
-            // The title icon waits for the KillerShot artwork.
-            TitleIcon.Visibility = Visibility.Collapsed;
+            var titleFrames = BitmapDecoder.Create(new System.Uri("pack://application:,,,/Resources/kst-icon.ico"),
+                BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames;
+            TitleIcon.Source = titleFrames[0];
             Loaded += (_, _) => Anim.FadeIn(RootBorder);
             Loaded += (_, _) => ApplyNotice();
         }

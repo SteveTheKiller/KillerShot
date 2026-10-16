@@ -22,6 +22,7 @@ internal sealed class TrayHost : IDisposable
     private readonly HwndSource _source;
     private readonly uint _taskbarCreated;
     private readonly IntPtr _icon;
+    private readonly bool _ownsIcon;
     private readonly Dictionary<int, ShortcutAction> _hotkeyIds = new();
     private readonly Dictionary<ShortcutAction, Shortcut> _active = new();
     private readonly List<string> _failed = new();
@@ -55,8 +56,12 @@ internal sealed class TrayHost : IDisposable
         _source = new HwndSource(p);
         _source.AddHook(WndProc);
         _taskbarCreated = Win32.RegisterWindowMessage("TaskbarCreated");
-        // Placeholder until the KillerShot icon exists; IDI_APPLICATION is shared and never destroyed.
-        _icon = Win32.LoadIcon(IntPtr.Zero, new IntPtr(32512));
+        // The app icon from the exe's own resources at the small-icon size. The SDK embeds
+        // ApplicationIcon as icon group 32512. If that fails, the shared IDI_APPLICATION stands in.
+        int size = Win32.GetSystemMetrics(Win32.SM_CXSMICON);
+        _icon = Win32.LoadImage(Win32.GetModuleHandle(null), new IntPtr(32512), Win32.IMAGE_ICON, size, size, 0);
+        _ownsIcon = _icon != IntPtr.Zero;
+        if (!_ownsIcon) _icon = Win32.LoadIcon(IntPtr.Zero, new IntPtr(32512));
     }
 
     public void Start()
@@ -311,6 +316,7 @@ internal sealed class TrayHost : IDisposable
             Win32.Shell_NotifyIcon(Win32.NIM_DELETE, ref d);
             _iconAdded = false;
         }
+        if (_ownsIcon) Win32.DestroyIcon(_icon);
         _source.RemoveHook(WndProc);
         _source.Dispose();
     }

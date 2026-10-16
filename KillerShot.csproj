@@ -13,6 +13,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\kst-icon.ico</ApplicationIcon>
     <Version>0.1.0</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <Authors>Steve the Killer</Authors>
@@ -32,6 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Generated from brand\icon.png by brand\make_icon.py. Regenerate rather than hand-editing. -->
+    <Resource Include="Resources\kst-icon.ico" />
+    <Resource Include="Resources\app-icon-master.png" />
+    <Resource Include="Resources\kst-icon.png" />
     <Resource Include="Fonts\*.ttf" />
     <Resource Include="Resources\*.cur" />
   </ItemGroup>

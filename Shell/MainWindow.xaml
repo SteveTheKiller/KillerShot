@@ -5,6 +5,7 @@
         xmlns:editor="clr-namespace:KillerShot.Editor"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerShot"
+        Icon="/Resources/kst-icon.ico"
         WindowStyle="None" Background="{DynamicResource BackgroundBrush}"
         MinWidth="640" MinHeight="460" Width="1200" Height="800"
         TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
@@ -44,7 +45,7 @@
                         shell:WindowChrome.IsHitTestVisibleInChrome="True"
                         PreviewMouseWheel="LogoBar_MouseWheel"
                         MouseLeftButtonDown="LogoBar_MouseLeftButtonDown">
-                <icons:AppIcon x:Name="WordmarkTitleIcon" Visibility="Collapsed"
+                <icons:AppIcon x:Name="WordmarkTitleIcon"
                        Width="{DynamicResource TitleIconSize}" Height="{DynamicResource TitleIconSize}"
                        Margin="{DynamicResource TitleIconMargin}" VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="NearestNeighbor" IsHitTestVisible="False"/>
@@ -69,7 +70,7 @@
                         HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"
                         Background="Transparent" shell:WindowChrome.IsHitTestVisibleInChrome="True"
                         PreviewMouseWheel="LogoBar_MouseWheel" MouseLeftButtonDown="LogoBar_MouseLeftButtonDown">
-                <icons:AppIcon x:Name="PlainTitleIcon" Visibility="Collapsed"
+                <icons:AppIcon x:Name="PlainTitleIcon"
                        Width="{DynamicResource TitleIconSize}" Height="{DynamicResource TitleIconSize}"
                        Margin="{DynamicResource TitleIconMargin}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                 <TextBlock Text="KillerShot" VerticalAlignment="Center"
@@ -872,7 +873,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <!-- The KillerShot icon goes here once the artwork exists. -->
+                                <icons:AppIcon Grid.Column="0" Source="pack://application:,,,/Resources/kst-icon.ico"
+                                       Width="58" Height="58" Margin="0,0,15,0" VerticalAlignment="Center"
+                                       RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                    <icons:AppIcon.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="3" Direction="270" Opacity="{DynamicResource IconShadowOpacity}"/>
+                                    </icons:AppIcon.Effect>
+                                </icons:AppIcon>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <Grid Margin="0,0,0,4" HorizontalAlignment="Left">
                                         <TextBlock FontFamily="{DynamicResource WordmarkFont}" Margin="1,2,0,0" IsHitTestVisible="False"

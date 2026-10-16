@@ -13,6 +13,14 @@ namespace KillerShot.Shell
         public MainWindow()
         {
             InitializeComponent();
+            var titleFrames = System.Windows.Media.Imaging.BitmapDecoder.Create(
+                new System.Uri("pack://application:,,,/Resources/kst-icon.ico"),
+                System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad).Frames;
+            foreach (var icon in new[] { WordmarkTitleIcon, PlainTitleIcon })
+            {
+                icon.Source = titleFrames[0];
+            }
 
             RestoreWindowPlacement();
             InitAppScale();
