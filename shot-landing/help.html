@@ -143,7 +143,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <h2 class="help-cat" id="getting-started" data-i18n="help_start">Getting started</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_first_t">Take your first capture</span><span class="kbd">Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_first_1">Run KillerShot. It opens the editor and puts its icon in the notification area. Press <b>Print Screen</b> anywhere in Windows, drag around what you want, and let go. The picture is on the clipboard, ready to paste.</p>
-<p data-i18n="h_first_2">Close the editor and KillerShot keeps running in the tray, so Print Screen keeps working. Right-click the tray icon to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
+<p data-i18n="h_first_2">KillerShot is a system tray app. Close the editor and it keeps running in the notification area, so Print Screen keeps working. Click the tray icon to capture again in the last mode (a region when the last mode was a window), or to stop a recording. Right-click it to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_prtsc_t">When Print Screen opens Snipping Tool instead</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_prtsc_1">Windows 11 can give Print Screen to Snipping Tool. When that setting is on, or another program already holds a shortcut, KillerShot cannot register it and says so in a notification.</p>
@@ -192,10 +192,11 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <h2 class="help-cat" id="recording" data-i18n="h_recording">Recording</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_rec_t">Record the screen</span><span class="kbd">Ctrl + Shift + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_rec_1">Press <b>Ctrl + Shift + Print Screen</b>, click <b>Record</b> in the editor (Ctrl+R) or choose <b>Record video</b> from the tray. Pick a region, window or monitor on the frozen desktop, and recording starts after a three second countdown. Pressing the shortcut again during the countdown starts at once.</p>
-<p data-i18n="h_rec_2">A frame marks the area and a bar offers Pause, Stop and Discard. Neither appears in the video. Press the shortcut again or click Stop to save.</p>
+<p data-i18n="h_rec_2">A frame marks the area and a bar offers Pause, Stop and Discard. Neither appears in the video. Press the shortcut again, click Stop, or click the tray icon to save.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_mp4_t">MP4 and GIF settings</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_mp4_1"><b>MP4</b> records H.264 video at 15, 24, 30 or 60 frames per second, in Small file, Balanced or High quality. Sound can be off, the system sound, the microphone, or both, at 96 to 192 kbps. MP4 recordings can be at most 4096 pixels wide.</p>
+<p data-i18n="h_mp4_1"><b>MP4</b> records H.264 video at 15, 24, 30 or 60 frames per second, in Small file, Balanced or High quality. Sound can be off, the system sound, the microphone, or both, at 96 to 192 kbps.</p>
+<p data-i18n="h_mp4_limit">MP4 recordings can be at most 4096 pixels wide, a limit of the H.264 encoder in Windows. One monitor fits, even at 4K, but several monitors side by side usually do not. Record one monitor or a smaller area, or record a GIF, which has no such limit.</p>
 <p data-i18n="h_mp4_2"><b>Animated GIF</b> records at 5 to 25 frames per second, at full, three-quarter or half size, with 32 to 256 colors, and loops forever unless you turn that off. GIFs have no sound.</p>
 <p data-i18n="h_mp4_3">Recordings save to <code>Videos\Screen Recordings</code> unless you choose another folder, with their own file name pattern. KillerShot can also copy the finished file to the clipboard and show a notification that opens its folder.</p>
 </div></div></div>
@@ -281,7 +282,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <div class="kbd-group"><h4 data-i18n="hk_help">Help</h4>
 <div class="kbd-row"><span class="k">F1</span><span class="d" data-i18n="hk_f1">Keyboard shortcuts, as a list or a keyboard map</span></div>
 <div class="kbd-row"><span class="k">F12</span><span class="d" data-i18n="hk_f12">About KillerShot</span></div>
-<div class="kbd-row"><span class="k">Esc</span><span class="d" data-i18n="hk_esc">Close a card or cancel the current mark</span></div>
+<div class="kbd-row"><span class="k">Esc</span><span class="d" data-i18n="hk_esc">Close a card, cancel the current mark or text, or cancel a capture</span></div>
 </div>
 </div><div class="kbd-col">
 <div class="kbd-group"><h4 data-i18n="hk_tools">Tools</h4>
@@ -298,8 +299,10 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <div class="kbd-group"><h4 data-i18n="hk_edit">Edit</h4>
 <div class="kbd-row"><span class="k">Ctrl + Z</span><span class="d" data-i18n="hk_undo">Undo</span></div>
 <div class="kbd-row"><span class="k">Ctrl + Y / Ctrl + Shift + Z</span><span class="d" data-i18n="hk_redo">Redo</span></div>
-<div class="kbd-row"><span class="k">Delete</span><span class="d" data-i18n="hk_del">Delete the selected mark</span></div>
+<div class="kbd-row"><span class="k">Delete / Backspace</span><span class="d" data-i18n="hk_del">Delete the selected mark</span></div>
 <div class="kbd-row"><span class="k">Arrow keys</span><span class="d" data-i18n="hk_nudge">Move the selected mark (Shift for 10 px)</span></div>
+<div class="kbd-row"><span class="k">Enter</span><span class="d" data-i18n="hk_enter">Finish the text you are typing</span></div>
+<div class="kbd-row"><span class="k">Shift + Enter</span><span class="d" data-i18n="hk_newline">Start a new line of text</span></div>
 </div>
 <div class="kbd-group"><h4 data-i18n="hk_view">View</h4>
 <div class="kbd-row"><span class="k">Ctrl + 0</span><span class="d" data-i18n="hk_fit">Fit to the window</span></div>
