@@ -172,6 +172,10 @@ internal sealed class Mp4Encoder : IVideoSink
         _stream?.Dispose();
     }
 
+    /// <summary>The widest frame the Windows H.264 encoder accepts. It is built for video up to
+    /// 4K, so a recording of several monitors side by side is wider than it will encode.</summary>
+    public const int MaxWidth = 4096;
+
     /// <summary>H.264 needs even dimensions.</summary>
     public static (int W, int H) EvenSize(int w, int h) => (Math.Max(2, w & ~1), Math.Max(2, h & ~1));
 }

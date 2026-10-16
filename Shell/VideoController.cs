@@ -62,6 +62,11 @@ internal sealed class VideoController
             if (!gif)
             {
                 var (w, h) = Mp4Encoder.EvenSize(rect.Width, rect.Height);
+                if (w > Mp4Encoder.MaxWidth)
+                {
+                    _tray.ShowWarning(Loc("Str_Tray_VideoFailedTitle"), string.Format(Loc("Str_Tray_VideoTooWide"), w, Mp4Encoder.MaxWidth));
+                    return;
+                }
                 rect = new Win32.RECT(rect.Left, rect.Top, rect.Left + w, rect.Top + h);
             }
             int fps = gif ? VideoSettings.GifFps : VideoSettings.Mp4Fps;

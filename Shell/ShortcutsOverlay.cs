@@ -48,7 +48,7 @@ namespace KillerShot.Shell
         }
 
         // ---- THE table. Mirrors Shell/Shortcuts.cs; if a key changes there, change it here and
-        //      in shot-landing/technical.html, which lists the same set. The global capture
+        //      in shot-landing/help.html, which lists the same set. The global capture
         //      shortcuts are read from the settings, because the user can change them. ----
         private static readonly KsBinding[] KsFixed =
         [
@@ -71,8 +71,10 @@ namespace KillerShot.Shell
             new("Ctrl+Y",   "Str_KS_Redo",      KsCat.Appt, true,  "Y"),
             new("Ctrl+Shift+Z", "Str_KS_Redo",  KsCat.Appt, true,  "Z"),
             new("Ctrl+C",   "Str_KS_Copy",      KsCat.Appt, true,  "C"),
-            new("Del",      "Str_KS_Delete",    KsCat.Appt, false, "Del"),
+            new("Del or Backspace", "Str_KS_Delete", KsCat.Appt, false, "Del", "Back"),
             new("Arrows",   "Str_KS_Nudge",     KsCat.Appt, false, "Left", "Up", "Right", "Down"),
+            new("Enter",    "Str_KS_FinishText", KsCat.Appt, false, "Enter"),
+            new("Shift+Enter", "Str_KS_NewLine", KsCat.Appt, false),
 
             new("Ctrl+N",   "Str_KS_NewCapture", KsCat.File, true, "N"),
             new("Ctrl+R",   "Str_KS_Record",     KsCat.File, true, "R"),

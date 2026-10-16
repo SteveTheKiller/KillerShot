@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">VISNING</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Ta bilde av et område</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Flytt den valgte markeringen (Shift for 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Fullfør teksten du skriver</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Start en ny tekstlinje</sys:String>
     <sys:String x:Key="Str_KS_Open">Åpne et bilde</sys:String>
     <sys:String x:Key="Str_KS_Redo">Gjør om</sys:String>
     <sys:String x:Key="Str_KS_Save">Lagre</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Tar opp</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Stopp opptaket</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Opptaket mislyktes</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4-opptak kan være maks {1} piksler brede, og dette området er {0}. Ta opp én skjerm eller et mindre område, eller bytt til GIF i Videoinnstillinger.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video lagret</sys:String>
     <sys:String x:Key="Str_VS_Colors">Farger</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopier videofilen til utklippstavlen</sys:String>

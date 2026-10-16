@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">দৃশ্য</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">একটি অংশ ক্যাপচার</sys:String>
     <sys:String x:Key="Str_KS_Nudge">নির্বাচিত চিহ্ন সরান (10 px-এর জন্য Shift)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">যে লেখা টাইপ করছেন তা শেষ করুন</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">লেখার নতুন লাইন শুরু করুন</sys:String>
     <sys:String x:Key="Str_KS_Open">একটি ছবি খুলুন</sys:String>
     <sys:String x:Key="Str_KS_Redo">আবার করুন</sys:String>
     <sys:String x:Key="Str_KS_Save">সংরক্ষণ</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">রেকর্ড হচ্ছে</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">রেকর্ডিং বন্ধ করুন</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">রেকর্ডিং ব্যর্থ হয়েছে</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 রেকর্ডিং সর্বোচ্চ {1} পিক্সেল চওড়া হতে পারে, আর এই এলাকাটি {0}। একটি মনিটর বা ছোট এলাকা রেকর্ড করুন, অথবা ভিডিও সেটিংসে GIF বেছে নিন।</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">ভিডিও সংরক্ষিত</sys:String>
     <sys:String x:Key="Str_VS_Colors">রং</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">ভিডিও ফাইল ক্লিপবোর্ডে কপি করুন</sys:String>

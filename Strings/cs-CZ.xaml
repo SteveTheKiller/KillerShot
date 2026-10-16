@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">ZOBRAZENÍ</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Zachytit oblast</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Posunout vybranou značku (Shift o 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Dokončit psaný text</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Začít nový řádek textu</sys:String>
     <sys:String x:Key="Str_KS_Open">Otevřít obrázek</sys:String>
     <sys:String x:Key="Str_KS_Redo">Znovu</sys:String>
     <sys:String x:Key="Str_KS_Save">Uložit</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Nahrávání</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Zastavit nahrávání</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Nahrávání selhalo</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">Záznamy MP4 mohou být široké nejvýše {1} pixelů a tato oblast má {0}. Nahrajte jeden monitor nebo menší oblast, nebo v Nastavení videa přepněte na GIF.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video uloženo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Barvy</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopírovat soubor videa do schránky</sys:String>

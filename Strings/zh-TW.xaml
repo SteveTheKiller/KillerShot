@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">檢視</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">擷取區域</sys:String>
     <sys:String x:Key="Str_KS_Nudge">移動選取的標註 (按住 Shift 移動 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">完成正在輸入的文字</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">開始新的一行文字</sys:String>
     <sys:String x:Key="Str_KS_Open">開啟影像</sys:String>
     <sys:String x:Key="Str_KS_Redo">重做</sys:String>
     <sys:String x:Key="Str_KS_Save">儲存</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">正在錄製</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">停止錄製</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">錄製失敗</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 錄製的寬度最多為 {1} 像素，而此區域寬 {0} 像素。請錄製單一螢幕或較小的區域，或在影片設定中改用 GIF。</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">影片已儲存</sys:String>
     <sys:String x:Key="Str_VS_Colors">色彩數</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">將影片檔案複製到剪貼簿</sys:String>

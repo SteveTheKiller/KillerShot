@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">ANSICHT</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Bereich aufnehmen</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Ausgewählte Markierung verschieben (Umschalt für 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Eingegebenen Text abschließen</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Neue Textzeile beginnen</sys:String>
     <sys:String x:Key="Str_KS_Open">Bild öffnen</sys:String>
     <sys:String x:Key="Str_KS_Redo">Wiederholen</sys:String>
     <sys:String x:Key="Str_KS_Save">Speichern</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Aufnahme läuft</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Aufnahme beenden</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Aufnahme fehlgeschlagen</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4-Aufnahmen können höchstens {1} Pixel breit sein, dieser Bereich ist {0} breit. Nehmen Sie einen Monitor oder einen kleineren Bereich auf, oder wechseln Sie in den Videoeinstellungen zu GIF.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video gespeichert</sys:String>
     <sys:String x:Key="Str_VS_Colors">Farben</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Videodatei in die Zwischenablage kopieren</sys:String>

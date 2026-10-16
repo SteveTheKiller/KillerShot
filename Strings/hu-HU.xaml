@@ -143,6 +143,8 @@
     <sys:String x:Key="Str_KS_GrpView">NÉZET</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Terület rögzítése</sys:String>
     <sys:String x:Key="Str_KS_Nudge">A kijelölt jelölés mozgatása (Shift: 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">A beírt szöveg befejezése</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Új szövegsor kezdése</sys:String>
     <sys:String x:Key="Str_KS_Open">Kép megnyitása</sys:String>
     <sys:String x:Key="Str_KS_Redo">Mégis</sys:String>
     <sys:String x:Key="Str_KS_Save">Mentés</sys:String>
@@ -237,6 +239,7 @@
     <sys:String x:Key="Str_Tray_Recording">Felvétel folyamatban</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Felvétel leállítása</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">A felvétel nem sikerült</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">Az MP4-felvételek legfeljebb {1} képpont szélesek lehetnek, ez a terület {0}. Rögzítsen egy monitort vagy kisebb területet, vagy váltson GIF-re a Videóbeállításokban.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Videó mentve</sys:String>
     <sys:String x:Key="Str_VS_Colors">Színek</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">A videófájl másolása a vágólapra</sys:String>

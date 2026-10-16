@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">EXIBIR</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Capturar uma região</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Mover a marcação selecionada (Shift para 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Concluir o texto que está digitando</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Começar uma nova linha de texto</sys:String>
     <sys:String x:Key="Str_KS_Open">Abrir uma imagem</sys:String>
     <sys:String x:Key="Str_KS_Redo">Refazer</sys:String>
     <sys:String x:Key="Str_KS_Save">Salvar</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Gravando</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Parar a gravação</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Falha na gravação</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">Gravações MP4 podem ter no máximo {1} pixels de largura, e esta área tem {0}. Grave um monitor ou uma área menor, ou mude para GIF em Configurações de vídeo.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Vídeo salvo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Cores</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Copiar o arquivo de vídeo para a área de transferência</sys:String>

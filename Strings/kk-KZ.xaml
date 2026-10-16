@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">КӨРІНІС</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Аймақты түсіру</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Таңдалған белгіні жылжыту (Shift 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Терілген мәтінді аяқтау</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Мәтіннің жаңа жолын бастау</sys:String>
     <sys:String x:Key="Str_KS_Open">Суретті ашу</sys:String>
     <sys:String x:Key="Str_KS_Redo">Қайталау</sys:String>
     <sys:String x:Key="Str_KS_Save">Сақтау</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Жазылуда</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Жазуды тоқтату</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Жазу сәтсіз аяқталды</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 жазбаларының ені ең көбі {1} пиксель болуы мүмкін, ал бұл аймақ {0}. Бір мониторды немесе кішірек аймақты жазыңыз, не Бейне параметрлерінде GIF форматына ауысыңыз.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Бейне сақталды</sys:String>
     <sys:String x:Key="Str_VS_Colors">Түстер</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Бейне файлын алмасу буферіне көшіру</sys:String>

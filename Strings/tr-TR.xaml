@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">GÖRÜNÜM</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Bölge yakala</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Seçili işareti taşı (10 px için Shift)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Yazdığınız metni bitirin</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Yeni bir metin satırı başlatın</sys:String>
     <sys:String x:Key="Str_KS_Open">Görüntü aç</sys:String>
     <sys:String x:Key="Str_KS_Redo">Yinele</sys:String>
     <sys:String x:Key="Str_KS_Save">Kaydet</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Kaydediliyor</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Kaydı durdur</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Kayıt başarısız</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 kayıtları en fazla {1} piksel genişliğinde olabilir, bu alan ise {0}. Tek bir monitörü veya daha küçük bir alanı kaydedin ya da Video ayarlarında GIF'e geçin.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video kaydedildi</sys:String>
     <sys:String x:Key="Str_VS_Colors">Renkler</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Video dosyasını panoya kopyala</sys:String>

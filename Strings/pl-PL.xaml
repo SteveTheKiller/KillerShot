@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">WIDOK</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Przechwyć obszar</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Przesuń zaznaczony znacznik (Shift o 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Zakończ wpisywany tekst</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Zacznij nowy wiersz tekstu</sys:String>
     <sys:String x:Key="Str_KS_Open">Otwórz obraz</sys:String>
     <sys:String x:Key="Str_KS_Redo">Ponów</sys:String>
     <sys:String x:Key="Str_KS_Save">Zapisz</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Nagrywanie</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Zatrzymaj nagrywanie</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Nagrywanie nie powiodło się</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">Nagrania MP4 mogą mieć najwyżej {1} pikseli szerokości, a ten obszar ma {0}. Nagraj jeden monitor lub mniejszy obszar albo przełącz na GIF w Ustawieniach wideo.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Zapisano wideo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Kolory</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopiuj plik wideo do schowka</sys:String>

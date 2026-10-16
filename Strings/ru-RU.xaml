@@ -144,6 +144,8 @@
     <sys:String x:Key="Str_KS_GrpView">ВИД</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Снять область</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Сдвинуть выбранную пометку (Shift на 10 пикс.)</sys:String>
+    <sys:String x:Key="Str_KS_FinishText">Завершить вводимый текст</sys:String>
+    <sys:String x:Key="Str_KS_NewLine">Начать новую строку текста</sys:String>
     <sys:String x:Key="Str_KS_Open">Открыть изображение</sys:String>
     <sys:String x:Key="Str_KS_Redo">Повторить</sys:String>
     <sys:String x:Key="Str_KS_Save">Сохранить</sys:String>
@@ -238,6 +240,7 @@
     <sys:String x:Key="Str_Tray_Recording">Идёт запись</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Остановить запись</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Не удалось записать</sys:String>
+    <sys:String x:Key="Str_Tray_VideoTooWide">Ширина записи MP4 не может превышать {1} пикселей, а ширина этой области {0}. Запишите один монитор или область поменьше либо выберите GIF в параметрах видео.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Видео сохранено</sys:String>
     <sys:String x:Key="Str_VS_Colors">Цвета</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Копировать файл видео в буфер обмена</sys:String>
