@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="hc">
+<head>
+<meta charset="utf-8">
+<script>/* Apply saved theme + accent before first paint to avoid a reload flash */(function(){try{var d=document.documentElement,t=localStorage.getItem('kshot-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kshot-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}})();</script>
+<link rel="preload" href="brand/KillerSans-Regular.ttf" as="font" type="font/ttf" crossorigin><link rel="preload" href="brand/Punktype.ttf" as="font" type="font/ttf" crossorigin><link rel="preload" href="brand/Lacquer-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="darkreader-lock">
+<title data-i18n="page_help_title">KillerShot: Help &amp; How-To</title>
+<link rel="canonical" href="https://killershot.net/help.html">
+<meta name="description" data-i18n-content="page_help_description" content="How to use KillerShot: every capture mode, the editor, screen recording, the command line and every keyboard shortcut.">
+<link rel="icon" type="image/x-icon" href="brand/kst-icon.ico">
+<link rel="stylesheet" href="kst.css?v=1">
+<style>
+.content-inner { max-width: 880px; margin: 0 auto; padding: 0 28px 56px; }
+.help-hero { text-align: center; padding: 44px 16px 6px; }
+.help-wm { height: clamp(55px, 9.5vw, 91px); width: auto; margin: 0 auto 6px; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)); }
+.help-hero p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+.help-hero .legend { font-size: 13px; margin-top: 4px; color: var(--text2); }
+.help-cat { font-family: var(--kt-font-section); font-size: 18px; font-weight: normal; letter-spacing: .5px; color: var(--accent); margin: 30px 2px 12px; padding-top: 6px; scroll-margin-top: 84px; text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
+.help-cat:first-of-type { margin-top: 18px; }
+.acc-item { border: 1px solid var(--dragline); border-radius: 8px; margin-bottom: 10px; background: var(--modal) url('grain.png') repeat; background-size: 256px 256px; overflow: hidden; }
+.acc-head { width: 100%; text-align: left; background: none; border: 0; color: var(--text); font: inherit; font-size: 15px; font-weight: 600; padding: 15px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.acc-head:hover { color: var(--accent); }
+.acc-head .kbd { font-family: Consolas, monospace; font-size: 12px; color: var(--muted); font-weight: 400; margin-left: auto; }
+.acc-head .chev { color: var(--muted); transition: transform 0.25s ease; flex-shrink: 0; font-size: 13px; }
+.acc-head > span:first-child { margin-right: auto; }
+.acc-item.open .acc-head { color: var(--accent); }
+.acc-item.open .acc-head .chev { transform: rotate(90deg); color: var(--accent); }
+.acc-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.acc-body-inner { padding: 2px 18px 16px; }
+.acc-body p { margin-bottom: 9px; } .acc-body p:last-child { margin-bottom: 0; }
+.acc-body b { color: var(--text); font-weight: 600; }
+.acc-body code { font-family: Consolas, monospace; font-size: 12.5px; background: var(--panel); padding: 1px 6px; border-radius: 4px; color: var(--text); }
+.acc-body .spec-table { margin: 10px 0 12px; }
+.acc-body .cli-demo, .acc-body .codeblock { margin: 10px 0 12px; }
+.kbd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 44px; align-items: start; }
+.kbd-col { min-width: 0; }
+.kbd-group { display: grid; grid-template-columns: max-content 1fr; column-gap: 18px; row-gap: 6px; align-items: baseline; margin-bottom: 22px; }
+.kbd-group h4 { grid-column: 1 / -1; font-family: var(--kt-font-section); font-size: 15px; letter-spacing: .5px; color: var(--accent); font-weight: normal; margin-bottom: 4px; text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
+html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { text-shadow: none; }
+.kbd-row { display: contents; }
+.kbd-row .k { font-family: Consolas, monospace; font-size: 12px; color: var(--text2); }
+.kbd-row .d { font-size: 13px; color: var(--text); }
+@media (max-width: 560px) { .kbd-group { grid-template-columns: minmax(100px, 130px) minmax(0, 1fr); } .kbd-row .k { overflow-wrap: anywhere; } }
+@media (min-width: 901px) { .shell { grid-template-columns: 268px 1fr; } .content { margin: 8px 8px 0 2px; } }
+.sb-tabs .on { border-bottom: 0; }
+.outline { padding: 8px 0; overflow-y: auto; flex: 1; min-height: 0; }
+.outline a { display: block; padding: 8px 16px 8px 18px; font-size: 13px; color: var(--text2); border-left: 2px solid transparent; }
+.outline a:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 8%, transparent); filter: none; }
+.outline a.on { color: var(--accent-text); border-left-color: var(--accent); background: var(--accent); }
+@media (max-width: 900px) { .outline { display:flex; flex-direction:row; flex-wrap:wrap; padding:8px; gap:4px; } .outline a { border-left:0; border-radius:5px; padding:6px 10px; } .outline a.on { border-left:0; } }
+@media (max-width: 900px) { .content-inner { padding: 0 16px 44px; } .kbd-cols { grid-template-columns: 1fr; gap: 0; } }
+</style>
+</head>
+<body class="compact-sidebar sidebar-first">
+
+<div class="topbar">
+<a href="index.html" class="tb-home" title="KillerShot home">
+<img class="tb-icon" src="brand/kst-icon.png" alt="KillerShot" width="44" height="44">
+<img class="wm-logo tb-wm" src="brand/killershot-logo-black-teal.svg" alt="KillerShot">
+</a>
+<a class="tb-mcp-link" href="mcp.html" aria-label="KillerMCP"><img src="mcp.png" alt="" aria-hidden="true"><span class="tb-mcp-wordmark"><span>Killer</span><span class="tb-mcp-accent">MCP</span></span></a>
+<span class="tb-spacer"></span>
+<nav class="tb-nav">
+<a href="help.html" class="on" data-i18n="nav_help">Help</a>
+<a href="technical.html" data-i18n="nav_tech">Technical</a>
+<a href="about.html" data-i18n="nav_about">About</a>
+</nav>
+<div class="tgrp" role="group" aria-label="Theme">
+<button class="swatch sw-dark"     data-theme="dark"     title="Dark"></button>
+<button class="swatch sw-light"    data-theme="light"    title="Light"></button>
+<button class="swatch sw-hc"       data-theme="hc"       title="Black"></button>
+<button class="swatch sw-blood"    data-theme="blood"    title="Blood"></button>
+<button class="swatch sw-greed"    data-theme="greed"    title="Greed"></button>
+<button class="swatch sw-cyanotic" data-theme="cyanotic" title="Cyanotic"></button>
+<button class="swatch sw-ectoplasm" data-theme="ectoplasm" title="Ectoplasm"></button>
+<button class="swatch sw-decay" data-theme="decay" title="Decay"></button>
+<button class="swatch sw-malaise" data-theme="malaise" title="Malaise"></button>
+<button class="swatch sw-sepulchre" data-theme="sepulchre" title="Sepulchre"></button>
+<button class="swatch sw-delirium" data-theme="delirium" title="Delirium"></button>
+<button class="swatch sw-mourning" data-theme="mourning" title="Mourning"></button>
+</div>
+<div class="acc-fly accent-switch" id="accentSwitch">
+<button class="acc-toggle" id="accentToggle" aria-haspopup="true" aria-expanded="false" title="Accent color"></button>
+<div class="acc-pop" id="accentPop" hidden role="group" aria-label="Accent color">
+<span class="acc-pop-label" data-i18n="accent_label">accent:</span>
+<button class="acc" data-accent="red"    style="background:#DD504B;color:#DD504B" title="Red"></button>
+<button class="acc" data-accent="orange" style="background:#E8962C;color:#E8962C" title="Orange"></button><button class="acc" data-accent="yellow" style="background:#EAD900;color:#EAD900" title="Yellow"></button>
+<button class="acc" data-accent="green"  style="background:#1EA54C;color:#1EA54C" title="Green"></button>
+<button class="acc" data-accent="teal"   style="background:#1FB8A8;color:#1FB8A8" title="Teal"></button>
+<button class="acc" data-accent="blue"   style="background:#50AEE8;color:#50AEE8" title="Blue"></button>
+<button class="acc" data-accent="purple" style="background:#B982E3;color:#B982E3" title="Purple"></button><button class="acc" data-accent="magenta" style="background:#FF52C9;color:#FF52C9" title="Magenta"></button>
+</div>
+</div>
+<div class="lang-switch" role="group" aria-label="Language">
+<button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false" title="Language" aria-label="Language">&#127760;</button>
+<div class="lang-menu" id="langMenu" hidden>
+<button class="lang-item" data-lang="en">English</button>
+<button class="lang-item" data-lang="bn">&#2476;&#2494;&#2434;&#2482;&#2494;</button>
+<button class="lang-item" data-lang="cs">&#268;e&#353;tina</button>
+<button class="lang-item" data-lang="de">Deutsch</button>
+<button class="lang-item" data-lang="es">Espa&#241;ol</button>
+<button class="lang-item" data-lang="fr">Fran&#231;ais</button>
+<button class="lang-item" data-lang="ja">&#26085;&#26412;&#35486;</button>
+<button class="lang-item" data-lang="kk">&#1178;&#1072;&#1079;&#1072;&#1179;&#1096;&#1072;</button>
+<button class="lang-item" data-lang="nb">Norsk bokm&#229;l</button><button class="lang-item" data-lang="pl">Polski</button>
+<button class="lang-item" data-lang="hu">Magyar</button>
+<button class="lang-item" data-lang="it">Italiano</button>
+<button class="lang-item" data-lang="pt">Portugu&#234;s (Brasil)</button><button class="lang-item" data-lang="ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</button>
+<button class="lang-item" data-lang="tr">T&#252;rk&#231;e</button>
+<button class="lang-item" data-lang="uk">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</button><button class="lang-item" data-lang="vi">Ti&#7871;ng Vi&#7879;t</button>
+<button class="lang-item" data-lang="zh-cn">&#20013;&#25991; (&#31616;&#20307;)</button>
+<button class="lang-item" data-lang="zh">&#20013;&#25991; (&#32321;&#39636;)</button>
+</div>
+</div>
+</div>
+
+<div class="shell">
+<aside class="sidebar">
+<div class="sb-tabs"><span class="on" data-i18n="nav_help">Help</span></div>
+<nav class="outline">
+<a href="#getting-started" class="on" data-i18n="help_start">Getting started</a>
+<a href="#modes" data-i18n="h_modes">Capture modes</a>
+<a href="#after" data-i18n="h_after">After a capture</a>
+<a href="#editor" data-i18n="h_editor">Editor</a>
+<a href="#recording" data-i18n="h_recording">Recording</a>
+<a href="#command-line" data-i18n="h_cli">Command line</a>
+<a href="#shortcuts" data-i18n="h_keys">Keyboard shortcuts</a>
+</nav>
+</aside>
+<div class="content">
+<div class="content-scroll">
+<div class="content-inner">
+
+<section class="help-hero">
+<span class="page-title" data-i18n="hp_1">How to use</span>
+<img class="help-wm wm-logo" src="brand/killershot-logo-black-teal.svg" alt="KillerShot">
+<p data-i18n="hp_2">Every capture mode, the editor, recording and the command line, and how to drive them.</p>
+<p class="legend" data-i18n="hp_3">Rows show their keyboard shortcut on the right. Click a row to open it. For how capturing works underneath, see the <a href="technical.html">Technical</a> page.</p>
+</section>
+
+<h2 class="help-cat" id="getting-started" data-i18n="help_start">Getting started</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_first_t">Take your first capture</span><span class="kbd">Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_first_1">Run KillerShot. It opens the editor and puts its icon in the notification area. Press <b>Print Screen</b> anywhere in Windows, drag around what you want, and let go. The picture is on the clipboard, ready to paste.</p>
+<p data-i18n="h_first_2">Close the editor and KillerShot keeps running in the tray, so Print Screen keeps working. Right-click the tray icon to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_prtsc_t">When Print Screen opens Snipping Tool instead</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_prtsc_1">Windows 11 can give Print Screen to Snipping Tool. When that setting is on, or another program already holds a shortcut, KillerShot cannot register it and says so in a notification.</p>
+<p data-i18n="h_prtsc_2">Open <b>Capture settings</b> on the rail and choose <b>Open the Windows Print Screen setting</b>, turn off <b>Use the Print screen key to open screen capture</b>, then choose <b>Try the shortcuts again</b> from the tray menu. You can also give any action a different shortcut.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_startup_t">Start with Windows</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_startup_1">Turn on <b>Start KillerShot when Windows starts</b> in Capture settings. KillerShot then starts in the notification area without opening the editor, and Print Screen works from the moment you sign in.</p>
+</div></div></div>
+<h2 class="help-cat" id="modes" data-i18n="h_modes">Capture modes</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_region_t">Region</span><span class="kbd">Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_region_1">The whole desktop is frozen the moment you press the key, and every monitor shows its own slice of that copy. Drag to select. A drag can cross monitors with different scaling, and the result is in screen pixels.</p>
+<p data-i18n="h_region_2">Hovering highlights the window under the pointer, and a single click without a drag takes that window. <b>Escape</b> or a right-click cancels with nothing copied and the last mode unchanged.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_window_t">Window</span><span class="kbd">Alt + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_window_1">Takes the active window through Windows Graphics Capture, so a window that is partly covered still comes out whole. The rounded corners of Windows 11 windows are filled from the desktop behind them.</p>
+<p data-i18n="h_window_2">With <b>The window shortcut lets me click the window to capture</b> turned on, the shortcut shows the frozen desktop and you click the window you want. When nothing capturable is in front, such as the desktop or the taskbar, the monitor under the pointer is captured instead.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_monitor_t">Monitor and all monitors</span><span class="kbd">Ctrl / Shift + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_monitor_1"><b>Ctrl + Print Screen</b> captures the monitor under the pointer. <b>Shift + Print Screen</b> captures every monitor as one picture, laid out the way Windows arranges them.</p>
+</div></div></div>
+<h2 class="help-cat" id="after" data-i18n="h_after">After a capture</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_after_t">What happens after a capture</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_after_1">The <b>After capture</b> section of Capture settings decides where a capture goes. Copy to the clipboard is on by default. Save to the output folder writes a file with no dialog, Windows' own Screenshots folder unless you choose another. You can also have KillerShot ask where to save each capture, open the editor after each one, and show a notification.</p>
+<p data-i18n="h_after_2">The <b>Capture</b> section adds a delay of up to 30 seconds, so you can open a menu before the desktop is frozen, and options to include the mouse pointer and play a camera sound.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_names_t">File names and formats</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_names_1">Saved captures are named from a pattern. The default is <code>KillerShot {yyyy}-{MM}-{dd} {HH}{mm}{ss}</code>. The placeholders are <code>{yyyy}</code>, <code>{MM}</code>, <code>{dd}</code>, <code>{HH}</code>, <code>{mm}</code>, <code>{ss}</code>, <code>{mode}</code>, <code>{width}</code> and <code>{height}</code>. A name that is already taken gets <code>(2)</code>, <code>(3)</code> and so on, so a capture never replaces an earlier one.</p>
+<p data-i18n="h_names_2">Choose PNG or JPEG. JPEG has a quality setting. PNG keeps every pixel exactly.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_recent_t">Recent captures</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_recent_1">KillerShot keeps the last 20 captures in <code>%LOCALAPPDATA%\KillerShot\Recent</code>, so a capture you copied over on the clipboard can still be reopened. Open one from the <b>Recent</b> button in the editor. Older files are removed as new ones arrive.</p>
+</div></div></div>
+<h2 class="help-cat" id="editor" data-i18n="h_editor">Editor</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_tools_t">Editor tools</span><span class="kbd">V P H A R E T X C</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_tools_1">The toolbar carries Select and move (V), Pen (P), Highlighter (H), Arrow (A), Rectangle (R), Ellipse (E), Text (T), Redact (X) and Crop (C), with a color and size for each mark. Single-letter keys stand down while you are typing.</p>
+<p data-i18n="h_tools_2"><b>Redact</b> draws an opaque block. The saved file and the clipboard copy carry the flattened pixels, so the covered area cannot be recovered from them. <b>Crop</b> can be undone; the pixels outside a crop stay only in the undo history.</p>
+<p data-i18n="h_tools_3">Select a mark to move it with the mouse or the arrow keys (Shift moves 10 pixels), or delete it with Delete. Undo and redo keep the last 50 steps.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_files_t">Open, save, copy and print</span><span class="kbd">Ctrl+O / S / C / P</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_files_1"><b>Ctrl+O</b> opens a PNG, JPEG, BMP, GIF or TIFF. <b>Ctrl+S</b> saves, <b>Ctrl+Shift+S</b> saves under a new name, <b>Ctrl+C</b> copies the finished picture and <b>Ctrl+P</b> prints it. A capture opened from Recent asks where to save instead of writing into the history folder.</p>
+<p data-i18n="h_files_2">Printing shrinks large pictures and rotates them to match the page by default. Enlarging small pictures is a separate option in Capture settings.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_zoom_t">Zoom</span><span class="kbd">Ctrl+0 / 1</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_zoom_1"><b>Ctrl+0</b> fits the picture to the window and <b>Ctrl+1</b> shows it at 100%. <b>Ctrl+plus</b> and <b>Ctrl+minus</b> zoom in and out. Zoom only changes the view; the exported picture always has the capture's exact size.</p>
+</div></div></div>
+<h2 class="help-cat" id="recording" data-i18n="h_recording">Recording</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_rec_t">Record the screen</span><span class="kbd">Ctrl + Shift + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_rec_1">Press <b>Ctrl + Shift + Print Screen</b>, click <b>Record</b> in the editor (Ctrl+R) or choose <b>Record video</b> from the tray. Pick a region, window or monitor on the frozen desktop, and recording starts after a three second countdown. Pressing the shortcut again during the countdown starts at once.</p>
+<p data-i18n="h_rec_2">A frame marks the area and a bar offers Pause, Stop and Discard. Neither appears in the video. Press the shortcut again or click Stop to save.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_mp4_t">MP4 and GIF settings</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_mp4_1"><b>MP4</b> records H.264 video at 15, 24, 30 or 60 frames per second, in Small file, Balanced or High quality. Sound can be off, the system sound, the microphone, or both, at 96 to 192 kbps. MP4 recordings can be at most 4096 pixels wide.</p>
+<p data-i18n="h_mp4_2"><b>Animated GIF</b> records at 5 to 25 frames per second, at full, three-quarter or half size, with 32 to 256 colors, and loops forever unless you turn that off. GIFs have no sound.</p>
+<p data-i18n="h_mp4_3">Recordings save to <code>Videos\Screen Recordings</code> unless you choose another folder, with their own file name pattern. KillerShot can also copy the finished file to the clipboard and show a notification that opens its folder.</p>
+</div></div></div>
+<h2 class="help-cat" id="command-line" data-i18n="h_cli">Command line</h2>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_cli_t">Command line</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_cli_1">The same capture and recording code runs headless from Command Prompt, PowerShell, scripts and scheduled tasks. Each command runs in its own process, so it works whether or not KillerShot is already open in the tray, and it never touches the running copy's shortcuts.</p>
+<p data-i18n="h_cli_2">Use <code>KillerShot.exe --cli</code> followed by a command. Results go to standard output, a one-line reason goes to standard error, and anything you leave out follows your KillerShot settings. <code>KillerShot.Cli.exe</code> takes the same commands without <code>--cli</code> and prints straight into a console.</p>
+<div class="cli-demo" aria-label="KillerShot command examples"><span class="prompt">C:\&gt;</span> KillerShot.exe --cli <span class="arg">capture --monitor primary --out C:\Shots\</span>
+<span class="prompt">C:\&gt;</span> KillerShot.exe --cli <span class="arg">capture --window "Outlook" --no-clipboard --json</span>
+<span class="prompt">C:\&gt;</span> KillerShot.exe --cli <span class="arg">capture --rect 0,0,1280,720 --out shot.jpg --quality 85</span>
+<span class="prompt">C:\&gt;</span> KillerShot.exe --cli <span class="arg">record --monitor 2 --seconds 30 --sound system</span>
+<span class="prompt">C:\&gt;</span> KillerShot.exe --cli <span class="arg">recent --export 1 --out C:\Tickets\</span></div>
+<p data-i18n="h_cli_3">Because KillerShot.exe is a Windows app, PowerShell and Command Prompt may return to the prompt before it finishes. Pipe the output, for example <code>KillerShot.exe --cli capture --mode all | Out-String</code>, or use KillerShot.Cli.exe when a script needs to wait.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_cli_cmds_t">Commands</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<table class="spec-table"><tr><th data-i18n="hc_syntax">Syntax</th><th data-i18n="hc_does">What it does</th></tr>
+<tr><td><code>capture</code></td><td data-i18n="hc_capture">Take a screenshot and print where it was saved.</td></tr>
+<tr><td><code>record --seconds &lt;n&gt;</code></td><td data-i18n="hc_record">Record the screen to MP4 or GIF for 1 to 3600 seconds. Ctrl+C stops early and keeps the file.</td></tr>
+<tr><td><code>recent</code></td><td data-i18n="hc_recent">List the recent captures, or print, copy, export or open one of them.</td></tr>
+<tr><td><code>open &lt;image&gt;</code></td><td data-i18n="hc_open">Open an image in the editor. A running KillerShot opens it; otherwise KillerShot starts with it.</td></tr>
+<tr><td><code>monitors</code></td><td data-i18n="hc_monitors">List monitors, numbered left to right, with their bounds in screen pixels.</td></tr>
+<tr><td><code>windows [--limit &lt;n&gt;]</code></td><td data-i18n="hc_windows">List capturable windows with their handles, sizes, process names and titles.</td></tr>
+<tr><td><code>settings</code></td><td data-i18n="hc_settings">Show the capture, recording and shortcut settings in use.</td></tr>
+<tr><td><code>version</code></td><td data-i18n="hc_version">Print the KillerShot version.</td></tr>
+<tr><td><code>help</code></td><td data-i18n="hc_help">Show every command and option.</td></tr>
+</table>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_cli_cap_t">capture options</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<table class="spec-table"><tr><th data-i18n="hc_option">Option</th><th data-i18n="hc_does">What it does</th></tr>
+<tr><td><code>--mode region|window|monitor|all</code></td><td data-i18n="hc_mode">What to capture. Without it, the last mode you used.</td></tr>
+<tr><td><code>--rect x,y,width,height</code></td><td data-i18n="hc_rect">Capture a rectangle in screen pixels without the selector.</td></tr>
+<tr><td><code>--monitor &lt;n|primary|pointer&gt;</code></td><td data-i18n="hc_monitor">Monitor number from the monitors command. Without it, the monitor under the pointer.</td></tr>
+<tr><td><code>--window &lt;handle|title&gt;</code></td><td data-i18n="hc_window">A handle from the windows command, or part of a window title. Without it, the window in front.</td></tr>
+<tr><td><code>--pick</code></td><td data-i18n="hc_pick">Click the window to capture.</td></tr>
+<tr><td><code>--out &lt;file|folder&gt;</code></td><td data-i18n="hc_out">Save to a .png, .jpg or .jpeg file, or into a folder with the usual file name. An existing file is not replaced without --overwrite.</td></tr>
+<tr><td><code>--save</code>, <code>--no-save</code></td><td data-i18n="hc_save">Save to the output folder from settings, or do not.</td></tr>
+<tr><td><code>--format png|jpg</code>, <code>--quality &lt;10-100&gt;</code></td><td data-i18n="hc_format">Image format and JPEG quality.</td></tr>
+<tr><td><code>--clipboard</code>, <code>--no-clipboard</code></td><td data-i18n="hc_clip">Copy the capture to the clipboard, or leave the clipboard alone.</td></tr>
+<tr><td><code>--delay &lt;0-30&gt;</code></td><td data-i18n="hc_delay">Seconds to wait before capturing.</td></tr>
+<tr><td><code>--cursor</code>, <code>--no-cursor</code></td><td data-i18n="hc_cursor">Include the mouse pointer.</td></tr>
+<tr><td><code>--shutter</code>, <code>--no-shutter</code></td><td data-i18n="hc_shutter">Play the camera sound.</td></tr>
+<tr><td><code>--editor</code></td><td data-i18n="hc_editor">Open the capture in the editor.</td></tr>
+<tr><td><code>--no-recent</code></td><td data-i18n="hc_norecent">Leave the capture out of the Recent history.</td></tr>
+<tr><td><code>--json</code></td><td data-i18n="hc_json">Print the path, size, mode and window as JSON.</td></tr>
+</table>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_cli_rec_t">record and recent options</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<table class="spec-table"><tr><th data-i18n="hc_option">Option</th><th data-i18n="hc_does">What it does</th></tr>
+<tr><td><code>--seconds &lt;1-3600&gt;</code></td><td data-i18n="hc_seconds">How long to record. Required.</td></tr>
+<tr><td><code>--mode</code>, <code>--rect</code>, <code>--monitor</code>, <code>--window</code>, <code>--pick</code></td><td data-i18n="hc_rec_target">The same as for capture. Without a target, you choose a region on screen.</td></tr>
+<tr><td><code>--format mp4|gif</code></td><td data-i18n="hc_rec_format">The format, or the --out file's extension, or the setting.</td></tr>
+<tr><td><code>--fps &lt;1-60&gt;</code>, <code>--quality small|balanced|high</code></td><td data-i18n="hc_rec_quality">Frame rate and MP4 quality.</td></tr>
+<tr><td><code>--sound none|system|mic|both</code></td><td data-i18n="hc_rec_sound">Sound for MP4 recordings.</td></tr>
+<tr><td><code>--gif-colors &lt;2-256&gt;</code>, <code>--gif-size &lt;10-100&gt;</code>, <code>--loop</code>, <code>--no-loop</code></td><td data-i18n="hc_rec_gif">GIF palette size, scale and looping.</td></tr>
+<tr><td><code>--clipboard</code></td><td data-i18n="hc_rec_clip">Copy the finished file to the clipboard.</td></tr>
+<tr><td><code>recent --limit &lt;1-20&gt;</code></td><td data-i18n="hc_rec_list">List up to this many recent captures, newest first.</td></tr>
+<tr><td><code>recent --path|--copy|--open &lt;n&gt;</code></td><td data-i18n="hc_rec_one">Print the file of capture n, copy it to the clipboard, or open it in the editor. 1 is the newest.</td></tr>
+<tr><td><code>recent --export &lt;n&gt; --out &lt;file|folder&gt;</code></td><td data-i18n="hc_rec_export">Save a copy of capture n as PNG or JPEG.</td></tr>
+</table>
+<p data-i18n="h_cli_exit">Exit codes: <code>0</code> success, <code>1</code> the command failed, <code>2</code> the command line was not valid, <code>3</code> you cancelled the selector.</p>
+</div></div></div>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_mcp_t">KillerMCP</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_mcp_1">KillerMCP finds an installed KillerShot and offers its command line to AI agents as tools: list monitors and windows, take screenshots, record, list recent captures, open an image in the editor and read the settings. Agent captures leave the clipboard alone unless the agent asks. See the <a href="mcp.html">KillerMCP page</a>.</p>
+</div></div></div>
+<h2 class="help-cat" id="shortcuts" data-i18n="h_keys">Keyboard shortcuts</h2>
+<div class="kbd-cols"><div class="kbd-col">
+<div class="kbd-group"><h4 data-i18n="hk_global">Anywhere in Windows</h4>
+<div class="kbd-row"><span class="k">Print Screen</span><span class="d" data-i18n="hk_last">Capture again in the last mode</span></div>
+<div class="kbd-row"><span class="k">Alt + Print Screen</span><span class="d" data-i18n="hk_win">Capture the active window</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Print Screen</span><span class="d" data-i18n="hk_mon">Capture the monitor under the mouse</span></div>
+<div class="kbd-row"><span class="k">Shift + Print Screen</span><span class="d" data-i18n="hk_all">Capture all monitors</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Shift + Print Screen</span><span class="d" data-i18n="hk_rec">Start or stop a video recording</span></div>
+</div>
+<div class="kbd-group"><h4 data-i18n="hk_file">File</h4>
+<div class="kbd-row"><span class="k">Ctrl + N</span><span class="d" data-i18n="hk_new">Capture a region</span></div>
+<div class="kbd-row"><span class="k">Ctrl + R</span><span class="d" data-i18n="hk_record">Start or stop a video recording</span></div>
+<div class="kbd-row"><span class="k">Ctrl + O</span><span class="d" data-i18n="hk_open">Open an image</span></div>
+<div class="kbd-row"><span class="k">Ctrl + S</span><span class="d" data-i18n="hk_save">Save</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Shift + S</span><span class="d" data-i18n="hk_saveas">Save as</span></div>
+<div class="kbd-row"><span class="k">Ctrl + C</span><span class="d" data-i18n="hk_copy">Copy the finished picture</span></div>
+<div class="kbd-row"><span class="k">Ctrl + P</span><span class="d" data-i18n="hk_print">Print</span></div>
+</div>
+<div class="kbd-group"><h4 data-i18n="hk_help">Help</h4>
+<div class="kbd-row"><span class="k">F1</span><span class="d" data-i18n="hk_f1">Keyboard shortcuts, as a list or a keyboard map</span></div>
+<div class="kbd-row"><span class="k">F12</span><span class="d" data-i18n="hk_f12">About KillerShot</span></div>
+<div class="kbd-row"><span class="k">Esc</span><span class="d" data-i18n="hk_esc">Close a card or cancel the current mark</span></div>
+</div>
+</div><div class="kbd-col">
+<div class="kbd-group"><h4 data-i18n="hk_tools">Tools</h4>
+<div class="kbd-row"><span class="k">V</span><span class="d" data-i18n="hk_v">Select and move</span></div>
+<div class="kbd-row"><span class="k">P</span><span class="d" data-i18n="hk_p">Pen</span></div>
+<div class="kbd-row"><span class="k">H</span><span class="d" data-i18n="hk_h">Highlighter</span></div>
+<div class="kbd-row"><span class="k">A</span><span class="d" data-i18n="hk_a">Arrow</span></div>
+<div class="kbd-row"><span class="k">R</span><span class="d" data-i18n="hk_r">Rectangle</span></div>
+<div class="kbd-row"><span class="k">E</span><span class="d" data-i18n="hk_e">Ellipse</span></div>
+<div class="kbd-row"><span class="k">T</span><span class="d" data-i18n="hk_t">Text</span></div>
+<div class="kbd-row"><span class="k">X</span><span class="d" data-i18n="hk_x">Redact</span></div>
+<div class="kbd-row"><span class="k">C</span><span class="d" data-i18n="hk_c">Crop</span></div>
+</div>
+<div class="kbd-group"><h4 data-i18n="hk_edit">Edit</h4>
+<div class="kbd-row"><span class="k">Ctrl + Z</span><span class="d" data-i18n="hk_undo">Undo</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Y / Ctrl + Shift + Z</span><span class="d" data-i18n="hk_redo">Redo</span></div>
+<div class="kbd-row"><span class="k">Delete</span><span class="d" data-i18n="hk_del">Delete the selected mark</span></div>
+<div class="kbd-row"><span class="k">Arrow keys</span><span class="d" data-i18n="hk_nudge">Move the selected mark (Shift for 10 px)</span></div>
+</div>
+<div class="kbd-group"><h4 data-i18n="hk_view">View</h4>
+<div class="kbd-row"><span class="k">Ctrl + 0</span><span class="d" data-i18n="hk_fit">Fit to the window</span></div>
+<div class="kbd-row"><span class="k">Ctrl + 1</span><span class="d" data-i18n="hk_100">Actual size (100%)</span></div>
+<div class="kbd-row"><span class="k">Ctrl + plus / minus</span><span class="d" data-i18n="hk_zoom">Zoom in and out</span></div>
+</div>
+</div></div>
+<p data-i18n="h_keys_1">The five global shortcuts can be changed or turned off in Capture settings: click one, then press the new keys. Backspace turns it off and Esc keeps it. Single-letter tool keys stand down while you are typing.</p>
+
+</div>
+</div>
+</div>
+</div>
+<footer class="statusbar">
+<span class="left"><a href="https://github.com/SteveTheKiller/KillerShot" target="_blank" rel="noopener" data-i18n="footer_src">Source on GitHub</a> &middot; GPLv3 &middot; <span data-i18n="ui_part_of">Part of</span> <a href="https://killertools.net" target="_blank" rel="noopener">killertools.net</a></span>
+<span class="right"><span id="verEgg" title="click me">v0.1.0</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
+</footer>
+<div class="egg-toast" id="eggToast"></div>
+<script src="kst-i18n.js?v=1"></script>
+<script src="kst.js?v=1"></script>
+<script>
+(function(){
+  var items=[].slice.call(document.querySelectorAll('.acc-item'));
+  items.forEach(function(it){ var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
+    h.addEventListener('click', function(){
+      var open=it.classList.contains('open');
+      items.forEach(function(o){ o.classList.remove('open'); o.querySelector('.acc-body').style.maxHeight=null; });
+      if(!open){ it.classList.add('open'); b.style.maxHeight=b.scrollHeight+'px'; }
+    });
+  });
+  // A locale change rewrites the copy, so a section that is open has to be measured again.
+  document.addEventListener('kshot-languagechange', function(){
+    var o=document.querySelector('.acc-item.open');
+    if(o){ var b=o.querySelector('.acc-body'); b.style.maxHeight=b.scrollHeight+'px'; }
+  });
+})();
+</script>
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.outline a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
+  var sc=document.querySelector('.content-scroll');
+  function onScroll(){ var y=(sc?sc.scrollTop:window.scrollY)+100, cur=secs[0]; secs.forEach(function(s){ if(s&&s.offsetTop<=y) cur=s; });
+    links.forEach(function(a){ a.classList.toggle('on', cur && a.getAttribute('href')==='#'+cur.id); }); }
+  (sc||window).addEventListener('scroll',onScroll,{passive:true}); onScroll();
+})();
+</script>
+</body>
+</html>
