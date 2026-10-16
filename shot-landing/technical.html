@@ -165,7 +165,7 @@
 <h2 data-i18n="t_rec">The recording pipeline</h2>
 <p data-i18n="t_rec_1">A capture thread copies the recorded rectangle on a steady clock and hands each frame to an encoder thread. When the encoder falls behind, frames are dropped rather than letting the clock drift, and paused time is cut out of the timestamps.</p>
 <p data-i18n="t_rec_2">MP4 frames go to the H.264 encoder built into Windows. The video size is rounded down to even numbers, which H.264 needs. Sound is captured on its own clock and filled with silence when nothing is playing, so sound and picture stay in step.</p>
-<p data-i18n="t_rec_mp4"><b>MP4 width limit.</b> The H.264 encoder in Windows accepts frames at most 4096 pixels wide. It is built for video up to 4K, and the same limit applies to the H.264 encoders on most graphics cards. One monitor fits, even at 3840 pixels wide, but a recording of several monitors side by side, such as three 1920 pixel screens at 5760 pixels, cannot be encoded as MP4. Record one monitor or a smaller area, or record a GIF. KillerShot's own GIF encoder has no width limit.</p>
+<p data-i18n="t_rec_mp4"><b>Large MP4 recordings.</b> The H.264 encoder in Windows accepts frames up to 4096 x 2304 pixels: 36,864 blocks of 16 x 16 pixels with no side over 4096, the frame size limit of H.264 level 5.1. One 4K monitor fits. A larger area is scaled down to fit before it reaches the encoder, keeping its shape, so three 1920 pixel screens side by side at 5760 x 1080 come out at 4096 x 768. GIF recordings keep the full size.</p>
 <p data-i18n="t_rec_3">GIF frames are reduced to a palette per frame and only the area that changed since the last frame is stored. That keeps a recording of a mostly still screen small.</p>
 </div>
 <div class="tech-sec" id="rendering">
@@ -175,7 +175,6 @@
 <div class="tech-sec" id="limits">
 <h2 data-i18n="t_limits">What is not captured</h2>
 <p data-i18n="t_limits_1">Content an app marks as protected, such as some streaming video, comes out black; Windows withholds it from every screen capture. A minimized window cannot be captured in window mode. A desktop capture of an HDR monitor is converted to standard range by Windows and can look washed out.</p>
-<p data-i18n="t_limits_2">MP4 recordings wider than 4096 pixels cannot be made, because the H.264 encoder in Windows does not accept them. See <a href="#recording">The recording pipeline</a>. Screenshots have no such limit.</p>
 </div>
 <div class="tech-sec" id="cli">
 <h2 data-i18n="t_cli">Command line and KillerMCP</h2>
