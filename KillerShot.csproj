@@ -32,6 +32,17 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <!-- The command line's commands are compiled into the app, so KillerShot.exe runs them when
+       its first argument is the cli switch. The rest of KillerShot.Cli (its console entry and
+       build output) belongs to that project. -->
+  <ItemGroup>
+    <Compile Remove="KillerShot.Cli\**\*.cs" />
+    <Compile Include="KillerShot.Cli\Program.cs" />
+    <None Remove="KillerShot.Cli\**\*" />
+    <EmbeddedResource Remove="KillerShot.Cli\**\*" />
+    <Page Remove="KillerShot.Cli\**\*" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Generated from brand\icon.png by brand\make_icon.py. Regenerate rather than hand-editing. -->
     <Resource Include="Resources\kst-icon.ico" />

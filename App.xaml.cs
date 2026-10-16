@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using KillerShot.Editor;
@@ -23,10 +24,28 @@ public partial class App : Application
     internal EditorDocument? Document { get; private set; }
     internal event Action? DocumentChanged;
 
+    /// <summary>Set by KillerShot.Cli.exe before it runs the application, so the console build
+    /// takes the command line path without needing the --cli switch.</summary>
+    internal static string[]? PendingCli { get; set; }
+
+    /// <summary>Where a second launch leaves the image it was asked to open, for the running
+    /// instance to pick up when the wake event arrives.</summary>
+    internal static readonly string OpenRequestPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", "open-request.txt");
+
     protected override void OnStartup(StartupEventArgs e)
     {
         KillerFamily.Accessibility.AccessibleControls.Initialize();
         base.OnStartup(e);
+
+        // The command line runs in its own process without the tray, the shortcuts or the
+        // single-instance claim, so scripts and KillerMCP can use it beside a running KillerShot.
+        string[]? cli = PendingCli ?? (e.Args.Length > 0 && e.Args[0].Equals("--cli", StringComparison.OrdinalIgnoreCase) ? e.Args[1..] : null);
+        if (cli != null)
+        {
+            Cli.Program.Start(cli, attachConsole: PendingCli == null, Shutdown);
+            return;
+        }
 
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         // The interface self-test runs without the tray, the shortcuts or the single-instance
@@ -35,8 +54,18 @@ public partial class App : Application
 
         // One instance per user session. A second launch asks the first to open its editor.
         _instance = new Mutex(true, @"Local\KillerShot-SingleInstance", out bool first);
+        string? openPath = OpenArgument(e.Args);
         if (!first)
         {
+            if (openPath != null)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(OpenRequestPath)!);
+                    File.WriteAllText(OpenRequestPath, openPath);
+                }
+                catch { }
+            }
             try { using var h = EventWaitHandle.OpenExisting(@"Local\KillerShot-Wake"); h.Set(); } catch { }
             _instance.Dispose();
             _instance = null;
@@ -44,7 +73,11 @@ public partial class App : Application
             return;
         }
         _wake = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\KillerShot-Wake");
-        _wakeWait = ThreadPool.RegisterWaitForSingleObject(_wake, (_, _) => Dispatcher.BeginInvoke(ShowEditor),
+        _wakeWait = ThreadPool.RegisterWaitForSingleObject(_wake, (_, _) => Dispatcher.BeginInvoke(() =>
+            {
+                OpenRequested();
+                ShowEditor();
+            }),
             null, Timeout.Infinite, false);
 
         InitializeKit();
@@ -58,9 +91,49 @@ public partial class App : Application
         Tray.BalloonClicked += ShowEditor;
         Tray.Start();
 
-        // Started with Windows: stay in the notification area. Started by hand: show the editor.
-        if (!e.Args.Any(a => a.Equals("--tray", StringComparison.OrdinalIgnoreCase)))
+        // Started with Windows: stay in the notification area. Started by hand or asked to open
+        // an image: show the editor.
+        if (openPath != null) OpenImage(openPath);
+        if (openPath != null || !e.Args.Any(a => a.Equals("--tray", StringComparison.OrdinalIgnoreCase)))
             ShowEditor();
+    }
+
+    /// <summary>The path after --open, as a full path, or null.</summary>
+    private static string? OpenArgument(string[] args)
+    {
+        int i = Array.FindIndex(args, a => a.Equals("--open", StringComparison.OrdinalIgnoreCase));
+        if (i < 0 || i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1])) return null;
+        try { return Path.GetFullPath(args[i + 1]); } catch { return null; }
+    }
+
+    /// <summary>Opens the image a second launch left behind, if there is one.</summary>
+    private void OpenRequested()
+    {
+        string? path = null;
+        try
+        {
+            if (!File.Exists(OpenRequestPath)) return;
+            path = File.ReadAllText(OpenRequestPath).Trim();
+            File.Delete(OpenRequestPath);
+        }
+        catch { }
+        if (!string.IsNullOrEmpty(path)) OpenImage(path);
+    }
+
+    /// <summary>Loads an image file into the editor. A Recent history file opens as a capture, so
+    /// Save asks where to put it instead of writing into the history folder.</summary>
+    private void OpenImage(string path)
+    {
+        try
+        {
+            var bmp = ImageOutput.Load(path);
+            bool recent = string.Equals(Path.GetDirectoryName(path)?.TrimEnd('\\'), RecentCaptures.Folder.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
+            SetDocument(new EditorDocument(bmp, recent ? null : path, File.GetLastWriteTime(path)));
+        }
+        catch (Exception ex)
+        {
+            Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message);
+        }
     }
 
     /// <summary>Theme, locale, grain and rendering, in the order the family kit expects, before

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Console build of the KillerShot command line. Program.cs is compiled into KillerShot.exe,
+       which runs the same commands behind its cli switch; this project only adds a console entry
+       point so output shows in a terminal without redirection. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.22000.0</SupportedOSPlatformVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>..\app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Resources\kst-icon.ico</ApplicationIcon>
+    <AssemblyName>KillerShot.Cli</AssemblyName>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Authors>Steve the Killer</Authors>
+    <Copyright>Copyright (c) 2026 Steve the Killer</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <ProjectReference Include="..\KillerShot.csproj" />
+  </ItemGroup>
+
+</Project>

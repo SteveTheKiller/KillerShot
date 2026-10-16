@@ -17,18 +17,31 @@ internal static class RecentCaptures
     public static string Add(BitmapSource bmp, DateTime taken)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
-        string path = Path.Combine(Folder, $"{taken:yyyyMMdd-HHmmss-fff}.png");
+        string path = PathFor(taken);
         Task.Run(() =>
         {
-            try
-            {
-                Directory.CreateDirectory(Folder);
-                ImageOutput.SavePng(bmp, path);
-                Prune();
-            }
+            try { Write(bmp, path); }
             catch { /* history is a convenience; the clipboard already has the capture */ }
         });
         return path;
+    }
+
+    /// <summary>Writes the capture before returning, for the command line, whose process can end
+    /// before a background write finishes. Throws when the history folder cannot be written.</summary>
+    public static string AddNow(BitmapSource bmp, DateTime taken)
+    {
+        string path = PathFor(taken);
+        Write(bmp, path);
+        return path;
+    }
+
+    private static string PathFor(DateTime taken) => Path.Combine(Folder, $"{taken:yyyyMMdd-HHmmss-fff}.png");
+
+    private static void Write(BitmapSource bmp, string path)
+    {
+        Directory.CreateDirectory(Folder);
+        ImageOutput.SavePng(bmp, path);
+        Prune();
     }
 
     public static IReadOnlyList<FileInfo> List()

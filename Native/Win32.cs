@@ -163,9 +163,29 @@ internal static class Win32
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)] public static extern bool Shell_NotifyIcon(uint message, ref NOTIFYICONDATA data);
 
+    [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr hWnd);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int max);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowTextLength(IntPtr hWnd);
+
+    public const int ATTACH_PARENT_PROCESS = -1;
+    public const int STD_OUTPUT_HANDLE = -11;
+    public const int STD_ERROR_HANDLE = -12;
+    public const uint FILE_TYPE_CHAR = 0x0002;
+    [DllImport("kernel32.dll")] public static extern bool AttachConsole(int processId);
+    [DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int handle);
+    [DllImport("kernel32.dll")] public static extern uint GetFileType(IntPtr handle);
+
     public static string ClassName(IntPtr hwnd)
     {
         var sb = new System.Text.StringBuilder(256);
         return GetClassName(hwnd, sb, sb.Capacity) > 0 ? sb.ToString() : "";
+    }
+
+    public static string WindowTitle(IntPtr hwnd)
+    {
+        int length = GetWindowTextLength(hwnd);
+        if (length <= 0) return "";
+        var sb = new System.Text.StringBuilder(length + 1);
+        return GetWindowText(hwnd, sb, sb.Capacity) > 0 ? sb.ToString() : "";
     }
 }
