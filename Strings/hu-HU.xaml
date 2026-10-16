@@ -239,7 +239,6 @@
     <sys:String x:Key="Str_Tray_Recording">Felvétel folyamatban</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Felvétel leállítása</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">A felvétel nem sikerült</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Az MP4-felvételek legfeljebb {1} képpont szélesek lehetnek, ez a terület {0}. Rögzítsen egy monitort vagy kisebb területet, vagy váltson GIF-re a Videóbeállításokban.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Videó mentve</sys:String>
     <sys:String x:Key="Str_VS_Colors">Színek</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">A videófájl másolása a vágólapra</sys:String>
@@ -271,6 +270,6 @@
     <sys:String x:Key="Str_VS_SoundQuality">Hangminőség</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">A GIF-eknek nincs hangja.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Az MP4-videók legfeljebb 4096 képpont szélesek lehetnek, ez a Windows H.264-kódolójának korlátja. Szélesebb területhez rögzítsen kisebb területet, vagy használjon GIF-et.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">A Windows H.264-kódolója legfeljebb 4096 x 2304 képpontos videót fogad, ezért a nagyobb terület, például több monitor, kicsinyítve kerül a videóba. A GIF megtartja a teljes méretet.</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> segédprogram.</sys:String>
 </ResourceDictionary>

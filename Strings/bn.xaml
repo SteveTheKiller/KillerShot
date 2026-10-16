@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">রেকর্ড হচ্ছে</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">রেকর্ডিং বন্ধ করুন</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">রেকর্ডিং ব্যর্থ হয়েছে</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 রেকর্ডিং সর্বোচ্চ {1} পিক্সেল চওড়া হতে পারে, আর এই এলাকাটি {0}। একটি মনিটর বা ছোট এলাকা রেকর্ড করুন, অথবা ভিডিও সেটিংসে GIF বেছে নিন।</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">ভিডিও সংরক্ষিত</sys:String>
     <sys:String x:Key="Str_VS_Colors">রং</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">ভিডিও ফাইল ক্লিপবোর্ডে কপি করুন</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">শব্দের মান</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-এ শব্দ থাকে না।</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 ভিডিও সর্বোচ্চ 4096 পিক্সেল চওড়া হতে পারে, এটি Windows-এর H.264 এনকোডারের সীমা। আরও চওড়া কিছুর জন্য ছোট এলাকা রেকর্ড করুন বা GIF ব্যবহার করুন।</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows-এর H.264 এনকোডার সর্বোচ্চ 4096 x 2304 পিক্সেলের ভিডিও নেয়, তাই বড় এলাকা, যেমন একাধিক মনিটর, ছোট করে মানানসই করা হয়। GIF পুরো আকার রাখে।</sys:String>
 </ResourceDictionary>

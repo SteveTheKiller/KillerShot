@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Nahrávání</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Zastavit nahrávání</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Nahrávání selhalo</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Záznamy MP4 mohou být široké nejvýše {1} pixelů a tato oblast má {0}. Nahrajte jeden monitor nebo menší oblast, nebo v Nastavení videa přepněte na GIF.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video uloženo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Barvy</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopírovat soubor videa do schránky</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Kvalita zvuku</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kb/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF nemá zvuk.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Videa MP4 mohou být široká nejvýše 4096 pixelů, což je limit kodéru H.264 ve Windows. Pro cokoli širšího nahrajte menší oblast nebo použijte GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Kodér H.264 ve Windows přijímá video do 4096 x 2304 pixelů, takže větší oblast, například několik monitorů, se zmenší, aby se vešla. GIF zachová plnou velikost.</sys:String>
 </ResourceDictionary>

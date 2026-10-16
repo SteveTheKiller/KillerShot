@@ -249,8 +249,6 @@ public static class Program
     // record
     // ------------------------------------------------------------------------------------------
 
-    private const int MaxMp4Width = 4096;
-
     private static readonly string[] RecordValues = ["mode", "monitor", "window", "rect", "out", "format", "seconds", "fps", "sound",
         "quality", "gif-colors", "gif-size"];
     private static readonly string[] RecordFlags = ["json", "cursor", "no-cursor", "clipboard", "pick", "overwrite", "loop", "no-loop"];
@@ -323,10 +321,6 @@ public static class Program
         if (area.IsEmpty) throw new CliException("The area to record is outside the desktop.", ExitFailed);
         if (!gif)
         {
-            // The Windows H.264 encoder refuses frames wider than 4096 pixels and fails without a
-            // message, so say so before a file is created.
-            if (area.Width > MaxMp4Width)
-                throw new CliException($"MP4 recordings can be at most {MaxMp4Width} pixels wide, and this area is {area.Width}. Record one monitor, pass a narrower --rect, or use --format gif.", ExitFailed);
             var (ew, eh) = Mp4Encoder.EvenSize(area.Width, area.Height);
             area = new Win32.RECT(area.Left, area.Top, area.Left + ew, area.Top + eh);
         }
@@ -365,8 +359,8 @@ public static class Program
 
         if (o.Has("json"))
         {
-            int width = sink is GifEncoder g ? g.OutputWidth : area.Width;
-            int height = sink is GifEncoder g2 ? g2.OutputHeight : area.Height;
+            int width = sink is GifEncoder g ? g.OutputWidth : sink is Mp4Encoder m ? m.OutputWidth : area.Width;
+            int height = sink is GifEncoder g2 ? g2.OutputHeight : sink is Mp4Encoder m2 ? m2.OutputHeight : area.Height;
             Out.WriteLine(Json(j =>
             {
                 j.WriteStartObject();

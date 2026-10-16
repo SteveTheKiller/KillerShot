@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Nagrywanie</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Zatrzymaj nagrywanie</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Nagrywanie nie powiodło się</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Nagrania MP4 mogą mieć najwyżej {1} pikseli szerokości, a ten obszar ma {0}. Nagraj jeden monitor lub mniejszy obszar albo przełącz na GIF w Ustawieniach wideo.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Zapisano wideo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Kolory</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopiuj plik wideo do schowka</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Jakość dźwięku</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kb/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-y nie mają dźwięku.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Filmy MP4 mogą mieć najwyżej 4096 pikseli szerokości, co jest limitem kodera H.264 w systemie Windows. Dla szerszego obszaru nagraj mniejszy obszar lub użyj formatu GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Koder H.264 w systemie Windows obsługuje wideo do 4096 x 2304 pikseli, więc większy obszar, na przykład kilka monitorów, jest zmniejszany, aby się zmieścił. GIF zachowuje pełny rozmiar.</sys:String>
 </ResourceDictionary>

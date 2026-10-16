@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Aufnahme läuft</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Aufnahme beenden</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Aufnahme fehlgeschlagen</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4-Aufnahmen können höchstens {1} Pixel breit sein, dieser Bereich ist {0} breit. Nehmen Sie einen Monitor oder einen kleineren Bereich auf, oder wechseln Sie in den Videoeinstellungen zu GIF.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video gespeichert</sys:String>
     <sys:String x:Key="Str_VS_Colors">Farben</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Videodatei in die Zwischenablage kopieren</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Tonqualität</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbit/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs haben keinen Ton.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4-Videos können höchstens 4096 Pixel breit sein, eine Grenze des H.264-Encoders von Windows. Für Breiteres nehmen Sie einen kleineren Bereich auf oder verwenden Sie GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Der H.264-Encoder von Windows verarbeitet Videos bis 4096 x 2304 Pixel. Größere Bereiche, etwa mehrere Monitore, werden passend verkleinert. GIF behält die volle Größe.</sys:String>
 </ResourceDictionary>

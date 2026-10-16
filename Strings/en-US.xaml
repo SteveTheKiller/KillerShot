@@ -243,7 +243,6 @@
     <sys:String x:Key="Str_Tray_Recording">Recording</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Stop recording</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Recording failed</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 recordings can be at most {1} pixels wide, and this area is {0}. Record one monitor or a smaller area, or switch to GIF in Video settings.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video saved</sys:String>
     <sys:String x:Key="Str_VS_Colors">Colors</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Copy the video file to the clipboard</sys:String>
@@ -275,5 +274,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Sound quality</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs have no sound.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 videos can be at most 4096 pixels wide, a limit of the H.264 encoder in Windows. Record a smaller area or use GIF for anything wider.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">The H.264 encoder in Windows takes video up to 4096 x 2304 pixels, so a larger area, such as several monitors, is scaled down to fit. GIF keeps the full size.</sys:String>
 </ResourceDictionary>

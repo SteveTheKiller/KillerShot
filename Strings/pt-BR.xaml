@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Gravando</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Parar a gravação</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Falha na gravação</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Gravações MP4 podem ter no máximo {1} pixels de largura, e esta área tem {0}. Grave um monitor ou uma área menor, ou mude para GIF em Configurações de vídeo.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Vídeo salvo</sys:String>
     <sys:String x:Key="Str_VS_Colors">Cores</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Copiar o arquivo de vídeo para a área de transferência</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Qualidade do som</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs não têm som.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Vídeos MP4 podem ter no máximo 4096 pixels de largura, um limite do codificador H.264 do Windows. Para algo mais largo, grave uma área menor ou use GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">O codificador H.264 do Windows aceita vídeo de até 4096 x 2304 pixels, então uma área maior, como vários monitores, é reduzida para caber. O GIF mantém o tamanho completo.</sys:String>
 </ResourceDictionary>

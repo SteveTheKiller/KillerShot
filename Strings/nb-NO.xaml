@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Tar opp</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Stopp opptaket</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Opptaket mislyktes</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4-opptak kan være maks {1} piksler brede, og dette området er {0}. Ta opp én skjerm eller et mindre område, eller bytt til GIF i Videoinnstillinger.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video lagret</sys:String>
     <sys:String x:Key="Str_VS_Colors">Farger</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Kopier videofilen til utklippstavlen</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Lydkvalitet</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-er har ikke lyd.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4-videoer kan være maks 4096 piksler brede, en grense i H.264-koderen i Windows. Ta opp et mindre område eller bruk GIF for noe bredere.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">H.264-koderen i Windows tar video opptil 4096 x 2304 piksler, så et større område, for eksempel flere skjermer, skaleres ned så det passer. GIF beholder full størrelse.</sys:String>
 </ResourceDictionary>

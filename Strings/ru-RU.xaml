@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Идёт запись</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Остановить запись</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Не удалось записать</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Ширина записи MP4 не может превышать {1} пикселей, а ширина этой области {0}. Запишите один монитор или область поменьше либо выберите GIF в параметрах видео.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Видео сохранено</sys:String>
     <sys:String x:Key="Str_VS_Colors">Цвета</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Копировать файл видео в буфер обмена</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Качество звука</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} кбит/с</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">У GIF нет звука.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Ширина видео MP4 не может превышать 4096 пикселей, это ограничение кодировщика H.264 в Windows. Для более широкой области запишите область поменьше или используйте GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Кодировщик H.264 в Windows принимает видео размером до 4096 x 2304 пикселей, поэтому область побольше, например несколько мониторов, уменьшается, чтобы поместиться. GIF сохраняет полный размер.</sys:String>
 </ResourceDictionary>

@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Enregistrement en cours</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Arrêter l'enregistrement</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Échec de l'enregistrement</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">Les enregistrements MP4 peuvent faire au plus {1} pixels de large, et cette zone en fait {0}. Enregistrez un seul écran ou une zone plus petite, ou passez au GIF dans les Réglages vidéo.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Vidéo enregistrée</sys:String>
     <sys:String x:Key="Str_VS_Colors">Couleurs</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Copier le fichier vidéo dans le presse-papiers</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Qualité du son</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbit/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Les GIF n'ont pas de son.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">Les vidéos MP4 peuvent faire au plus 4096 pixels de large, une limite de l'encodeur H.264 de Windows. Pour plus large, enregistrez une zone plus petite ou utilisez le GIF.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">L'encodeur H.264 de Windows accepte des vidéos jusqu'à 4096 x 2304 pixels. Une zone plus grande, comme plusieurs écrans, est donc réduite pour tenir. Le GIF garde la taille complète.</sys:String>
 </ResourceDictionary>

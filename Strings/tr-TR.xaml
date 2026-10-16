@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">Kaydediliyor</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">Kaydı durdur</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">Kayıt başarısız</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 kayıtları en fazla {1} piksel genişliğinde olabilir, bu alan ise {0}. Tek bir monitörü veya daha küçük bir alanı kaydedin ya da Video ayarlarında GIF'e geçin.</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">Video kaydedildi</sys:String>
     <sys:String x:Key="Str_VS_Colors">Renkler</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">Video dosyasını panoya kopyala</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Ses kalitesi</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF'lerde ses yoktur.</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 videolar en fazla 4096 piksel genişliğinde olabilir; bu, Windows'taki H.264 kodlayıcısının bir sınırıdır. Daha geniş bir alan için daha küçük bir alan kaydedin veya GIF kullanın.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows'taki H.264 kodlayıcısı en fazla 4096 x 2304 piksel video kabul eder, bu yüzden birden çok monitör gibi daha büyük bir alan sığacak şekilde küçültülür. GIF tam boyutu korur.</sys:String>
 </ResourceDictionary>

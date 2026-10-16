@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">録画中</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">録画を停止</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">録画に失敗しました</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 録画の幅は最大 {1} ピクセルですが、この範囲は {0} ピクセルです。1 台のモニターか小さい範囲を録画するか、動画の設定で GIF に切り替えてください。</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">動画を保存しました</sys:String>
     <sys:String x:Key="Str_VS_Colors">色数</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">動画ファイルをクリップボードにコピー</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">音質</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF には音声がありません。</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 動画の幅は最大 4096 ピクセルです。これは Windows の H.264 エンコーダーの制限です。それより広い範囲は、小さい範囲を録画するか GIF を使用してください。</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows の H.264 エンコーダーが扱える動画は最大 4096 x 2304 ピクセルです。複数のモニターなど、それより大きい範囲は収まるように縮小されます。GIF は元のサイズのままです。</sys:String>
 </ResourceDictionary>

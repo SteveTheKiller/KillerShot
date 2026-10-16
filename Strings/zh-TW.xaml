@@ -240,7 +240,6 @@
     <sys:String x:Key="Str_Tray_Recording">正在錄製</sys:String>
     <sys:String x:Key="Str_Tray_StopRecording">停止錄製</sys:String>
     <sys:String x:Key="Str_Tray_VideoFailedTitle">錄製失敗</sys:String>
-    <sys:String x:Key="Str_Tray_VideoTooWide">MP4 錄製的寬度最多為 {1} 像素，而此區域寬 {0} 像素。請錄製單一螢幕或較小的區域，或在影片設定中改用 GIF。</sys:String>
     <sys:String x:Key="Str_Tray_VideoSavedTitle">影片已儲存</sys:String>
     <sys:String x:Key="Str_VS_Colors">色彩數</sys:String>
     <sys:String x:Key="Str_VS_CopyFile">將影片檔案複製到剪貼簿</sys:String>
@@ -272,5 +271,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">音質</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF 沒有聲音。</sys:String>
-    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 影片的寬度最多為 4096 像素，這是 Windows 中 H.264 編碼器的限制。如需更寬的範圍，請錄製較小的區域或使用 GIF。</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows 中的 H.264 編碼器最多支援 4096 x 2304 像素的影片，因此較大的區域（例如多個螢幕）會按比例縮小以符合。GIF 保持完整尺寸。</sys:String>
 </ResourceDictionary>

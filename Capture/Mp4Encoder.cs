@@ -41,12 +41,21 @@ internal sealed class Mp4Encoder : IVideoSink
         _audioBitrate = audioBitrate;
     }
 
+    /// <summary>The size of the encoded video, which is smaller than the recorded area when the
+    /// area is larger than the encoder accepts.</summary>
+    public int OutputWidth { get; private set; }
+    public int OutputHeight { get; private set; }
+
     /// <summary>Frames dropped because the encoder fell behind.</summary>
     public int Dropped { get; private set; }
 
     public async Task StartAsync(int width, int height, int fps)
     {
         _w = width; _h = height; _fps = fps;
+        // Frames go in at the recorded size. When the output size is smaller, the transcoder
+        // scales each frame down before it reaches the encoder.
+        var (outW, outH) = OutputSize(width, height);
+        OutputWidth = outW; OutputHeight = outH;
 
         var input = VideoEncodingProperties.CreateUncompressed(MediaEncodingSubtypes.Bgra8, (uint)width, (uint)height);
         input.FrameRate.Numerator = (uint)fps;
@@ -66,13 +75,13 @@ internal sealed class Mp4Encoder : IVideoSink
         profile.Audio = _audioBitrate > 0
             ? AudioEncodingProperties.CreateAac(AudioCapture.Rate, AudioCapture.Channels, (uint)_audioBitrate)
             : null;
-        profile.Video.Width = (uint)width;
-        profile.Video.Height = (uint)height;
+        profile.Video.Width = (uint)outW;
+        profile.Video.Height = (uint)outH;
         profile.Video.FrameRate.Numerator = (uint)fps;
         profile.Video.FrameRate.Denominator = 1;
         profile.Video.PixelAspectRatio.Numerator = 1;
         profile.Video.PixelAspectRatio.Denominator = 1;
-        profile.Video.Bitrate = (uint)Math.Clamp(width * (double)height * fps * _bitsPerPixel, 500_000, 80_000_000);
+        profile.Video.Bitrate = (uint)Math.Clamp(outW * (double)outH * fps * _bitsPerPixel, 500_000, 80_000_000);
 
         System.IO.File.Create(_path).Dispose();
         var file = await StorageFile.GetFileFromPathAsync(_path);
@@ -172,9 +181,29 @@ internal sealed class Mp4Encoder : IVideoSink
         _stream?.Dispose();
     }
 
-    /// <summary>The widest frame the Windows H.264 encoder accepts. It is built for video up to
-    /// 4K, so a recording of several monitors side by side is wider than it will encode.</summary>
-    public const int MaxWidth = 4096;
+    /// <summary>The largest frame the Windows H.264 encoder accepts: no side over 4096 pixels and
+    /// no more than 36,864 blocks of 16 x 16 pixels, which is 4096 x 2304. That is the frame size
+    /// limit of H.264 level 5.1. Larger recordings are encoded smaller, keeping their shape.</summary>
+    public const int MaxSide = 4096;
+    public const int MaxMacroblocks = 36_864;
+
+    /// <summary>The size the video is encoded at: the recorded size when the encoder accepts it,
+    /// otherwise the largest even size with the same shape that it does.</summary>
+    public static (int W, int H) OutputSize(int width, int height)
+    {
+        var (w, h) = EvenSize(width, height);
+        double scale = Math.Min(1.0, Math.Min((double)MaxSide / w, (double)MaxSide / h));
+        scale = Math.Min(scale, Math.Sqrt(MaxMacroblocks * 256.0 / ((double)w * h)));
+        while (true)
+        {
+            var (ow, oh) = scale >= 1.0 ? (w, h) : EvenSize((int)(w * scale), (int)(h * scale));
+            if (Fits(ow, oh)) return (ow, oh);
+            scale = Math.Min(scale, 1.0) * 0.995;
+        }
+    }
+
+    private static bool Fits(int w, int h) =>
+        w <= MaxSide && h <= MaxSide && ((w + 15) / 16) * ((h + 15) / 16) <= MaxMacroblocks;
 
     /// <summary>H.264 needs even dimensions.</summary>
     public static (int W, int H) EvenSize(int w, int h) => (Math.Max(2, w & ~1), Math.Max(2, h & ~1));
