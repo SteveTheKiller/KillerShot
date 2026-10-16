@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">音質</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF には音声がありません。</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 動画の幅は最大 4096 ピクセルです。これは Windows の H.264 エンコーダーの制限です。それより広い範囲は、小さい範囲を録画するか GIF を使用してください。</sys:String>
 </ResourceDictionary>

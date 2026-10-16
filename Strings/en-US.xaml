@@ -272,4 +272,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Sound quality</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs have no sound.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 videos can be at most 4096 pixels wide, a limit of the H.264 encoder in Windows. Record a smaller area or use GIF for anything wider.</sys:String>
 </ResourceDictionary>

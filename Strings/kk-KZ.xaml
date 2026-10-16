@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Дыбыс сапасы</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} кбит/с</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-те дыбыс жоқ.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 бейнелерінің ені ең көбі 4096 пиксель болуы мүмкін, бұл Windows жүйесіндегі H.264 кодтаушысының шегі. Кеңірек аймақ үшін кішірек аймақты жазыңыз немесе GIF пайдаланыңыз.</sys:String>
 </ResourceDictionary>

@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Chất lượng âm thanh</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF không có âm thanh.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Video MP4 có chiều rộng tối đa 4096 pixel, đây là giới hạn của bộ mã hóa H.264 trong Windows. Với vùng rộng hơn, hãy quay vùng nhỏ hơn hoặc dùng GIF.</sys:String>
 </ResourceDictionary>

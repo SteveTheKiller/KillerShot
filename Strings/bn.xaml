@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">শব্দের মান</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-এ শব্দ থাকে না।</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 ভিডিও সর্বোচ্চ 4096 পিক্সেল চওড়া হতে পারে, এটি Windows-এর H.264 এনকোডারের সীমা। আরও চওড়া কিছুর জন্য ছোট এলাকা রেকর্ড করুন বা GIF ব্যবহার করুন।</sys:String>
 </ResourceDictionary>

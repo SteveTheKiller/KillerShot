@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Kvalita zvuku</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kb/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF nemá zvuk.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Videa MP4 mohou být široká nejvýše 4096 pixelů, což je limit kodéru H.264 ve Windows. Pro cokoli širšího nahrajte menší oblast nebo použijte GIF.</sys:String>
 </ResourceDictionary>

@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Ses kalitesi</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF'lerde ses yoktur.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 videolar en fazla 4096 piksel genişliğinde olabilir; bu, Windows'taki H.264 kodlayıcısının bir sınırıdır. Daha geniş bir alan için daha küçük bir alan kaydedin veya GIF kullanın.</sys:String>
 </ResourceDictionary>

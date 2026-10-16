@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">音质</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF 没有声音。</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4 视频的宽度最多为 4096 像素，这是 Windows 中 H.264 编码器的限制。如需更宽的范围，请录制较小的区域或使用 GIF。</sys:String>
 </ResourceDictionary>

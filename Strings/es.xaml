@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Calidad del sonido</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Los GIF no tienen sonido.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Los vídeos MP4 pueden tener como máximo 4096 píxeles de ancho, un límite del codificador H.264 de Windows. Para algo más ancho, grabe un área más pequeña o use GIF.</sys:String>
 </ResourceDictionary>

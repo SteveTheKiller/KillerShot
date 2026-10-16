@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Lydkvalitet</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-er har ikke lyd.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">MP4-videoer kan være maks 4096 piksler brede, en grense i H.264-koderen i Windows. Ta opp et mindre område eller bruk GIF for noe bredere.</sys:String>
 </ResourceDictionary>

@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Qualité du son</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbit/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Les GIF n'ont pas de son.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Les vidéos MP4 peuvent faire au plus 4096 pixels de large, une limite de l'encodeur H.264 de Windows. Pour plus large, enregistrez une zone plus petite ou utilisez le GIF.</sys:String>
 </ResourceDictionary>

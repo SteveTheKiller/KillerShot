@@ -268,5 +268,6 @@
     <sys:String x:Key="Str_VS_SoundQuality">Hangminőség</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">A GIF-eknek nincs hangja.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Az MP4-videók legfeljebb 4096 képpont szélesek lehetnek, ez a Windows H.264-kódolójának korlátja. Szélesebb területhez rögzítsen kisebb területet, vagy használjon GIF-et.</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> segédprogram.</sys:String>
 </ResourceDictionary>

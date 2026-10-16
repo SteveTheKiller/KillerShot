@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Qualità audio</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Le GIF non hanno audio.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">I video MP4 possono essere larghi al massimo 4096 pixel, un limite del codificatore H.264 di Windows. Per qualcosa di più largo, registra un'area più piccola o usa il GIF.</sys:String>
 </ResourceDictionary>

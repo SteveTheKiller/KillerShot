@@ -269,4 +269,5 @@
     <sys:String x:Key="Str_VS_SoundQuality">Якість звуку</sys:String>
     <sys:String x:Key="Str_VS_KbpsValue">{0} кбіт/с</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF не має звуку.</sys:String>
+    <sys:String x:Key="Str_VS_Mp4WidthLimit">Ширина відео MP4 не може перевищувати 4096 пікселів, це обмеження кодувальника H.264 у Windows. Для ширшої області запишіть меншу область або використайте GIF.</sys:String>
 </ResourceDictionary>
