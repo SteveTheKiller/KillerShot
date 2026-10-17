@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
-    <sys:String x:Key="Str_About_Computing">számítástechnika...</sys:String>
+    <sys:String x:Key="Str_About_Computing">számítás...</sys:String>
     <sys:String x:Key="Str_About_Publisher">KIADÓ</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">ujjlenyomat</sys:String>
@@ -18,7 +18,7 @@
     <sys:String x:Key="Str_Col_Name">nevet</sys:String>
     <sys:String x:Key="Str_Col_Size">méretet</sys:String>
     <sys:String x:Key="Str_Ctx_Copy">Másolás</sys:String>
-    <sys:String x:Key="Str_Ctx_Cut">Vágás</sys:String>
+    <sys:String x:Key="Str_Ctx_Cut">Kivágás</sys:String>
     <sys:String x:Key="Str_Ctx_Paste">Beillesztés</sys:String>
     <sys:String x:Key="Str_Ctx_SelectAll">Válassza ki az összeset</sys:String>
     <sys:String x:Key="Str_Dlg_AllFiles">Minden fájl</sys:String>
@@ -31,7 +31,7 @@
     <sys:String x:Key="Str_KS_About">A kártyáról</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">FÁJL</sys:String>
     <sys:String x:Key="Str_KS_GrpHelp">SEGÍTSÉG</sys:String>
-    <sys:String x:Key="Str_KS_Hint">Az egyes billentyűk lefelé állnak gépelés közben</sys:String>
+    <sys:String x:Key="Str_KS_Hint">Az egybillentyűs parancsok gépelés közben szünetelnek</sys:String>
     <sys:String x:Key="Str_KS_OnlineHelp">Teljes útmutató és leírás online</sys:String>
     <sys:String x:Key="Str_KS_ThisList">Ez a parancsikon lista</sys:String>
     <sys:String x:Key="Str_KS_Title">Billentyűparancsok</sys:String>
@@ -39,10 +39,10 @@
     <sys:String x:Key="Str_KS_ViewMap">BILLENTYŰZET</sys:String>
     <sys:String x:Key="Str_Menu_PinPlace">Rögzítés helyekre</sys:String>
     <sys:String x:Key="Str_Menu_UnpinPlace">Távolítsa el a helyekről</sys:String>
-    <sys:String x:Key="Str_QA_Desktop">Asztali</sys:String>
+    <sys:String x:Key="Str_QA_Desktop">Asztal</sys:String>
     <sys:String x:Key="Str_QA_Documents">Dokumentumok</sys:String>
     <sys:String x:Key="Str_QA_Downloads">Letöltések</sys:String>
-    <sys:String x:Key="Str_QA_Home">Otthon</sys:String>
+    <sys:String x:Key="Str_QA_Home">Kezdőmappa</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Képek</sys:String>
     <sys:String x:Key="Str_Status_Ready">Kész</sys:String>
     <sys:String x:Key="Str_Status_Saved">Mentve: {0}</sys:String>
@@ -50,7 +50,7 @@
     <sys:String x:Key="Str_Sys_Close">Bezárás</sys:String>
     <sys:String x:Key="Str_Sys_Maximize">Maximalizálás</sys:String>
     <sys:String x:Key="Str_Sys_Minimize">Minimalizálás</sys:String>
-    <sys:String x:Key="Str_Sys_Move">Mozgás</sys:String>
+    <sys:String x:Key="Str_Sys_Move">Áthelyezés</sys:String>
     <sys:String x:Key="Str_Sys_Restore">Visszaállítás</sys:String>
     <sys:String x:Key="Str_Sys_Size">Méret</sys:String>
     <sys:String x:Key="Str_TT_Language">Nyelv</sys:String>
@@ -72,7 +72,7 @@
     <sys:String x:Key="Str_Theme_Ectoplasm">Ektoplazma</sys:String>
     <sys:String x:Key="Str_Theme_FilmGrain">Filmszemcse</sys:String>
     <sys:String x:Key="Str_Theme_Greed">Kapzsiság</sys:String>
-    <sys:String x:Key="Str_Theme_Light">Fény</sys:String>
+    <sys:String x:Key="Str_Theme_Light">Világos</sys:String>
     <sys:String x:Key="Str_Theme_Malaise">rosszullét</sys:String>
     <sys:String x:Key="Str_Theme_Mourning">Gyász</sys:String>
     <sys:String x:Key="Str_Theme_Sepulchre">Sír</sys:String>
@@ -98,7 +98,7 @@
     <sys:String x:Key="Str_Btn_Copy">Másolás</sys:String>
     <sys:String x:Key="Str_Btn_Fit">Illesztés</sys:String>
     <sys:String x:Key="Str_Btn_Recent">Legutóbbiak</sys:String>
-    <sys:String x:Key="Str_Btn_Redo">Mégis</sys:String>
+    <sys:String x:Key="Str_Btn_Redo">Újra</sys:String>
     <sys:String x:Key="Str_Btn_SaveAs">Mentés másként</sys:String>
     <sys:String x:Key="Str_Btn_Undo">Visszavonás</sys:String>
     <sys:String x:Key="Str_Btn_Width">Méret</sys:String>
@@ -146,7 +146,7 @@
     <sys:String x:Key="Str_KS_FinishText">A beírt szöveg befejezése</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Új szövegsor kezdése</sys:String>
     <sys:String x:Key="Str_KS_Open">Kép megnyitása</sys:String>
-    <sys:String x:Key="Str_KS_Redo">Mégis</sys:String>
+    <sys:String x:Key="Str_KS_Redo">Újra</sys:String>
     <sys:String x:Key="Str_KS_Save">Mentés</sys:String>
     <sys:String x:Key="Str_KS_SaveAs">Mentés másként</sys:String>
     <sys:String x:Key="Str_KS_Undo">Visszavonás</sys:String>

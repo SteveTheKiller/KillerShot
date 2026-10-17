@@ -29,7 +29,7 @@
     <sys:String x:Key="Str_Dlg_NoSuchFile">Ten plik nie istnieje.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Ten folder nie istnieje.</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Zamienić {0}?</sys:String>
-    <sys:String x:Key="Str_KS_About">O oknie dialogowym</sys:String>
+    <sys:String x:Key="Str_KS_About">Okno O programie</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">PLIK</sys:String>
     <sys:String x:Key="Str_KS_GrpHelp">POMOC</sys:String>
     <sys:String x:Key="Str_KS_Hint">Pojedyncze klawisze są wyłączone podczas wpisywania tekstu</sys:String>

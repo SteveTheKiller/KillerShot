@@ -14,7 +14,7 @@
     <sys:String x:Key="Str_Btn_Open">খুলুন</sys:String>
     <sys:String x:Key="Str_Btn_Replace">পরিবর্তন</sys:String>
     <sys:String x:Key="Str_Btn_Save">সংরক্ষণ</sys:String>
-    <sys:String x:Key="Str_Btn_Select">নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_Btn_Select">ফোল্ডার নির্বাচন করুন</sys:String>
     <sys:String x:Key="Str_Col_Modified">পরিবর্তিত</sys:String>
     <sys:String x:Key="Str_Col_Name">নাম</sys:String>
     <sys:String x:Key="Str_Col_Size">আকার</sys:String>
@@ -28,7 +28,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">বর্তমান ফাইলের ধরনের সঙ্গে মিলে এমন কিছু নেই।</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">ওই ফাইলটি নেই।</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">ওই ফোল্ডারটি নেই।</sys:String>
-    <sys:String x:Key="Str_Dlg_OverwriteMsg">{0} পরিবর্তন করবেন?</sys:String>
+    <sys:String x:Key="Str_Dlg_OverwriteMsg">{0} প্রতিস্থাপন করবেন?</sys:String>
     <sys:String x:Key="Str_KS_About">সম্পর্কে কার্ড</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">ফাইল</sys:String>
     <sys:String x:Key="Str_KS_GrpHelp">সহায়তা</sys:String>
@@ -79,7 +79,7 @@
     <sys:String x:Key="Str_Theme_Sepulchre">Sepulchre</sys:String>
     <sys:String x:Key="Str_Toolbar_Header">টুলবার</sys:String>
     <sys:String x:Key="Str_Toolbar_LargeIcons">বড় আইকন</sys:String>
-    <sys:String x:Key="Str_Toolbar_SmallIcons">আইকন</sys:String>
+    <sys:String x:Key="Str_Toolbar_SmallIcons">ছোট আইকন</sys:String>
     <sys:String x:Key="Str_Toolbar_TextBeside">আইকনের পাশে লেখা</sys:String>
     <sys:String x:Key="Str_Toolbar_TextNone">লেখা নেই</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">শুধু লেখা</sys:String>
