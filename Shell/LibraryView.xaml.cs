@@ -454,12 +454,16 @@ namespace KillerShot.Shell
                     Text = row.Timeline ? item.Taken.ToString("t", CultureInfo.CurrentCulture) : item.Taken.ToString("g", CultureInfo.CurrentCulture),
                     FontSize = 10, Width = w, TextTrimming = TextTrimming.CharacterEllipsis,
                 };
-                detail.SetResourceReference(TextBlock.ForegroundProperty, "CaptureCardMutedBrush");
+                // Until a card color is picked, a card is the theme's pane gray on the window background.
+                bool picked = !CardColors.CardIsDefault;
+                caption.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardTextBrush" : "TextBrush");
+                detail.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardMutedBrush" : "MutedTextBrush");
                 var content = new StackPanel();
                 content.Children.Add(image);
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
+                tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "ContentPaneBrush");
                 if (CardColors.Collection(item.CollectionId) is Color own)
                 {
                     tile.BorderBrush = new SolidColorBrush(own);

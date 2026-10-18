@@ -410,7 +410,35 @@ namespace KillerShot.Shell
             // The Library button carries the accent while it covers an image, like a tool.
             if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");
             else LibraryBtn.ClearValue(ForegroundProperty);
+            ShowContentPane(!library);
             SyncFooterView();
+        }
+
+        private System.Windows.Media.Effects.Effect? _paneShadow;
+
+        /// <summary>The library has no pane of its own: it sits on the window background and grain,
+        /// and its cards are the pane gray instead. The picture keeps the lifted pane.</summary>
+        private void ShowContentPane(bool on)
+        {
+            _paneShadow ??= ContentPane.Effect;
+            if (on)
+            {
+                ContentPane.SetResourceReference(Border.BackgroundProperty, "ContentPaneBrush");
+                ContentPane.SetResourceReference(Border.BorderThicknessProperty, "ContentPaneBaseBorderThickness");
+                ContentPane.Effect = _paneShadow;
+            }
+            else
+            {
+                ContentPane.Background = Brushes.Transparent;
+                ContentPane.BorderThickness = new Thickness(0);
+                ContentPane.Effect = null;
+            }
+            // The grain, the outline and the bevel rings over the pane go with it.
+            if (ContentPane.Child is Grid paneGrid)
+                foreach (UIElement child in paneGrid.Children)
+                    if (child == ContentPaneGrain || Panel.GetZIndex(child) >= 99)
+                        child.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            if (on) ContentPaneGrain.SetResourceReference(VisibilityProperty, "FilmGrainVisibility");
         }
 
         /// <summary>Window mode from inside the editor captures the window that was in front before

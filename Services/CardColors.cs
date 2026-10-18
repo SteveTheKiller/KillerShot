@@ -15,8 +15,9 @@ namespace KillerShot.Services
     /// </summary>
     internal static class CardColors
     {
-        /// <summary>Near black, so the pictures stand out on the library's gray pane. The strip
-        /// uses the theme's pane gray by default instead (StripCard).</summary>
+        /// <summary>The fallback when no card color is picked. The library and the strip draw their
+        /// cards in the theme's pane gray instead (StripCard), since both sit on the window's own
+        /// background.</summary>
         public static readonly Color DefaultCard = Color.FromRgb(0x14, 0x14, 0x14);
 
         /// <summary>The card color or a collection's color changed.</summary>
@@ -26,8 +27,8 @@ namespace KillerShot.Services
 
         public static bool CardIsDefault => Parse(Settings.Get("CardColor")) == null;
 
-        /// <summary>The card color in the strip, which sits on the window's dark background: the
-        /// picked card color, or the theme's pane gray by default.</summary>
+        /// <summary>The card color in the strip and the library, which sit on the window's own
+        /// background: the picked card color, or the theme's pane gray by default.</summary>
         public static Color StripCard()
         {
             if (!CardIsDefault) return Card;
