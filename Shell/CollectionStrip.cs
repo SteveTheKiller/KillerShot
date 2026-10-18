@@ -49,6 +49,7 @@ namespace KillerShot.Shell
             Padding = new Thickness(8, 6, 8, 6);
             SetResourceReference(MarginProperty, "ContentPaneMargin");
             Focusable = false;
+            Panel.SetZIndex(this, 1);   // above the splitter, so the slider's overhang stays clickable
 
             _count.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
             _picker.SelectionChanged += (_, _) =>
@@ -68,7 +69,9 @@ namespace KillerShot.Shell
             _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.LoadThumb, Describe = LibraryView.Describe, ViewHeight = 1.2 };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
-            _slider = new Slider { Style = sliderStyle, Minimum = 0, Focusable = false, IsTabStop = false, Margin = new Thickness(40, 2, 40, 0) };
+            // The slider runs along the strip's bottom edge and hangs a little over it (past the 6 px
+            // padding and the border), so the carousel keeps the height.
+            _slider = new Slider { Style = sliderStyle, Minimum = 0, Focusable = false, IsTabStop = false, Margin = new Thickness(40, 0, 40, -14) };
             _slider.SetBinding(RangeBase.MaximumProperty, new Binding(nameof(CoverFlow.MaximumIndex)) { Source = _flow });
             _slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(CoverFlow.SelectedIndex)) { Source = _flow, Mode = BindingMode.TwoWay });
 
