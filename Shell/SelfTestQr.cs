@@ -37,6 +37,12 @@ internal static class SelfTestQr
             CaptureLibrary.StoreQr(id, codes);
             if (CaptureLibrary.QrCodes(id).Single().Text != "https://killershot.net/qr") throw new InvalidOperationException("The decoded payload was not stored.");
             if (!CaptureLibrary.Items("killershot").Any(item => item.Id == id)) throw new InvalidOperationException("The decoded payload was not indexed for search.");
+            if (!CaptureLibrary.Items().Single(item => item.Id == id).HasQr)
+                throw new InvalidOperationException("The album did not identify a capture with QR results.");
+            long empty = CaptureLibrary.AddNow(image, DateTime.Now, "region", "No results", "qr-check");
+            CaptureLibrary.StoreQr(empty, []);
+            if (CaptureLibrary.Items().Single(item => item.Id == empty).HasQr)
+                throw new InvalidOperationException("The album marked an empty QR result as a code.");
             long backlog = CaptureLibrary.AddNow(image, DateTime.Now, "region", "Backlog fixture", "qr-check");
             CaptureLibrary.BackgroundWork = true;
             Task.Run(CaptureLibrary.ScanQrAsync).GetAwaiter().GetResult();

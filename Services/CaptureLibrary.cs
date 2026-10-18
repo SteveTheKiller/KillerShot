@@ -9,7 +9,7 @@ namespace KillerShot.Services;
 
 /// <summary>One capture in the library, without its pixels.</summary>
 internal sealed record CaptureItem(long Id, DateTime Taken, int Width, int Height, string Mode,
-    string? Window, string? Process, long? CollectionId, string? Note);
+    string? Window, string? Process, long? CollectionId, string? Note, bool HasQr = false);
 
 /// <summary>A collection (a folder inside the library) and how many captures it holds.</summary>
 internal sealed record CaptureCollection(long Id, string Name, int Count);
@@ -449,9 +449,10 @@ internal static partial class CaptureLibrary
             if (_db == null) return [];
             using var cmd = _db.CreateCommand();
             cmd.CommandText = match == null
-                ? "SELECT id, taken_utc, width, height, mode, window_title, process_name, collection_id, note FROM captures ORDER BY taken_utc DESC"
+                ? "SELECT id, taken_utc, width, height, mode, window_title, process_name, collection_id, note, EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id=captures.id AND q.results <> '[]') FROM captures ORDER BY taken_utc DESC"
                 : """
-                  SELECT id, taken_utc, width, height, mode, window_title, process_name, collection_id, note FROM captures
+                  SELECT id, taken_utc, width, height, mode, window_title, process_name, collection_id, note,
+                  EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id=captures.id AND q.results <> '[]') FROM captures
                   WHERE id IN (SELECT rowid FROM capture_search WHERE capture_search MATCH $q)
                   ORDER BY taken_utc DESC
                   """;
@@ -468,7 +469,7 @@ internal static partial class CaptureLibrary
                         r.IsDBNull(5) ? null : r.GetString(5),
                         r.IsDBNull(6) ? null : r.GetString(6),
                         r.IsDBNull(7) ? null : r.GetInt64(7),
-                        r.IsDBNull(8) ? null : r.GetString(8)));
+                        r.IsDBNull(8) ? null : r.GetString(8), r.GetBoolean(9)));
                 }
             }
             catch (SqliteException) { return []; }   // a search FTS5 cannot parse matches nothing

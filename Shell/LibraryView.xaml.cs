@@ -465,7 +465,7 @@ namespace KillerShot.Shell
                 caption.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardTextBrush" : "TextBrush");
                 detail.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardMutedBrush" : "MutedTextBrush");
                 var content = new StackPanel();
-                content.Children.Add(image);
+                content.Children.Add(QrMark.Wrap(image, item.HasQr));
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
@@ -526,7 +526,8 @@ namespace KillerShot.Shell
 
         internal static string Describe(CaptureItem item) =>
             Title(item) + ", " + item.Taken.ToString("g", CultureInfo.CurrentCulture) + ", " +
-            item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture);
+            item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture)
+            + (item.HasQr ? ", QR" : "");
 
         private void UpdateBigFlowCaption()
         {

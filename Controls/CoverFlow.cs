@@ -239,6 +239,8 @@ internal sealed class CoverFlow : FrameworkElement
         Brush faceBrush = thumb != null
             ? new ImageBrush(thumb) { Stretch = Stretch.Fill }
             : new SolidColorBrush(Color.FromRgb(60, 60, 60));
+        var cardDrawing = QrMark.Drawing(faceBrush, w, h, item.HasQr);
+        faceBrush = new DrawingBrush(cardDrawing) { Stretch = Stretch.Fill };
         faceBrush.Freeze();
         var face = new GeometryModel3D(Quad(w, 0, h, flipV: false), new DiffuseMaterial(faceBrush))
         {
@@ -254,8 +256,7 @@ internal sealed class CoverFlow : FrameworkElement
                 [new GradientStop(Color.FromArgb(0, 0, 0, 0), 0.5), new GradientStop(Color.FromArgb(110, 0, 0, 0), 1)],
                 new Point(0, 0), new Point(0, 1)),
         };
-        if (thumb != null) reflectionDrawing.Children.Add(new ImageDrawing(thumb, new Rect(0, 0, w, h)));
-        else reflectionDrawing.Children.Add(new GeometryDrawing(faceBrush, null, new RectangleGeometry(new Rect(0, 0, w, h))));
+        reflectionDrawing.Children.Add(cardDrawing);
         var reflectionBrush = new DrawingBrush(reflectionDrawing) { Stretch = Stretch.Fill };
         reflectionBrush.Freeze();
         var reflection = new GeometryModel3D(Quad(w, -h, 0, flipV: true), new DiffuseMaterial(reflectionBrush))

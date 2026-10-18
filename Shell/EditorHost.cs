@@ -477,7 +477,7 @@ namespace KillerShot.Shell
                 when.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
                 text.Children.Add(when);
                 var row = new StackPanel { Orientation = Orientation.Horizontal };
-                row.Children.Add(thumb);
+                row.Children.Add(KillerShot.Controls.QrMark.Wrap(thumb, item.HasQr));
                 row.Children.Add(text);
                 var mi = new MenuItem { Header = row };
                 System.Windows.Automation.AutomationProperties.SetName(mi, LibraryView.Describe(item));

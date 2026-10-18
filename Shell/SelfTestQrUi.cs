@@ -31,6 +31,7 @@ internal static class SelfTestQrUi
             Directory.CreateDirectory(folder);
             report = Path.Combine(folder, "qr-ui-report.txt");
             Settings.UseFolder(Path.Combine(folder, "settings"));
+            Settings.Set("LibraryView", "grid");
             CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
             CaptureLibrary.BackgroundWork = false;
             App.InitializeKit();
@@ -109,7 +110,21 @@ internal static class SelfTestQrUi
             if (!originalPixels.AsSpan().SequenceEqual(exportedPixels)) throw new InvalidOperationException("QR outlines were burned into the exported image.");
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if (CaptureLibrary.QrReadingEnabled || Equals(button.Tag, "on")) throw new InvalidOperationException("The rail toggle did not turn reading off.");
-            File.WriteAllText(report, "PASS: QR rail, outlines, unchanged export, themed result cards, Copy/Open rules, HTTP warning and Wi-Fi Copy password.");
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The preview album did not open.");
+            long capture = CaptureLibrary.AddNow(App.Instance.Document.Image, DateTime.Now, "qr", "QR fixture", "qr-check");
+            CaptureLibrary.StoreQr(capture, [actual]);
+            ((Button)window.FindName("LibraryBtn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Task.Delay(350);
+            window.UpdateLayout();
+            await Task.Delay(350);
+            window.UpdateLayout();
+            if (!Descendants((FrameworkElement)window.Content).Any(e => System.Windows.Automation.AutomationProperties.GetAutomationId(e) == "QrAlbumMark"))
+                throw new InvalidOperationException("The album card did not show its QR mark.");
+            var albumRoot = (FrameworkElement)window.Content;
+            var albumImage = new RenderTargetBitmap((int)Math.Ceiling(albumRoot.ActualWidth), (int)Math.Ceiling(albumRoot.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            albumImage.Render(albumRoot);
+            ImageOutput.SavePng(albumImage, Path.Combine(folder, "qr-album.png"));
+            File.WriteAllText(report, "PASS: QR rail, outlines, unchanged export, themed result cards, Copy/Open rules, HTTP warning, Wi-Fi Copy password and album mark.");
             code = 0;
         }
         catch (Exception error) { if (report != null) File.WriteAllText(report, "FAIL: " + error.Message); }
@@ -129,6 +144,16 @@ internal static class SelfTestQrUi
             var child = VisualTreeHelper.GetChild(element, i);
             if (child is Button button) yield return button;
             foreach (var nested in Buttons(child)) yield return nested;
+        }
+    }
+
+    private static IEnumerable<FrameworkElement> Descendants(DependencyObject element)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            var child = VisualTreeHelper.GetChild(element, i);
+            if (child is FrameworkElement view) yield return view;
+            foreach (var nested in Descendants(child)) yield return nested;
         }
     }
 
