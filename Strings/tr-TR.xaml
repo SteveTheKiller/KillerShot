@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Kısaltılmış bağlantı. Hedef çözümlenmiyor.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Doğrudan indirme bağlantısı.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Parolayı kopyala</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">QR kodu oku</sys:String>
 </ResourceDictionary>

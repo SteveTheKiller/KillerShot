@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Liên kết rút gọn. Không truy tìm địa chỉ đích.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Liên kết tải xuống trực tiếp.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Sao chép mật khẩu</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Đọc mã QR</sys:String>
 </ResourceDictionary>

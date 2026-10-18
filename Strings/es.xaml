@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Enlace acortado. No se resuelve el destino.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Enlace de descarga directa.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Copiar contraseña</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Leer código QR</sys:String>
 </ResourceDictionary>

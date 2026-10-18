@@ -223,11 +223,11 @@ public partial class App : Application
         LocaleManager.Initialize();
     }
 
-    private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath)
+    private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath, bool readQr)
     {
         // A capture saved to the folder opens as that file, so Save in the editor updates it.
-        SetDocument(new EditorDocument(bmp, savedPath, taken));
-        if (CaptureSettings.OpenEditorAfterCapture) ShowEditor();
+        SetDocument(new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr });
+        if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }
 
     internal void SetDocument(EditorDocument? doc)

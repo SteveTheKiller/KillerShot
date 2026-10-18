@@ -349,8 +349,10 @@ internal static partial class CaptureLibrary
         byte[] image = ImageOutput.EncodePng(bmp);
         byte[] thumb = EncodeThumb(bmp);
         long id;
+        SqliteConnection album;
         lock (_gate)
         {
+            album = Db;
             using var cmd = Db.CreateCommand();
             cmd.CommandText = """
                 INSERT INTO captures(taken_utc, width, height, mode, window_title, process_name, thumb, image)
@@ -368,6 +370,7 @@ internal static partial class CaptureLibrary
             id = (long)cmd.ExecuteScalar()!;
             IndexText(id);
         }
+        if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
         Prune();
         RaiseChanged();
         if (BackgroundWork)

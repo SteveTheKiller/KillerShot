@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">短縮リンクです。転送先は展開していません。</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接ダウンロードするリンクです。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">パスワードをコピー</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">QR コードを読み取る</sys:String>
 </ResourceDictionary>

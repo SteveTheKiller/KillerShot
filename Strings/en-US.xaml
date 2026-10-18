@@ -415,4 +415,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Shortened link. Destination is not expanded.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Direct download link.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Copy password</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Read QR code</sys:String>
 </ResourceDictionary>

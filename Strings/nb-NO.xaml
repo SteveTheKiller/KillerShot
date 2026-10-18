@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Forkortet lenke. Målet blir ikke slått opp.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Lenke til direkte nedlasting.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Kopier passord</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Les QR-kode</sys:String>
 </ResourceDictionary>

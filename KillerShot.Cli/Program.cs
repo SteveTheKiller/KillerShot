@@ -162,7 +162,7 @@ public static class Program
     {
         var o = Options.Parse(args, CaptureValues, CaptureFlags);
         o.NoPositionals();
-        var mode = ModeFor(o, CaptureSettings.LastMode);
+        var mode = ModeFor(o, CaptureSettings.LastMode == CaptureMode.Qr ? CaptureMode.Region : CaptureSettings.LastMode);
         int delay = o.Int("delay", 0, 30) ?? CaptureSettings.DelaySeconds;
         bool cursor = o.Switch("cursor", "no-cursor") ?? CaptureSettings.IncludeCursor;
         bool shutter = o.Switch("shutter", "no-shutter") ?? CaptureSettings.PlaySound;
@@ -790,6 +790,7 @@ public static class Program
 
     private static string ModeName(CaptureMode mode) => mode switch
     {
+        CaptureMode.Qr => "qr",
         CaptureMode.Region => "region",
         CaptureMode.Window => "window",
         CaptureMode.Monitor => "monitor",

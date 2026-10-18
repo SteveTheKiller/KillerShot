@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Skrócone łącze. Cel nie jest rozwijany.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Łącze do bezpośredniego pobrania.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Kopiuj hasło</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Odczytaj kod QR</sys:String>
 </ResourceDictionary>

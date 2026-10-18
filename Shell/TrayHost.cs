@@ -189,6 +189,7 @@ internal sealed class TrayHost : IDisposable
         Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
         Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
         Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
+        Item(Loc("Str_Mode_Qr"), "", () => DeferCapture(null, CaptureMode.Qr));
         menu.Items.Add(new Separator());
         Item(Loc(_recording ? "Str_Tray_StopRecording" : "Str_Tray_Record"), Gesture(ShortcutAction.Video), () =>
         {

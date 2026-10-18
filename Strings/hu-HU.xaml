@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Rövidített hivatkozás. A cél nincs feloldva.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Közvetlen letöltési hivatkozás.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Jelszó másolása</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">QR-kód olvasása</sys:String>
 </ResourceDictionary>

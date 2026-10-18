@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">Короткая ссылка. Адрес назначения не раскрывается.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Прямая ссылка на скачивание.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Копировать пароль</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">Прочитать QR-код</sys:String>
 </ResourceDictionary>

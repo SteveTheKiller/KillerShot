@@ -68,6 +68,7 @@ namespace KillerShot.Shell
             }
             BindDocument(App.Instance.Document);
             HighlightActiveTool();
+            BuildCaptureMenu();
         }
 
         private void OnAppDocumentChanged()
@@ -339,6 +340,7 @@ namespace KillerShot.Shell
                 (CaptureMode.Window, "Str_Mode_Window", ShortcutAction.Window),
                 (CaptureMode.Monitor, "Str_Mode_Monitor", ShortcutAction.Monitor),
                 (CaptureMode.AllMonitors, "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
+                (CaptureMode.Qr, "Str_Mode_Qr", null),
             })
             {
                 var m = mode;

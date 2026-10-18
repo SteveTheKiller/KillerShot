@@ -41,8 +41,26 @@ internal static class SelfTestQrUi
             if (window.FindName("QrReadingButton") is not Button button) throw new InvalidOperationException("The QR rail toggle is missing.");
             if (CaptureLibrary.QrReadingEnabled || Equals(button.Tag, "on")) throw new InvalidOperationException("The QR rail toggle must start off.");
             if (button.Content?.ToString() != "\uED14" || button.ToolTip?.ToString() != "QR code reading") throw new InvalidOperationException("The QR rail glyph or tooltip is wrong.");
+            var captureMenu = (ContextMenu)window.FindName("CaptureMenu");
+            if (!captureMenu.Items.OfType<MenuItem>().Any(item => item.Header?.ToString() == "Read QR code"))
+                throw new InvalidOperationException("The capture menu is missing Read QR code.");
+            captureMenu.ApplyTemplate();
+            var menuSurface = (FrameworkElement)VisualTreeHelper.GetChild(captureMenu, 0);
+            menuSurface.Opacity = 1;
+            menuSurface.Margin = new Thickness(0);
+            menuSurface.Measure(new Size(400, double.PositiveInfinity));
+            menuSurface.Arrange(new Rect(menuSurface.DesiredSize)); menuSurface.UpdateLayout();
+            var menuImage = new RenderTargetBitmap((int)Math.Ceiling(menuSurface.ActualWidth), (int)Math.Ceiling(menuSurface.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            menuImage.Render(menuSurface);
+            ImageOutput.SavePng(menuImage, Path.Combine(folder, "qr-capture-menu.png"));
             window.Show();
             await Task.Delay(200);
+            App.Instance.SetDocument(new EditorDocument(QrImages.Load(File.ReadAllBytes(args[2]))) { ReadQr = true });
+            var forcedEditor = (EditorCanvas)window.FindName("Editor");
+            var forcedDeadline = DateTime.UtcNow.AddSeconds(5);
+            while (!forcedEditor.Children.OfType<Button>().Any(b => b.ToolTip?.ToString() == "https://killershot.net/qr") && DateTime.UtcNow < forcedDeadline) await Task.Delay(20);
+            if (!forcedEditor.Children.OfType<Button>().Any(b => b.ToolTip?.ToString() == "https://killershot.net/qr") || CaptureLibrary.QrReadingEnabled)
+                throw new InvalidOperationException("Read QR code must work while background reading stays off.");
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if (!CaptureLibrary.QrReadingEnabled || !Equals(button.Tag, "on")) throw new InvalidOperationException("The rail toggle did not turn reading on.");
             var editor = (EditorCanvas)window.FindName("Editor");

@@ -412,4 +412,5 @@
     <sys:String x:Key="Str_QrWarn_Shortener">短链接。不会展开目标地址。</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接下载链接。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">复制密码</sys:String>
+    <sys:String x:Key="Str_Mode_Qr">读取二维码</sys:String>
 </ResourceDictionary>

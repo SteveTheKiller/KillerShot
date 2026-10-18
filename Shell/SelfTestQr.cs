@@ -32,6 +32,8 @@ internal static class SelfTestQr
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The isolated album did not open.");
             var image = QrImages.Load(File.ReadAllBytes(args[2]));
             long id = CaptureLibrary.AddNow(image, DateTime.Now, "qr", "Synthetic QR fixture", "qr-check");
+            if (CaptureLibrary.QrCodes(id).Count != 1 || CaptureLibrary.QrReadingEnabled)
+                throw new InvalidOperationException("Read QR capture mode must save results while background reading stays off.");
             var codes = QrImages.Read(image);
             if (codes.Count != 1) throw new InvalidOperationException("The independent fixture was not decoded.");
             CaptureLibrary.StoreQr(id, codes);

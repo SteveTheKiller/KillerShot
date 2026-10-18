@@ -16,7 +16,7 @@ internal sealed class CaptureController
     public BitmapSource? Last { get; private set; }
 
     /// <summary>Raised on the UI thread with each finished capture and when it was taken.</summary>
-    public event Action<BitmapSource, DateTime, string?>? Captured;
+    public event Action<BitmapSource, DateTime, string?, bool>? Captured;
 
     /// <summary>The file the last capture was saved to, when saving to the folder is on.</summary>
     public string? LastSavedPath { get; private set; }
@@ -71,6 +71,7 @@ internal sealed class CaptureController
             switch (mode)
             {
                 case CaptureMode.Region:
+                case CaptureMode.Qr:
                     var rect = await new RegionSelector(frozen).RunAsync();
                     result = rect is { } r ? frozen.Crop(r) : null;
                     if (rect is { } at) source = frozen.WindowAt(Center(at))?.Handle ?? IntPtr.Zero;
@@ -147,7 +148,7 @@ internal sealed class CaptureController
                 if (asked != null) saved = asked;
             }
 
-            Captured?.Invoke(result, taken, saved);
+            Captured?.Invoke(result, taken, saved, mode == CaptureMode.Qr);
             if (wantCopy && !copied)
                 _tray.ShowWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
             else if (CaptureSettings.Notify && (copied || saved != null))
@@ -178,6 +179,7 @@ internal sealed class CaptureController
         CaptureMode.Region => "region",
         CaptureMode.Window => "window",
         CaptureMode.Monitor => "monitor",
+        CaptureMode.Qr => "qr",
         _ => "all",
     };
 

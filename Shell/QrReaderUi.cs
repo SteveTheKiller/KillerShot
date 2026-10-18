@@ -35,7 +35,7 @@ public partial class MainWindow
         Editor.SetQrCodes([]);
         var stored = App.Instance.CurrentItem is { Id: > 0 } item && !_doc.Dirty ? CaptureLibrary.QrCodes(item.Id) : [];
         if (stored.Count > 0) { Editor.SetQrCodes(stored); return; }
-        if (!CaptureLibrary.QrReadingEnabled) { _qrImage = null; return; }
+        if (!CaptureLibrary.QrReadingEnabled && !_doc.ReadQr) { _qrImage = null; return; }
         try
         {
             var results = await Task.Run(() => QrImages.Read(image));

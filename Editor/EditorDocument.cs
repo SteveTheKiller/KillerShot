@@ -21,6 +21,7 @@ public sealed class EditorDocument
     /// <summary>When the capture was taken or the file opened; used for default file names.</summary>
     public DateTime Taken { get; }
     public bool Dirty { get; private set; }
+    public bool ReadQr { get; init; }
 
     public event Action? Changed;
 
