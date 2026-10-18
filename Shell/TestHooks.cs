@@ -29,6 +29,12 @@ namespace KillerShot.Shell
             ClassicFrameChrome.Opacity = 1;
         }
 
+        internal LibraryView TestLibrary => Library;
+
+        internal void TestToggleLibrary() => ToggleLibrary();
+
+        internal void TestOpenLibraryCapture(Services.CaptureItem item) => App.Instance.OpenLibraryCapture(item);
+
         internal void TestSetLabels(bool under)
         {
             _labelMode = under ? LabelMode.Under : LabelMode.None;

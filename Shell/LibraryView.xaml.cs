@@ -1,0 +1,793 @@
+using System.Globalization;
+using System.IO;
+using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using KillerShot.Capture;
+using KillerShot.Controls;
+using KillerShot.Services;
+using Shortcut = KillerShot.Services.Shortcut;
+using CaptureMode = KillerShot.Capture.CaptureMode;
+using Path = System.IO.Path;
+
+namespace KillerShot.Shell
+{
+    /// <summary>What one row of the library list draws.</summary>
+    public enum LibraryRowKind { Shelf, Header, Tiles }
+
+    /// <summary>One row of the library list. Rows are plain data; LibraryRowHost builds the
+    /// elements for a row only when the list scrolls it into view.</summary>
+    public sealed class LibraryRow
+    {
+        internal LibraryRowKind Kind { get; init; }
+        internal string Key { get; init; } = "";
+        internal string Title { get; init; } = "";
+        internal string Detail { get; init; } = "";
+        internal long? CollectionId { get; init; }
+        internal bool IsCollection { get; init; }
+        internal bool Timeline { get; init; }
+        internal IReadOnlyList<CaptureItem> Items { get; init; } = [];
+    }
+
+    /// <summary>Builds its row's elements when it is realized, because the virtualized list
+    /// creates and drops rows as they scroll in and out of view.</summary>
+    public sealed class LibraryRowHost : Border
+    {
+        private LibraryRow? _built;
+
+        public LibraryRowHost()
+        {
+            DataContextChanged += (_, _) => Build();
+            Loaded += (_, _) => Build();
+        }
+
+        private void Build()
+        {
+            if (DataContext is not LibraryRow row || ReferenceEquals(row, _built)) return;
+            DependencyObject? node = this;
+            while (node != null && node is not LibraryView) node = VisualTreeHelper.GetParent(node);
+            if (node is not LibraryView view) return;
+            _built = row;
+            Child = view.BuildRow(row);
+        }
+    }
+
+    /// <summary>
+    /// The library screen: every capture in the encrypted library (CaptureLibrary), shown when no
+    /// image is open and on Ctrl+L. Shelves draws a cover flow per collection or per day, Cover
+    /// Flow one big flow across everything, Grid a wall of thumbnails, and Timeline the days in
+    /// order down a line. Search filters every view. Right-click a capture for Open, Copy, Save
+    /// as, a collection, a note or Delete.
+    /// </summary>
+    public partial class LibraryView : UserControl
+    {
+        private const double GridTileWidth = 208, GridTileHeight = 128;
+        private const double TimelineTileWidth = 168, TimelineTileHeight = 104;
+        private const double TimelineGutter = 92;
+        private const double TileGap = 12;
+
+        /// <summary>A capture should open in the editor.</summary>
+        internal event Action<CaptureItem>? OpenRequested;
+
+        /// <summary>The empty library's Capture a region button was clicked.</summary>
+        public event Action? CaptureRequested;
+
+        /// <summary>A line for the status bar.</summary>
+        public event Action<string>? StatusMessage;
+
+        private string _view = "shelves";
+        private string _group = "date";
+        private IReadOnlyList<CaptureItem> _items = [];
+        private IReadOnlyList<CaptureCollection> _collections = [];
+        private readonly Dictionary<string, long> _shelfFront = [];
+        private readonly DispatcherTimer _searchDelay;
+        private bool _reloadQueued;
+        private bool _dirty = true;
+        private int _tilesPerRow;
+
+        private static string Loc(string key) => LocaleManager.Loc(key);
+
+        public LibraryView()
+        {
+            InitializeComponent();
+            _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" ? Settings.Get("LibraryView")! : "shelves";
+            _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
+
+            BigFlow.ThumbnailSource = CaptureLibrary.LoadThumb;
+            BigFlow.Describe = Describe;
+            BigFlow.ItemActivated += item => OpenRequested?.Invoke(item);
+            BigFlow.ItemMenuRequested += ShowItemMenu;
+            BigFlow.DeleteRequested += Delete;
+            BigFlow.SelectionChanged += UpdateBigFlowCaption;
+
+            _searchDelay = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            _searchDelay.Tick += (_, _) => { _searchDelay.Stop(); Reload(); };
+
+            Loaded += (_, _) =>
+            {
+                CaptureLibrary.Changed += OnLibraryChanged;
+                Relocalize();
+                if (_dirty) Reload();
+            };
+            Unloaded += (_, _) => CaptureLibrary.Changed -= OnLibraryChanged;
+            IsVisibleChanged += (_, _) => { if (IsVisible && _dirty) Reload(); };
+            SizeChanged += (_, _) =>
+            {
+                if (_view is "grid" or "timeline" && TilesPerRow() != _tilesPerRow) BuildRows();
+            };
+        }
+
+        /// <summary>Sets the captions that carry glyphs and live text. Called on load and after a
+        /// language change.</summary>
+        public void Relocalize()
+        {
+            ViewShelvesBtn.Content = Chip("", "Str_Lib_ViewShelves");
+            ViewFlowBtn.Content = Chip("", "Str_Lib_ViewFlow");
+            ViewGridBtn.Content = Chip("", "Str_Lib_ViewGrid");
+            ViewTimelineBtn.Content = Chip("", "Str_Lib_ViewTimeline");
+            foreach (var (button, key) in new[] { (ViewShelvesBtn, "Str_Lib_ViewShelves"), (ViewFlowBtn, "Str_Lib_ViewFlow"),
+                                                  (ViewGridBtn, "Str_Lib_ViewGrid"), (ViewTimelineBtn, "Str_Lib_ViewTimeline") })
+                AutomationProperties.SetName(button, Loc(key));
+            if (IsLoaded) Reload();
+        }
+
+        private static StackPanel Chip(string glyph, string labelKey)
+        {
+            var panel = new StackPanel { Orientation = Orientation.Horizontal };
+            panel.Children.Add(new TextBlock { Text = glyph, FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
+            panel.Children.Add(new TextBlock { Text = Loc(labelKey), VerticalAlignment = VerticalAlignment.Center });
+            return panel;
+        }
+
+        private void OnLibraryChanged()
+        {
+            if (_reloadQueued) return;
+            _reloadQueued = true;
+            // Coalesced, and on the UI thread: the library changes from background threads.
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                _reloadQueued = false;
+                if (IsVisible) Reload();
+                else _dirty = true;
+            }));
+        }
+
+        // ============================================================
+        // Loading
+        // ============================================================
+
+        /// <summary>Reads the library again and redraws the current view.</summary>
+        public void Reload()
+        {
+            _dirty = false;
+            if (!CaptureLibrary.IsOpen && !CaptureLibrary.Opening.IsCompleted)
+            {
+                // Still opening at startup: the loading screen, then this again.
+                ShowBusy();
+                CaptureLibrary.Opening.ContinueWith(_ => Dispatcher.BeginInvoke(new Action(() => { HideBusy(); Reload(); })),
+                    TaskScheduler.Default);
+                return;
+            }
+            if (!CaptureLibrary.IsOpen)
+            {
+                ShowLock();
+                return;
+            }
+            LockPanel.Visibility = Visibility.Collapsed;
+            string search = SearchBox.Text.Trim();
+            _items = CaptureLibrary.Items(search.Length > 0 ? search : null);
+            _collections = CaptureLibrary.Collections();
+            int total = search.Length > 0 ? CaptureLibrary.Count : _items.Count;
+
+            SyncHeader();
+            CountText.Text = search.Length > 0
+                ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_CountMatches"), _items.Count, total)
+                : string.Format(CultureInfo.CurrentCulture, Loc(total == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), total);
+
+            bool libraryEmpty = total == 0 && _collections.Count == 0;
+            HeaderBar.Visibility = libraryEmpty ? Visibility.Collapsed : Visibility.Visible;
+            if (_items.Count == 0 && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
+            {
+                ShowEmpty(searching: search.Length > 0 && !libraryEmpty);
+                return;
+            }
+            EmptyPanel.Visibility = Visibility.Collapsed;
+            if (_view == "flow")
+            {
+                RowsList.Visibility = Visibility.Collapsed;
+                FlowHost.Visibility = Visibility.Visible;
+                BigFlow.Items = _group == "collection" ? ByCollection(_items) : _items;
+                UpdateBigFlowCaption();
+            }
+            else
+            {
+                FlowHost.Visibility = Visibility.Collapsed;
+                RowsList.Visibility = Visibility.Visible;
+                BuildRows();
+            }
+        }
+
+        private void ShowLock()
+        {
+            RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = HeaderBar.Visibility = Visibility.Collapsed;
+            LockPanel.Visibility = Visibility.Visible;
+            bool locked = CaptureLibrary.NeedsPassword;
+            UnlockBox.Visibility = UnlockBtn.Visibility = locked ? Visibility.Visible : Visibility.Collapsed;
+            int pending = CaptureLibrary.PendingCount;
+            LockDetail.Text = !locked
+                ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_OpenFailed"), CaptureLibrary.LoadError ?? "")
+                : pending > 0
+                    ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_LockedPending"), pending)
+                    : Loc("Str_Lib_LockedDetail");
+        }
+
+        private void ShowEmpty(bool searching)
+        {
+            RowsList.Visibility = FlowHost.Visibility = Visibility.Collapsed;
+            EmptyPanel.Visibility = Visibility.Visible;
+            EmptyTitle.Text = Loc(searching ? "Str_Lib_NoMatches" : "Str_Empty_Title");
+            EmptyHint.Text = searching
+                ? Loc("Str_Lib_NoMatchesHint")
+                : string.Format(Loc("Str_Empty_Hint"), Shortcut.TryParse(CaptureSettings.ShortcutText(ShortcutAction.LastMode), out var sc) ? sc.Short : "PrtScn");
+            EmptyCaptureBtn.Visibility = searching ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void SyncHeader()
+        {
+            ViewShelvesBtn.IsChecked = _view == "shelves";
+            ViewFlowBtn.IsChecked = _view == "flow";
+            ViewGridBtn.IsChecked = _view == "grid";
+            ViewTimelineBtn.IsChecked = _view == "timeline";
+            // The timeline is a line of days, so it is always by date.
+            bool grouped = _view != "timeline";
+            GroupDateBtn.IsEnabled = GroupCollectionBtn.IsEnabled = grouped;
+            GroupDateBtn.IsChecked = !grouped || _group == "date";
+            GroupCollectionBtn.IsChecked = grouped && _group == "collection";
+            SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // ============================================================
+        // Groups and rows
+        // ============================================================
+
+        private sealed record Group(string Key, string Title, long? CollectionId, bool IsCollection, List<CaptureItem> Items);
+
+        private List<Group> Groups(bool byCollection)
+        {
+            var groups = new List<Group>();
+            if (byCollection)
+            {
+                var known = _collections.Select(c => c.Id).ToHashSet();
+                bool searching = SearchBox.Text.Trim().Length > 0;
+                foreach (var c in _collections)
+                {
+                    var members = _items.Where(i => i.CollectionId == c.Id).ToList();
+                    if (members.Count == 0 && searching) continue;
+                    groups.Add(new Group("c" + c.Id, c.Name, c.Id, true, members));
+                }
+                var loose = _items.Where(i => i.CollectionId is not long id || !known.Contains(id)).ToList();
+                if (loose.Count > 0) groups.Add(new Group("c0", Loc("Str_Lib_Unfiled"), null, false, loose));
+            }
+            else
+            {
+                foreach (var day in _items.GroupBy(i => i.Taken.Date))
+                    groups.Add(new Group("d" + day.Key.ToString("yyyyMMdd", CultureInfo.InvariantCulture), DayTitle(day.Key), null, false, day.ToList()));
+            }
+            return groups;
+        }
+
+        private List<CaptureItem> ByCollection(IReadOnlyList<CaptureItem> items) =>
+            Groups(byCollection: true).SelectMany(g => g.Items).ToList();
+
+        private static string DayTitle(DateTime day)
+        {
+            var today = DateTime.Today;
+            if (day == today) return Loc("Str_Lib_Today");
+            if (day == today.AddDays(-1)) return Loc("Str_Lib_Yesterday");
+            return day.ToString("D", CultureInfo.CurrentCulture);
+        }
+
+        private static string CountLabel(int n) =>
+            string.Format(CultureInfo.CurrentCulture, Loc(n == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), n);
+
+        private int TilesPerRow()
+        {
+            double tile = (_view == "timeline" ? TimelineTileWidth : GridTileWidth) + 10 + TileGap;
+            double room = ActualWidth - 16 - 8 - 18 - (_view == "timeline" ? TimelineGutter : 0);
+            return Math.Max(1, (int)(room / tile));
+        }
+
+        private void BuildRows()
+        {
+            var rows = new List<LibraryRow>();
+            _tilesPerRow = TilesPerRow();
+            if (_view == "shelves")
+            {
+                foreach (var g in Groups(_group == "collection"))
+                {
+                    rows.Add(new LibraryRow
+                    {
+                        Kind = g.Items.Count > 0 ? LibraryRowKind.Shelf : LibraryRowKind.Header,
+                        Key = g.Key, Title = g.Title,
+                        Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
+                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, Items = g.Items,
+                    });
+                }
+            }
+            else
+            {
+                bool timeline = _view == "timeline";
+                foreach (var g in Groups(!timeline && _group == "collection"))
+                {
+                    rows.Add(new LibraryRow
+                    {
+                        Kind = LibraryRowKind.Header, Key = g.Key, Title = g.Title,
+                        Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
+                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, Timeline = timeline,
+                    });
+                    for (int i = 0; i < g.Items.Count; i += _tilesPerRow)
+                        rows.Add(new LibraryRow
+                        {
+                            Kind = LibraryRowKind.Tiles, Key = g.Key + ":" + i, Timeline = timeline,
+                            Items = g.Items.Skip(i).Take(_tilesPerRow).ToList(),
+                        });
+                }
+            }
+            RowsList.ItemsSource = rows;
+        }
+
+        /// <summary>The elements for one row, built when the list realizes it.</summary>
+        internal FrameworkElement BuildRow(LibraryRow row) => row.Kind switch
+        {
+            LibraryRowKind.Shelf => BuildShelf(row),
+            LibraryRowKind.Header => BuildHeader(row),
+            _ => BuildTiles(row),
+        };
+
+        private FrameworkElement BuildHeader(LibraryRow row)
+        {
+            var title = new TextBlock
+            {
+                Text = row.Title, FontFamily = (FontFamily)FindResource("BrandSansFont"), FontSize = 16,
+                VerticalAlignment = VerticalAlignment.Bottom,
+            };
+            title.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+            var detail = new TextBlock { Text = row.Detail, FontSize = 11, Margin = new Thickness(10, 0, 0, 2), VerticalAlignment = VerticalAlignment.Bottom };
+            detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 8) };
+            line.Children.Add(title);
+            line.Children.Add(detail);
+            if (row.IsCollection && row.CollectionId is long id)
+            {
+                line.Background = Brushes.Transparent;
+                line.ContextMenu = new ContextMenu();
+                line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title); };
+                AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
+            }
+            if (!row.Timeline) return line;
+
+            // On the timeline a day is a dot on the line, with its name beside it.
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(TimelineGutter) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.Children.Add(TimelineLine());
+            var dot = new Ellipse { Width = 12, Height = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 11), StrokeThickness = 2 };
+            dot.SetResourceReference(Shape.FillProperty, "ContentPaneBrush");
+            dot.SetResourceReference(Shape.StrokeProperty, "PrimaryBrush");
+            grid.Children.Add(dot);
+            Grid.SetColumn(line, 1);
+            grid.Children.Add(line);
+            return grid;
+        }
+
+        private static Rectangle TimelineLine()
+        {
+            var rule = new Rectangle { Width = 2, HorizontalAlignment = HorizontalAlignment.Center };
+            rule.SetResourceReference(Shape.FillProperty, "CardBorderBrush");
+            return rule;
+        }
+
+        private FrameworkElement BuildShelf(LibraryRow row)
+        {
+            var panel = new StackPanel { Margin = new Thickness(0, 0, 8, 10) };
+            panel.Children.Add(BuildHeader(row));
+            var flow = new CoverFlow
+            {
+                Height = 210,
+                ThumbnailSource = CaptureLibrary.LoadThumb,
+                Describe = item => row.Title + ", " + Describe(item),
+            };
+            flow.Items = row.Items;
+            if (_shelfFront.TryGetValue(row.Key, out long front)) flow.Select(front);
+            flow.SelectionChanged += () => { if (flow.SelectedItem is { } s) _shelfFront[row.Key] = s.Id; };
+            flow.ItemActivated += item => OpenRequested?.Invoke(item);
+            flow.ItemMenuRequested += ShowItemMenu;
+            flow.DeleteRequested += Delete;
+            panel.Children.Add(flow);
+
+            var slider = new Slider
+            {
+                Style = (Style)FindResource("LibSlider"), MaxWidth = 560, Minimum = 0, Margin = new Thickness(0, 4, 0, 0),
+                Focusable = false, IsTabStop = false,
+                Visibility = row.Items.Count > 1 ? Visibility.Visible : Visibility.Collapsed,
+            };
+            slider.SetBinding(RangeBase.MaximumProperty, new Binding(nameof(CoverFlow.MaximumIndex)) { Source = flow });
+            slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(CoverFlow.SelectedIndex)) { Source = flow, Mode = BindingMode.TwoWay });
+            panel.Children.Add(slider);
+            return panel;
+        }
+
+        private FrameworkElement BuildTiles(LibraryRow row)
+        {
+            double w = row.Timeline ? TimelineTileWidth : GridTileWidth;
+            double h = row.Timeline ? TimelineTileHeight : GridTileHeight;
+            var tiles = new StackPanel { Orientation = Orientation.Horizontal };
+            foreach (var item in row.Items)
+            {
+                var image = new Image { Width = w, Height = h, Stretch = Stretch.Uniform };
+                RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+                LoadThumbAsync(image, item.Id);
+                var caption = new TextBlock
+                {
+                    Text = Title(item), FontSize = 12, Width = w, Margin = new Thickness(0, 6, 0, 0),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                };
+                var detail = new TextBlock
+                {
+                    Text = row.Timeline ? item.Taken.ToString("t", CultureInfo.CurrentCulture) : item.Taken.ToString("g", CultureInfo.CurrentCulture),
+                    FontSize = 10, Width = w, TextTrimming = TextTrimming.CharacterEllipsis,
+                };
+                detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+                var content = new StackPanel();
+                content.Children.Add(image);
+                content.Children.Add(caption);
+                content.Children.Add(detail);
+                var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
+                AutomationProperties.SetName(tile, Describe(item));
+                tile.ToolTip = Describe(item);
+                tile.Click += (_, _) => OpenRequested?.Invoke(item);
+                tile.MouseRightButtonUp += (_, e) => { e.Handled = true; ShowItemMenu(item, tile); };
+                tile.KeyDown += (_, e) =>
+                {
+                    if (e.Key == Key.Apps || (e.SystemKey == Key.F10 && (Keyboard.Modifiers & ModifierKeys.Shift) != 0))
+                    {
+                        e.Handled = true;
+                        ShowItemMenu(item, tile);
+                    }
+                    else if (e.Key == Key.Delete)
+                    {
+                        e.Handled = true;
+                        Delete(item);
+                    }
+                };
+                tiles.Children.Add(tile);
+            }
+            if (!row.Timeline) return tiles;
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(TimelineGutter) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.Children.Add(TimelineLine());
+            Grid.SetColumn(tiles, 1);
+            grid.Children.Add(tiles);
+            return grid;
+        }
+
+        /// <summary>Loads a thumbnail off the UI thread, so scrolling never waits on decoding.</summary>
+        private static void LoadThumbAsync(Image image, long id)
+        {
+            image.Tag = id;
+            Task.Run(() => CaptureLibrary.LoadThumb(id)).ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.RanToCompletion && image.Tag is long current && current == id) image.Source = t.Result;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        // ============================================================
+        // Captions
+        // ============================================================
+
+        /// <summary>What a capture is called: the window it came from, its program, or Capture.</summary>
+        internal static string Title(CaptureItem item) =>
+            !string.IsNullOrWhiteSpace(item.Window) ? item.Window!
+            : !string.IsNullOrWhiteSpace(item.Process) ? item.Process!
+            : Loc("Str_Lib_Capture");
+
+        internal static string Describe(CaptureItem item) =>
+            Title(item) + ", " + item.Taken.ToString("g", CultureInfo.CurrentCulture) + ", " +
+            item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture);
+
+        private void UpdateBigFlowCaption()
+        {
+            if (BigFlow.SelectedItem is not { } item) { BigFlowTitle.Text = BigFlowDetail.Text = ""; return; }
+            BigFlowTitle.Text = Title(item);
+            string collection = item.CollectionId is long cid && _collections.FirstOrDefault(c => c.Id == cid) is { } c ? "  ·  " + c.Name : "";
+            BigFlowDetail.Text = item.Taken.ToString("f", CultureInfo.CurrentCulture) + "  ·  " +
+                item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture) + collection +
+                (string.IsNullOrWhiteSpace(item.Note) ? "" : "  ·  " + item.Note);
+        }
+
+        // ============================================================
+        // Header bar
+        // ============================================================
+
+        private void View_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: string view }) return;
+            _view = view;
+            Settings.Set("LibraryView", view);
+            Reload();
+        }
+
+        private void Group_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: string group }) return;
+            _group = group;
+            Settings.Set("LibraryGroup", group);
+            Reload();
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            _searchDelay.Stop();
+            _searchDelay.Start();
+        }
+
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && SearchBox.Text.Length > 0)
+            {
+                SearchBox.Clear();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter)
+            {
+                _searchDelay.Stop();
+                Reload();
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>Puts the cursor in the search box (Ctrl+F on the library).</summary>
+        public void FocusSearch()
+        {
+            SearchBox.Focus();
+            SearchBox.SelectAll();
+        }
+
+        private void NewCollection_Click(object sender, RoutedEventArgs e) => NewCollection(null);
+
+        private void EmptyCapture_Click(object sender, RoutedEventArgs e) => CaptureRequested?.Invoke();
+
+        // ============================================================
+        // Unlock
+        // ============================================================
+
+        private void Unlock_Click(object sender, RoutedEventArgs e) => TryUnlock();
+
+        private void UnlockBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter) return;
+            e.Handled = true;
+            TryUnlock();
+        }
+
+        private async void TryUnlock()
+        {
+            if (UnlockBox.Password.Length == 0 || _busy != null) return;
+            string password = UnlockBox.Password;
+            // The password goes through SQLCipher's key derivation, which takes a moment, so the
+            // loading screen covers it off the interface thread.
+            ShowBusy();
+            bool ok;
+            try { ok = await Task.Run(() => CaptureLibrary.Unlock(password)); }
+            finally { HideBusy(); }
+            UnlockError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
+            UnlockBox.Clear();
+            if (ok) Reload();
+            else UnlockBox.Focus();
+        }
+
+        // ============================================================
+        // Loading screen, as in KillerNotes: a dimmed cover with a turning ring while the
+        // encrypted library opens.
+        // ============================================================
+
+        private Border? _busy;
+
+        private void ShowBusy()
+        {
+            if (_busy != null || Content is not Grid root) return;
+            var rotation = new RotateTransform();
+            var spinner = new Ellipse
+            {
+                Width = 34, Height = 34, StrokeThickness = 3,
+                StrokeDashArray = [5.5, 3.5],
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 14),
+                RenderTransformOrigin = new Point(0.5, 0.5),
+                Stroke = Brushes.White,
+                RenderTransform = rotation,
+            };
+            rotation.BeginAnimation(RotateTransform.AngleProperty,
+                new System.Windows.Media.Animation.DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(0.9)))
+                { RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever });
+            var message = new TextBlock
+            {
+                Text = Loc("Str_Busy_OpeningLibrary"), Foreground = Brushes.White,
+                FontSize = 14, FontFamily = new FontFamily("Segoe UI"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+            AutomationProperties.SetName(spinner, message.Text);
+            var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            panel.Children.Add(spinner);
+            panel.Children.Add(message);
+            _busy = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(190, 0x12, 0x12, 0x12)),
+                Child = panel, Cursor = Cursors.Wait,
+            };
+            Grid.SetRowSpan(_busy, Math.Max(1, root.RowDefinitions.Count));
+            Grid.SetColumnSpan(_busy, Math.Max(1, root.ColumnDefinitions.Count));
+            Panel.SetZIndex(_busy, 10050);
+            root.Children.Add(_busy);
+        }
+
+        private void HideBusy()
+        {
+            if (_busy == null) return;
+            if (_busy.Child is StackPanel { Children: [Ellipse { RenderTransform: RotateTransform rotation }, ..] })
+                rotation.BeginAnimation(RotateTransform.AngleProperty, null);
+            ((Grid)Content).Children.Remove(_busy);
+            _busy = null;
+        }
+
+        /// <summary>For the self-test: the view, grouping and search as the header buttons set them.</summary>
+        internal void TestSet(string view, string group, string search)
+        {
+            _view = view;
+            _group = group;
+            SearchBox.Text = search;
+            _searchDelay.Stop();
+            Reload();
+        }
+
+        internal void TestShowBusy(bool on) { if (on) ShowBusy(); else HideBusy(); }
+
+        // ============================================================
+        // Menus and actions
+        // ============================================================
+
+        private Window? OwnerWindow => Window.GetWindow(this);
+
+        private void ShowItemMenu(CaptureItem item, FrameworkElement anchor)
+        {
+            var menu = new ContextMenu { PlacementTarget = anchor };
+            if (Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver)
+                menu.Placement = PlacementMode.Bottom;
+            MenuItem Add(string key, Action action, string gesture = "")
+            {
+                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture };
+                mi.Click += (_, _) => action();
+                menu.Items.Add(mi);
+                return mi;
+            }
+            Add("Str_Lib_Open", () => OpenRequested?.Invoke(item)).FontWeight = FontWeights.SemiBold;
+            Add("Str_Lib_Copy", () => Copy(item));
+            Add("Str_Lib_SaveAs", () => SaveAs(item));
+            menu.Items.Add(new Separator());
+
+            var move = new MenuItem { Header = Loc("Str_Lib_MoveTo") };
+            var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
+            none.Click += (_, _) => CaptureLibrary.Move([item.Id], null);
+            move.Items.Add(none);
+            foreach (var c in _collections)
+            {
+                var target = c;
+                var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
+                mi.Click += (_, _) => CaptureLibrary.Move([item.Id], target.Id);
+                move.Items.Add(mi);
+            }
+            move.Items.Add(new Separator());
+            var create = new MenuItem { Header = Loc("Str_Lib_NewCollectionDots") };
+            create.Click += (_, _) => NewCollection(item);
+            move.Items.Add(create);
+            menu.Items.Add(move);
+            Add("Str_Lib_Note", () => EditNote(item));
+            menu.Items.Add(new Separator());
+            Add("Str_Lib_Delete", () => Delete(item), "Del");
+            menu.IsOpen = true;
+            Anim.FadeIn(menu);
+        }
+
+        private void FillCollectionMenu(ContextMenu menu, long id, string name)
+        {
+            menu.Items.Clear();
+            var rename = new MenuItem { Header = Loc("Str_Lib_RenameCollection") };
+            rename.Click += (_, _) =>
+            {
+                var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
+                if (dlg.ShowDialog() == true && dlg.Text.Trim().Length > 0) CaptureLibrary.RenameCollection(id, dlg.Text);
+            };
+            menu.Items.Add(rename);
+            var delete = new MenuItem { Header = Loc("Str_Lib_DeleteCollection") };
+            delete.Click += (_, _) =>
+            {
+                var dlg = new ConfirmDialog(string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_DeleteCollectionTitle"), name),
+                    Loc("Str_Lib_DeleteCollectionDetail"), Loc("Str_Lib_DeleteCollection"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
+                dlg.ShowDialog();
+                if (dlg.Confirmed) CaptureLibrary.DeleteCollection(id);
+            };
+            menu.Items.Add(delete);
+        }
+
+        private void NewCollection(CaptureItem? moveIn)
+        {
+            var dlg = new PromptDialog(Loc("Str_Lib_NewCollectionTitle"), "", Loc("Str_Lib_Create")) { Owner = OwnerWindow };
+            if (dlg.ShowDialog() != true || dlg.Text.Trim().Length == 0) return;
+            long id = CaptureLibrary.CreateCollection(dlg.Text);
+            if (moveIn != null) CaptureLibrary.Move([moveIn.Id], id);
+            if (_group != "collection" && _view != "timeline")
+            {
+                _group = "collection";
+                Settings.Set("LibraryGroup", _group);
+                Reload();
+            }
+        }
+
+        private void EditNote(CaptureItem item)
+        {
+            var dlg = new PromptDialog(Loc("Str_Lib_NoteTitle"), Loc("Str_Lib_NoteDetail"), Loc("Str_Lib_Save"), initialText: item.Note ?? "") { Owner = OwnerWindow };
+            if (dlg.ShowDialog() == true) CaptureLibrary.SetNote(item.Id, dlg.Text);
+        }
+
+        private void Copy(CaptureItem item)
+        {
+            try
+            {
+                StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadImage(item.Id), out var error)
+                    ? Loc("Str_Lib_Copied")
+                    : string.Format(Loc("Str_Tray_ClipboardBusy"), error));
+            }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        private void SaveAs(CaptureItem item)
+        {
+            var mode = item.Mode switch { "window" => CaptureMode.Window, "monitor" => CaptureMode.Monitor, "all" => CaptureMode.AllMonitors, _ => CaptureMode.Region };
+            var dlg = new FileDialog(FileDialogMode.Save)
+            {
+                Title = Loc("Str_Dlg_SaveTitle"),
+                Filter = Loc("Str_Dlg_ImageFilter"),
+                FilterIndex = CaptureSettings.Format == "jpg" ? 2 : 1,
+                DefaultExt = "." + CaptureSettings.Format,
+                FileName = OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken, mode, item.Width, item.Height, CaptureSettings.Format),
+                InitialDirectory = CaptureSettings.OutputFolder,
+            };
+            if (dlg.ShowDialog(OwnerWindow) != true) return;
+            try
+            {
+                if (Path.GetExtension(dlg.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                    File.WriteAllBytes(dlg.FileName, CaptureLibrary.LoadPng(item.Id));
+                else
+                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), dlg.FileName, CaptureSettings.JpegQuality);
+                StatusMessage?.Invoke(dlg.FileName);
+            }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        private void Delete(CaptureItem item)
+        {
+            var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
+            dlg.ShowDialog();
+            if (dlg.Confirmed) CaptureLibrary.Delete([item.Id]);
+        }
+    }
+}

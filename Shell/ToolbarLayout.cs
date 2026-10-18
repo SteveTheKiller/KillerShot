@@ -33,7 +33,7 @@ namespace KillerShot.Shell
 
         // Everything on the left, in the groups the bar always had.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
-            ["capture", "record", "recent", "-", "open", "save", "saveas", "copy", "print", "-", "undo", "redo",
+            ["capture", "record", "library", "recent", "-", "open", "save", "saveas", "copy", "print", "-", "undo", "redo",
              "-", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop",
              "-", "color", "width", "-", "fit", "actualsize"],
             [],
@@ -47,6 +47,7 @@ namespace KillerShot.Shell
             ["saveas"],
             ["recent"],
             ["open"],
+            ["library"],
             ["fit", "actualsize"],
             ["undo", "redo"],
             ["ellipse"],

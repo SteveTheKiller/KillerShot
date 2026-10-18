@@ -9,7 +9,8 @@
 - Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
 - The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
 - Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
-- Added Open, Save, Save as and Copy, and a Recent list that keeps the last 20 captures.
+- Added Open, Save, Save as and Copy, and a Recent menu of the latest captures.
+- Added the capture library: every capture is kept in one encrypted file (SQLCipher, AES-256) that opens with your Windows account, or with a password set in Capture settings. With no image open the window shows it as shelves of carousels, one big carousel, a grid or a timeline, by date or by collection, with search across window titles, program names, notes and the text in each picture. Ctrl+L shows it over an open image. Captures can be moved into collections, noted, copied, saved as files or deleted, and Keep captures limits the history by count or age. The old Recent folder is imported into it on first start.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture, show a notification, and start with Windows.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
@@ -21,5 +22,5 @@
 - Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.
 - Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.
 - Menu separators draw their divider line instead of leaving an empty gap.
-- Added a command line (KillerShot.exe --cli, or KillerShot.Cli.exe in a console) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, copies, exports and opens recent captures, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP.
+- Added a command line (KillerShot.exe --cli, or KillerShot.Cli.exe in a console) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP.
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.

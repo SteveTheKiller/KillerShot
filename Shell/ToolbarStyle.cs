@@ -33,6 +33,7 @@ namespace KillerShot.Shell
         {
             yield return ("capture",    CaptureBtn,         0xE722, "Str_Btn_Capture");     // Camera
             yield return ("record",     RecordBtn,          0xE7C8, "Str_Btn_Record");      // Record
+            yield return ("library",    LibraryBtn,         0xE8F1, "Str_Btn_Library");     // Library
             yield return ("recent",     RecentBtn,          0xE81C, "Str_Btn_Recent");      // History
             yield return ("open",       OpenBtn,            0xE8E5, "Str_Btn_Open");        // OpenFile
             yield return ("save",       SaveBtn,            0xE74E, "Str_Btn_Save");        // Save
@@ -288,6 +289,7 @@ namespace KillerShot.Shell
         {
             BuildToolbarMenu();
             ApplyToolbarStyle();
+            Library.Relocalize();
         }
     }
 }

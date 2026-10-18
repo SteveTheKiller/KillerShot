@@ -19,7 +19,8 @@ How-tos and every shortcut are on the [help page](https://killershot.net/help.ht
 - Screen recording of a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. The recording frame and the Pause, Stop and Discard bar never appear in the video
 - MP4 uses the H.264 and AAC encoders built into Windows. Recordings larger than 4096 x 2304 are scaled down to fit the encoder; GIF keeps the full size
 - A GIF encoder written for KillerShot that stores only what changed in each frame, with its own palette, and lets you set the size, color count, frame rate and looping
-- The last 20 captures are kept for reopening, and the capture can be printed from the editor or the tray
+- Every capture is kept in an encrypted library (SQLCipher, AES-256) that opens with your Windows account, or with a password you set. Browse it as shelves of carousels, one big carousel, a grid or a timeline, sorted by date or into collections, and search window titles, program names, notes and the text inside each picture. Keep everything, or only the last captures or days
+- The capture can be printed from the editor or the tray
 - A headless command line for scripts and scheduled tasks, with JSON output and dependable exit codes; run `KillerShot.exe --cli help` for the commands
 - Works with KillerMCP, so connected agents can list monitors and windows, take screenshots and recordings, and open an image in the editor
 - Lives in the notification area and can start with Windows
@@ -55,6 +56,8 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## License
 
 GPLv3. See [LICENSE.txt](LICENSE.txt). If you fork, modify, or redistribute KillerShot, your version must also be released under GPLv3 with source available.
+
+The library uses SQLCipher, built from upstream source as `third_party/sqlcipher/e_sqlcipher.dll` (see the README there), under its BSD-style license.
 
 Bundled fonts keep their own licenses:
 

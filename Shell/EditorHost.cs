@@ -79,6 +79,8 @@ namespace KillerShot.Shell
         private void BindDocument(EditorDocument? doc)
         {
             if (_doc != null) _doc.Changed -= RefreshDocumentUi;
+            // A new image comes to the front; the library steps back.
+            if (!ReferenceEquals(doc, _doc)) _libraryShown = false;
             _doc = doc;
             Editor.Document = doc;
             if (_doc != null) _doc.Changed += RefreshDocumentUi;
@@ -89,9 +91,7 @@ namespace KillerShot.Shell
         private void RefreshDocumentUi()
         {
             bool has = _doc != null;
-            EmptyState.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
-            EditorScroll.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
-            EmptyHintText.Text = string.Format(Loc("Str_Empty_Hint"), Shortcut.TryParse(CaptureSettings.ShortcutText(ShortcutAction.LastMode), out var sc) ? sc.Short : "PrtScn");
+            SyncLibraryVisibility();
             foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
@@ -178,6 +178,7 @@ namespace KillerShot.Shell
         private string? ShortcutFor(Button b)
         {
             if (b == CaptureBtn) return "Ctrl+N";
+            if (b == LibraryBtn) return "Ctrl+L";
             if (b == RecordBtn) return "Ctrl+R";
             if (b == OpenBtn) return "Ctrl+O";
             if (b == SaveBtn) return "Ctrl+S";
@@ -348,7 +349,49 @@ namespace KillerShot.Shell
             OpenFlyout(CaptureMenu, CaptureBtn);
         }
 
-        private void EmptyCaptureBtn_Click(object sender, RoutedEventArgs e) => StartCapture(CaptureMode.Region);
+        // ---- library ----
+
+        /// <summary>True while the library covers an open image (Ctrl+L). With no image open the
+        /// library always shows.</summary>
+        private bool _libraryShown;
+
+        private void InitLibrary()
+        {
+            Library.OpenRequested += item =>
+            {
+                try
+                {
+                    App.Instance.OpenLibraryCapture(item);
+                    _libraryShown = false;
+                    SyncLibraryVisibility();
+                }
+                catch (Exception ex) { StatusText.Text = ex.Message; }
+            };
+            Library.CaptureRequested += () => StartCapture(CaptureMode.Region);
+            Library.StatusMessage += text => StatusText.Text = text;
+        }
+
+        private void LibraryBtn_Click(object sender, RoutedEventArgs e) => ToggleLibrary();
+
+        /// <summary>Ctrl+L: the library over the open image, and back. With no image open the
+        /// library is already showing, so it only takes focus.</summary>
+        private void ToggleLibrary()
+        {
+            Editor.CommitText();
+            _libraryShown = _doc != null && !_libraryShown;
+            SyncLibraryVisibility();
+            if (Library.IsVisible) Library.Focus();
+        }
+
+        private void SyncLibraryVisibility()
+        {
+            bool library = _doc == null || _libraryShown;
+            Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
+            EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
+            // The Library button carries the accent while it covers an image, like a tool.
+            if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");
+            else LibraryBtn.ClearValue(ForegroundProperty);
+        }
 
         /// <summary>Window mode from inside the editor captures the window that was in front before
         /// KillerShot, which is the one the user means.</summary>
@@ -363,40 +406,42 @@ namespace KillerShot.Shell
         private void RecentBtn_Click(object sender, RoutedEventArgs e)
         {
             RecentMenu.Items.Clear();
-            var files = RecentCaptures.List();
-            if (files.Count == 0)
+            var items = CaptureLibrary.Items().Take(12).ToList();
+            if (!CaptureLibrary.IsOpen)
+                RecentMenu.Items.Add(new MenuItem { Header = Loc("Str_Lib_LockedTitle"), IsEnabled = false });
+            else if (items.Count == 0)
                 RecentMenu.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
-            foreach (var f in files)
+            foreach (var item in items)
             {
-                var file = f;
-                var thumb = new Image { Width = 64, Height = 40, Stretch = Stretch.Uniform, Margin = new Thickness(0, 2, 10, 2) };
-                try
-                {
-                    var bi = new BitmapImage();
-                    bi.BeginInit();
-                    bi.CacheOption = BitmapCacheOption.OnLoad;
-                    bi.DecodePixelWidth = 128;
-                    bi.UriSource = new Uri(f.FullName);
-                    bi.EndInit();
-                    bi.Freeze();
-                    thumb.Source = bi;
-                }
-                catch { continue; }
-                var when = RecentCaptures.TakenFrom(f) ?? f.LastWriteTime;
+                var capture = item;
+                var thumb = new Image { Width = 64, Height = 40, Stretch = Stretch.Uniform, Margin = new Thickness(0, 2, 10, 2),
+                                        Source = CaptureLibrary.LoadThumb(item.Id) };
+                var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                text.Children.Add(new TextBlock { Text = LibraryView.Title(item), MaxWidth = 280, TextTrimming = TextTrimming.CharacterEllipsis });
+                var when = new TextBlock { Text = item.Taken.ToString("g"), FontSize = 11 };
+                when.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+                text.Children.Add(when);
                 var row = new StackPanel { Orientation = Orientation.Horizontal };
                 row.Children.Add(thumb);
-                row.Children.Add(new TextBlock { Text = when.ToString("g"), VerticalAlignment = VerticalAlignment.Center });
+                row.Children.Add(text);
                 var mi = new MenuItem { Header = row };
-                mi.Click += (_, _) => OpenPath(file.FullName, recent: true, taken: when);
+                System.Windows.Automation.AutomationProperties.SetName(mi, LibraryView.Describe(item));
+                mi.Click += (_, _) =>
+                {
+                    try
+                    {
+                        App.Instance.OpenLibraryCapture(capture);
+                        _libraryShown = false;
+                        SyncLibraryVisibility();
+                    }
+                    catch (Exception ex) { StatusText.Text = ex.Message; }
+                };
                 RecentMenu.Items.Add(mi);
             }
-            if (files.Count > 0)
-            {
-                RecentMenu.Items.Add(new Separator());
-                var folder = new MenuItem { Header = Loc("Str_Recent_OpenFolder") };
-                folder.Click += (_, _) => WebLink.Open(RecentCaptures.Folder);
-                RecentMenu.Items.Add(folder);
-            }
+            RecentMenu.Items.Add(new Separator());
+            var library = new MenuItem { Header = Loc("Str_Recent_ShowLibrary"), InputGestureText = "Ctrl+L" };
+            library.Click += (_, _) => { if (_doc != null) { _libraryShown = true; SyncLibraryVisibility(); } };
+            RecentMenu.Items.Add(library);
             OpenFlyout(RecentMenu, RecentBtn);
         }
 
@@ -435,16 +480,15 @@ namespace KillerShot.Shell
                 Filter = Loc("Str_Dlg_OpenFilter"),
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             };
-            if (dlg.ShowDialog(this) == true) OpenPath(dlg.FileName, recent: false, taken: null);
+            if (dlg.ShowDialog(this) == true) OpenPath(dlg.FileName);
         }
 
-        private void OpenPath(string path, bool recent, DateTime? taken)
+        private void OpenPath(string path)
         {
             try
             {
                 var bmp = ImageOutput.Load(path);
-                // A history file is a capture, not a document: saving it asks where to put it.
-                App.Instance.SetDocument(new EditorDocument(bmp, recent ? null : path, taken ?? System.IO.File.GetLastWriteTime(path)));
+                App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path)));
                 StatusText.Text = Loc("Str_Status_Ready");
             }
             catch (Exception ex)

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:icons="clr-namespace:KillerShot.Controls"
         xmlns:editor="clr-namespace:KillerShot.Editor"
+        xmlns:local="clr-namespace:KillerShot.Shell"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerShot"
         Icon="/Resources/kst-icon.ico"
@@ -138,6 +139,7 @@
                             </Button.ContextMenu>
                         </Button>
                         <Button x:Name="RecordBtn" Style="{StaticResource ToolbarButton}" Click="RecordBtn_Click"/>
+                        <Button x:Name="LibraryBtn" Style="{StaticResource ToolbarButton}" Click="LibraryBtn_Click"/>
                         <Button x:Name="RecentBtn" Style="{StaticResource ToolbarButton}" Click="RecentBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="RecentMenu"/>
@@ -219,15 +221,9 @@
                             </Grid>
                         </ScrollViewer>
 
-                        <!-- Shown when there is no capture yet. -->
-                        <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
-                            <TextBlock Text="{DynamicResource Str_Empty_Title}" Foreground="{DynamicResource TextBrush}"
-                                       FontFamily="{DynamicResource BrandSansFont}" FontSize="22" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="EmptyHintText" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
-                                       Margin="0,8,0,16" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420"/>
-                            <Button x:Name="EmptyCaptureBtn" Content="{DynamicResource Str_Btn_CaptureRegion}" Style="{StaticResource OutlineButton}"
-                                    Padding="14,6" HorizontalAlignment="Center" Click="EmptyCaptureBtn_Click"/>
-                        </StackPanel>
+                        <!-- The library: every capture kept, shown when no image is open and on Ctrl+L
+                             (LibraryView). It also says so when there is no capture yet. -->
+                        <local:LibraryView x:Name="Library" Margin="1" Visibility="Collapsed"/>
 
                         <Border x:Name="ContentPaneOutline" Panel.ZIndex="99" IsHitTestVisible="False"
                                 BorderBrush="{DynamicResource PaneBorderBrush}"
@@ -465,6 +461,23 @@
                                         <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="StartupToggle" Content="{DynamicResource Str_CS_Startup}" Style="{StaticResource CsCheck}"/>
+
+                                        <TextBlock Text="{DynamicResource Str_CS_Library}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="190"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock x:Name="LibraryKeepLabel" Text="{DynamicResource Str_CS_Keep}" Style="{StaticResource CsLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <ComboBox x:Name="LibraryKeepCombo" Grid.Column="1" SelectionChanged="LibraryKeepCombo_Changed"
+                                                      AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
+                                        </Grid>
+                                        <TextBlock x:Name="LibraryStatusText" Foreground="{DynamicResource DimTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="LibraryPasswordBtn" Style="{StaticResource OutlineButton}" Padding="10,3" Click="LibraryPassword_Click"/>
+                                            <Button x:Name="LibraryRemovePasswordBtn" Content="{DynamicResource Str_CS_RemovePassword}" Style="{StaticResource OutlineButton}"
+                                                    Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
+                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Width="420">

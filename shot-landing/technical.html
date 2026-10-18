@@ -142,7 +142,7 @@
 <p data-i18n="t_pipe_1"><b>1. Freeze.</b> When a shortcut fires, KillerShot hides its own editor if it is open, waits for the desktop to repaint without it, and copies the whole virtual desktop in one pass. The list of monitors and the visible windows, topmost first, are recorded at the same moment.</p>
 <p data-i18n="t_pipe_2"><b>2. Choose.</b> Region mode shows that copy on every monitor, one image pixel per device pixel, so the selector itself can never appear in the result and a menu that closes when you click stays in the picture. Monitor and all-monitor modes crop straight from the copy without showing anything.</p>
 <p data-i18n="t_pipe_3"><b>3. Window.</b> Window mode asks Windows Graphics Capture for one frame of the window, which includes the parts other windows cover. The rounded corners Windows 11 draws are filled from the frozen desktop behind them, so the picture has no transparent or black corners.</p>
-<p data-i18n="t_pipe_4"><b>4. Output.</b> The finished bitmap goes to the clipboard, the Recent history and the output folder, according to your settings. A cancelled capture produces nothing and leaves the clipboard and the last mode as they were.</p>
+<p data-i18n="t_pipe_4"><b>4. Output.</b> The finished bitmap goes to the clipboard, the capture library and the output folder, according to your settings. A cancelled capture produces nothing and leaves the clipboard and the last mode as they were.</p>
 </div>
 <div class="tech-sec" id="dpi">
 <h2 data-i18n="t_dpi">Pixels, DPI and scaling</h2>
@@ -154,7 +154,7 @@
 <p data-i18n="t_clip_1">A capture is put on the clipboard twice in one data object: as PNG, which keeps every pixel for apps that read it, and as a standard bitmap for everything else. The data stays available after KillerShot exits. A clipboard held by another program is retried briefly, then reported.</p>
 <table class="spec-table"><tr><th data-i18n="t_what">What</th><th data-i18n="t_where">Where</th></tr>
 <tr><td>Settings</td><td data-i18n="t_settings"><code>%APPDATA%\KillerShot\settings.json</code></td></tr>
-<tr><td>Recent history</td><td data-i18n="t_recent"><code>%LOCALAPPDATA%\KillerShot\Recent</code>, the last 20 captures as PNG</td></tr>
+<tr><td>Capture library</td><td data-i18n="t_recent"><code>%LOCALAPPDATA%\KillerShot\Library.kshot</code>, every capture as PNG with a thumbnail, in one SQLCipher database (AES-256). The key is a random 256-bit key sealed with Windows DPAPI to your account in <code>Library.key</code>, or your password</td></tr>
 <tr><td>Screenshots</td><td data-i18n="t_shots">Windows' Screenshots known folder, usually <code>Pictures\Screenshots</code>, unless you choose another</td></tr>
 <tr><td>Recordings</td><td data-i18n="t_videos"><code>Videos\Screen Recordings</code>, unless you choose another</td></tr>
 </table>
@@ -185,7 +185,7 @@
 <div class="tech-sec" id="privacy">
 <h2 data-i18n="t_privacy">Privacy &amp; footprint</h2>
 <p data-i18n="t_privacy_1">KillerShot has no account, no analytics and no update check. It makes no network connections on its own. The release notes link on the About card opens the GitHub releases page in your browser.</p>
-<p data-i18n="t_privacy_2">The clipboard is the point of the app, so captures follow your Windows clipboard settings, including clipboard history and sync if you turned them on. Captures are written to disk only in the Recent history and the folders you choose.</p>
+<p data-i18n="t_privacy_2">The clipboard is the point of the app, so captures follow your Windows clipboard settings, including clipboard history and sync if you turned them on. Captures are written to disk only in the encrypted library and the folders you choose.</p>
 </div>
 </div>
 </div>

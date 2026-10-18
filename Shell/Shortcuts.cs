@@ -37,6 +37,7 @@ namespace KillerShot.Shell
                 else if (VideoSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(VideoSettingsOverlay);
                 else if (ShortcutsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(ShortcutsOverlay);
                 else if (AboutOverlay.Visibility == Visibility.Visible) FadeOverlayOut(AboutOverlay);
+                else if (_libraryShown && !TypingInField()) ToggleLibrary();   // back to the open image
                 else if (!Editor.CancelGesture()) return;
                 e.Handled = true;
                 return;
@@ -69,6 +70,8 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.L: ToggleLibrary(); break;
+                    case Key.F when Library.IsVisible: Library.FocusSearch(); break;
                     case Key.R: App.Instance.Video?.Toggle(); break;
                     case Key.O: OpenFile(); break;
                     case Key.S when shift: SaveAs(); break;
@@ -88,7 +91,8 @@ namespace KillerShot.Shell
                 return;
             }
 
-            if (alt || TypingInField() || Editor.IsEditingText) return;
+            // Tool keys belong to the editor, not to the library over it.
+            if (alt || TypingInField() || Editor.IsEditingText || Library.IsVisible) return;
 
             double step = shift ? 10 : 1;
             switch (e.Key)

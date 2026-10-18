@@ -188,4 +188,21 @@ internal static class Win32
         var sb = new System.Text.StringBuilder(length + 1);
         return GetWindowText(hwnd, sb, sb.Capacity) > 0 ? sb.ToString() : "";
     }
+
+    [DllImport("user32.dll")] public static extern IntPtr WindowFromPoint(POINT pt);
+
+    /// <summary>The program that owns a window, without its .exe, or null.</summary>
+    public static string? ProcessName(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return null;
+        GetWindowThreadProcessId(hwnd, out uint pid);
+        if (pid == 0) return null;
+        try
+        {
+            using var p = System.Diagnostics.Process.GetProcessById((int)pid);
+            return p.ProcessName;
+        }
+        catch (ArgumentException) { return null; }
+        catch (InvalidOperationException) { return null; }
+    }
 }

@@ -65,11 +65,15 @@ internal sealed class CaptureController
             var frozen = FrozenDesktop.Capture(CaptureSettings.IncludeCursor);
             if (CaptureSettings.PlaySound) ShutterSound.Play();
             BitmapSource? result;
+            // The window the picture came from, for the library's search: the picked or active
+            // window, or the topmost window under the middle of a region or under the pointer.
+            IntPtr source = IntPtr.Zero;
             switch (mode)
             {
                 case CaptureMode.Region:
                     var rect = await new RegionSelector(frozen).RunAsync();
                     result = rect is { } r ? frozen.Crop(r) : null;
+                    if (rect is { } at) source = frozen.WindowAt(Center(at))?.Handle ?? IntPtr.Zero;
                     break;
                 case CaptureMode.Window when CaptureSettings.PickWindow || foreground == IntPtr.Zero:
                     // Pick by clicking. Started from a menu there is no meaningful active window.
@@ -79,6 +83,8 @@ internal sealed class CaptureController
                     result = picker.PickedWindow != IntPtr.Zero
                         ? (await WindowCapture.CaptureAsync(picker.PickedWindow, frozen)).Bitmap
                         : frozen.Crop(picked.Value);
+                    source = picker.PickedWindow != IntPtr.Zero ? picker.PickedWindow
+                        : frozen.WindowAt(Center(picked.Value))?.Handle ?? IntPtr.Zero;
                     break;
                 case CaptureMode.Window:
                     var target = WindowCapture.CapturableRoot(foreground);
@@ -91,14 +97,17 @@ internal sealed class CaptureController
                     else
                     {
                         result = (await WindowCapture.CaptureAsync(target, frozen)).Bitmap;
+                        source = target;
                     }
                     break;
                 case CaptureMode.Monitor:
                     Win32.GetCursorPos(out var p);
                     result = frozen.Crop(frozen.MonitorAt(p).Bounds);
+                    source = frozen.WindowAt(p)?.Handle ?? IntPtr.Zero;
                     break;
                 default:
                     result = frozen.Crop(frozen.Bounds);
+                    source = foreground;
                     break;
             }
 
@@ -106,7 +115,8 @@ internal sealed class CaptureController
             CaptureSettings.LastMode = mode;
             Last = result;
             var taken = DateTime.Now;
-            RecentCaptures.Add(result, taken);
+            CaptureLibrary.Add(result, taken, ModeKey(mode),
+                source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source));
 
             bool wantCopy = CaptureSettings.CopyToClipboard;
             bool copied = false;
@@ -159,6 +169,17 @@ internal sealed class CaptureController
             restore?.Invoke();
         }
     }
+
+    private static Win32.POINT Center(Win32.RECT r) => new() { X = r.Left + r.Width / 2, Y = r.Top + r.Height / 2 };
+
+    /// <summary>The mode as the library and the command line name it.</summary>
+    internal static string ModeKey(CaptureMode mode) => mode switch
+    {
+        CaptureMode.Region => "region",
+        CaptureMode.Window => "window",
+        CaptureMode.Monitor => "monitor",
+        _ => "all",
+    };
 
     /// <summary>The save dialog for one capture, starting in the output folder with the pattern's name.</summary>
     private string? AskAndSave(BitmapSource bmp, DateTime taken, CaptureMode mode)

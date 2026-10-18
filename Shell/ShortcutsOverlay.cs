@@ -79,6 +79,8 @@ namespace KillerShot.Shell
             new("Shift+Enter", "Str_KS_NewLine", KsCat.Appt, false),
 
             new("Ctrl+N",   "Str_KS_NewCapture", KsCat.File, true, "N"),
+            new("Ctrl+L",   "Str_KS_Library",    KsCat.File, true, "L"),
+            new("Ctrl+F",   "Str_KS_LibrarySearch", KsCat.File, true, "F"),
             new("Ctrl+R",   "Str_KS_Record",     KsCat.File, true, "R"),
             new("Ctrl+O",   "Str_KS_Open",       KsCat.File, true, "O"),
             new("Ctrl+S",   "Str_KS_Save",       KsCat.File, true, "S"),

@@ -173,8 +173,10 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <p data-i18n="h_names_1">Saved captures are named from a pattern. The default is <code>KillerShot {yyyy}-{MM}-{dd} {HH}{mm}{ss}</code>. The placeholders are <code>{yyyy}</code>, <code>{MM}</code>, <code>{dd}</code>, <code>{HH}</code>, <code>{mm}</code>, <code>{ss}</code>, <code>{mode}</code>, <code>{width}</code> and <code>{height}</code>. A name that is already taken gets <code>(2)</code>, <code>(3)</code> and so on, so a capture never replaces an earlier one.</p>
 <p data-i18n="h_names_2">Choose PNG or JPEG. JPEG has a quality setting. PNG keeps every pixel exactly.</p>
 </div></div></div>
-<div class="acc-item"><button class="acc-head"><span data-i18n="h_recent_t">Recent captures</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_recent_1">KillerShot keeps the last 20 captures in <code>%LOCALAPPDATA%\KillerShot\Recent</code>, so a capture you copied over on the clipboard can still be reopened. Open one from the <b>Recent</b> button in the editor. Older files are removed as new ones arrive.</p>
+<div class="acc-item"><button class="acc-head"><span data-i18n="h_recent_t">The capture library</span><span class="kbd">Ctrl + L</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_recent_1">KillerShot keeps every capture in an encrypted library, <code>%LOCALAPPDATA%\KillerShot\Library.kshot</code>, so a capture you copied over on the clipboard can still be found. With no image open the window shows the library; <b>Ctrl+L</b> shows it over an open image and back. The <b>Recent</b> button lists the latest captures.</p>
+<p data-i18n="h_recent_2">Choose <b>Shelves</b> for a row of carousels per collection or day, <b>Carousel</b> for one large one, <b>Grid</b> or <b>Timeline</b>, and group by date or by collection. <b>Ctrl+F</b> searches window titles, program names, notes, collection names and the text inside each picture, which Windows reads in the background. Right-click a capture to open, copy, save it as a file, move it to a collection, add a note or delete it.</p>
+<p data-i18n="h_recent_3">The library is encrypted with SQLCipher (AES-256). Its key is sealed to your Windows account, so it opens without a prompt for you and for no one else. Set a password in the <b>Library</b> section of Capture settings to make it open only with that password; there is no way to recover a forgotten one. <b>Keep captures</b> keeps everything, or only the last 100 to 5,000 captures or the last 30 to 365 days.</p>
 </div></div></div>
 <h2 class="help-cat" id="editor" data-i18n="h_editor">Editor</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_tools_t">Editor tools</span><span class="kbd">V P H A R E T X C</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
@@ -183,7 +185,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <p data-i18n="h_tools_3">Select a mark to move it with the mouse or the arrow keys (Shift moves 10 pixels), or delete it with Delete. Undo and redo keep the last 50 steps.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_files_t">Open, save, copy and print</span><span class="kbd">Ctrl+O / S / C / P</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_files_1"><b>Ctrl+O</b> opens a PNG, JPEG, BMP, GIF or TIFF. <b>Ctrl+S</b> saves, <b>Ctrl+Shift+S</b> saves under a new name, <b>Ctrl+C</b> copies the finished picture and <b>Ctrl+P</b> prints it. A capture opened from Recent asks where to save instead of writing into the history folder.</p>
+<p data-i18n="h_files_1"><b>Ctrl+O</b> opens a PNG, JPEG, BMP, GIF or TIFF. <b>Ctrl+S</b> saves, <b>Ctrl+Shift+S</b> saves under a new name, <b>Ctrl+C</b> copies the finished picture and <b>Ctrl+P</b> prints it. A capture opened from the library asks where to save, since it is not a file yet.</p>
 <p data-i18n="h_files_2">Printing shrinks large pictures and rotates them to match the page by default. Enlarging small pictures is a separate option in Capture settings.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_zoom_t">Zoom</span><span class="kbd">Ctrl+0 / 1</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
@@ -219,7 +221,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <table class="spec-table"><tr><th data-i18n="hc_syntax">Syntax</th><th data-i18n="hc_does">What it does</th></tr>
 <tr><td><code>capture</code></td><td data-i18n="hc_capture">Take a screenshot and print where it was saved.</td></tr>
 <tr><td><code>record --seconds &lt;n&gt;</code></td><td data-i18n="hc_record">Record the screen to MP4 or GIF for 1 to 3600 seconds. Ctrl+C stops early and keeps the file.</td></tr>
-<tr><td><code>recent</code></td><td data-i18n="hc_recent">List the recent captures, or print, copy, export or open one of them.</td></tr>
+<tr><td><code>recent</code></td><td data-i18n="hc_recent">List or search the captures in the library, or copy, export or open one of them.</td></tr>
 <tr><td><code>open &lt;image&gt;</code></td><td data-i18n="hc_open">Open an image in the editor. A running KillerShot opens it; otherwise KillerShot starts with it.</td></tr>
 <tr><td><code>monitors</code></td><td data-i18n="hc_monitors">List monitors, numbered left to right, with their bounds in screen pixels.</td></tr>
 <tr><td><code>windows [--limit &lt;n&gt;]</code></td><td data-i18n="hc_windows">List capturable windows with their handles, sizes, process names and titles.</td></tr>
@@ -243,7 +245,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <tr><td><code>--cursor</code>, <code>--no-cursor</code></td><td data-i18n="hc_cursor">Include the mouse pointer.</td></tr>
 <tr><td><code>--shutter</code>, <code>--no-shutter</code></td><td data-i18n="hc_shutter">Play the camera sound.</td></tr>
 <tr><td><code>--editor</code></td><td data-i18n="hc_editor">Open the capture in the editor.</td></tr>
-<tr><td><code>--no-recent</code></td><td data-i18n="hc_norecent">Leave the capture out of the Recent history.</td></tr>
+<tr><td><code>--no-recent</code></td><td data-i18n="hc_norecent">Leave the capture out of the library.</td></tr>
 <tr><td><code>--json</code></td><td data-i18n="hc_json">Print the path, size, mode and window as JSON.</td></tr>
 </table>
 </div></div></div>
@@ -256,14 +258,15 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <tr><td><code>--sound none|system|mic|both</code></td><td data-i18n="hc_rec_sound">Sound for MP4 recordings.</td></tr>
 <tr><td><code>--gif-colors &lt;2-256&gt;</code>, <code>--gif-size &lt;10-100&gt;</code>, <code>--loop</code>, <code>--no-loop</code></td><td data-i18n="hc_rec_gif">GIF palette size, scale and looping.</td></tr>
 <tr><td><code>--clipboard</code></td><td data-i18n="hc_rec_clip">Copy the finished file to the clipboard.</td></tr>
-<tr><td><code>recent --limit &lt;1-20&gt;</code></td><td data-i18n="hc_rec_list">List up to this many recent captures, newest first.</td></tr>
-<tr><td><code>recent --path|--copy|--open &lt;n&gt;</code></td><td data-i18n="hc_rec_one">Print the file of capture n, copy it to the clipboard, or open it in the editor. 1 is the newest.</td></tr>
+<tr><td><code>recent --limit &lt;1-1000&gt;</code></td><td data-i18n="hc_rec_list">List up to this many captures, newest first. Default: 20.</td></tr>
+<tr><td><code>recent --search &lt;words&gt;</code></td><td data-i18n="hc_rec_search">Only captures whose title, program, note, collection or text in the picture has every word.</td></tr>
+<tr><td><code>recent --copy|--open &lt;n&gt;</code></td><td data-i18n="hc_rec_one">Copy capture n to the clipboard, or open it in the editor. 1 is the newest.</td></tr>
 <tr><td><code>recent --export &lt;n&gt; --out &lt;file|folder&gt;</code></td><td data-i18n="hc_rec_export">Save a copy of capture n as PNG or JPEG.</td></tr>
 </table>
 <p data-i18n="h_cli_exit">Exit codes: <code>0</code> success, <code>1</code> the command failed, <code>2</code> the command line was not valid, <code>3</code> you cancelled the selector.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_mcp_t">KillerMCP</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_mcp_1">KillerMCP finds an installed KillerShot and offers its command line to AI agents as tools: list monitors and windows, take screenshots, record, list recent captures, open an image in the editor and read the settings. Agent captures leave the clipboard alone unless the agent asks. See the <a href="mcp.html">KillerMCP page</a>.</p>
+<p data-i18n="h_mcp_1">KillerMCP finds an installed KillerShot and offers its command line to AI agents as tools: list monitors and windows, take screenshots, record, list and search the capture library, open an image in the editor and read the settings. Agent captures leave the clipboard alone unless the agent asks. See the <a href="mcp.html">KillerMCP page</a>.</p>
 </div></div></div>
 <h2 class="help-cat" id="shortcuts" data-i18n="h_keys">Keyboard shortcuts</h2>
 <div class="kbd-cols"><div class="kbd-col">
@@ -277,6 +280,8 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <div class="kbd-group"><h4 data-i18n="hk_file">File</h4>
 <div class="kbd-row"><span class="k">Ctrl + N</span><span class="d" data-i18n="hk_new">Capture a region</span></div>
 <div class="kbd-row"><span class="k">Ctrl + R</span><span class="d" data-i18n="hk_record">Start or stop a video recording</span></div>
+<div class="kbd-row"><span class="k">Ctrl + L</span><span class="d" data-i18n="hk_library">Show or hide the capture library</span></div>
+<div class="kbd-row"><span class="k">Ctrl + F</span><span class="d" data-i18n="hk_libsearch">Search the library</span></div>
 <div class="kbd-row"><span class="k">Ctrl + O</span><span class="d" data-i18n="hk_open">Open an image</span></div>
 <div class="kbd-row"><span class="k">Ctrl + S</span><span class="d" data-i18n="hk_save">Save</span></div>
 <div class="kbd-row"><span class="k">Ctrl + Shift + S</span><span class="d" data-i18n="hk_saveas">Save as</span></div>
@@ -286,7 +291,7 @@ html[data-theme="light"] .help-cat, html[data-theme="light"] .kbd-group h4 { tex
 <div class="kbd-group"><h4 data-i18n="hk_help">Help</h4>
 <div class="kbd-row"><span class="k">F1</span><span class="d" data-i18n="hk_f1">Keyboard shortcuts, as a list or a keyboard map</span></div>
 <div class="kbd-row"><span class="k">F12</span><span class="d" data-i18n="hk_f12">About KillerShot</span></div>
-<div class="kbd-row"><span class="k">Esc</span><span class="d" data-i18n="hk_esc">Close a card, cancel the current mark or text, or cancel a capture</span></div>
+<div class="kbd-row"><span class="k">Esc</span><span class="d" data-i18n="hk_esc">Close a card, go back from the library to the open image, cancel the current mark or text, or cancel a capture</span></div>
 </div>
 </div><div class="kbd-col">
 <div class="kbd-group"><h4 data-i18n="hk_tools">Tools</h4>

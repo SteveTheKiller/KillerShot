@@ -66,6 +66,9 @@ public static class Program
 
     private static Task<int> RunAsync(string[] args)
     {
+        // A command line process can end at any moment, so it leaves importing and reading text
+        // in pictures to the app.
+        CaptureLibrary.BackgroundWork = false;
         if (args.Length == 0)
         {
             PrintUsage(Err);
@@ -118,7 +121,7 @@ public static class Program
         int quality = o.Int("quality", 10, 100) ?? CaptureSettings.JpegQuality;
         bool recent = !o.Has("no-recent");
         bool editor = o.Has("editor");
-        if (editor && !save && !recent) throw new CliException("--editor needs a saved file or the Recent history; drop --no-save or --no-recent.");
+        if (editor && !save && !recent) throw new CliException("--editor needs a saved file or the library; drop --no-save or --no-recent.");
 
         // Everything that can be checked before the capture is checked first, so a typo costs
         // nothing and never leaves a half-finished capture behind.
@@ -189,12 +192,19 @@ public static class Program
 
         var taken = DateTime.Now;
         var warnings = new List<string>();
-        string? recentPath = null;
+        long? libraryId = null;
         if (recent)
         {
-            try { recentPath = RecentCaptures.AddNow(bmp, taken); }
-            catch (Exception ex) { warnings.Add("The Recent history was not written: " + OneLine(ex.Message)); }
+            try
+            {
+                if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(LibraryClosedReason());
+                IntPtr source = window != IntPtr.Zero ? window : IntPtr.Zero;
+                libraryId = CaptureLibrary.AddNow(bmp, taken, ModeName(mode),
+                    source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source));
+            }
+            catch (Exception ex) { warnings.Add("The capture was not added to the library: " + OneLine(ex.Message)); }
         }
+        string? libraryRef = libraryId is long lid ? LibraryRef(lid) : null;
 
         string? saved = null;
         if (save)
@@ -207,7 +217,7 @@ public static class Program
         bool copied = false;
         string? copyError = null;
         if (copy) copied = ImageOutput.TryCopy(bmp, out copyError);
-        if (editor) OpenInEditor((saved ?? recentPath)!);
+        if (editor) OpenInEditor((saved ?? libraryRef)!);
 
         if (o.Has("json"))
         {
@@ -215,7 +225,8 @@ public static class Program
             {
                 j.WriteStartObject();
                 j.WriteString("path", saved);
-                j.WriteString("recent", recentPath);
+                if (libraryId is long stored) j.WriteNumber("libraryId", stored);
+                else j.WriteNull("libraryId");
                 j.WriteString("mode", ModeName(mode));
                 j.WriteNumber("width", bmp.PixelWidth);
                 j.WriteNumber("height", bmp.PixelHeight);
@@ -231,7 +242,7 @@ public static class Program
                 j.WriteEndObject();
             }));
         }
-        else if ((saved ?? recentPath) is { } shown)
+        else if ((saved ?? libraryRef) is { } shown)
         {
             Out.WriteLine(shown);
         }
@@ -398,35 +409,41 @@ public static class Program
 
     private static int Recent(string[] args)
     {
-        var o = Options.Parse(args, ["limit", "path", "copy", "export", "open", "out"], ["json", "overwrite"]);
+        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "out"], ["json", "overwrite"]);
         o.NoPositionals();
-        var files = RecentCaptures.List();
-        string[] actions = ["path", "copy", "export", "open"];
+        if (!CaptureLibrary.OpenAuto()) throw new CliException(LibraryClosedReason(), ExitFailed);
+        var items = CaptureLibrary.Items(o.Value("search"));
+        string[] actions = ["copy", "export", "open"];
         var chosen = actions.Where(o.Has).ToArray();
-        if (chosen.Length > 1) throw new CliException("Use one of --path, --copy, --export and --open at a time.");
+        if (chosen.Length > 1) throw new CliException("Use one of --copy, --export and --open at a time.");
         if (o.Has("out") && (chosen.Length == 0 || chosen[0] != "export")) throw new CliException("--out goes with --export.");
 
         if (chosen.Length == 0)
         {
-            int limit = o.Int("limit", 1, RecentCaptures.Limit) ?? RecentCaptures.Limit;
-            var shown = files.Take(limit).ToList();
+            int limit = o.Int("limit", 1, RecentListMax) ?? RecentListDefault;
+            var shown = items.Take(limit).ToList();
+            var collections = CaptureLibrary.Collections().ToDictionary(c => c.Id, c => c.Name);
             if (o.Has("json"))
             {
                 Out.WriteLine(Json(j =>
                 {
                     j.WriteStartObject();
-                    j.WriteString("folder", RecentCaptures.Folder);
+                    j.WriteNumber("total", items.Count);
                     j.WriteStartArray("items");
                     for (int i = 0; i < shown.Count; i++)
                     {
-                        var (wpx, hpx) = ImageSize(shown[i].FullName);
+                        var c = shown[i];
                         j.WriteStartObject();
                         j.WriteNumber("index", i + 1);
-                        j.WriteString("path", shown[i].FullName);
-                        j.WriteString("taken", (RecentCaptures.TakenFrom(shown[i]) ?? shown[i].LastWriteTime).ToString("O", CultureInfo.InvariantCulture));
-                        j.WriteNumber("width", wpx);
-                        j.WriteNumber("height", hpx);
-                        j.WriteNumber("sizeBytes", shown[i].Length);
+                        j.WriteNumber("id", c.Id);
+                        j.WriteString("taken", c.Taken.ToString("O", CultureInfo.InvariantCulture));
+                        j.WriteNumber("width", c.Width);
+                        j.WriteNumber("height", c.Height);
+                        j.WriteString("mode", c.Mode.Length > 0 ? c.Mode : null);
+                        j.WriteString("title", c.Window);
+                        j.WriteString("program", c.Process);
+                        j.WriteString("collection", c.CollectionId is long cid && collections.TryGetValue(cid, out var name) ? name : null);
+                        j.WriteString("note", c.Note);
                         j.WriteEndObject();
                     }
                     j.WriteEndArray();
@@ -437,9 +454,9 @@ public static class Program
             {
                 for (int i = 0; i < shown.Count; i++)
                 {
-                    var (wpx, hpx) = ImageSize(shown[i].FullName);
-                    var taken = RecentCaptures.TakenFrom(shown[i]) ?? shown[i].LastWriteTime;
-                    Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{i + 1,2}  {taken:yyyy-MM-dd HH:mm:ss}  {wpx}x{hpx}  {shown[i].FullName}"));
+                    var c = shown[i];
+                    string label = c.Window ?? c.Process ?? "";
+                    Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{i + 1,3}  {c.Taken:yyyy-MM-dd HH:mm:ss}  {c.Width}x{c.Height}  {label}").TrimEnd());
                 }
             }
             return ExitOk;
@@ -447,35 +464,62 @@ public static class Program
 
         if (o.Has("limit")) throw new CliException("--limit only applies to the list.");
         string action = chosen[0];
-        int index = o.Int(action, 1, RecentCaptures.Limit)!.Value;
-        if (index > files.Count)
-            throw new CliException(files.Count == 0 ? "The Recent history is empty." : $"There are only {files.Count} recent captures.", ExitFailed);
-        string source = files[index - 1].FullName;
-        string result = source;
+        int index = o.Int(action, 1, int.MaxValue)!.Value;
+        if (index > items.Count)
+            throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
+        var item = items[index - 1];
+        string result = LibraryRef(item.Id);
         switch (action)
         {
             case "copy":
-                if (!ImageOutput.TryCopy(ImageOutput.Load(source), out var error))
+                if (!ImageOutput.TryCopy(CaptureLibrary.LoadImage(item.Id), out var error))
                     throw new CliException("The clipboard is busy: " + OneLine(error ?? "another app is holding it"), ExitFailed);
                 break;
             case "export":
                 var target = OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."), null, o.Has("overwrite"));
-                result = target.File ?? OutputFiles.NextPath(target.Folder!, Path.GetFileName(source));
-                if (target.Format == "png" || (target.File == null && Path.GetExtension(source).Equals(".png", StringComparison.OrdinalIgnoreCase)))
-                    File.Copy(source, result, overwrite: true);
+                result = target.File ?? OutputFiles.NextPath(target.Folder!,
+                    OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken, ModeFromKey(item.Mode), item.Width, item.Height, "png"));
+                if (target.File == null || target.Format == "png")
+                    File.WriteAllBytes(result, CaptureLibrary.LoadPng(item.Id));
                 else
-                    ImageOutput.Save(ImageOutput.Load(source), result, CaptureSettings.JpegQuality);
+                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), result, CaptureSettings.JpegQuality);
                 break;
             case "open":
-                OpenInEditor(source);
+                OpenInEditor(result);
                 break;
         }
         if (o.Has("json"))
-            Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteNumber("index", index); j.WriteString("path", result); j.WriteString("action", action); j.WriteEndObject(); }));
+            Out.WriteLine(Json(j =>
+            {
+                j.WriteStartObject();
+                j.WriteNumber("index", index);
+                j.WriteNumber("id", item.Id);
+                if (action == "export") j.WriteString("path", result);
+                j.WriteString("action", action);
+                j.WriteEndObject();
+            }));
         else
             Out.WriteLine(result);
         return ExitOk;
     }
+
+    private const int RecentListDefault = 20;
+    private const int RecentListMax = 1000;
+
+    /// <summary>How the editor and the command line name a library capture: library:id.</summary>
+    private static string LibraryRef(long id) => "library:" + id.ToString(CultureInfo.InvariantCulture);
+
+    private static string LibraryClosedReason() => CaptureLibrary.NeedsPassword
+        ? "The library is locked with a password. Unlock it in KillerShot first."
+        : "The library could not be opened: " + OneLine(CaptureLibrary.LoadError ?? "unknown error");
+
+    private static CaptureMode ModeFromKey(string key) => key switch
+    {
+        "window" => CaptureMode.Window,
+        "monitor" => CaptureMode.Monitor,
+        "all" => CaptureMode.AllMonitors,
+        _ => CaptureMode.Region,
+    };
 
     private static int Open(string[] args)
     {
@@ -927,7 +971,7 @@ public static class Program
         Commands:
           capture [options]               Take a screenshot and print where it was saved.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
-          recent [options]                List, copy, export or open recent captures.
+          recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.
           monitors                        List monitors with their numbers and bounds.
           windows [--limit <n>]           List capturable windows with their handles and titles.
@@ -952,7 +996,7 @@ public static class Program
           --cursor, --no-cursor           Include the mouse pointer.
           --shutter, --no-shutter         Play the shutter sound.
           --editor                        Open the capture in the editor.
-          --no-recent                     Leave the capture out of the Recent history.
+          --no-recent                     Leave the capture out of the library.
           --overwrite                     Replace an existing --out file.
           --json                          Print the result as JSON.
 
@@ -973,9 +1017,10 @@ public static class Program
           --overwrite, --json             The same as for capture.
 
         recent options:
-          --limit <1-20>                  How many captures to list. Default: all of them.
-          --path <n>                      Print the file of capture n. 1 is the newest.
-          --copy <n>                      Copy capture n to the clipboard.
+          --limit <1-1000>                How many captures to list. Default: 20.
+          --search <words>                Only captures whose title, program, note,
+                                          collection or text in the picture has every word.
+          --copy <n>                      Copy capture n to the clipboard. 1 is the newest.
           --export <n> --out <file|folder>  Save a copy of capture n.
           --open <n>                      Open capture n in the editor.
           --json                          Print the result as JSON.

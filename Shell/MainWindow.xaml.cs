@@ -45,6 +45,7 @@ namespace KillerShot.Shell
             InitToolbarLayout();
             InitToolbarStyle();
             InitEditor();
+            InitLibrary();
 
             _about = new AboutController(this);
             VersionLabel.Text = "v" + Services.AppInfo.Version;

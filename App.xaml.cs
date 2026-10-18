@@ -51,6 +51,7 @@ public partial class App : Application
         // The interface self-test runs without the tray, the shortcuts or the single-instance
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
+        if (SelfTestLibrary.TryRun(e.Args)) return;
 
         // One instance per user session. A second launch asks the first to open its editor.
         _instance = new Mutex(true, @"Local\KillerShot-SingleInstance", out bool first);
@@ -81,6 +82,10 @@ public partial class App : Application
             null, Timeout.Infinite, false);
 
         InitializeKit();
+        // The encrypted library opens with the Windows-account key without a prompt, off this
+        // thread so the editor paints first. With a password set it stays locked until the
+        // library screen unlocks it.
+        CaptureLibrary.BeginOpen();
 
         Tray = new TrayHost();
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
@@ -103,6 +108,7 @@ public partial class App : Application
     {
         int i = Array.FindIndex(args, a => a.Equals("--open", StringComparison.OrdinalIgnoreCase));
         if (i < 0 || i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1])) return null;
+        if (LibraryId(args[i + 1]) != null) return args[i + 1].Trim();
         try { return Path.GetFullPath(args[i + 1]); } catch { return null; }
     }
 
@@ -120,20 +126,41 @@ public partial class App : Application
         if (!string.IsNullOrEmpty(path)) OpenImage(path);
     }
 
-    /// <summary>Loads an image file into the editor. A Recent history file opens as a capture, so
-    /// Save asks where to put it instead of writing into the history folder.</summary>
+    /// <summary>Loads an image file, or a library capture named library:id, into the editor.</summary>
     private void OpenImage(string path)
     {
         try
         {
+            if (LibraryId(path) is long id)
+            {
+                CaptureLibrary.Opening.Wait();
+                if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_LockedTitle"));
+                var item = CaptureLibrary.Items().FirstOrDefault(c => c.Id == id)
+                    ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
+                OpenLibraryCapture(item);
+                return;
+            }
             var bmp = ImageOutput.Load(path);
-            bool recent = string.Equals(Path.GetDirectoryName(path)?.TrimEnd('\\'), RecentCaptures.Folder.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
-            SetDocument(new EditorDocument(bmp, recent ? null : path, File.GetLastWriteTime(path)));
+            SetDocument(new EditorDocument(bmp, path, File.GetLastWriteTime(path)));
         }
         catch (Exception ex)
         {
             Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message);
         }
+    }
+
+    /// <summary>The id in a library:id reference, or null.</summary>
+    private static long? LibraryId(string text) =>
+        text.Trim().StartsWith("library:", StringComparison.OrdinalIgnoreCase) &&
+        long.TryParse(text.Trim()[8..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out long id)
+            ? id : null;
+
+    /// <summary>Opens a library capture in the editor. It opens as a capture, not a file, so Save
+    /// asks where to put it.</summary>
+    internal void OpenLibraryCapture(CaptureItem item)
+    {
+        var bmp = CaptureLibrary.LoadImage(item.Id);
+        SetDocument(new EditorDocument(bmp, null, item.Taken));
     }
 
     /// <summary>Theme, locale, grain and rendering, in the order the family kit expects, before
