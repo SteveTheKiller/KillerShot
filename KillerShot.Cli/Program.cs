@@ -85,6 +85,7 @@ public static class Program
                 Out.WriteLine(AppInfo.Version);
                 return Task.FromResult(ExitOk);
             case "capture": return CaptureAsync(rest);
+            case "qr": return QrAsync(rest);
             case "record": return RecordAsync(rest);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
@@ -94,6 +95,59 @@ public static class Program
             default:
                 throw new CliException($"Unknown command '{args[0]}'. Run KillerShot.exe --cli help for the list.");
         }
+    }
+
+    private static async Task<int> QrAsync(string[] args)
+    {
+        var options = Options.Parse(args, [], ["json"]);
+        if (options.Positionals.Count != 1) throw new CliException("qr needs one image path, or region.");
+        BitmapSource image;
+        if (options.Positionals[0].Equals("region", StringComparison.OrdinalIgnoreCase))
+        {
+            App.InitializeKit();
+            var frozen = FrozenDesktop.Capture(false);
+            var selected = await new RegionSelector(frozen).RunAsync();
+            if (selected == null) return ExitCancelled;
+            image = frozen.Crop(selected.Value) ?? throw new CliException("The selected region is empty.", ExitFailed);
+        }
+        else
+        {
+            string path = Path.GetFullPath(options.Positionals[0]);
+            if (!File.Exists(path)) throw new CliException("The image file does not exist.", ExitFailed);
+            image = QrImages.Load(await File.ReadAllBytesAsync(path));
+        }
+        var codes = await Task.Run(() => QrImages.Read(image));
+        if (options.Has("json"))
+        {
+            Out.WriteLine(Json(writer =>
+            {
+                writer.WriteStartObject();
+                writer.WriteStartArray("codes");
+                foreach (var code in codes)
+                {
+                    var link = KillerTools.Qr.QrLink.Check(code.Text);
+                    writer.WriteStartObject();
+                    writer.WriteString("text", code.Text);
+                    writer.WriteNumber("version", code.Version);
+                    writer.WriteString("errorCorrection", code.ErrorCorrection.ToString());
+                    writer.WriteStartArray("corners");
+                    foreach (var corner in code.Corners)
+                    {
+                        writer.WriteStartObject(); writer.WriteNumber("x", corner.X); writer.WriteNumber("y", corner.Y); writer.WriteEndObject();
+                    }
+                    writer.WriteEndArray();
+                    writer.WriteStartObject("link");
+                    writer.WriteString("disposition", link.Disposition.ToString());
+                    writer.WriteString("url", link.Url?.AbsoluteUri);
+                    writer.WriteStartArray("warnings");
+                    foreach (string warning in link.Warnings) writer.WriteStringValue(warning);
+                    writer.WriteEndArray(); writer.WriteEndObject(); writer.WriteEndObject();
+                }
+                writer.WriteEndArray(); writer.WriteEndObject();
+            }));
+        }
+        else foreach (var code in codes) Out.WriteLine(code.Text);
+        return ExitOk;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -970,6 +1024,7 @@ public static class Program
 
         Commands:
           capture [options]               Take a screenshot and print where it was saved.
+          qr <image|region> [--json]       Read QR codes locally without opening their links.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.
