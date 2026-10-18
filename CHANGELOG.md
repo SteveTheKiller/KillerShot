@@ -28,3 +28,4 @@
 - Menu separators draw their divider line instead of leaving an empty gap.
 - Added a command line (KillerShot.exe --cli, or KillerShot.Cli.exe in a console) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP.
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.
+- KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.

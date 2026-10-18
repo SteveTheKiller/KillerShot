@@ -52,9 +52,13 @@ public partial class App : Application
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestLibrary.TryRun(e.Args)) return;
+        if (SelfTestDemo.TryRun(e.Args)) return;
+        // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
+        bool demo = DemoMode.TryEnter(e.Args);
 
         // One instance per user session. A second launch asks the first to open its editor.
-        _instance = new Mutex(true, @"Local\KillerShot-SingleInstance", out bool first);
+        bool first = true;
+        if (!demo) _instance = new Mutex(true, @"Local\KillerShot-SingleInstance", out first);
         string? openPath = OpenArgument(e.Args);
         if (!first)
         {
@@ -68,24 +72,28 @@ public partial class App : Application
                 catch { }
             }
             try { using var h = EventWaitHandle.OpenExisting(@"Local\KillerShot-Wake"); h.Set(); } catch { }
-            _instance.Dispose();
+            _instance!.Dispose();
             _instance = null;
             Shutdown();
             return;
         }
-        _wake = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\KillerShot-Wake");
-        _wakeWait = ThreadPool.RegisterWaitForSingleObject(_wake, (_, _) => Dispatcher.BeginInvoke(() =>
-            {
-                OpenRequested();
-                ShowEditor();
-            }),
-            null, Timeout.Infinite, false);
+        if (!demo)
+        {
+            _wake = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\KillerShot-Wake");
+            _wakeWait = ThreadPool.RegisterWaitForSingleObject(_wake, (_, _) => Dispatcher.BeginInvoke(() =>
+                {
+                    OpenRequested();
+                    ShowEditor();
+                }),
+                null, Timeout.Infinite, false);
+        }
 
         InitializeKit();
         // The encrypted library opens with the Windows-account key without a prompt, off this
         // thread so the editor paints first. With a password set it stays locked until the
         // library screen unlocks it.
-        CaptureLibrary.BeginOpen();
+        if (demo) DemoMode.BeginSeed();
+        else CaptureLibrary.BeginOpen();
 
         Tray = new TrayHost();
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
@@ -94,15 +102,26 @@ public partial class App : Application
         Tray.RecordRequested += () => Video.Toggle();
         Tray.OpenEditorRequested += ShowEditor;
         Tray.BalloonClicked += ShowEditor;
-        Tray.Start();
-        // Start with Windows (About card): keep the Run value pointing at this exe.
-        KillerFamily.Deployment.StartupRegistration.Refresh(KillerShot.Services.AppInfo.DisplayName,
-                                                            KillerShot.Features.AboutController.StartArgument);
+        // The demo leaves the notification area, the global shortcuts and the Run value to the
+        // real KillerShot.
+        if (!demo)
+        {
+            Tray.Start();
+            // Start with Windows (About card): keep the Run value pointing at this exe.
+            KillerFamily.Deployment.StartupRegistration.Refresh(KillerShot.Services.AppInfo.DisplayName,
+                                                                KillerShot.Features.AboutController.StartArgument);
+        }
 
         // Started with Windows: stay in the notification area. Started by hand or asked to open
         // an image: show the editor.
         if (openPath != null) OpenImage(openPath);
-        if (openPath != null || !e.Args.Any(a => a.Equals("--tray", StringComparison.OrdinalIgnoreCase)))
+        if (demo)
+        {
+            // With no tray icon to come back to, closing the demo window quits.
+            ShowEditor();
+            if (EditorWindow is { } window) window.Closed += (_, _) => Shutdown();
+        }
+        else if (openPath != null || !e.Args.Any(a => a.Equals("--tray", StringComparison.OrdinalIgnoreCase)))
             ShowEditor();
     }
 
