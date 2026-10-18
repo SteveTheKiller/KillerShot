@@ -41,8 +41,8 @@ public partial class App : Application
 
         // The command line runs in its own process without the tray, the shortcuts or the
         // single-instance claim, so scripts and KillerMCP can use it beside a running KillerShot.
-        string[]? cli = PendingCli ?? (e.Args.Length > 0 && e.Args[0].Equals("--cli", StringComparison.OrdinalIgnoreCase) ? e.Args[1..] : null);
-        if (cli == null && e.Args.Length > 0 && e.Args[0].Equals("qr", StringComparison.OrdinalIgnoreCase)) cli = e.Args;
+        string[]? cli = PendingCli ?? KillerFamily.CommandLine.CommandLineEntry.GetArguments(e.Args,
+            ["capture", "qr", "record", "recent", "open", "monitors", "windows", "settings", "version", "--version"]);
         if (cli != null)
         {
             Cli.Program.Start(cli, attachConsole: PendingCli == null, Shutdown);

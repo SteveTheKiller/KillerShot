@@ -15,8 +15,8 @@ using KillerShot.Video;
 namespace KillerShot.Cli;
 
 /// <summary>
-/// The command line for scripts, scheduled tasks and KillerMCP: <c>KillerShot.exe --cli
-/// &lt;command&gt;</c>, or <c>KillerShot.Cli.exe &lt;command&gt;</c> from a console. Each command
+/// The command line for scripts, scheduled tasks and KillerMCP: <c>killershot
+/// &lt;command&gt;</c>. The --cli switch and the separate console tool stay compatible. Each command
 /// runs in its own process without the tray, the global shortcuts or the single-instance claim,
 /// so it works beside a running KillerShot. Results go to stdout, a one-line reason goes to
 /// stderr, and the exit code says what happened. Anything not given on the command line follows
@@ -93,7 +93,7 @@ public static class Program
             case "windows": return Task.FromResult(Windows(rest));
             case "settings": return Task.FromResult(SettingsCommand(rest));
             default:
-                throw new CliException($"Unknown command '{args[0]}'. Run KillerShot.exe --cli help for the list.");
+                throw new CliException($"Unknown command '{args[0]}'. Run killershot --help for the list.");
         }
     }
 
@@ -879,7 +879,7 @@ public static class Program
             if (Win32.WindowTitle(w.Handle).Equals(spec, StringComparison.OrdinalIgnoreCase)) return w.Handle;
         foreach (var w in windows)
             if (Win32.WindowTitle(w.Handle).Contains(spec, StringComparison.OrdinalIgnoreCase)) return w.Handle;
-        throw new CliException($"No capturable window title contains '{spec}'. Run KillerShot.exe --cli windows to list them.", ExitFailed);
+        throw new CliException($"No capturable window title contains '{spec}'. Run killershot windows to list them.", ExitFailed);
     }
 
     /// <summary>The monitor --monitor names, or null for the one under the pointer.</summary>
@@ -1020,6 +1020,8 @@ public static class Program
         KillerShot command line
 
         Usage:
+          killershot <command> [options]
+          .\killershot <command> [options]   Portable copy, from its folder.
           KillerShot.exe --cli <command> [options]
           KillerShot.Cli.exe <command> [options]
 
