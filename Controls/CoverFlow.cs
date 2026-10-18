@@ -34,7 +34,19 @@ internal sealed class CoverFlow : FrameworkElement
     private const double MaxWidth = 1.5;     // the widest a picture is drawn, in model units
     private const double MaxHeight = 1.0;
     private const double CameraDistance = 3.1;
-    private const double CameraY = 0.50;          // the middle of the view: pictures above, reflections below
+    /// <summary>The height the camera looks along, in model units: the middle of the view, with
+    /// the pictures above it and their reflections below. Lower trims the room above the
+    /// pictures and shows more of the reflections.</summary>
+    public double ViewCenterY
+    {
+        get => _viewCenterY;
+        set
+        {
+            _viewCenterY = value;
+            if (_viewport.Camera is PerspectiveCamera camera) camera.Position = new Point3D(0, value, CameraDistance);
+        }
+    }
+    private double _viewCenterY = 0.50;
     /// <summary>Model units visible top to bottom at the front picture. Smaller draws the
     /// pictures larger; the collection strip, which is short, uses a smaller value.</summary>
     public double ViewHeight { get; set; } = 1.60;
@@ -120,7 +132,7 @@ internal sealed class CoverFlow : FrameworkElement
         ClipToBounds = true;
         _viewport.Camera = new PerspectiveCamera
         {
-            Position = new Point3D(0, CameraY, CameraDistance),
+            Position = new Point3D(0, _viewCenterY, CameraDistance),
             LookDirection = new Vector3D(0, 0, -1),
             UpDirection = new Vector3D(0, 1, 0),
             FieldOfView = 60,
@@ -234,10 +246,13 @@ internal sealed class CoverFlow : FrameworkElement
         };
 
         // The reflection: the picture upside down beneath the floor line, fading out as it goes
-        // down. The fade is an opacity mask on a drawing, so it shows the theme's own background.
+        // down and gone halfway, so the edge of the view never cuts it off. The fade is an opacity
+        // mask on a drawing, so it shows the theme's own background.
         var reflectionDrawing = new DrawingGroup
         {
-            OpacityMask = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Color.FromArgb(110, 0, 0, 0), 90),
+            OpacityMask = new LinearGradientBrush(
+                [new GradientStop(Color.FromArgb(0, 0, 0, 0), 0.5), new GradientStop(Color.FromArgb(110, 0, 0, 0), 1)],
+                new Point(0, 0), new Point(0, 1)),
         };
         if (thumb != null) reflectionDrawing.Children.Add(new ImageDrawing(thumb, new Rect(0, 0, w, h)));
         else reflectionDrawing.Children.Add(new GeometryDrawing(faceBrush, null, new RectangleGeometry(new Rect(0, 0, w, h))));

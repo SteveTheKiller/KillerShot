@@ -406,11 +406,17 @@ namespace KillerShot.Shell
 
         private FrameworkElement BuildShelf(LibraryRow row)
         {
-            var panel = new StackPanel { Margin = new Thickness(0, 0, 8, 10) };
-            panel.Children.Add(BuildHeader(row));
+            var panel = new StackPanel { Margin = new Thickness(0, 0, 8, 6) };
+            var header = BuildHeader(row);
+            header.Margin = new Thickness(0, 4, 0, 2);
+            panel.Children.Add(header);
             var flow = new CoverFlow
             {
-                Height = 210,
+                // A band from just over the tallest picture down to where the reflections fade
+                // out, so the shelves stack with no empty room above or below the pictures.
+                Height = 200,
+                ViewHeight = 1.52,
+                ViewCenterY = 0.255,
                 ThumbnailSource = CaptureLibrary.LoadThumb,
                 Describe = item => row.Title + ", " + Describe(item),
             };
@@ -424,7 +430,7 @@ namespace KillerShot.Shell
 
             var slider = new Slider
             {
-                Style = (Style)FindResource("LibSlider"), MaxWidth = 560, Minimum = 0, Margin = new Thickness(0, 4, 0, 0),
+                Style = (Style)FindResource("LibSlider"), MaxWidth = 560, Minimum = 0, Margin = new Thickness(0, -8, 0, 0),
                 Focusable = false, IsTabStop = false,
                 Visibility = row.Items.Count > 1 ? Visibility.Visible : Visibility.Collapsed,
             };
