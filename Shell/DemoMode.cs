@@ -144,6 +144,16 @@ internal static class SelfTestDemo
             var item = CaptureLibrary.Items().First(c => c.Window?.Contains("Keep Alive") == true);
             w.TestOpenLibraryCapture(item);
             await Shot("demo-strip-top");
+            // Each icon size with each text mode, as Ctrl+Shift+1 to 6 set them.
+            foreach (int size in new[] { 1, 2 })
+                foreach (int text in new[] { 3, 4, 5, 6 })
+                {
+                    w.TestToolbarStyle(size);
+                    w.TestToolbarStyle(text);
+                    await Shot($"demo-toolbar-{size}-{text}");
+                }
+            w.TestToolbarStyle(2);
+            w.TestToolbarStyle(3);
             w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Left);
             w.TestStrip?.SetSideView("list");
             await Shot("demo-strip-left");

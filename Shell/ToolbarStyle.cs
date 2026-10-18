@@ -193,7 +193,11 @@ namespace KillerShot.Shell
                     Text = label, FontSize = 12, VerticalAlignment = VerticalAlignment.Center,
                 };
 
-            FrameworkElement icon = drawn != null ? drawn(glyphSize) : new TextBlock
+            // A drawn icon sits in a glyph-sized box, so a thin stroke bar keeps its label on the
+            // same line as the glyph buttons' labels.
+            FrameworkElement? art = drawn?.Invoke(glyphSize);
+            if (art != null) art.VerticalAlignment = VerticalAlignment.Center;
+            FrameworkElement icon = art != null ? new Grid { Height = glyphSize, Children = { art } } : new TextBlock
             {
                 Text = ((char)glyph).ToString(),
                 FontFamily = MdlFont,

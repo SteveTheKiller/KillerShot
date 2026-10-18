@@ -35,6 +35,8 @@ namespace KillerShot.Shell
 
         internal void TestOpenLibraryCapture(Services.CaptureItem item) => App.Instance.OpenLibraryCapture(item);
 
+        internal void TestToolbarStyle(int number) => PickToolbarStyle(number);
+
         internal void TestSetLabels(bool under)
         {
             _labelMode = under ? LabelMode.Under : LabelMode.None;
