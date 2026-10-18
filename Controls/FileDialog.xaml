@@ -7,6 +7,7 @@
 <Window x:Class="KillerShot.Controls.FileDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:a11y="clr-namespace:KillerFamily.Accessibility"
         xmlns:kui="clr-namespace:KillerShot.Controls"
         Title="KillerShot"
         Width="720" Height="520" MinWidth="560" MinHeight="420"
@@ -239,7 +240,7 @@
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="{DynamicResource Str_Menu_UnpinPlace}" Click="UnpinPlace_Click">
-                                    <MenuItem.Icon><TextBlock Text="&#xE77A;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
+                                    <MenuItem.Icon><a11y:Glyph Text="&#xE77A;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>
                         </ListBox.ContextMenu>
@@ -286,7 +287,7 @@
                         <TreeView.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="{DynamicResource Str_Menu_PinPlace}" Click="TreePin_Click">
-                                    <MenuItem.Icon><TextBlock Text="&#xE718;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
+                                    <MenuItem.Icon><a11y:Glyph Text="&#xE718;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>
                         </TreeView.ContextMenu>
@@ -431,7 +432,7 @@
                                 <ListBox.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="{DynamicResource Str_Menu_PinPlace}" Click="FilePin_Click">
-                                            <MenuItem.Icon><TextBlock Text="&#xE718;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
+                                            <MenuItem.Icon><a11y:Glyph Text="&#xE718;" FontFamily="Segoe MDL2 Assets"/></MenuItem.Icon>
                                         </MenuItem>
                                     </ContextMenu>
                                 </ListBox.ContextMenu>

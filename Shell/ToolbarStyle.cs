@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using KillerFamily.Accessibility;
 
 // ============================================================
 // Toolbar appearance: two independent settings, icon size and where the text goes, with
@@ -197,7 +198,7 @@ namespace KillerShot.Shell
             // same line as the glyph buttons' labels.
             FrameworkElement? art = drawn?.Invoke(glyphSize);
             if (art != null) art.VerticalAlignment = VerticalAlignment.Center;
-            FrameworkElement icon = art != null ? new Grid { Height = glyphSize, Children = { art } } : new TextBlock
+            FrameworkElement icon = art != null ? new Grid { Height = glyphSize, Children = { art } } : new Glyph
             {
                 Text = ((char)glyph).ToString(),
                 FontFamily = MdlFont,
