@@ -40,6 +40,9 @@ namespace KillerShot.Shell
             if (WindowState != WindowState.Minimized) _stateBeforeMinimize = WindowState;
             var hwnd = new WindowInteropHelper(this).Handle;
             HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
+            // After RestoreWindowPlacement (constructor) and before the first show: a default or
+            // saved size larger than this monitor's work area is shrunk and moved onto it.
+            KillerFamily.Windowing.WorkAreaFit.Fit(this);
             DwmChrome.SetRoundedCorners(this, rounded: Services.ThemeManager.Current != Services.Theme.SE98
                                                        && WindowState == WindowState.Normal);
             DwmChrome.SetThemeBorder(this);

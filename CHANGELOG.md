@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.1.0] - Unreleased
+- The main window opens inside the work area of the monitor it starts on, so a small or high-scaling display, or a size saved on a bigger monitor, shows all of it, and changing the app size keeps it on its own monitor.
 - Icon-only buttons give screen readers the name from their tooltip, and controls reached with the keyboard show a thin solid focus ring in the theme accent. Keyboard focus moves into the shortcuts, About and settings cards when they open, stays there until they close, and then returns. Tab skips hidden links. Empty text and the hidden parts of scroll bars no longer read as items on screen. Each group of option buttons is one Tab stop that lands on the selected option, and the arrow keys move between its options.
 
 - Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
