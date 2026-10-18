@@ -212,6 +212,12 @@ namespace KillerShot.Services
             newDict["OverlayWindowBrush"] = newDict["BackgroundBrush"];
             // Resolve the frame after accent overlays so open dialogs follow theme changes.
             newDict["DialogFrameBrush"] = theme == Theme.SE98 ? Brushes.Black : newDict["AppBorderBrush"];
+            double paneOpacity = (double)newDict["PaneShadowOpacity"];
+            newDict["PaneShadowEffect"] = theme == Theme.SE98 ? null : new System.Windows.Media.Effects.DropShadowEffect
+                { Color = Colors.Black, BlurRadius = 16, ShadowDepth = 0, Opacity = paneOpacity };
+            newDict["EditorShadowEffect"] = theme == Theme.SE98 ? null : new System.Windows.Media.Effects.DropShadowEffect
+                { Color = Colors.Black, BlurRadius = 12, ShadowDepth = 0, Opacity = paneOpacity };
+            newDict["EdgeFadeOpacity"] = theme == Theme.SE98 ? 0d : 1d;
             if (!newDict.Contains("WordmarkAccentShadowOpacity")) newDict["WordmarkAccentShadowOpacity"] = 0.0;
             // A palette can fill buttons with a deeper shade than its accent text (PrimaryFillBaseBrush).
             newDict["PrimaryFillBrush"] = ButtonFill(newDict.Contains("PrimaryFillBaseBrush") ? newDict["PrimaryFillBaseBrush"] : newDict["PrimaryBrush"], theme == Theme.SE98);

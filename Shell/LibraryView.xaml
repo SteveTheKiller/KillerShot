@@ -130,7 +130,7 @@
                           ScrollViewer.CanContentScroll="True">
                 <ItemsControl.Template>
                     <ControlTemplate TargetType="ItemsControl">
-                        <ScrollViewer x:Name="RowsScroll" Focusable="False" HorizontalScrollBarVisibility="Disabled"
+                        <ScrollViewer x:Name="RowsScroll" Style="{StaticResource ShadowScrollViewer}" Focusable="False" HorizontalScrollBarVisibility="Disabled"
                                       VerticalScrollBarVisibility="Auto" Padding="16,4,8,16">
                             <ItemsPresenter/>
                         </ScrollViewer>

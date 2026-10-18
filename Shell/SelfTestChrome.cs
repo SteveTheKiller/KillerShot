@@ -10,7 +10,7 @@ using KillerShot.Services;
 namespace KillerShot.Shell;
 
 // Focused off-screen checks with isolated settings: --selftest-chrome <folder>.
-internal static class SelfTestChrome
+internal static partial class SelfTestChrome
 {
     public static bool TryRun(string[] args)
     {
@@ -56,6 +56,16 @@ internal static class SelfTestChrome
             Check(viewer.ScrollableHeight > 0 && Math.Abs(viewer.VerticalOffset - viewer.ScrollableHeight) < 1,
                 "Shortcut list reaches its final row");
             Save((FrameworkElement)window.Content, Path.Combine(folder, "shortcuts.png"));
+            window.TestCloseOverlays();
+            var sample = new DrawingVisual();
+            using (var drawing = sample.RenderOpen())
+            {
+                drawing.DrawRectangle(Brushes.CornflowerBlue, null, new Rect(0, 0, 640, 360));
+                drawing.DrawRectangle(Brushes.Gold, null, new Rect(40, 40, 200, 160));
+            }
+            var image = new RenderTargetBitmap(640, 360, 96, 96, PixelFormats.Pbgra32);
+            image.Render(sample);
+            App.Instance.SetDocument(new KillerShot.Editor.EditorDocument(image));
 
             var confirm = new ConfirmDialog("Confirm", "Check the dialog frame.", "OK");
             var picker = new FileDialog(FileDialogMode.Open);
@@ -69,6 +79,7 @@ internal static class SelfTestChrome
                 {
                     ThemeManager.ApplyAccent(theme, accent);
                     await Task.Delay(1);
+                    CheckSurfaces(window, theme, accent, folder, Check);
                     Check(((TextBlock)confirm.FindName("HeadingText")).Foreground.ToString() == Application.Current.FindResource("TextBrush").ToString(),
                         $"{theme}/{accent} confirmation heading follows the current theme");
                     Check(((TextBlock)confirm.FindName("DetailText")).Foreground.ToString() == Application.Current.FindResource("MutedTextBrush").ToString(),
@@ -95,6 +106,17 @@ internal static class SelfTestChrome
                     }
                 }
             }
+            App.Instance.SetDocument(null);
+            var library = (LibraryView)window.FindName("Library");
+            var shadow = (Border)window.FindName("ContentPaneShadow");
+            library.SetView("shelves");
+            Check(shadow.Visibility == Visibility.Collapsed, "Library shelves hide the pane shadow");
+            library.SetView("flow");
+            Check(shadow.Visibility == Visibility.Visible, "Library carousel restores the pane shadow");
+            ThemeManager.Apply(Theme.SE98);
+            Check(shadow.Effect == null, "Carousel clears the shadow when switching to 98SE");
+            ThemeManager.Apply(Theme.Dark);
+            Check(shadow.Effect != null, "Carousel restores the shadow when leaving 98SE");
             confirm.Close();
             picker.Close();
             window.Close();

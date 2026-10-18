@@ -135,6 +135,7 @@ namespace KillerShot.Controls
             // Each list sits in a raised pane like the About card's: rounded, grained and on the
             // pane shadow. The list itself is transparent so the pane shows through.
             list.Background = Brushes.Transparent;
+            list.SetResourceReference(StyleProperty, "ShadowListBox");
             list.BorderThickness = new Thickness(0);
             list.Padding = new Thickness(2, 4, 2, 4);
             list.SetResourceReference(Control.ForegroundProperty, "TextBrush");

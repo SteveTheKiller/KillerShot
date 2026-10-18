@@ -418,7 +418,7 @@
                             </Button>
                         </Grid>
                         <Grid>
-                            <ListBox x:Name="FileList" Background="Transparent" BorderThickness="0" Padding="2,4"
+                            <ListBox x:Name="FileList" Style="{StaticResource ShadowListBox}" Background="Transparent" BorderThickness="0" Padding="2,4"
                                      AutomationProperties.Name="{DynamicResource Str_Col_Name}"
                                      ItemContainerStyle="{StaticResource PickerRow}"
                                      ItemTemplate="{StaticResource RowTemplate}"

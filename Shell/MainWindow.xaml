@@ -204,13 +204,15 @@
                      (StripHost.cs). The strip shows only while a picture is open. -->
                 <kl:DockHost x:Name="StripDock" Grid.Row="1" Panel.ZIndex="10">
                 <kl:DockHost.Body>
+                <Grid Margin="{DynamicResource ContentPaneMargin}">
+                <Border x:Name="ContentPaneShadow" IsHitTestVisible="False"
+                        Background="{DynamicResource ContentPaneBrush}"
+                        CornerRadius="{DynamicResource PanelCornerRadius}"
+                        Effect="{DynamicResource PaneShadowEffect}"/>
                 <Border x:Name="ContentPane"
                         Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
                         BorderThickness="{DynamicResource ContentPaneBaseBorderThickness}"
-                        CornerRadius="{DynamicResource PanelCornerRadius}" Margin="{DynamicResource ContentPaneMargin}">
-                    <Border.Effect>
-                        <DropShadowEffect Color="Black" BlurRadius="16" ShadowDepth="0" Opacity="{DynamicResource PaneShadowOpacity}"/>
-                    </Border.Effect>
+                        CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border x:Name="ContentPaneGrain" IsHitTestVisible="False" Opacity="0.20" Visibility="{DynamicResource FilmGrainVisibility}" Panel.ZIndex="-1" CornerRadius="{DynamicResource PanelCornerRadius}">
                             <Border.Background>
@@ -222,15 +224,12 @@
                         <!-- The capture. The canvas sizes itself to the picture at the current zoom;
                              the scroller centers it when it is smaller than the pane. -->
                         <ScrollViewer x:Name="EditorScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                                      Focusable="False" Margin="1" PreviewMouseWheel="EditorScroll_PreviewMouseWheel"
+                                      Style="{StaticResource ShadowScrollViewer}" Focusable="False" Margin="1" PreviewMouseWheel="EditorScroll_PreviewMouseWheel"
                                       SizeChanged="EditorScroll_SizeChanged">
                             <Grid x:Name="EditorStage" Background="Transparent" MinWidth="{Binding ViewportWidth, ElementName=EditorScroll}"
                                   MinHeight="{Binding ViewportHeight, ElementName=EditorScroll}">
                                 <Border x:Name="EditorFrame" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16"
-                                        BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="0">
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="0" Opacity="{DynamicResource PaneShadowOpacity}"/>
-                                    </Border.Effect>
+                                        BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="0" Effect="{DynamicResource EditorShadowEffect}">
                                     <editor:EditorCanvas x:Name="Editor"/>
                                 </Border>
                             </Grid>
@@ -260,6 +259,7 @@
                                 BorderThickness="{DynamicResource PaneBevel2DarkThickness}"/>
                     </Grid>
                 </Border>
+                </Grid>
                 </kl:DockHost.Body>
                 <!-- The icon rail, on the strip's inner edge (DockHost): a column beside a left or
                      right strip, a row under a top strip or over a bottom one, staying put when the
@@ -319,9 +319,9 @@
 
 
         <!-- ================= FOOTER (24px) =================
-             Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
+             Draw above the editor card so pane shadows stop at the footer.
              The overlays are declared after this and stay on top. -->
-        <Border Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
+        <Border Grid.Row="2" Panel.ZIndex="1" Background="{DynamicResource FooterBackgroundBrush}">
             <!-- KillerPDF's footer button styles, with the theme accent for hover and the checked
                  underline. FooterView.cs fills and syncs the view cell. -->
             <Border.Resources>
@@ -558,7 +558,7 @@
 
                         <!-- Two panels that wrap to one column on a narrow window; the scroller covers
                              a short one. -->
-                        <ScrollViewer x:Name="CaptureSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="CaptureSettingsScroll" Style="{StaticResource ShadowScrollViewer}" Padding="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
@@ -723,7 +723,7 @@
                             </Grid>
                         </Border>
 
-                        <ScrollViewer x:Name="VideoSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="VideoSettingsScroll" Style="{StaticResource ShadowScrollViewer}" Padding="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_VS_Title}" Foreground="{DynamicResource TextBrush}"
@@ -935,7 +935,7 @@
                             </StackPanel>
 
                             <!-- LIST -->
-                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                            <ScrollViewer x:Name="KsListHostScroll" Style="{StaticResource ShadowScrollViewer}" Grid.Row="2" VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False" Margin="0,0,-24,0">
                                 <StackPanel x:Name="KsListHost" Margin="0,0,24,0"/>
                             </ScrollViewer>
