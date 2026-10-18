@@ -25,6 +25,12 @@ namespace KillerShot.Shell
         /// <summary>A picture was chosen in the strip and should open in the editor.</summary>
         public event Action<CaptureItem>? OpenRequested;
 
+        /// <summary>The side view changed between the thumbnail list and the rolodex.</summary>
+        public event Action? SideViewChanged;
+
+        /// <summary>How a left or right strip shows its captures: "list" or "rolodex".</summary>
+        public string SideView => _sideView;
+
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -33,6 +39,8 @@ namespace KillerShot.Shell
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
         private readonly ListBox _list;
+        private readonly Rolodex _rolodex;
+        private string _sideView = Settings.Get("StripView") == "rolodex" ? "rolodex" : "list";
         private readonly DispatcherTimer _openDelay = new() { Interval = TimeSpan.FromMilliseconds(180) };
         private IReadOnlyList<CaptureItem> _items = [];
         private string _source = "all";          // all, c<id>, c0 (not in a collection), folder
@@ -89,6 +97,10 @@ namespace KillerShot.Shell
             _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
             _list.SetResourceReference(ItemsControl.ItemContainerStyleProperty, "PickerRow");
 
+            _rolodex = new Rolodex { ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe };
+            _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
+            _rolodex.ItemActivated += item => Open(item);
+
             _openDelay.Tick += (_, _) =>
             {
                 _openDelay.Stop();
@@ -134,7 +146,7 @@ namespace KillerShot.Shell
                 _body.Children.Add(_flow);
                 _body.Children.Add(_slider);
             }
-            else _body.Children.Add(_list);
+            else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
             // A side column is too narrow for the count beside the picker; it would only show "...".
             _count.Visibility = _host.IsHorizontal ? Visibility.Visible : Visibility.Collapsed;
             Sync();
@@ -146,6 +158,7 @@ namespace KillerShot.Shell
             AutomationProperties.SetName(_dockBtn, Loc("Str_Dock_Menu"));
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_list, Loc("Str_Strip_Collection"));
+            AutomationProperties.SetName(_rolodex, Loc("Str_Strip_Collection"));
             _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.ResizeText = Loc("Str_Dock_Resize");
@@ -173,6 +186,16 @@ namespace KillerShot.Shell
             menu.Items.Add(min);
             menu.IsOpen = true;
             Anim.FadeIn(menu);
+        }
+
+        /// <summary>Picks the thumbnail list or the rolodex for a left or right strip, and remembers it.</summary>
+        public void SetSideView(string view)
+        {
+            if (view is not ("list" or "rolodex") || view == _sideView) return;
+            _sideView = view;
+            Settings.Set("StripView", view);
+            Relayout();
+            SideViewChanged?.Invoke();
         }
 
         /// <summary>Follows the picture in the editor: its collection, with it selected.</summary>
@@ -221,6 +244,7 @@ namespace KillerShot.Shell
                 _count.Text = string.Format(CultureInfo.CurrentCulture, Loc(_items.Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), _items.Count);
                 _flow.Items = _items;
                 _list.ItemsSource = _items;
+                _rolodex.Items = _items;
                 Sync();
             }
             finally { _syncing = false; }
@@ -237,6 +261,7 @@ namespace KillerShot.Shell
                 if (index >= 0)
                 {
                     _flow.SelectedIndex = index;
+                    _rolodex.SelectedIndex = index;
                     _list.SelectedIndex = index;
                     _list.ScrollIntoView(_items[index]);
                 }

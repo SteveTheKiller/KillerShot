@@ -49,10 +49,11 @@ namespace KillerShot.Shell
             if (e.Key == Key.F12) { ShowAboutOverlay(); e.Handled = true; return; }
             if (AnyOverlayOpen) return;
 
-            // F5 to F8 pick the library's view, as they pick KillerPDF's view mode.
-            if (!ctrl && !alt && !shift && Library.IsVisible && e.Key is >= Key.F5 and <= Key.F8)
+            // F5 to F8 pick the library's view, as they pick KillerPDF's view mode, and bring the
+            // library up over an open picture.
+            if (!ctrl && !alt && !shift && e.Key is >= Key.F5 and <= Key.F8)
             {
-                Library.SetView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", _ => "timeline" });
+                ShowLibraryView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", _ => "timeline" });
                 e.Handled = true;
                 return;
             }

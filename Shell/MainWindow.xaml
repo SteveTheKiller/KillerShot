@@ -408,19 +408,19 @@
                            FontFamily="{DynamicResource BrandSansFont}" FontSize="16"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
-                <!-- The view cell, as in KillerPDF. In the library: its four views (F5 to F8) and the
-                     grouping. With a picture open: where the strip docks (Alt+Shift+arrow) and the
-                     zoom. Radio buttons are built in FooterView.cs. -->
+                <!-- The view cell, as in KillerPDF: the library's views (F5 to F8) and grouping, and
+                     with a picture open the collection strip's button (its side and view, in a
+                     flyout) and the zoom. Built and kept in step in FooterView.cs. -->
                 <Grid x:Name="FooterViewCell" Grid.Column="2" HorizontalAlignment="Right" Margin="{DynamicResource FooterCellMargin}">
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
                             BorderThickness="{DynamicResource FooterCellLightThickness}" Panel.ZIndex="2"/>
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"
                             BorderThickness="{DynamicResource FooterCellDarkThickness}" Panel.ZIndex="2"/>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="{DynamicResource FooterCellPadding}">
+                        <StackPanel x:Name="FooterStripControls" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         <StackPanel x:Name="FooterLibraryViews" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,4,0"/>
-                        <StackPanel x:Name="FooterEditorViews" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,4,0">
-                            <StackPanel x:Name="FooterDockRadios" Orientation="Horizontal"/>
-                            <Border Width="1" Height="14" Background="{DynamicResource CardBorderBrush}" Margin="5,0"/>
+                        <StackPanel x:Name="FooterZoomControls" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                            <Border Width="1" Height="14" Background="{DynamicResource CardBorderBrush}" Margin="0,0,5,0"/>
                             <Button x:Name="ZoomOutBtn" Content="&#xECC9;" Style="{StaticResource FooterNavButton}"
                                     Click="ZoomOutBtn_Click" ToolTip="{DynamicResource Str_KS_ZoomOut}"/>
                             <Button x:Name="ZoomLevelBtn" Style="{StaticResource FooterNavButton}" Width="Auto" MinWidth="48"

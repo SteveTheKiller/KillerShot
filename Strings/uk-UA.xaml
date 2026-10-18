@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Показати стрічку колекції</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Положення стрічки</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Змінити розмір стрічки колекції</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Список мініатюр</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Обертова картотека</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Закріпити стрічку колекції з цього боку або згорнути її на своєму боці</sys:String>
 </ResourceDictionary>

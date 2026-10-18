@@ -8,17 +8,23 @@ using System.Windows.Shapes;
 using KillerFamily.Layout;
 
 // The footer's view cell, as KillerPDF has it: icon radio buttons with the accent underline on the
-// one in use. In the library they pick its view (F5 to F8) and its grouping; with a picture open
-// they dock the collection strip, and the zoom buttons sit beside them.
+// one in use. They pick the library's view (F5 to F8) and its grouping, and with a picture open
+// they bring the library up in that view. A picture also gets the collection strip's button, whose
+// flyout docks the strip to a side and picks its view, and the zoom buttons.
 namespace KillerShot.Shell
 {
     public partial class MainWindow
     {
         private static readonly double[] ZoomMenuSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 4];
+        private static readonly (DockSide Side, string Key, string Arrow)[] StripSides =
+        [
+            (DockSide.Left, "Str_Dock_Left", "Left"), (DockSide.Top, "Str_Dock_Top", "Up"),
+            (DockSide.Right, "Str_Dock_Right", "Right"), (DockSide.Bottom, "Str_Dock_Bottom", "Down"),
+        ];
 
         private readonly List<(RadioButton Button, string View)> _footerViews = [];
         private readonly List<(RadioButton Button, string Group)> _footerGroups = [];
-        private readonly List<(RadioButton Button, DockSide Side)> _footerDocks = [];
+        private Button? _stripButton;
         private bool _footerSyncing;
 
         private void InitFooterView()
@@ -30,7 +36,7 @@ namespace KillerShot.Shell
             })
             {
                 string target = view;
-                var button = FooterRadio("FooterLibraryView", glyph, key, keys, () => Library.SetView(target));
+                var button = FooterRadio("FooterLibraryView", glyph, key, keys, () => ShowLibraryView(target));
                 _footerViews.Add((button, view));
                 FooterLibraryViews.Children.Add(button);
             }
@@ -38,28 +44,30 @@ namespace KillerShot.Shell
             foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8F1", "Str_Lib_ByCollection") })
             {
                 string target = group;
-                var button = FooterRadio("FooterLibraryGroup", glyph, key, null, () => Library.SetGroup(target));
+                var button = FooterRadio("FooterLibraryGroup", glyph, key, null, () => ShowLibraryGroup(target));
                 _footerGroups.Add((button, group));
                 FooterLibraryViews.Children.Add(button);
             }
-            foreach (var (side, key, arrow) in new[]
-            {
-                (DockSide.Left, "Str_Dock_Left", "Left"), (DockSide.Top, "Str_Dock_Top", "Up"),
-                (DockSide.Right, "Str_Dock_Right", "Right"), (DockSide.Bottom, "Str_Dock_Bottom", "Down"),
-            })
-            {
-                DockSide target = side;
-                var button = FooterRadio("FooterStripDock", DockIcon(side), key, "Alt+Shift+" + arrow, () => StripDock.DockTo(target));
-                _footerDocks.Add((button, side));
-                FooterDockRadios.Children.Add(button);
-            }
+
+            // The strip: one button showing the side it is on, with a flyout of the sides (and their
+            // Alt+Shift shortcuts), its two side views, and Minimize.
+            _stripButton = new Button { Width = 26, Content = DockIcon(StripDock.Side, typeof(Button)) };
+            _stripButton.SetResourceReference(StyleProperty, "FooterNavButton");
+            _stripButton.SetResourceReference(ToolTipProperty, "Str_Dock_Menu");
+            _stripButton.SetResourceReference(AutomationProperties.NameProperty, "Str_Dock_Menu");
+            _stripButton.Click += (_, _) => ShowStripMenu();
+            FooterStripControls.Children.Add(_stripButton);
+            FooterStripControls.Children.Add(FooterSeparator());
+
+            if (_strip != null) _strip.SideViewChanged += SyncFooterView;
             Library.ViewChanged += SyncFooterView;
             StripDock.LayoutChanged += SyncFooterView;
             SyncFooterView();
         }
 
-        /// <summary>One radio button: a glyph or a drawn icon, a tooltip that follows the language
-        /// with its shortcut after it, and the same name for a screen reader.</summary>
+        /// <summary>One radio button: a glyph, a tooltip that follows the language with its shortcut
+        /// after it, and the same name for a screen reader. Click, not Checked, so the one already
+        /// in use still brings the library up over a picture.</summary>
         private RadioButton FooterRadio(string group, object content, string labelKey, string? keys, Action pick)
         {
             var button = new RadioButton { GroupName = group, Content = content };
@@ -71,8 +79,23 @@ namespace KillerShot.Shell
             tip.Children.Add(label);
             if (keys != null) tip.Children.Add(new TextBlock { Text = " (" + keys + ")" });
             button.ToolTip = tip;
-            button.Checked += (_, _) => { if (!_footerSyncing) pick(); };
+            button.Click += (_, _) => { if (!_footerSyncing) pick(); };
             return button;
+        }
+
+        /// <summary>A view from the footer or F5 to F8, with the library brought up over a picture.</summary>
+        private void ShowLibraryView(string view)
+        {
+            Library.SetView(view);
+            if (_doc != null && !_libraryShown) ToggleLibrary();
+            SyncFooterView();
+        }
+
+        private void ShowLibraryGroup(string group)
+        {
+            Library.SetGroup(group);
+            if (_doc != null && !_libraryShown) ToggleLibrary();
+            SyncFooterView();
         }
 
         private static Border FooterSeparator()
@@ -82,16 +105,20 @@ namespace KillerShot.Shell
             return line;
         }
 
-        /// <summary>A small window outline with a solid bar on the side the strip docks to, drawn in
-        /// the button's own color so hover and the checked accent reach it.</summary>
-        private static Grid DockIcon(DockSide side)
+        private static Binding IconColor(Type owner) => new(nameof(Control.Foreground))
         {
-            var color = new Binding(nameof(Control.Foreground)) { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(RadioButton), 1) };
+            RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, owner, 1),
+        };
+
+        /// <summary>A small window outline with a solid bar on the side the strip docks to, drawn in
+        /// its button's or menu item's own color so hover and the accent reach it.</summary>
+        private static Grid DockIcon(DockSide side, Type owner)
+        {
             var icon = new Grid { Width = 14, Height = 11 };
             var frame = new Border { BorderThickness = new Thickness(1) };
-            frame.SetBinding(Border.BorderBrushProperty, color);
+            frame.SetBinding(Border.BorderBrushProperty, IconColor(owner));
             var bar = new Rectangle();
-            bar.SetBinding(Shape.FillProperty, color);
+            bar.SetBinding(Shape.FillProperty, IconColor(owner));
             switch (side)
             {
                 case DockSide.Left: bar.Width = 4; bar.HorizontalAlignment = HorizontalAlignment.Left; break;
@@ -104,24 +131,105 @@ namespace KillerShot.Shell
             return icon;
         }
 
-        /// <summary>Shows the library's buttons or the picture's, and checks the ones in use.</summary>
+        /// <summary>Three rows of a thumbnail and a line: the thumbnail list.</summary>
+        private static StackPanel ListIcon(Type owner)
+        {
+            var icon = new StackPanel { Width = 14 };
+            for (int i = 0; i < 3; i++)
+            {
+                var row = new DockPanel { Height = 3, Margin = new Thickness(0, i == 0 ? 0 : 1, 0, 0), LastChildFill = true };
+                var thumb = new Rectangle { Width = 4 };
+                thumb.SetBinding(Shape.FillProperty, IconColor(owner));
+                var line = new Rectangle { Height = 1, Margin = new Thickness(2, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+                line.SetBinding(Shape.FillProperty, IconColor(owner));
+                row.Children.Add(thumb);
+                row.Children.Add(line);
+                icon.Children.Add(row);
+            }
+            return icon;
+        }
+
+        /// <summary>Two cards leaning back behind a front card: the rolodex.</summary>
+        private static Grid RolodexIcon(Type owner)
+        {
+            var icon = new Grid { Width = 14, Height = 11 };
+            foreach (var (inset, top, height) in new[] { (3.0, 0.0, 3.0), (1.5, 2.0, 3.0), (0.0, 4.0, 7.0) })
+            {
+                var card = new Border
+                {
+                    Margin = new Thickness(inset, top, inset, 0), Height = height, VerticalAlignment = VerticalAlignment.Top,
+                    BorderThickness = new Thickness(1, 1, 1, inset == 0 ? 1 : 0),
+                };
+                card.SetBinding(Border.BorderBrushProperty, IconColor(owner));
+                icon.Children.Add(card);
+            }
+            return icon;
+        }
+
+        /// <summary>The strip's flyout: the four sides with their shortcuts, the list or rolodex for a
+        /// side strip, and Minimize.</summary>
+        private void ShowStripMenu()
+        {
+            if (_stripButton == null) return;
+            var menu = new ContextMenu { PlacementTarget = _stripButton, Placement = PlacementMode.Top };
+            foreach (var (side, key, arrow) in StripSides)
+            {
+                var item = new MenuItem
+                {
+                    Header = Loc(key), InputGestureText = "Alt+Shift+" + arrow,
+                    Icon = DockIcon(side, typeof(MenuItem)),
+                    FontWeight = StripDock.Side == side ? FontWeights.SemiBold : FontWeights.Normal,
+                };
+                DockSide target = side;
+                item.Click += (_, _) => StripDock.DockTo(target);
+                menu.Items.Add(item);
+            }
+            menu.Items.Add(new Separator());
+            foreach (var (view, key) in new[] { ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
+            {
+                var item = new MenuItem
+                {
+                    Header = Loc(key),
+                    Icon = view == "list" ? ListIcon(typeof(MenuItem)) : RolodexIcon(typeof(MenuItem)),
+                    IsEnabled = !StripDock.IsHorizontal,
+                    FontWeight = !StripDock.IsHorizontal && _strip?.SideView == view ? FontWeights.SemiBold : FontWeights.Normal,
+                };
+                string target = view;
+                item.Click += (_, _) => _strip?.SetSideView(target);
+                menu.Items.Add(item);
+            }
+            menu.Items.Add(new Separator());
+            var arrowOfSide = StripSides.First(s => s.Side == StripDock.Side).Arrow;
+            var minimize = new MenuItem
+            {
+                Header = Loc(StripDock.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"),
+                InputGestureText = "Alt+Shift+" + arrowOfSide,
+            };
+            minimize.Click += (_, _) => { if (StripDock.IsMinimized) StripDock.Restore(); else StripDock.Minimize(); };
+            menu.Items.Add(minimize);
+            menu.IsOpen = true;
+        }
+
+        /// <summary>Shows the buttons that apply and marks the ones in use.</summary>
         private void SyncFooterView()
         {
             bool library = Library.Visibility == Visibility.Visible;
-            FooterLibraryViews.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
-            FooterEditorViews.Visibility = !library && _doc != null ? Visibility.Visible : Visibility.Collapsed;
+            bool picture = !library && _doc != null;
+            FooterStripControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
+            FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
+            if (_stripButton != null) _stripButton.Content = DockIcon(StripDock.Side, typeof(Button));
             _footerSyncing = true;
             try
             {
-                foreach (var (button, view) in _footerViews) button.IsChecked = Library.CurrentView == view;
+                // Over a picture none is underlined: the library is not what is showing.
+                foreach (var (button, view) in _footerViews) button.IsChecked = library && Library.CurrentView == view;
                 // The timeline is a line of days, so it is always by date.
                 bool grouped = Library.CurrentView != "timeline";
                 foreach (var (button, group) in _footerGroups)
                 {
                     button.IsEnabled = grouped;
-                    button.IsChecked = Library.CurrentGroup == group;
+                    button.IsChecked = library && Library.CurrentGroup == group;
                 }
-                foreach (var (button, side) in _footerDocks) button.IsChecked = StripDock.Side == side;
             }
             finally { _footerSyncing = false; }
         }

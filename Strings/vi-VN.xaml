@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Hiện dải bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Vị trí của dải</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Đổi cỡ dải bộ sưu tập</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Danh sách hình thu nhỏ</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Hộp thẻ xoay</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Gắn dải bộ sưu tập vào phía đó, hoặc thu nhỏ nó ở chính phía của nó</sys:String>
 </ResourceDictionary>

@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Sammlungsleiste anzeigen</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Position der Leiste</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Größe der Sammlungsleiste ändern</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Miniaturliste</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Rolodex</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Sammlungsleiste an dieser Seite andocken oder an ihrer eigenen Seite minimieren</sys:String>
 </ResourceDictionary>

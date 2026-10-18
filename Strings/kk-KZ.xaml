@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Жинақ жолағын көрсету</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Жолақ орны</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Жинақ жолағының өлшемін өзгерту</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Нобайлар тізімі</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Айналмалы картотека</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Жинақ жолағын сол жаққа бекіту немесе өз жағында кішірейту</sys:String>
 </ResourceDictionary>

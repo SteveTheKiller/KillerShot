@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Afficher le bandeau de collection</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Position du bandeau</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionner le bandeau de collection</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Liste de miniatures</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Fichier rotatif</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Ancrer le bandeau de collection de ce côté, ou le réduire de son propre côté</sys:String>
 </ResourceDictionary>

@@ -1,0 +1,439 @@
+using System.Globalization;
+using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
+using KillerShot.Services;
+
+namespace KillerShot.Controls;
+
+/// <summary>
+/// A rolodex of captures for a narrow column: every capture is a card on a drum that turns
+/// about a level axis. The current card faces the viewer; the ones before it lean back over the
+/// top of the drum and the ones after it under the bottom, each overlapping the next, so the
+/// column flips through cards the way a desk rolodex does. Drawn with real perspective in a
+/// Viewport3D, the same way as <see cref="CoverFlow"/>.
+///
+/// Position is a double that eases toward SelectedIndex, so a jump of any distance turns the
+/// drum through the cards in between. Only the cards on the visible half of the drum exist as
+/// models.
+///
+/// Mouse: click a card to bring it to the front, click the front card to open it, wheel to
+/// turn, right-click for the item menu. Keyboard: Up, Down, Home, End, Page Up and Page Down
+/// move; Enter opens; the context menu key or Shift+F10 opens the item menu.
+/// </summary>
+internal sealed class Rolodex : FrameworkElement
+{
+    private const int Window = 12;              // models kept on each side of the position
+    private const double CardWidth = 1.0;       // model units
+    private const double CardHeight = 0.74;
+    private const double CaptionBand = 0.13;    // the strip at the foot of a card that holds its title
+    private const double Inset = 0.035;         // the card stock around the picture
+    private const double ViewWidth = 1.12;      // model units visible across at the front card
+    private const double CameraDistance = 3.2;
+    private const double Reveal = 0.40;         // how much of the next card shows past the front one
+    private const double MaxAngle = 86;         // cards past this, at the drum's top or bottom, are dropped
+
+    private readonly Viewport3D _viewport = new();
+    private readonly ModelVisual3D _root = new();
+    private readonly Model3DGroup _scene = new();
+    private readonly Dictionary<int, Card> _cards = [];
+    private readonly Dictionary<GeometryModel3D, int> _hits = [];
+    private IReadOnlyList<CaptureItem> _items = [];
+    private double _position;
+    private double _radius = 1.4, _step = 17;   // drum radius and degrees between cards, from the size
+    private TimeSpan _lastFrame;
+    private bool _animating;
+    private Color _cardColor = Color.FromRgb(0x14, 0x14, 0x14);
+
+    private sealed class Card
+    {
+        public required Model3DGroup Group { get; init; }
+        public required GeometryModel3D Face { get; init; }
+        public required AxisAngleRotation3D Rotation { get; init; }
+        public required TranslateTransform3D Translation { get; init; }
+    }
+
+    /// <summary>Gives a capture's thumbnail; null draws an empty card.</summary>
+    public Func<long, BitmapSource?>? ThumbnailSource { get; set; }
+
+    /// <summary>The title printed at the foot of each card.</summary>
+    public Func<CaptureItem, string>? Caption { get; set; }
+
+    /// <summary>Formats a capture for screen readers.</summary>
+    public Func<CaptureItem, string>? Describe { get; set; }
+
+    /// <summary>The card stock behind each picture. Dark by default, so the pictures stand out.</summary>
+    public Color CardColor
+    {
+        get => _cardColor;
+        set { if (_cardColor == value) return; _cardColor = value; ClearCards(); Rebuild(); }
+    }
+
+    /// <summary>The caption text color, chosen against <see cref="CardColor"/>.</summary>
+    private Brush CaptionBrush => _cardColor.R * 0.299 + _cardColor.G * 0.587 + _cardColor.B * 0.114 > 150
+        ? new SolidColorBrush(Color.FromRgb(0x20, 0x20, 0x20)) : new SolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6));
+
+    public event Action<CaptureItem>? ItemActivated;
+    public event Action<CaptureItem, FrameworkElement>? ItemMenuRequested;
+    public event Action? SelectionChanged;
+
+    public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
+        nameof(SelectedIndex), typeof(int), typeof(Rolodex),
+        new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedIndexChanged, CoerceSelectedIndex));
+
+    public int SelectedIndex
+    {
+        get => (int)GetValue(SelectedIndexProperty);
+        set => SetValue(SelectedIndexProperty, value);
+    }
+
+    public CaptureItem? SelectedItem => SelectedIndex >= 0 && SelectedIndex < _items.Count ? _items[SelectedIndex] : null;
+
+    public IReadOnlyList<CaptureItem> Items
+    {
+        get => _items;
+        set
+        {
+            long? keep = SelectedItem?.Id;
+            _items = value ?? [];
+            ClearCards();
+            int index = keep is long id ? IndexOf(id) : 0;
+            SetCurrentValue(SelectedIndexProperty, Math.Max(0, index));
+            _position = SelectedIndex;
+            Rebuild();
+            SelectionChanged?.Invoke();
+            UpdateName();
+        }
+    }
+
+    public Rolodex()
+    {
+        Focusable = true;
+        FocusVisualStyle = null;
+        ClipToBounds = true;
+        _viewport.Camera = new PerspectiveCamera
+        {
+            Position = new Point3D(0, 0, CameraDistance),
+            LookDirection = new Vector3D(0, 0, -1),
+            UpDirection = new Vector3D(0, 1, 0),
+            FieldOfView = 30,
+        };
+        _scene.Children.Add(new AmbientLight(Colors.White));
+        _root.Content = _scene;
+        _viewport.Children.Add(_root);
+        AddVisualChild(_viewport);
+        Unloaded += (_, _) => StopAnimation();
+        Loaded += (_, _) => { if (Math.Abs(_position - SelectedIndex) > 0.001) StartAnimation(); };
+    }
+
+    private int IndexOf(long id)
+    {
+        for (int i = 0; i < _items.Count; i++) if (_items[i].Id == id) return i;
+        return -1;
+    }
+
+    private static object CoerceSelectedIndex(DependencyObject d, object value)
+    {
+        var r = (Rolodex)d;
+        return Math.Clamp((int)value, 0, Math.Max(0, r._items.Count - 1));
+    }
+
+    private static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var r = (Rolodex)d;
+        r.StartAnimation();
+        r.SelectionChanged?.Invoke();
+        r.UpdateName();
+    }
+
+    // ---- layout ----
+
+    protected override int VisualChildrenCount => 1;
+    protected override Visual GetVisualChild(int index) => _viewport;
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        _viewport.Measure(availableSize);
+        return new Size(double.IsInfinity(availableSize.Width) ? 220 : availableSize.Width,
+                        double.IsInfinity(availableSize.Height) ? 600 : availableSize.Height);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        _viewport.Arrange(new Rect(finalSize));
+        if (finalSize.Width > 0 && finalSize.Height > 0 && _viewport.Camera is PerspectiveCamera camera)
+        {
+            // The front card fills the width; the drum is sized to the height, so a taller column
+            // shows more cards and the spacing between them stays the same.
+            camera.FieldOfView = 2 * Math.Atan(ViewWidth / 2 / CameraDistance) * 180 / Math.PI;
+            double halfHeight = ViewWidth * finalSize.Height / finalSize.Width / 2;
+            // Grow the drum until its farthest card, seen in perspective, reaches the column's edge.
+            double radius = 0.5;
+            while (radius < 20 && Extent(radius * 1.05) < halfHeight * 0.97) radius *= 1.05;
+            _radius = radius;
+            _step = Math.Clamp(Math.Asin(Math.Min(1, Reveal / _radius)) * 180 / Math.PI, 6, 35);
+            Rebuild();
+        }
+        return finalSize;
+    }
+
+    /// <summary>How far from the middle the top edge of the farthest visible card lands on screen,
+    /// in model units at the front card, for a drum of this radius.</summary>
+    private static double Extent(double radius)
+    {
+        double max = 0;
+        for (double deg = 0; deg <= MaxAngle; deg += 2)
+        {
+            double t = deg * Math.PI / 180;
+            double y = radius * Math.Sin(t) + CardHeight / 2 * Math.Cos(t);
+            double z = radius * (Math.Cos(t) - 1) - CardHeight / 2 * Math.Sin(t);
+            max = Math.Max(max, y * CameraDistance / (CameraDistance - z));
+        }
+        return max;
+    }
+
+    // ---- models ----
+
+    private void ClearCards()
+    {
+        foreach (var card in _cards.Values) _scene.Children.Remove(card.Group);
+        _cards.Clear();
+        _hits.Clear();
+    }
+
+    private bool Visible(int index) => Math.Abs((index - _position) * _step) <= MaxAngle;
+
+    private void Rebuild()
+    {
+        int center = (int)Math.Round(_position);
+        int first = Math.Max(0, center - Window), last = Math.Min(_items.Count - 1, center + Window);
+        foreach (int stale in _cards.Keys.Where(k => k < first || k > last || !Visible(k)).ToList())
+        {
+            _scene.Children.Remove(_cards[stale].Group);
+            _hits.Remove(_cards[stale].Face);
+            _cards.Remove(stale);
+        }
+        for (int i = first; i <= last; i++)
+            if (!_cards.ContainsKey(i) && Visible(i)) _cards[i] = CreateCard(i);
+        Place();
+    }
+
+    private Card CreateCard(int index)
+    {
+        var item = _items[index];
+        BitmapSource? thumb = ThumbnailSource?.Invoke(item.Id);
+        var stock = new SolidColorBrush(_cardColor);
+        var edge = new Pen(new SolidColorBrush(Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF)), 0.004);
+
+        // The card: stock with a faint edge, the picture fitted inside its frame, and the title
+        // at the foot. Drawn as vectors, so it stays sharp at any size.
+        var drawing = new DrawingGroup();
+        drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), 0.03, 0.03)));
+        var frame = new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand);
+        double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
+        double w = Math.Min(frame.Width, frame.Height * aspect), h = w / aspect;
+        var picture = new Rect(frame.X + (frame.Width - w) / 2, frame.Y + (frame.Height - h) / 2, w, h);
+        if (thumb != null) drawing.Children.Add(new ImageDrawing(thumb, picture));
+        else drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(Color.FromRgb(60, 60, 60)), null, new RectangleGeometry(picture)));
+        string caption = Caption?.Invoke(item) ?? "";
+        if (caption.Length > 0)
+        {
+            var text = new FormattedText(caption, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
+                new Typeface("Segoe UI"), CaptionBand * 0.46, CaptionBrush, 1.0)
+            {
+                MaxTextWidth = CardWidth - 2 * Inset,
+                MaxLineCount = 1,
+                Trimming = TextTrimming.CharacterEllipsis,
+            };
+            var origin = new Point(Inset, CardHeight - CaptionBand + (CaptionBand - text.Height) / 2);
+            drawing.Children.Add(new GeometryDrawing(CaptionBrush, null, text.BuildGeometry(origin)));
+        }
+        // Keep the brush the card's full size even where the drawing leaves transparent corners.
+        var brush = new DrawingBrush(drawing) { Stretch = Stretch.Fill, Viewbox = new Rect(0, 0, CardWidth, CardHeight), ViewboxUnits = BrushMappingMode.Absolute };
+        brush.Freeze();
+
+        var face = new GeometryModel3D(Quad(), new DiffuseMaterial(brush)) { BackMaterial = new DiffuseMaterial(brush) };
+        var rotation = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
+        var translation = new TranslateTransform3D();
+        var transforms = new Transform3DGroup();
+        transforms.Children.Add(new RotateTransform3D(rotation));
+        transforms.Children.Add(translation);
+        var group = new Model3DGroup { Transform = transforms };
+        group.Children.Add(face);
+        _scene.Children.Add(group);
+        _hits[face] = index;
+        return new Card { Group = group, Face = face, Rotation = rotation, Translation = translation };
+    }
+
+    /// <summary>A card-sized quad centered on the origin, texture upright.</summary>
+    private static MeshGeometry3D Quad()
+    {
+        double x = CardWidth / 2, y = CardHeight / 2;
+        var mesh = new MeshGeometry3D
+        {
+            Positions = [new Point3D(-x, -y, 0), new Point3D(x, -y, 0), new Point3D(x, y, 0), new Point3D(-x, y, 0)],
+            TextureCoordinates = [new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0)],
+            TriangleIndices = [0, 1, 2, 0, 2, 3],
+        };
+        mesh.Freeze();
+        return mesh;
+    }
+
+    /// <summary>Puts every card on the drum by its distance from the position: earlier cards turn
+    /// up and back over the top, later ones down and back under the bottom.</summary>
+    private void Place()
+    {
+        foreach (var (index, card) in _cards)
+        {
+            double theta = -(index - _position) * _step * Math.PI / 180;
+            card.Translation.OffsetY = _radius * Math.Sin(theta);
+            card.Translation.OffsetZ = _radius * (Math.Cos(theta) - 1);
+            card.Rotation.Angle = -theta * 180 / Math.PI;
+        }
+        // Back to front, so the front card covers the ones behind it.
+        var order = _cards.OrderByDescending(kv => Math.Abs(kv.Key - _position)).Select(kv => kv.Value.Group).ToList();
+        for (int i = 0; i < order.Count; i++)
+        {
+            int at = _scene.Children.IndexOf(order[i]);
+            if (at != i + 1)
+            {
+                _scene.Children.Remove(order[i]);
+                _scene.Children.Insert(i + 1, order[i]);
+            }
+        }
+    }
+
+    // ---- animation ----
+
+    private void StartAnimation()
+    {
+        if (_animating || !IsLoaded) { if (!IsLoaded) { _position = SelectedIndex; Rebuild(); } return; }
+        _animating = true;
+        _lastFrame = TimeSpan.Zero;
+        CompositionTarget.Rendering += OnRendering;
+    }
+
+    private void StopAnimation()
+    {
+        if (!_animating) return;
+        _animating = false;
+        CompositionTarget.Rendering -= OnRendering;
+    }
+
+    private void OnRendering(object? sender, EventArgs e)
+    {
+        var now = ((RenderingEventArgs)e).RenderingTime;
+        double dt = _lastFrame == TimeSpan.Zero ? 1.0 / 60 : Math.Min(0.1, (now - _lastFrame).TotalSeconds);
+        if (now == _lastFrame) return;
+        _lastFrame = now;
+        double gap = SelectedIndex - _position;
+        double speed = 10 + Math.Min(30, Math.Abs(gap) * 2);
+        _position += gap * Math.Min(1, dt * speed);
+        if (Math.Abs(SelectedIndex - _position) < 0.002)
+        {
+            _position = SelectedIndex;
+            StopAnimation();
+        }
+        Rebuild();
+    }
+
+    // ---- input ----
+
+    private int? IndexAt(Point p)
+    {
+        int? found = null;
+        VisualTreeHelper.HitTest(_viewport, null, r =>
+        {
+            if (r is RayMeshGeometry3DHitTestResult mesh && mesh.ModelHit is GeometryModel3D model && _hits.TryGetValue(model, out int i))
+            {
+                found = i;
+                return HitTestResultBehavior.Stop;
+            }
+            return HitTestResultBehavior.Continue;
+        }, new PointHitTestParameters(p));
+        return found;
+    }
+
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        Focus();
+        if (IndexAt(e.GetPosition(this)) is not int i) return;
+        e.Handled = true;
+        if (i == SelectedIndex) ItemActivated?.Invoke(_items[i]);
+        else SelectedIndex = i;
+    }
+
+    protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseRightButtonUp(e);
+        Focus();
+        if (IndexAt(e.GetPosition(this)) is not int i) return;
+        e.Handled = true;
+        SelectedIndex = i;
+        ItemMenuRequested?.Invoke(_items[i], this);
+    }
+
+    protected override void OnMouseWheel(MouseWheelEventArgs e)
+    {
+        base.OnMouseWheel(e);
+        if (_items.Count == 0) return;
+        SelectedIndex += e.Delta > 0 ? -1 : 1;
+        e.Handled = true;
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (_items.Count == 0) return;
+        bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+        switch (e.Key)
+        {
+            case Key.Up: SelectedIndex--; break;
+            case Key.Down: SelectedIndex++; break;
+            case Key.PageUp: SelectedIndex -= 5; break;
+            case Key.PageDown: SelectedIndex += 5; break;
+            case Key.Home: SelectedIndex = 0; break;
+            case Key.End: SelectedIndex = _items.Count - 1; break;
+            case Key.Enter when SelectedItem != null: ItemActivated?.Invoke(SelectedItem); break;
+            case Key.Apps when SelectedItem != null:
+            case Key.System when e.SystemKey == Key.F10 && shift && SelectedItem != null:
+                ItemMenuRequested?.Invoke(SelectedItem!, this);
+                break;
+            default: return;
+        }
+        e.Handled = true;
+    }
+
+    protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
+    {
+        base.OnGotKeyboardFocus(e);
+        UpdateName();
+    }
+
+    // ---- screen readers ----
+
+    private void UpdateName()
+    {
+        string name = SelectedItem is { } item && Describe != null
+            ? Describe(item) + ", " + (SelectedIndex + 1) + " / " + _items.Count
+            : "";
+        AutomationProperties.SetName(this, name);
+        if (IsKeyboardFocused && UIElementAutomationPeer.FromElement(this) is { } peer)
+            peer.RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, "", name);
+    }
+
+    protected override AutomationPeer OnCreateAutomationPeer() => new RolodexPeer(this);
+
+    private sealed class RolodexPeer(Rolodex owner) : FrameworkElementAutomationPeer(owner)
+    {
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
+        protected override string GetClassNameCore() => nameof(Rolodex);
+        protected override bool IsKeyboardFocusableCore() => true;
+    }
+}

@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">コレクション ストリップを表示</sys:String>
     <sys:String x:Key="Str_Dock_Menu">ストリップの位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">コレクション ストリップのサイズ変更</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">サムネイル一覧</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">回転式カードファイル</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">コレクション ストリップをその側にドッキング、または自分の側で最小化</sys:String>
 </ResourceDictionary>

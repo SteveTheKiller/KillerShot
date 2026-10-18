@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">সংগ্রহ স্ট্রিপ দেখান</sys:String>
     <sys:String x:Key="Str_Dock_Menu">স্ট্রিপের অবস্থান</sys:String>
     <sys:String x:Key="Str_Dock_Resize">সংগ্রহ স্ট্রিপের আকার বদলান</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">থাম্বনেইল তালিকা</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">রোলোডেক্স</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">সংগ্রহ স্ট্রিপটি সেই দিকে ডক করুন, বা নিজের দিকে ছোট করুন</sys:String>
 </ResourceDictionary>

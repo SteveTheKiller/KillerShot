@@ -140,7 +140,11 @@ internal static class SelfTestDemo
             w.TestOpenLibraryCapture(item);
             await Shot("demo-strip-top");
             w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Left);
+            w.TestStrip?.SetSideView("list");
             await Shot("demo-strip-left");
+            w.TestStrip?.SetSideView("rolodex");
+            await Shot("demo-strip-rolodex");
+            w.TestStrip?.SetSideView("list");
             w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Top);
             w.Close();
             log.AppendLine("result=ok");

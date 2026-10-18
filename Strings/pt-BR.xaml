@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Mostrar a faixa da coleção</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Posição da faixa</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionar a faixa da coleção</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Lista de miniaturas</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Fichário giratório</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Encaixar a faixa da coleção nesse lado, ou minimizá-la no próprio lado</sys:String>
 </ResourceDictionary>

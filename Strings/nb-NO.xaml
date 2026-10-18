@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Vis samlingsstripen</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Stripens plassering</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Endre størrelse på samlingsstripen</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Miniatyrliste</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Roterende kortregister</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Fest samlingsstripen på den siden, eller minimer den på sin egen side</sys:String>
 </ResourceDictionary>

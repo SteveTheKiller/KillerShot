@@ -386,5 +386,7 @@
     <sys:String x:Key="Str_Dock_Restore">Pokaż pasek kolekcji</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Położenie paska</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Zmień rozmiar paska kolekcji</sys:String>
+    <sys:String x:Key="Str_Strip_ViewList">Lista miniatur</sys:String>
+    <sys:String x:Key="Str_Strip_ViewRolodex">Kartoteka obrotowa</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Zadokuj pasek kolekcji po tej stronie lub zminimalizuj go po jego własnej stronie</sys:String>
 </ResourceDictionary>
