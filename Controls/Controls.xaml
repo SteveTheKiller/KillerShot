@@ -8,6 +8,7 @@
                     xmlns:kui="clr-namespace:KillerShot.Controls"
                     xmlns:kl="clr-namespace:KillerFamily.Layout"
                     xmlns:a11y="clr-namespace:KillerFamily.Accessibility"
+                    xmlns:snap="clr-namespace:KillerFamily.Windowing"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Shared film-grain tile. ImageSource is assigned once at startup (Chrome.ApplyGrainTexture)
@@ -819,7 +820,16 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CaptionHoverBrush}"/>
                         </Trigger>
+                        <!-- Snap layouts put the maximize button in the non-client area, where WPF
+                             sees no mouse, so SnapLayouts reports hover and press itself. -->
+                        <Trigger Property="snap:SnapLayouts.IsHovered" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CaptionHoverBrush}"/>
+                        </Trigger>
                         <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="capLight" Property="BorderBrush" Value="{DynamicResource BevelDarkBrush}"/>
+                            <Setter TargetName="capDark" Property="BorderBrush" Value="{DynamicResource BevelLightBrush}"/>
+                        </Trigger>
+                        <Trigger Property="snap:SnapLayouts.IsPressed" Value="True">
                             <Setter TargetName="capLight" Property="BorderBrush" Value="{DynamicResource BevelDarkBrush}"/>
                             <Setter TargetName="capDark" Property="BorderBrush" Value="{DynamicResource BevelLightBrush}"/>
                         </Trigger>
