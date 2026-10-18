@@ -116,6 +116,7 @@ namespace KillerShot.Shell
 
             _openDelay.Tick += (_, _) =>
             {
+                if (_host.IsHorizontal ? _flow.IsMoving : _sideView == "rolodex" && _rolodex.IsMoving) return;
                 _openDelay.Stop();
                 if (_openDelay.Tag is CaptureItem item) Open(item);
             };

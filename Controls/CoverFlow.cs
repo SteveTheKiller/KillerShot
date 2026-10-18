@@ -58,9 +58,10 @@ internal sealed class CoverFlow : FrameworkElement
     private readonly Dictionary<int, Card> _cards = [];
     private readonly Dictionary<GeometryModel3D, int> _hits = [];
     private IReadOnlyList<CaptureItem> _items = [];
-    private double _position;
-    private TimeSpan _lastFrame;
-    private bool _animating;
+    private readonly CarouselMotion _motion;
+    private double _position => _motion.Position;
+    private int _orderBucket = int.MinValue;
+    public bool IsMoving => _motion.IsMoving;
 
     private sealed class Card
     {
@@ -118,7 +119,7 @@ internal sealed class CoverFlow : FrameworkElement
             MaximumIndex = Math.Max(0, _items.Count - 1);
             int index = keep is long id ? IndexOf(id) : 0;
             SetCurrentValue(SelectedIndexProperty, Math.Max(0, index));
-            _position = SelectedIndex;
+            _motion.Reset(SelectedIndex);
             Rebuild();
             SelectionChanged?.Invoke();
             UpdateName();
@@ -127,6 +128,9 @@ internal sealed class CoverFlow : FrameworkElement
 
     public CoverFlow()
     {
+        _motion = new CarouselMotion(this, Rebuild, false,
+            () => ActualWidth * SideStep / Math.Max(MinViewWidth, ViewHeight * ActualWidth / Math.Max(1, ActualHeight)),
+            () => Math.Max(0, _items.Count - 1), index => SetCurrentValue(SelectedIndexProperty, index));
         Focusable = true;
         FocusVisualStyle = null;
         ClipToBounds = true;
@@ -142,8 +146,6 @@ internal sealed class CoverFlow : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
-        Unloaded += (_, _) => StopAnimation();
-        Loaded += (_, _) => { if (Math.Abs(_position - SelectedIndex) > 0.001) StartAnimation(); };
     }
 
     private int IndexOf(long id)
@@ -169,7 +171,7 @@ internal sealed class CoverFlow : FrameworkElement
     private static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var flow = (CoverFlow)d;
-        flow.StartAnimation();
+        flow._motion.MoveTo(flow.SelectedIndex);
         flow.SelectionChanged?.Invoke();
         flow.UpdateName();
     }
@@ -207,6 +209,7 @@ internal sealed class CoverFlow : FrameworkElement
 
     private void ClearCards()
     {
+        _orderBucket = int.MinValue;
         foreach (var card in _cards.Values) _scene.Children.Remove(card.Group);
         _cards.Clear();
         _hits.Clear();
@@ -219,12 +222,13 @@ internal sealed class CoverFlow : FrameworkElement
         int first = Math.Max(0, center - Window), last = Math.Min(_items.Count - 1, center + Window);
         foreach (int stale in _cards.Keys.Where(k => k < first || k > last).ToList())
         {
+            _orderBucket = int.MinValue;
             _scene.Children.Remove(_cards[stale].Group);
             _hits.Remove(_cards[stale].Face);
             _cards.Remove(stale);
         }
         for (int i = first; i <= last; i++)
-            if (!_cards.ContainsKey(i)) _cards[i] = CreateCard(i);
+            if (!_cards.ContainsKey(i)) { _cards[i] = CreateCard(i); _orderBucket = int.MinValue; }
         Place();
     }
 
@@ -309,6 +313,10 @@ internal sealed class CoverFlow : FrameworkElement
             card.Translation.OffsetZ = z;
         }
         // Draw back to front, so nearer pictures cover farther ones.
+        // Relative depths only swap when the position crosses a half-card boundary.
+        int bucket = (int)Math.Floor(_position * 2);
+        if (_orderBucket == bucket) return;
+        _orderBucket = bucket;
         var order = _cards.OrderByDescending(kv => Math.Abs(kv.Key - _position)).Select(kv => kv.Value.Group).ToList();
         for (int i = 0; i < order.Count; i++)
         {
@@ -319,42 +327,6 @@ internal sealed class CoverFlow : FrameworkElement
                 _scene.Children.Insert(i + 1, order[i]);
             }
         }
-    }
-
-    // ---- animation ----
-
-    private void StartAnimation()
-    {
-        if (_animating || !IsLoaded) { if (!IsLoaded) { _position = SelectedIndex; Rebuild(); } return; }
-        _animating = true;
-        _lastFrame = TimeSpan.Zero;
-        CompositionTarget.Rendering += OnRendering;
-    }
-
-    private void StopAnimation()
-    {
-        if (!_animating) return;
-        _animating = false;
-        CompositionTarget.Rendering -= OnRendering;
-    }
-
-    private void OnRendering(object? sender, EventArgs e)
-    {
-        var now = ((RenderingEventArgs)e).RenderingTime;
-        double dt = _lastFrame == TimeSpan.Zero ? 1.0 / 60 : Math.Min(0.1, (now - _lastFrame).TotalSeconds);
-        if (now == _lastFrame) return;
-        _lastFrame = now;
-        double target = SelectedIndex;
-        double gap = target - _position;
-        // Ease out, quicker over long jumps so a far slide does not crawl.
-        double speed = 9 + Math.Min(30, Math.Abs(gap) * 2);
-        _position += gap * Math.Min(1, dt * speed);
-        if (Math.Abs(target - _position) < 0.002)
-        {
-            _position = target;
-            StopAnimation();
-        }
-        Rebuild();
     }
 
     // ---- input ----
@@ -374,9 +346,14 @@ internal sealed class CoverFlow : FrameworkElement
         return found;
     }
 
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) { base.OnMouseLeftButtonDown(e); _motion.Press(e); }
+    protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); }
+    protected override void OnLostMouseCapture(MouseEventArgs e) { base.OnLostMouseCapture(e); _motion.LostCapture(); }
+
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
     {
         base.OnMouseLeftButtonUp(e);
+        if (_motion.Release(e)) { e.Handled = true; return; }
         Focus();
         if (IndexAt(e.GetPosition(this)) is not int i) return;
         e.Handled = true;
@@ -387,6 +364,7 @@ internal sealed class CoverFlow : FrameworkElement
     protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
     {
         base.OnMouseRightButtonUp(e);
+        _motion.Interrupt();
         Focus();
         if (IndexAt(e.GetPosition(this)) is not int i) return;
         e.Handled = true;
@@ -397,6 +375,7 @@ internal sealed class CoverFlow : FrameworkElement
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
+        _motion.Interrupt();
         if (_items.Count == 0) return;
         SelectedIndex += e.Delta > 0 ? -1 : 1;
         e.Handled = true;
@@ -407,6 +386,8 @@ internal sealed class CoverFlow : FrameworkElement
         base.OnKeyDown(e);
         if (_items.Count == 0) return;
         bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+        if (e.Key is Key.Left or Key.Right or Key.PageUp or Key.PageDown or Key.Home or Key.End or Key.Enter or Key.Apps or Key.Delete
+            || e.Key == Key.System && e.SystemKey == Key.F10 && shift) _motion.Interrupt();
         switch (e.Key)
         {
             case Key.Left: SelectedIndex--; break;
