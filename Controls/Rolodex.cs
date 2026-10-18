@@ -67,6 +67,16 @@ internal sealed class Rolodex : FrameworkElement
     /// <summary>Formats a capture for screen readers.</summary>
     public Func<CaptureItem, string>? Describe { get; set; }
 
+    /// <summary>A color for a card's top edge, such as its collection's; null leaves it plain.</summary>
+    public Func<CaptureItem, Color?>? Accent { get; set; }
+
+    /// <summary>Draws every card again, after the card or collection colors change.</summary>
+    public void Refresh()
+    {
+        ClearCards();
+        Rebuild();
+    }
+
     /// <summary>The card stock behind each picture. Dark by default, so the pictures stand out.</summary>
     public Color CardColor
     {
@@ -234,6 +244,8 @@ internal sealed class Rolodex : FrameworkElement
         // at the foot. Drawn as vectors, so it stays sharp at any size.
         var drawing = new DrawingGroup();
         drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), 0.03, 0.03)));
+        if (Accent?.Invoke(item) is Color accent)
+            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, new RectangleGeometry(new Rect(0.03, 0, CardWidth - 0.06, 0.016))));
         var frame = new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand);
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
         double w = Math.Min(frame.Width, frame.Height * aspect), h = w / aspect;

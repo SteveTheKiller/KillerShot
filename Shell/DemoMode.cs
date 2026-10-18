@@ -113,6 +113,10 @@ internal static class SelfTestDemo
             bool open = await Task.Run(() => { DemoMode.BeginSeed(); return CaptureLibrary.Opening; });
             log.AppendLine($"open={open} count={CaptureLibrary.Count} collections={string.Join(",", CaptureLibrary.Collections().Select(c => c.Name + ":" + c.Count))} folder={FolderCaptures.Items().Count}");
             if (CaptureLibrary.Count == 0) throw new InvalidOperationException("The demo library is empty; code\\Demo\\KillerShot was not found.");
+            // A collection color, so the shots show how one marks its cards. The demo has its own
+            // settings folder, so this never touches the user's colors.
+            if (CaptureLibrary.Collections().FirstOrDefault(c => c.Name == "KillerScan") is { } scan)
+                CardColors.SetCollection(scan.Id, System.Windows.Media.Color.FromRgb(0xE8, 0x96, 0x2C));
             App.Instance.SetDocument(null);
             var w = new MainWindow { ShowActivated = false, WindowStartupLocation = System.Windows.WindowStartupLocation.Manual, Left = -20000, Top = -20000, Width = 1440, Height = 900 };
             w.Show();

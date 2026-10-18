@@ -45,6 +45,7 @@ namespace KillerShot.Shell
             InitToolbarLayout();
             InitToolbarStyle();
             InitEditor();
+            Services.CardColors.Apply();   // the card brushes the library and the strip draw on
             InitLibrary();
             InitStrip();
             InitFooterView();

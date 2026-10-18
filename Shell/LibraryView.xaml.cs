@@ -116,6 +116,7 @@ namespace KillerShot.Shell
             {
                 CaptureLibrary.Changed += OnLibraryChanged;
                 FolderCaptures.Changed += OnLibraryChanged;
+                CardColors.Changed += OnLibraryChanged;
                 Relocalize();
                 if (_dirty) Reload();
             };
@@ -123,6 +124,7 @@ namespace KillerShot.Shell
             {
                 CaptureLibrary.Changed -= OnLibraryChanged;
                 FolderCaptures.Changed -= OnLibraryChanged;
+                CardColors.Changed -= OnLibraryChanged;
             };
             IsVisibleChanged += (_, _) => { if (IsVisible && _dirty) Reload(); };
             SizeChanged += (_, _) =>
@@ -364,6 +366,12 @@ namespace KillerShot.Shell
                 line.ToolTip = FolderCaptures.Folder;
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
+            if (CardColors.Collection(row.CollectionId) is Color own)
+            {
+                // The collection's own color, as a dot before its name.
+                var swatch = new Ellipse { Width = 10, Height = 10, Fill = new SolidColorBrush(own), Margin = new Thickness(0, 0, 8, 5), VerticalAlignment = VerticalAlignment.Bottom };
+                line.Children.Add(swatch);
+            }
             line.Children.Add(title);
             line.Children.Add(detail);
             if (row.IsCollection && row.CollectionId is long id)
@@ -446,12 +454,17 @@ namespace KillerShot.Shell
                     Text = row.Timeline ? item.Taken.ToString("t", CultureInfo.CurrentCulture) : item.Taken.ToString("g", CultureInfo.CurrentCulture),
                     FontSize = 10, Width = w, TextTrimming = TextTrimming.CharacterEllipsis,
                 };
-                detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+                detail.SetResourceReference(TextBlock.ForegroundProperty, "CaptureCardMutedBrush");
                 var content = new StackPanel();
                 content.Children.Add(image);
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
+                if (CardColors.Collection(item.CollectionId) is Color own)
+                {
+                    tile.BorderBrush = new SolidColorBrush(own);
+                    tile.BorderThickness = new Thickness(2);
+                }
                 AutomationProperties.SetName(tile, Describe(item));
                 tile.ToolTip = Describe(item);
                 tile.Click += (_, _) => OpenRequested?.Invoke(item);
@@ -728,6 +741,8 @@ namespace KillerShot.Shell
             move.Items.Add(create);
             menu.Items.Add(move);
             Add("Str_Lib_Note", () => EditNote(item));
+            Add("Str_Lib_CardColor", PickCardColor);
+            if (!CardColors.CardIsDefault) Add("Str_Lib_CardColorDefault", () => CardColors.SetCard(null));
             menu.Items.Add(new Separator());
             Add("Str_Lib_Delete", () => Delete(item), "Del");
             menu.IsOpen = true;
@@ -744,6 +759,21 @@ namespace KillerShot.Shell
                 if (dlg.ShowDialog() == true && dlg.Text.Trim().Length > 0) CaptureLibrary.RenameCollection(id, dlg.Text);
             };
             menu.Items.Add(rename);
+            var color = new MenuItem { Header = Loc("Str_Lib_CollectionColor") };
+            color.Click += (_, _) =>
+            {
+                var dlg = new ColorPickerDialog(OwnerWindow, CardColors.Collection(id) ?? Color.FromRgb(0x50, 0xAE, 0xE8));
+                dlg.ShowDialog();
+                if (dlg.Accepted) CardColors.SetCollection(id, dlg.SelectedColor);
+            };
+            menu.Items.Add(color);
+            if (CardColors.Collection(id) != null)
+            {
+                var clear = new MenuItem { Header = Loc("Str_Lib_CollectionColorNone") };
+                clear.Click += (_, _) => CardColors.SetCollection(id, null);
+                menu.Items.Add(clear);
+            }
+            menu.Items.Add(new Separator());
             var delete = new MenuItem { Header = Loc("Str_Lib_DeleteCollection") };
             delete.Click += (_, _) =>
             {
@@ -753,6 +783,14 @@ namespace KillerShot.Shell
                 if (dlg.Confirmed) CaptureLibrary.DeleteCollection(id);
             };
             menu.Items.Add(delete);
+        }
+
+        /// <summary>Picks the color of every card captures sit on.</summary>
+        internal void PickCardColor()
+        {
+            var dlg = new ColorPickerDialog(OwnerWindow, CardColors.Card);
+            dlg.ShowDialog();
+            if (dlg.Accepted) CardColors.SetCard(dlg.SelectedColor);
         }
 
         private void NewCollection(CaptureItem? moveIn)

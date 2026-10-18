@@ -62,18 +62,20 @@
             </Setter>
         </Style>
 
-        <!-- One thumbnail in the grid and the timeline. -->
+        <!-- One thumbnail in the grid and the timeline, on the card color (CardColors). A capture
+             in a collection with its own color gets a border in that color, set in code. -->
         <Style x:Key="LibTile" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource PaneBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CaptureCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource CaptureCardTextBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,12,12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="1" CornerRadius="{DynamicResource ControlCornerRadius}" Padding="5">
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}" Padding="5">
                             <Border.Effect>
                                 <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Direction="270" Opacity="{DynamicResource FlyoutShadowOpacity}"/>
                             </Border.Effect>

@@ -97,7 +97,17 @@ namespace KillerShot.Shell
             _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
             _list.SetResourceReference(ItemsControl.ItemContainerStyleProperty, "PickerRow");
 
-            _rolodex = new Rolodex { ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe };
+            _rolodex = new Rolodex
+            {
+                ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe,
+                CardColor = CardColors.Card, Accent = item => CardColors.Collection(item.CollectionId),
+            };
+            CardColors.Changed += () =>
+            {
+                _rolodex.CardColor = CardColors.Card;
+                _rolodex.Refresh();
+                _list.Items.Refresh();
+            };
             _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
             _rolodex.ItemActivated += item => Open(item);
 
@@ -303,19 +313,26 @@ namespace KillerShot.Shell
         private static string Loc(string key) => LocaleManager.Loc(key);
     }
 
-    /// <summary>One thumbnail in the strip's column, loaded off the interface thread when the
-    /// virtualized list shows it.</summary>
-    public sealed class StripThumb : StackPanel
+    /// <summary>One thumbnail in the strip's column, on a card in the card color with its
+    /// collection's color along the top, loaded off the interface thread when the virtualized list
+    /// shows it.</summary>
+    public sealed class StripThumb : Border
     {
         private readonly Image _image = new() { Stretch = Stretch.Uniform, Height = 110, HorizontalAlignment = HorizontalAlignment.Stretch };
-        private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 0) };
+        private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 5, 0, 0) };
 
         public StripThumb()
         {
             Margin = new Thickness(0, 2, 0, 6);
+            Padding = new Thickness(6, 6, 6, 5);
+            SetResourceReference(BackgroundProperty, "CaptureCardBrush");
+            SetResourceReference(CornerRadiusProperty, "ControlCornerRadius");
+            _caption.SetResourceReference(TextBlock.ForegroundProperty, "CaptureCardTextBrush");
             RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.HighQuality);
-            Children.Add(_image);
-            Children.Add(_caption);
+            var stack = new StackPanel();
+            stack.Children.Add(_image);
+            stack.Children.Add(_caption);
+            Child = stack;
             DataContextChanged += (_, _) => Load();
         }
 
@@ -323,6 +340,12 @@ namespace KillerShot.Shell
         {
             _image.Source = null;
             if (DataContext is not CaptureItem item) return;
+            if (CardColors.Collection(item.CollectionId) is Color own)
+            {
+                BorderBrush = new SolidColorBrush(own);
+                BorderThickness = new Thickness(0, 3, 0, 0);
+            }
+            else BorderThickness = new Thickness(0);
             _caption.Text = LibraryView.Title(item);
             AutomationProperties.SetName(this, LibraryView.Describe(item));
             ToolTip = LibraryView.Describe(item);
