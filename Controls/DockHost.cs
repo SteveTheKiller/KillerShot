@@ -106,7 +106,7 @@ namespace KillerFamily.Layout
             _splitter.KeyUp += (_, e) => { if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down) { RememberSize(); LayoutChanged?.Invoke(); } };
 
             // The collapse chevron, styled like the rail's other buttons, at the rail's start.
-            _toggle = new Button { FontSize = 12 };
+            _toggle = new Button { FontSize = 16 };
             _toggle.SetResourceReference(StyleProperty, "RailButton");
             _toggle.Click += (_, _) => { if (IsMinimized) Restore(); else Minimize(); };
         }
