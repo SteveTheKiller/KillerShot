@@ -210,6 +210,8 @@ namespace KillerShot.Services
             // About and Keyboard Shortcuts are window surfaces. Resolve this after accent merging
             // so the exact BackgroundBrush object (including gradients) is retained.
             newDict["OverlayWindowBrush"] = newDict["BackgroundBrush"];
+            // Resolve the frame after accent overlays so open dialogs follow theme changes.
+            newDict["DialogFrameBrush"] = theme == Theme.SE98 ? Brushes.Black : newDict["AppBorderBrush"];
             if (!newDict.Contains("WordmarkAccentShadowOpacity")) newDict["WordmarkAccentShadowOpacity"] = 0.0;
             // A palette can fill buttons with a deeper shade than its accent text (PrimaryFillBaseBrush).
             newDict["PrimaryFillBrush"] = ButtonFill(newDict.Contains("PrimaryFillBaseBrush") ? newDict["PrimaryFillBaseBrush"] : newDict["PrimaryBrush"], theme == Theme.SE98);

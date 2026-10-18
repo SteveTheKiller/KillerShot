@@ -936,8 +936,8 @@
 
                             <!-- LIST -->
                             <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False">
-                                <StackPanel x:Name="KsListHost"/>
+                                          HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False" Margin="0,0,-24,0">
+                                <StackPanel x:Name="KsListHost" Margin="0,0,24,0"/>
                             </ScrollViewer>
 
                             <!-- MAP -->
