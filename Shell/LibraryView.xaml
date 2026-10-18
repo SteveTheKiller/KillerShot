@@ -171,7 +171,7 @@
             <!-- Nothing captured yet, or nothing matches the search. -->
             <StackPanel x:Name="EmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
                 <TextBlock x:Name="EmptyTitle" Foreground="{DynamicResource TextBrush}"
-                           FontFamily="{DynamicResource BrandSansFont}" FontSize="22" HorizontalAlignment="Center"/>
+                           FontFamily="{DynamicResource WordmarkAccentFont}" FontSize="22" HorizontalAlignment="Center"/>
                 <TextBlock x:Name="EmptyHint" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
                            Margin="0,8,0,16" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420"/>
                 <Button x:Name="EmptyCaptureBtn" Content="{DynamicResource Str_Btn_CaptureRegion}" Style="{StaticResource OutlineButton}"
