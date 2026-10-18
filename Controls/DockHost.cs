@@ -12,7 +12,13 @@ namespace KillerFamily.Layout
 
     /// <summary>
     /// A body with one pane docked to any of its four sides. The pane is resized with a splitter
-    /// and can be minimized to a thin bar along its edge, from which one click brings it back.
+    /// and can be minimized; the rail's chevron folds it away and brings it back.
+    ///
+    /// The rail (the app's icon rail, set as <see cref="Rail"/>) sits on the pane's INNER edge,
+    /// the one facing the body, as KillerUI's SidebarSide lays out a sidebar: a column beside a
+    /// left or right pane, a row under a top pane or over a bottom one. It stays where it is when
+    /// the pane minimizes or hides, so its buttons never move under the pointer. The collapse
+    /// chevron is at the rail's start and the rail's own buttons at its far end.
     ///
     /// Keyboard, the same in every Killer Tools app that has a movable pane:
     /// Alt+Shift+Left, Up, Right or Down docks the pane to that side, and the arrow of the side it
@@ -51,8 +57,9 @@ namespace KillerFamily.Layout
 
         public double MinPaneSize { get; set; } = 110;
 
-        /// <summary>The thickness of the bar a minimized pane folds to.</summary>
-        public double MinimizedSize { get; set; } = 22;
+        /// <summary>The rail's thickness: its width beside a left or right pane, its height beside
+        /// a top or bottom one.</summary>
+        public double RailSize { get; set; } = 24;
 
         public double SplitterSize { get; set; } = 6;
 
@@ -62,9 +69,16 @@ namespace KillerFamily.Layout
         /// <summary>The main content, filling what the pane leaves.</summary>
         public UIElement? Body { get => _body; set { _body = value; Relayout(); } }
 
-        /// <summary>Tooltip and screen reader name of the bar's restore button. Apps pass their
-        /// localized string; the default is English.</summary>
-        public string RestoreText { get; set; } = "Show the panel";
+        /// <summary>The app's icon rail. A StackPanel turns to run along the rail, and each child's
+        /// margin turns with it, so a gap below a button becomes a gap to its right.</summary>
+        public UIElement? Rail { get => _rail; set { _rail = value; Relayout(); } }
+
+        /// <summary>Tooltip and screen reader name of the chevron while the pane is minimized. Apps
+        /// pass their localized string; the default is English.</summary>
+        public string RestoreText { get => _restoreText; set { _restoreText = value; UpdateToggle(); } }
+
+        /// <summary>Tooltip and screen reader name of the chevron while the pane is open.</summary>
+        public string CollapseText { get => _collapseText; set { _collapseText = value; UpdateToggle(); } }
 
         /// <summary>Screen reader name of the splitter.</summary>
         public string ResizeText { get; set; } = "Resize the panel";
@@ -77,10 +91,13 @@ namespace KillerFamily.Layout
 
         public bool IsHorizontal => Side is DockSide.Top or DockSide.Bottom;
 
-        private UIElement? _pane, _body;
+        private UIElement? _pane, _body, _rail;
         private readonly GridSplitter _splitter;
-        private readonly Border _bar;
-        private readonly Button _restore;
+        private readonly Grid _inner = new();
+        private readonly Grid _railGrid = new() { Background = Brushes.Transparent };
+        private readonly Button _toggle;
+        private bool _railAcross;   // the rail's children are laid out across (a top or bottom rail)
+        private string _restoreText = "Show the panel", _collapseText = "Minimize the panel";
 
         public DockHost()
         {
@@ -88,40 +105,10 @@ namespace KillerFamily.Layout
             _splitter.DragCompleted += (_, _) => { RememberSize(); LayoutChanged?.Invoke(); };
             _splitter.KeyUp += (_, e) => { if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down) { RememberSize(); LayoutChanged?.Invoke(); } };
 
-            _restore = new Button
-            {
-                FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 10,
-                Padding = new Thickness(0), BorderThickness = new Thickness(0), Background = Brushes.Transparent,
-                HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
-                Cursor = Cursors.Hand,
-            };
-            _restore.SetResourceReference(Control.ForegroundProperty, "MutedTextBrush");
-            _restore.Template = FlatButton();
-            _restore.Click += (_, _) => Restore();
-            _bar = new Border { Child = _restore, CornerRadius = new CornerRadius(4) };
-            _bar.SetResourceReference(Border.BackgroundProperty, "PaneBrush");
-        }
-
-        /// <summary>A bare button: the glyph on the bar, the row hover color under the pointer and
-        /// the accent when focused, so the bar looks the same in every theme.</summary>
-        private static ControlTemplate FlatButton()
-        {
-            var border = new FrameworkElementFactory(typeof(Border), "bd");
-            border.SetValue(Border.BackgroundProperty, Brushes.Transparent);
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
-            var content = new FrameworkElementFactory(typeof(ContentPresenter));
-            content.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            content.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
-            border.AppendChild(content);
-            var template = new ControlTemplate(typeof(Button)) { VisualTree = border };
-            var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-            hover.Setters.Add(new Setter(Border.BackgroundProperty, new DynamicResourceExtension("RowHoverBrush"), "bd"));
-            hover.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("PrimaryBrush")));
-            template.Triggers.Add(hover);
-            var focus = new Trigger { Property = UIElement.IsKeyboardFocusedProperty, Value = true };
-            focus.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("PrimaryBrush")));
-            template.Triggers.Add(focus);
-            return template;
+            // The collapse chevron, styled like the rail's other buttons, at the rail's start.
+            _toggle = new Button { FontSize = 12 };
+            _toggle.SetResourceReference(StyleProperty, "RailButton");
+            _toggle.Click += (_, _) => { if (IsMinimized) Restore(); else Minimize(); };
         }
 
         /// <summary>Alt+Shift+arrow: dock to that side, or minimize and restore on the side it is
@@ -179,32 +166,52 @@ namespace KillerFamily.Layout
             else if (pane.ActualWidth > 0) PaneWidth = pane.ActualWidth;
         }
 
-        /// <summary>Lays out the tracks for the current side and state: pane, splitter and body
-        /// in order from the docked edge, or the body alone.</summary>
+        /// <summary>Lays out the tracks for the current side and state: pane, splitter, then the
+        /// rail and body in order from the docked edge. A minimized or hidden pane leaves the rail
+        /// and body.</summary>
         private void Relayout()
         {
             Children.Clear();
             RowDefinitions.Clear();
             ColumnDefinitions.Clear();
+            _inner.Children.Clear();
+            _inner.RowDefinitions.Clear();
+            _inner.ColumnDefinitions.Clear();
+            _railGrid.Children.Clear();
             if (_body == null) return;
-            if (_pane == null || !ShowPane)
-            {
-                Children.Add(_body);
-                return;
-            }
 
             bool horizontal = IsHorizontal;
             bool atStart = Side is DockSide.Left or DockSide.Top;
-            UIElement first = IsMinimized ? _bar : _pane;
-            var paneTrack = IsMinimized
-                ? new GridLength(MinimizedSize)
-                : new GridLength(Math.Max(MinPaneSize, horizontal ? PaneHeight : PaneWidth));
+            bool paneOpen = _pane != null && ShowPane && !IsMinimized;
 
-            var tracks = new List<(GridLength Size, UIElement? Element, double Min)>
+            LayoutRail(horizontal);
+            // The rail and body share one track, so the splitter resizes the pane against both.
+            var inner = new List<(GridLength Size, UIElement Element)>
             {
-                (paneTrack, first, IsMinimized ? MinimizedSize : MinPaneSize),
-                (new GridLength(IsMinimized ? 4 : SplitterSize), IsMinimized ? null : _splitter, 0),
-                (new GridLength(1, GridUnitType.Star), _body, MinPaneSize),
+                (new GridLength(RailSize), _railGrid),
+                (new GridLength(1, GridUnitType.Star), _body),
+            };
+            if (!atStart) inner.Reverse();
+            for (int i = 0; i < inner.Count; i++)
+            {
+                if (horizontal) _inner.RowDefinitions.Add(new RowDefinition { Height = inner[i].Size });
+                else _inner.ColumnDefinitions.Add(new ColumnDefinition { Width = inner[i].Size });
+                if (horizontal) { SetRow(inner[i].Element, i); SetColumn(inner[i].Element, 0); }
+                else { SetColumn(inner[i].Element, i); SetRow(inner[i].Element, 0); }
+                _inner.Children.Add(inner[i].Element);
+            }
+
+            if (!paneOpen)
+            {
+                Children.Add(_inner);
+                return;
+            }
+
+            var tracks = new List<(GridLength Size, UIElement Element, double Min)>
+            {
+                (new GridLength(Math.Max(MinPaneSize, horizontal ? PaneHeight : PaneWidth)), _pane!, MinPaneSize),
+                (new GridLength(SplitterSize), _splitter, 0),
+                (new GridLength(1, GridUnitType.Star), _inner, MinPaneSize),
             };
             if (!atStart) tracks.Reverse();
 
@@ -213,9 +220,8 @@ namespace KillerFamily.Layout
                 var (size, element, min) = tracks[i];
                 if (horizontal) RowDefinitions.Add(new RowDefinition { Height = size, MinHeight = min });
                 else ColumnDefinitions.Add(new ColumnDefinition { Width = size, MinWidth = min });
-                if (element == null) continue;
-                if (horizontal) SetRow(element, i); else SetColumn(element, i);
-                if (horizontal) SetColumn(element, 0); else SetRow(element, 0);
+                if (horizontal) { SetRow(element, i); SetColumn(element, 0); }
+                else { SetColumn(element, i); SetRow(element, 0); }
                 Children.Add(element);
             }
 
@@ -224,15 +230,72 @@ namespace KillerFamily.Layout
             _splitter.VerticalAlignment = VerticalAlignment.Stretch;
             _splitter.Cursor = horizontal ? Cursors.SizeNS : Cursors.SizeWE;
             AutomationProperties.SetName(_splitter, ResizeText);
+        }
 
-            // The bar's chevron points into the window, the way the pane will come out.
-            _restore.Content = Side switch
+        /// <summary>Open, the chevron points at the edge the pane folds into; minimized, back out
+        /// of it. Its tooltip says which.</summary>
+        private void UpdateToggle()
+        {
+            if (_toggle == null) return;
+            bool open = !IsMinimized;
+            _toggle.Content = (Side, open) switch
             {
-                DockSide.Left => "", DockSide.Right => "",
-                DockSide.Top => "", _ => "",
+                (DockSide.Left, true) or (DockSide.Right, false) => "\uE76B",
+                (DockSide.Right, true) or (DockSide.Left, false) => "\uE76C",
+                (DockSide.Top, true) or (DockSide.Bottom, false) => "\uE70E",
+                _ => "\uE70D",
             };
-            _restore.ToolTip = RestoreText;
-            AutomationProperties.SetName(_restore, RestoreText);
+            string text = open ? _collapseText : _restoreText;
+            _toggle.ToolTip = text;
+            AutomationProperties.SetName(_toggle, text);
+        }
+
+        /// <summary>The rail for the current side: the chevron at its start, the app's buttons at its
+        /// far end, running down a column or across a row.</summary>
+        private void LayoutRail(bool across)
+        {
+            _railGrid.RowDefinitions.Clear();
+            _railGrid.ColumnDefinitions.Clear();
+            _railGrid.Margin = across ? new Thickness(6, 2, 6, 2) : new Thickness(2, 6, 2, 6);
+
+            _toggle.Visibility = _pane != null && ShowPane ? Visibility.Visible : Visibility.Collapsed;
+            UpdateToggle();
+
+            if (across)
+            {
+                _railGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                _railGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                _railGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            }
+            else
+            {
+                _railGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                _railGrid.RowDefinitions.Add(new RowDefinition());
+                _railGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
+            _toggle.HorizontalAlignment = HorizontalAlignment.Center;
+            _toggle.VerticalAlignment = VerticalAlignment.Center;
+            SetRow(_toggle, 0);
+            SetColumn(_toggle, 0);
+            _railGrid.Children.Add(_toggle);
+
+            if (_rail == null) return;
+            if (_rail is StackPanel stack)
+            {
+                stack.Orientation = across ? Orientation.Horizontal : Orientation.Vertical;
+                if (across != _railAcross)
+                    foreach (var child in stack.Children.OfType<FrameworkElement>())
+                        child.Margin = new Thickness(child.Margin.Top, child.Margin.Left, child.Margin.Bottom, child.Margin.Right);
+            }
+            _railAcross = across;
+            if (_rail is FrameworkElement fe)
+            {
+                fe.HorizontalAlignment = HorizontalAlignment.Center;
+                fe.VerticalAlignment = VerticalAlignment.Center;
+            }
+            if (across) { SetColumn(_rail, 2); SetRow(_rail, 0); }
+            else { SetRow(_rail, 2); SetColumn(_rail, 0); }
+            _railGrid.Children.Add(_rail);
         }
     }
 }

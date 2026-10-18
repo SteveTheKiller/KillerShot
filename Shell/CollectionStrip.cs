@@ -18,7 +18,7 @@ namespace KillerShot.Shell
     /// The collection strip: one collection of the library (or the Screenshots folder) beside the
     /// open picture, so the next one is a click or an arrow key away. Docked at the top or bottom
     /// it is a carousel; on the left or right it is a column of thumbnails. It lives in a
-    /// DockHost, which moves it between the sides and folds it to a bar.
+    /// DockHost, which moves it between the sides and folds it away behind the rail's chevron.
     /// </summary>
     internal sealed class CollectionStrip : Border
     {
@@ -28,7 +28,7 @@ namespace KillerShot.Shell
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-        private readonly Button _dockBtn, _minBtn;
+        private readonly Button _dockBtn;
         private readonly Grid _body = new();
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
@@ -58,12 +58,9 @@ namespace KillerShot.Shell
                 Load(keepCurrent: true);
             };
             _dockBtn = HeaderButton("", ShowDockMenu);
-            _minBtn = HeaderButton("", () => _host.Minimize());
 
             var header = new DockPanel { LastChildFill = true, Margin = new Thickness(0, 0, 0, 6) };
-            DockPanel.SetDock(_minBtn, Dock.Right);
             DockPanel.SetDock(_dockBtn, Dock.Right);
-            header.Children.Add(_minBtn);
             header.Children.Add(_dockBtn);
             header.Children.Add(_picker);
             header.Children.Add(_count);
@@ -135,11 +132,8 @@ namespace KillerShot.Shell
                 _body.Children.Add(_slider);
             }
             else _body.Children.Add(_list);
-            _minBtn.Content = _host.Side switch
-            {
-                DockSide.Left => "", DockSide.Right => "",
-                DockSide.Top => "", _ => "",
-            };
+            // A side column is too narrow for the count beside the picker; it would only show "...".
+            _count.Visibility = _host.IsHorizontal ? Visibility.Visible : Visibility.Collapsed;
             Sync();
         }
 
@@ -147,11 +141,10 @@ namespace KillerShot.Shell
         {
             _dockBtn.ToolTip = Loc("Str_Dock_Menu");
             AutomationProperties.SetName(_dockBtn, Loc("Str_Dock_Menu"));
-            _minBtn.ToolTip = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
-            AutomationProperties.SetName(_minBtn, Loc("Str_Dock_Minimize"));
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_list, Loc("Str_Strip_Collection"));
-            _host.RestoreText = Loc("Str_Dock_Restore");
+            _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
+            _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.ResizeText = Loc("Str_Dock_Resize");
             if (IsVisible) Load(keepCurrent: true);
         }
