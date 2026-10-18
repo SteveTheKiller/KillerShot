@@ -50,10 +50,9 @@ namespace KillerShot.Shell
         public CollectionStrip(DockHost host, Style sliderStyle)
         {
             _host = host;
-            SetResourceReference(BackgroundProperty, "ContentPaneBrush");
-            SetResourceReference(BorderBrushProperty, "PaneBorderBrush");
-            BorderThickness = new Thickness(1);
-            SetResourceReference(CornerRadiusProperty, "PanelCornerRadius");
+            // No pane of its own: the strip sits on the window's own background and grain, as
+            // KillerPDF's sidebar does, so its cards are the only surface in it.
+            Background = Brushes.Transparent;
             Padding = new Thickness(8, 6, 8, 6);
             SetResourceReference(MarginProperty, "ContentPaneMargin");
             Focusable = false;
@@ -100,11 +99,11 @@ namespace KillerShot.Shell
             _rolodex = new Rolodex
             {
                 ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe,
-                CardColor = CardColors.Card, Accent = item => CardColors.Collection(item.CollectionId),
+                CardColor = CardColors.StripCard(), Accent = item => CardColors.Collection(item.CollectionId),
             };
             CardColors.Changed += () =>
             {
-                _rolodex.CardColor = CardColors.Card;
+                _rolodex.CardColor = CardColors.StripCard();
                 _rolodex.Refresh();
                 _list.Items.Refresh();
             };
@@ -254,6 +253,7 @@ namespace KillerShot.Shell
                 _count.Text = string.Format(CultureInfo.CurrentCulture, Loc(_items.Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), _items.Count);
                 _flow.Items = _items;
                 _list.ItemsSource = _items;
+                _rolodex.CardColor = CardColors.StripCard();   // follows a theme change too
                 _rolodex.Items = _items;
                 Sync();
             }
@@ -325,9 +325,12 @@ namespace KillerShot.Shell
         {
             Margin = new Thickness(0, 2, 0, 6);
             Padding = new Thickness(6, 6, 6, 5);
-            SetResourceReference(BackgroundProperty, "CaptureCardBrush");
+            // The theme's pane gray until a card color is picked: the strip has the window's dark
+            // background behind it, so gray cards stand out there.
+            bool own = !CardColors.CardIsDefault;
+            SetResourceReference(BackgroundProperty, own ? "CaptureCardBrush" : "ContentPaneBrush");
             SetResourceReference(CornerRadiusProperty, "ControlCornerRadius");
-            _caption.SetResourceReference(TextBlock.ForegroundProperty, "CaptureCardTextBrush");
+            _caption.SetResourceReference(TextBlock.ForegroundProperty, own ? "CaptureCardTextBrush" : "TextBrush");
             RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.HighQuality);
             var stack = new StackPanel();
             stack.Children.Add(_image);
