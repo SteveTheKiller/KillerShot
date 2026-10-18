@@ -36,3 +36,4 @@
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - Menu separators draw their divider line instead of leaving an empty gap.
 - The empty-library heading uses Lacquer.
+- Restored film grain on the file picker sidebar.

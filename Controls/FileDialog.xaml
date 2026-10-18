@@ -212,10 +212,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- NOT a raised pane, deliberately (2026-07-30): KillerShell's sidebar
-                     sits flat on the chrome background, and this one matches - only the file
-                     LIST is the lifted card. No fill, no shadow, no grain of its own; the
-                     dialog card's shared grain shows through.
+                <!-- The places pane needs grain above its opaque fill, using the same
+                     texture and opacity as the rest of the dialog.
 
                      KillerShell's own arrangement, not Explorer's: the tree fills the panel and
                      the pinned places sit BELOW it, the same slot its favorites drawer occupies,
@@ -228,7 +226,10 @@
                     </Grid.RowDefinitions>
                     <Border Grid.Row="2" Background="{DynamicResource PaneBrush}"
                             BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1"
-                            CornerRadius="{DynamicResource PanelCornerRadius}"/>
+                            CornerRadius="{DynamicResource PanelCornerRadius}">
+                        <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"
+                                CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False"/>
+                    </Border>
                     <ListBox x:Name="PlacesList" Grid.Row="2" Background="Transparent" BorderThickness="0" Padding="2,4"
                              ItemContainerStyle="{StaticResource PickerPlaceRow}" SelectionChanged="Places_SelectionChanged"
                              ContextMenuOpening="Places_ContextMenuOpening"
