@@ -1,7 +1,7 @@
 # Changelog
 
 ## [0.1.0] - Unreleased
-- Icon-only buttons give screen readers the name from their tooltip, and controls reached with the keyboard show a thin solid focus ring in the theme accent. Keyboard focus moves into the shortcuts, About and settings cards when they open, stays there until they close, and then returns. Tab skips hidden links.
+- Icon-only buttons give screen readers the name from their tooltip, and controls reached with the keyboard show a thin solid focus ring in the theme accent. Keyboard focus moves into the shortcuts, About and settings cards when they open, stays there until they close, and then returns. Tab skips hidden links. Empty text and the hidden parts of scroll bars no longer read as items on screen.
 
 - Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
 - Added region capture over a frozen copy of the desktop on every monitor, so menus and tooltips stay in the picture. Escape or a right-click cancels with nothing copied.
