@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.1.0] - Unreleased
+- The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.
 - QR and image-text links now use a private local scanner for hidden destinations, encoded download names and disguised executable extensions. Invisible address characters block opening. Result cards explain each finding and state that the destination was not visited; links are never submitted to a third party.
 - Added the capture library: every capture is kept in one encrypted file (SQLCipher, AES-256) that opens with your Windows account, or with a password set in Capture settings. With no image open the window shows it as shelves of carousels, one big carousel, a grid or a timeline, by date or by collection, with search across window titles, program names, notes and the text in each picture. Ctrl+L shows it over an open image. Captures can be moved into collections, noted, copied, saved as files or deleted, and Keep captures limits the history by count or age. The old Recent folder is imported into it on first start.
 - Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.

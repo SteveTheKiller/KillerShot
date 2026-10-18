@@ -149,6 +149,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <a href="#getting-started" class="on" data-i18n="help_start">Getting started</a>
 <a href="#modes" data-i18n="h_modes">Capture modes</a>
 <a href="#after" data-i18n="h_after">After a capture</a>
+<a href="#album" data-i18n="h_album_nav">Encrypted album</a>
 <a href="#editor" data-i18n="h_editor">Editor</a>
 <a href="#recording" data-i18n="h_recording">Recording</a>
 <a href="#command-line" data-i18n="h_cli">Command line</a>
@@ -162,7 +163,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <section class="help-hero">
 <span class="page-title" data-i18n="hp_1">How to use</span>
 <img class="help-wm wm-logo" src="brand/killershot-logo-black-teal.svg" alt="KillerShot">
-<p data-i18n="hp_2">Every capture mode, the editor, recording and the command line, and how to drive them.</p>
+<p data-i18n="hp_2">Build your encrypted screenshot album, find a picture again, and use capture, editing, recording and the command line.</p>
 <p class="legend" data-i18n="hp_3">Rows show their keyboard shortcut on the right. Click a row to open it. For how capturing works underneath, see the <a href="technical.html">Technical</a> page.</p>
 </section>
 
@@ -199,10 +200,11 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <p data-i18n="h_names_1">Saved captures are named from a pattern. The default is <code>KillerShot {yyyy}-{MM}-{dd} {HH}{mm}{ss}</code>. The placeholders are <code>{yyyy}</code>, <code>{MM}</code>, <code>{dd}</code>, <code>{HH}</code>, <code>{mm}</code>, <code>{ss}</code>, <code>{mode}</code>, <code>{width}</code> and <code>{height}</code>. A name that is already taken gets <code>(2)</code>, <code>(3)</code> and so on, so a capture never replaces an earlier one.</p>
 <p data-i18n="h_names_2">Choose PNG or JPEG. JPEG has a quality setting. PNG keeps every pixel exactly.</p>
 </div></div></div>
-<div class="acc-item"><button class="acc-head"><span data-i18n="h_recent_t">The capture library</span><span class="kbd">Ctrl + L</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<div class="acc-item" id="album"><button class="acc-head"><span data-i18n="h_recent_t">Your encrypted screenshot album</span><span class="kbd">Ctrl + L</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_recent_1">KillerShot keeps every capture in an encrypted library, <code>%LOCALAPPDATA%\KillerShot\Library.kshot</code>, so a capture you copied over on the clipboard can still be found. With no image open the window shows the library; <b>Ctrl+L</b> shows it over an open image and back. The <b>Recent</b> button lists the latest captures.</p>
 <p data-i18n="h_recent_2">Choose <b>Shelves</b> for a row of carousels per collection or day, <b>Carousel</b> for one large one, <b>Grid</b> or <b>Timeline</b>, and group by date or by collection. <b>Ctrl+F</b> searches window titles, program names, notes, collection names and the text inside each picture, which Windows reads in the background. Right-click a capture to open, copy, save it as a file, move it to a collection, add a note or delete it.</p>
-<p data-i18n="h_recent_3">The library is encrypted with SQLCipher (AES-256). Its key is sealed to your Windows account, so it opens without a prompt for you and for no one else. Set a password in the <b>Library</b> section of Capture settings to make it open only with that password; there is no way to recover a forgotten one. <b>Keep captures</b> keeps everything, or only the last 100 to 5,000 captures or the last 30 to 365 days.</p>
+<p data-i18n="h_recent_3">The album is encrypted with SQLCipher (AES-256), including its thumbnails, notes, recognized text and search index. By default, Windows protects the key with your account and KillerShot opens the album without a prompt. To require a password when opening it, open <b>Capture settings</b>, find <b>Library</b>, and set a password. Keep that password safe: KillerShot cannot recover it. <b>Keep captures</b> keeps everything, or only the last 100 to 5,000 captures or the last 30 to 365 days.</p>
+<p data-i18n="h_album_scope">Encryption covers the album on disk. Saved or exported PNGs and JPEGs and MP4 or GIF recordings are ordinary files outside it. Clipboard copies follow Windows clipboard history and sync settings. Screenshots taken while the album is locked wait in memory until you unlock it; quit before unlocking and those pending album copies are lost.</p>
 <p data-i18n="h_recent_4">Windows' <b>Screenshots</b> folder shows as the first collection when you group by collection. It is read live from the files, so pictures saved there by Windows or by KillerShot appear as they arrive; it is not copied into the encrypted library unless you choose <b>Add to the library</b>. Turn it off in the Library section of Capture settings.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_strip_t">The collection strip</span><span class="kbd">Alt + Shift + arrows</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">

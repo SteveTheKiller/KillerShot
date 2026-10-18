@@ -144,7 +144,7 @@
 </div>
 <div class="tech-sec" id="album">
 <h2 data-i18n="t_album">The encrypted album</h2>
-<p data-i18n="t_album_1">The album is one SQLCipher database, <code>Library.kshot</code> in <code>%LOCALAPPDATA%\KillerShot</code>. Every page of the file is encrypted, so the pictures, the thumbnails, the window titles, the notes, the text read from each picture and the search index are all inside the encryption, and nothing in the file is readable without the key.</p>
+<p data-i18n="t_album_1">The album is one SQLCipher database, <code>Library.kshot</code> in <code>%LOCALAPPDATA%\KillerShot</code>. Its pictures, thumbnails, window titles, notes, recognized text, QR results and search index are stored in encrypted database pages. Reading that content requires the key; the file's salt is stored unencrypted so SQLCipher can derive the key from a password.</p>
 <figure class="diagram">
 <svg viewBox="0 0 620 712" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="How the album is keyed and what it holds">
 <defs>
@@ -193,12 +193,12 @@
 <text x="465" y="679" text-anchor="middle" font-size="12.5" fill="var(--muted)">its text, read on this PC</text>
 </g>
 </svg>
-<figcaption data-i18n="t_album_fig">The album, end to end: one key opens it, either a random key sealed to your Windows account or your password, and every page of the one file is encrypted, so the pictures, the recognized text and the search index never sit on disk in the clear.<span class="zoom-hint">Click the diagram to enlarge.</span></figcaption>
+<figcaption data-i18n="t_album_fig">Encryption at rest: the album's pictures, recognized text and search index are encrypted together. A random key protected by your Windows account or a key derived from your password opens the database. Exports and clipboard copies are separate.<span class="zoom-hint">Click the diagram to enlarge.</span></figcaption>
 </figure>
-<p data-i18n="t_album_2"><b>The key.</b> By default the album is keyed with a random 256-bit key from the system's cryptographic random number generator. KillerShot hands it to SQLCipher in raw-key form, which skips password stretching because the key is already full strength, and seals it with Windows DPAPI to your account in <code>Library.key</code>, with an entropy value of its own. It opens without a prompt for you. Other accounts on the PC cannot unseal it, and neither can a copy of the files on another PC.</p>
+<p data-i18n="t_album_2"><b>The key.</b> By default the album uses a random 256-bit key from the system's cryptographic random number generator. KillerShot hands it to SQLCipher in raw-key form and protects it with Windows DPAPI in <code>Library.key</code>, scoped to the current Windows user with app-specific entropy. This lets KillerShot open it without a prompt under that account. It does not protect an open album from software running as that user.</p>
 <p data-i18n="t_album_5"><b>A password.</b> Setting a password rewrites the album under the password and deletes <code>Library.key</code>, so only the password opens it. SQLCipher stretches the password with PBKDF2-HMAC-SHA512 over 256,000 rounds, with a random salt kept at the start of the file. Removing the password rewrites the album again under a fresh random key sealed to your account. A forgotten password cannot be recovered, and the password check compares in constant time.</p>
 <p data-i18n="t_album_6"><b>The cipher.</b> SQLCipher encrypts each 4 KB page with AES-256 in CBC mode under its own random IV and signs it with HMAC-SHA512, so a changed or damaged page is refused instead of being read as garbage. The native library is built from the upstream SQLCipher 4.18.0 source with LibTomCrypt, embedded in KillerShot.exe and code signed.</p>
-<p data-i18n="t_album_7"><b>Rekeying.</b> A password change never uses <code>PRAGMA rekey</code>. The album is exported to a new file under the new key with <code>sqlcipher_export</code>, the connection pool is cleared, and only then does the new file replace the old one, so an interrupted change leaves the original album as it was.</p>
+<p data-i18n="t_album_7"><b>Rekeying.</b> A password change uses <code>sqlcipher_export</code> to write a new encrypted database under the new key. KillerShot closes the connections and clears the pool before replacing the old file, then updates or removes <code>Library.key</code> and reopens the album. This avoids changing the active database in place with <code>PRAGMA rekey</code>.</p>
 </div>
 <div class="tech-sec" id="pipeline">
 <h2 data-i18n="t_pipe">The capture pipeline</h2>
@@ -215,14 +215,15 @@
 <div class="tech-column">
 <div class="tech-sec" id="model">
 <h2 data-i18n="t_model">The data model</h2>
-<p data-i18n="t_model_1">Four tables live inside the encrypted file. Times are stored in UTC and shown in local time.</p>
+<p data-i18n="t_model_1">The album stores capture data, collections, QR results, search data and schema metadata inside the encrypted database. Times are stored in UTC and shown in local time.</p>
 <table class="spec-table"><tr><th data-i18n="t_table">Table</th><th data-i18n="t_holds">What it holds</th></tr>
 <tr><td><code>captures</code></td><td data-i18n="t_model_cap">One row per capture: when it was taken, its width and height in pixels, the capture mode, the window title and program it came from, its collection, a note, the text Windows read from it, a JPEG thumbnail no larger than 512 pixels on its long side, and the full picture as a lossless PNG</td></tr>
 <tr><td><code>collections</code></td><td data-i18n="t_model_col">Each collection's name and when it was made. Deleting a collection keeps its captures and leaves them in no collection</td></tr>
+<tr><td><code>capture_qr</code></td><td data-i18n="t_model_qr">Decoded QR results for each capture, including their text and positions in the picture</td></tr>
 <tr><td><code>capture_search</code></td><td data-i18n="t_model_fts">An FTS5 full-text index with one row per capture, keyed by the capture's id: the window title, the program, the note, the text read from the picture and the collection name</td></tr>
 <tr><td><code>meta</code></td><td data-i18n="t_model_meta">Key and value pairs, holding the schema version</td></tr>
 </table>
-<p data-i18n="t_model_2">One connection serves the whole app, and every read and write holds its lock. A capture's search row is rewritten together with the capture, and the history limit removes search rows and captures in the same batch, so the index never points at a capture that is gone. Card and collection colors are display settings and live in <code>settings.json</code>, not in the album.</p>
+<p data-i18n="t_model_2">One shared connection serves the app, with database operations guarded by a lock. Capture changes update the search index, and history pruning removes associated search and QR rows. Card and collection colors are display settings and live in <code>settings.json</code>, outside the encrypted album.</p>
 </div>
 <div class="tech-sec" id="search">
 <h2 data-i18n="t_search">Search and the text in pictures</h2>
@@ -264,7 +265,7 @@
 <div class="tech-sec" id="privacy">
 <h2 data-i18n="t_privacy">Privacy &amp; footprint</h2>
 <p data-i18n="t_privacy_1">KillerShot has no account, no analytics and no update check. It makes no network connections on its own. The release notes link on the About card opens the GitHub releases page in your browser.</p>
-<p data-i18n="t_privacy_2">The clipboard is the point of the app, so captures follow your Windows clipboard settings, including clipboard history and sync if you turned them on. Captures are written to disk only in the encrypted library and the folders you choose.</p>
+<p data-i18n="t_privacy_2">Encryption protects the album at rest, including its image data, metadata and search index. PNG and JPEG exports and MP4 and GIF recordings are ordinary files outside it. The live Windows Screenshots collection reads existing files without encrypting them; adding one to the album does not encrypt or remove the original. Clipboard copies follow Windows clipboard history and sync settings, which can send a copy to other devices if enabled.</p>
 </div>
 </div>
 </div>

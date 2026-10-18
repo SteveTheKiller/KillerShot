@@ -107,7 +107,7 @@ html[data-theme="light"] .also-wm.light { display: block; }
 <section class="page-hero">
 <span class="page-title" data-i18n="about_kicker">About</span>
 <img class="wm-logo" src="brand/killershot-logo-black-teal.svg" alt="KillerShot">
-<p data-i18n="about_sub">The story behind the screenshot tool, and the field tech who built it.</p>
+<p data-i18n="about_sub">The story behind the encrypted screenshot album, and the field tech who built it.</p>
 </section>
 
 <div class="about-card" id="maker">
@@ -115,12 +115,13 @@ html[data-theme="light"] .also-wm.light { display: block; }
 <p class="about-quote" data-i18n="maker_q">"Half of every ticket is a picture of something on a screen. I wanted Print Screen to just do the right thing, and to leave nothing I did not ask for behind."</p>
 <p data-i18n="maker_p1">I'm <b>Steve the Killer</b>. Six years as a full-stack developer, eight years as a field technician across several companies, and now I work on an MSP's internal AI engineering team, so building the tool I need comes as naturally to me as fixing the problem in front of me.</p>
 <p data-i18n="ak_1">A tech's day runs on screenshots: the error a user swears they saw, the setting that has to change, the step a client needs to follow. My frustration with Snipping Tool came down to delay and control.</p>
-<p data-i18n="maker_p2">I wanted something secure, organized and lightning fast, so I built KillerShot. It takes the picture the moment the key is pressed, keeps every capture in an encrypted album sorted into collections, and keeps markup, redaction and recording one shortcut away.</p>
+<p data-i18n="maker_p2">I wanted a screenshot album I could keep private and actually search, so I built KillerShot. It keeps screenshots in an encrypted album on my PC, sorted into collections, with notes and search through the text in each picture. Capture, markup, redaction and recording are built into the same app.</p>
 </div>
 
 <div class="about-card" id="app">
 <h2 data-i18n="app_h">The app</h2>
-<p data-i18n="app_p1"><b>KillerShot</b> is a native Windows screenshot and screen recording tool. It lives in the notification area, answers Print Screen, and opens an editor when you want one. No account, no subscription, no ads and no telemetry.</p>
+<p data-i18n="app_p1"><b>KillerShot</b> is an encrypted screenshot album for Windows, with capture, editing and screen recording built in. Print Screen adds screenshots to a local SQLCipher database protected with AES-256. Collections and notes keep them organized, and local text recognition helps you find a picture by a word inside it. No cloud account, subscription, ads or telemetry.</p>
+<p data-i18n="app_album_scope">The album's pictures, thumbnails, notes and search index are encrypted together. Windows protects its key with your account by default, or you can set an album password. Files you export, recordings and clipboard copies sit outside that protection. The <a href="help.html#after">guide</a> explains the settings and the <a href="technical.html#album">Technical</a> page explains the encryption.</p>
 <p data-i18n="app_p2">It is part of the Killer Tools family, so it shares their themes, window chrome, keyboard conventions and languages, and it works with KillerMCP so an AI agent can take a screenshot for you. KillerShot is free software under the <b>GPL-3.0</b> license.</p>
 <p data-i18n="app_p3">KillerShot is still in development, and public downloads are not available yet. Suggestions are welcome on the <a href="https://github.com/SteveTheKiller/KillerShot/issues" target="_blank" rel="noopener">GitHub issues</a> page once the repository opens. For the deep technical details, see the <a href="technical.html">Technical</a> page.</p>
 </div>
