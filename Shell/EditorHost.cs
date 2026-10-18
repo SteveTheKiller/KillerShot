@@ -43,6 +43,7 @@ namespace KillerShot.Shell
 
         private void InitEditor()
         {
+            InitEditorContextMenu();
             if (int.TryParse(Settings.Get("ColorIndex"), out int ci) && ci >= 0 && ci < Palette.Length) Editor.Color = Palette[ci].Color;
             if (double.TryParse(Settings.Get("StrokeWidth"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sw)) Editor.StrokeWidth = sw;
             if (double.TryParse(Settings.Get("TextSize"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ts)) Editor.TextSize = ts;

@@ -467,7 +467,7 @@ internal sealed class Rolodex : FrameworkElement
         if (_items.Count == 0) return;
         bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
         if (e.Key is Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End or Key.Enter or Key.Apps
-            || e.Key == Key.System && e.SystemKey == Key.F10 && shift) _motion.Interrupt();
+            || shift && (e.Key == Key.F10 || e.Key == Key.System && e.SystemKey == Key.F10)) _motion.Interrupt();
         switch (e.Key)
         {
             case Key.Up: SelectedIndex--; break;
@@ -478,6 +478,7 @@ internal sealed class Rolodex : FrameworkElement
             case Key.End: SelectedIndex = _items.Count - 1; break;
             case Key.Enter when SelectedItem != null: ItemActivated?.Invoke(SelectedItem); break;
             case Key.Apps when SelectedItem != null:
+            case Key.F10 when shift && SelectedItem != null:
             case Key.System when e.SystemKey == Key.F10 && shift && SelectedItem != null:
                 ItemMenuRequested?.Invoke(SelectedItem!, this);
                 break;

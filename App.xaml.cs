@@ -57,6 +57,7 @@ public partial class App : Application
         if (SelfTestQr.TryRun(e.Args)) return;
         if (SelfTestQrUi.TryRun(e.Args)) return;
         if (SelfTestCarousel.TryRun(e.Args)) return;
+        if (SelfTestImageMenus.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
         bool demo = DemoMode.TryEnter(e.Args);

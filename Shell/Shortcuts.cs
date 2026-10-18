@@ -112,7 +112,7 @@ namespace KillerShot.Shell
             }
 
             // Tool keys belong to the editor, not to the library over it.
-            if (alt || TypingInField() || Editor.IsEditingText || Library.IsVisible) return;
+            if (alt || TypingInField() || Editor.IsEditingText || Library.IsVisible || _strip?.IsKeyboardFocusWithin == true) return;
 
             double step = shift ? 10 : 1;
             switch (e.Key)

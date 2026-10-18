@@ -312,7 +312,7 @@ namespace KillerShot.Shell
         private FrameworkElement ToolbarUnitIcon(string id)
         {
             ToolbarUnit unit = _toolbarUnits.First(u => u.Id == id);
-            FrameworkElement icon = DrawnIcon(unit.Main) is { } drawn ? drawn(14) : new TextBlock
+            FrameworkElement icon = DrawnIcon(unit.Main) is { } drawn ? drawn(14) : new KillerFamily.Accessibility.Glyph
             {
                 Text = ((char)unit.Glyph).ToString(),
                 FontFamily = MdlFont,

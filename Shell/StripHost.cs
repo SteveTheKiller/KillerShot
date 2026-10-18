@@ -20,6 +20,7 @@ namespace KillerShot.Shell
             StripDock.PaneHeight = double.TryParse(Settings.Get("StripHeight"), NumberStyles.Float, CultureInfo.InvariantCulture, out double h) ? h : 230;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));
             _strip.OpenRequested += OpenFromStrip;
+            _strip.ItemMenuRequested += (item, anchor) => Library.ShowItemMenu(item, anchor, OpenFromStrip, "");
             StripDock.Pane = _strip;
             StripDock.LayoutChanged += () =>
             {

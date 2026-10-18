@@ -24,6 +24,7 @@ namespace KillerShot.Shell
     {
         /// <summary>A picture was chosen in the strip and should open in the editor.</summary>
         public event Action<CaptureItem>? OpenRequested;
+        public event Action<CaptureItem, FrameworkElement>? ItemMenuRequested;
 
         /// <summary>The side view changed between the thumbnail list and the rolodex.</summary>
         public event Action? SideViewChanged;
@@ -78,6 +79,7 @@ namespace KillerShot.Shell
             _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.LoadThumb, Describe = LibraryView.Describe, ViewHeight = 1.2 };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
+            _flow.ItemMenuRequested += ShowItemMenu;
             // The slider runs along the strip's bottom edge and hangs a little over it (past the 6 px
             // padding and the border), so the carousel keeps the height.
             _slider = new Slider { Style = sliderStyle, Minimum = 0, Focusable = false, IsTabStop = false, Margin = new Thickness(40, 0, 40, -14) };
@@ -97,6 +99,20 @@ namespace KillerShot.Shell
             VirtualizingPanel.SetVirtualizationMode(_list, VirtualizationMode.Recycling);
             _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
             _list.SetResourceReference(ItemsControl.ItemContainerStyleProperty, "PickerRow");
+            _list.MouseRightButtonUp += (_, e) =>
+            {
+                if (e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(_list, source) is not ListBoxItem { DataContext: CaptureItem item } row) return;
+                ShowItemMenu(item, row);
+                e.Handled = true;
+            };
+            _list.KeyDown += (_, e) =>
+            {
+                bool contextKey = e.Key == Key.Apps || (Keyboard.Modifiers & ModifierKeys.Shift) != 0
+                    && (e.Key == Key.F10 || e.Key == Key.System && e.SystemKey == Key.F10);
+                if (!contextKey || _list.SelectedItem is not CaptureItem item) return;
+                ShowItemMenu(item, _list.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement ?? _list);
+                e.Handled = true;
+            };
 
             _rolodex = new Rolodex
             {
@@ -113,6 +129,7 @@ namespace KillerShot.Shell
             _rolodex.ZoomChanged += () => Settings.Set("RolodexZoom", _rolodex.Zoom.ToString("0.###", CultureInfo.InvariantCulture));
             _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
             _rolodex.ItemActivated += item => Open(item);
+            _rolodex.ItemMenuRequested += ShowItemMenu;
 
             _openDelay.Tick += (_, _) =>
             {
@@ -318,6 +335,12 @@ namespace KillerShot.Shell
             _openDelay.Stop();
             _openDelay.Tag = item;
             _openDelay.Start();
+        }
+
+        private void ShowItemMenu(CaptureItem item, FrameworkElement anchor)
+        {
+            _openDelay.Stop();
+            ItemMenuRequested?.Invoke(item, anchor);
         }
 
         private void Open(CaptureItem item)

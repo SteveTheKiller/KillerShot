@@ -710,6 +710,9 @@ namespace KillerShot.Shell
         private Window? OwnerWindow => Window.GetWindow(this);
 
         private void ShowItemMenu(CaptureItem item, FrameworkElement anchor)
+            => ShowItemMenu(item, anchor, OpenRequested, "Del");
+
+        internal void ShowItemMenu(CaptureItem item, FrameworkElement anchor, Action<CaptureItem>? open, string deleteGesture)
         {
             var menu = new ContextMenu { PlacementTarget = anchor };
             if (Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver)
@@ -721,7 +724,7 @@ namespace KillerShot.Shell
                 menu.Items.Add(mi);
                 return mi;
             }
-            Add("Str_Lib_Open", () => OpenRequested?.Invoke(item)).FontWeight = FontWeights.SemiBold;
+            Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
             Add("Str_Lib_Copy", () => Copy(item));
             if (FolderCaptures.IsFolderId(item.Id))
             {
@@ -741,7 +744,7 @@ namespace KillerShot.Shell
             var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
             none.Click += (_, _) => CaptureLibrary.Move([item.Id], null);
             move.Items.Add(none);
-            foreach (var c in _collections)
+            foreach (var c in CaptureLibrary.Collections())
             {
                 var target = c;
                 var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
@@ -757,7 +760,7 @@ namespace KillerShot.Shell
             Add("Str_Lib_CardColor", PickCardColor);
             if (!CardColors.CardIsDefault) Add("Str_Lib_CardColorDefault", () => CardColors.SetCard(null));
             menu.Items.Add(new Separator());
-            Add("Str_Lib_Delete", () => Delete(item), "Del");
+            Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
             menu.IsOpen = true;
             Anim.FadeIn(menu);
         }

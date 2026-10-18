@@ -6,6 +6,7 @@
 - Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.
 - Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.
 - Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
+- Right-click an open image for Copy, Save, Print, Undo, Redo, annotation tools and zoom. Pictures in every collection-strip view now have the album menu for exporting, collections, notes, card color and deletion.
 - Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
 - Added region capture over a frozen copy of the desktop on every monitor, so menus and tooltips stay in the picture. Escape or a right-click cancels with nothing copied.
 - Added window capture through Windows Graphics Capture, including covered windows, with rounded corners filled from the desktop behind them.
