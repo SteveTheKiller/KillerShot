@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Neobvykle mnoho úrovní subdomén.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Zkrácený odkaz. Cíl se nerozbaluje.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Odkaz pro přímé stažení.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Nebyly nalezeny žádné problémy</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Před otevřením zkontrolujte</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Otevření zablokováno</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Pouze místní kontroly. Cíl nebyl navštíven.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Obsahuje další webový cíl. Přesměrování nebyla sledována.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Skryté znaky mohou tuto adresu maskovat.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Přípona spustitelného souboru je skrytá před jinou příponou.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Kopírovat heslo</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Přečíst QR kód</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Odkazy v textu obrázku</sys:String>

@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Nietypowo wiele poziomów subdomen.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Skrócone łącze. Cel nie jest rozwijany.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Łącze do bezpośredniego pobrania.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Nie znaleziono problemów</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Sprawdź przed otwarciem</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Otwieranie zablokowane</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Tylko kontrole lokalne. Cel nie został odwiedzony.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Zawiera inny adres docelowy. Przekierowania nie były śledzone.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Ukryte znaki mogą maskować ten adres.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Rozszerzenie pliku wykonywalnego jest ukryte przed innym rozszerzeniem.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Kopiuj hasło</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Odczytaj kod QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Łącza w tekście obrazu</sys:String>

@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">子域名层级异常深。</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">短链接。不会展开目标地址。</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接下载链接。</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">未发现问题</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">打开前请检查</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">已阻止打开</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">仅进行本地检查。未访问目标地址。</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">包含另一个网页地址。未跟踪重定向。</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">隐藏字符可能伪装此地址。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">可执行文件扩展名隐藏在另一个扩展名之前。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">复制密码</sys:String>
     <sys:String x:Key="Str_Mode_Qr">读取二维码</sys:String>
     <sys:String x:Key="Str_Ocr_Links">图片文字中的链接</sys:String>

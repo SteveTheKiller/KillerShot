@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">サブドメインの階層が通常より深くなっています。</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">短縮リンクです。転送先は展開していません。</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接ダウンロードするリンクです。</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">問題は見つかりませんでした</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">開く前に確認してください</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">開く操作をブロックしました</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">ローカル検査のみです。リンク先にはアクセスしていません。</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">別のウェブアドレスが含まれています。リダイレクトは追跡していません。</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">非表示の文字でアドレスが偽装されている可能性があります。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">実行可能な拡張子が別の拡張子の前に隠れています。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">パスワードをコピー</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR コードを読み取る</sys:String>
     <sys:String x:Key="Str_Ocr_Links">画像内のテキストのリンク</sys:String>

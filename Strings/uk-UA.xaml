@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Незвично багато рівнів піддоменів.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Скорочене посилання. Адреса призначення не розкривається.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Пряме посилання на завантаження.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Проблем не знайдено</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Перевірте перед відкриттям</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Відкриття заблоковано</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Лише локальні перевірки. Перехід за адресою не виконувався.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Містить іншу вебадресу. Перенаправлення не відстежувалися.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Приховані символи можуть маскувати цю адресу.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Виконуване розширення приховано перед іншим розширенням.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Копіювати пароль</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Прочитати QR-код</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Посилання в тексті зображення</sys:String>

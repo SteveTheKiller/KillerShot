@@ -88,6 +88,9 @@ internal static class SelfTestQrUi
                 if (!Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrCopy")
                     || !Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrOpen"))
                     throw new InvalidOperationException("An allowed web result needs Copy and Open.");
+                if (!TextBlocks(card).Any(t => t.Text == "No issues found")
+                    || !TextBlocks(card).Any(t => t.Text == "Local checks only. The destination was not visited."))
+                    throw new InvalidOperationException("A web result must state its local scanner result and limits.");
                 card.RenderTransform = new TranslateTransform(12, 12);
                 var cardImage = new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth) + 24, (int)Math.Ceiling(card.ActualHeight) + 24, 96, 96, PixelFormats.Pbgra32);
                 cardImage.Render(card);
@@ -117,6 +120,25 @@ internal static class SelfTestQrUi
                 var detailImage = new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth), (int)Math.Ceiling(card.ActualHeight), 96, 96, PixelFormats.Pbgra32);
                 detailImage.Render(card);
                 ImageOutput.SavePng(detailImage, Path.Combine(folder, "qr-card-" + kind + ".png"));
+            }
+            foreach (var sample in new[]
+            {
+                (Text: "https://example.com/go?url=https%3A%2F%2Fother.example%2Flogin", Warning: "EmbeddedDestination", Open: true),
+                (Text: "https://example.com/invoice.exe.jpg", Warning: "DisguisedDownload", Open: true),
+                (Text: "https://example.com/%E2%80%AEgnp.exe", Warning: "HiddenCharacters", Open: false)
+            })
+            {
+                editor.SetQrCodes([actual with { Text = sample.Text }]);
+                editor.Children.OfType<Button>().Single(b => b.ToolTip?.ToString() == sample.Text).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                var card = (FrameworkElement)window.FindName("QrResultCard");
+                card.Measure(new Size(420, double.PositiveInfinity)); card.Arrange(new Rect(card.DesiredSize)); card.UpdateLayout();
+                if (Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrOpen") != sample.Open
+                    || !TextBlocks(card).Any(t => t.Text == LocaleManager.Loc("Str_QrWarn_" + sample.Warning))
+                    || !TextBlocks(card).Any(t => t.Text == (sample.Open ? "Review before opening" : "Opening blocked")))
+                    throw new InvalidOperationException("The local scanner card did not explain or enforce " + sample.Warning + ".");
+                var image = new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth), (int)Math.Ceiling(card.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                image.Render(card);
+                ImageOutput.SavePng(image, Path.Combine(folder, "scanner-" + sample.Warning + ".png"));
             }
             editor.SetQrCodes([actual]);
             var source = new FormatConvertedBitmap(App.Instance.Document.Image, PixelFormats.Bgra32, null, 0);

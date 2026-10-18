@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Tên miền phụ có quá nhiều cấp.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Liên kết rút gọn. Không truy tìm địa chỉ đích.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Liên kết tải xuống trực tiếp.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Không tìm thấy vấn đề</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Kiểm tra trước khi mở</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Đã chặn mở</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Chỉ kiểm tra cục bộ. Chưa truy cập địa chỉ đích.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Chứa một địa chỉ web khác. Không theo dõi chuyển hướng.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Ký tự ẩn có thể ngụy trang địa chỉ này.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Phần mở rộng thực thi bị ẩn trước một phần mở rộng khác.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Sao chép mật khẩu</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Đọc mã QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Liên kết trong văn bản của ảnh</sys:String>

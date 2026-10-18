@@ -414,6 +414,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Unusually deep subdomains.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Shortened link. Destination is not expanded.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Direct download link.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">No issues found</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Review before opening</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Opening blocked</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Local checks only. The destination was not visited.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Contains another web destination. Redirects were not followed.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Hidden characters can disguise this address.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">An executable extension is hidden before another extension.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Copy password</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Read QR code</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links in image text</sys:String>

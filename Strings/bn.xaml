@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">অস্বাভাবিকভাবে বেশি স্তরের সাবডোমেইন।</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">সংক্ষিপ্ত লিংক। গন্তব্য প্রসারিত করা হয়নি।</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">সরাসরি ডাউনলোডের লিংক।</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">কোনো সমস্যা পাওয়া যায়নি</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">খোলার আগে যাচাই করুন</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">খোলা বন্ধ করা হয়েছে</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">শুধু স্থানীয় পরীক্ষা। গন্তব্যে যাওয়া হয়নি।</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">অন্য একটি ওয়েব ঠিকানা রয়েছে। পুনর্নির্দেশ অনুসরণ করা হয়নি।</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">লুকানো অক্ষর এই ঠিকানার ছদ্মবেশ তৈরি করতে পারে।</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">অন্য একটি এক্সটেনশনের আগে কার্যকরযোগ্য এক্সটেনশন লুকানো আছে।</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">পাসওয়ার্ড কপি করুন</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR কোড পড়ুন</sys:String>
     <sys:String x:Key="Str_Ocr_Links">ছবির লেখায় থাকা লিংক</sys:String>

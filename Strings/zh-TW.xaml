@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">子網域層級異常深。</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">短連結。不會展開目標位址。</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接下載連結。</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">未發現問題</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">開啟前請檢查</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">已封鎖開啟</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">僅進行本機檢查。未造訪目標位址。</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">包含另一個網頁位址。未追蹤重新導向。</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">隱藏字元可能偽裝此位址。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">可執行檔副檔名隱藏在另一個副檔名之前。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">複製密碼</sys:String>
     <sys:String x:Key="Str_Mode_Qr">讀取 QR 碼</sys:String>
     <sys:String x:Key="Str_Ocr_Links">圖片文字中的連結</sys:String>

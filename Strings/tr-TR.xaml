@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Alışılmadık sayıda alt alan adı düzeyi.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Kısaltılmış bağlantı. Hedef çözümlenmiyor.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Doğrudan indirme bağlantısı.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Sorun bulunamadı</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Açmadan önce inceleyin</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Açma engellendi</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Yalnızca yerel denetimler. Hedef ziyaret edilmedi.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Başka bir web hedefi içeriyor. Yönlendirmeler takip edilmedi.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Gizli karakterler bu adresi gizleyebilir.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Çalıştırılabilir bir uzantı başka bir uzantıdan önce gizlenmiş.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Parolayı kopyala</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR kodu oku</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Görüntü metnindeki bağlantılar</sys:String>

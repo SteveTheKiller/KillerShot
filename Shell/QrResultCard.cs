@@ -34,6 +34,27 @@ public partial class MainWindow
         AutomationProperties.SetName(text, title);
         content.Children.Add(text);
         var link = QrLink.Check(payload);
+        if (link.Disposition != QrLinkDisposition.DisplayOnly)
+        {
+            string state = link.Disposition switch
+            {
+                QrLinkDisposition.Allowed => "Clear",
+                QrLinkDisposition.Warning => "Review",
+                _ => "Blocked"
+            };
+            var verdict = new TextBlock { Text = LocaleManager.Loc("Str_QrScan_" + state), FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 5) };
+            verdict.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+            content.Children.Add(verdict);
+            if (link.Url != null)
+            {
+                var host = new TextBlock { Text = link.Url.IdnHost, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 5) };
+                host.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+                content.Children.Add(host);
+            }
+            var limits = new TextBlock { Text = LocaleManager.Loc("Str_QrScan_Local"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 8) };
+            limits.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+            content.Children.Add(limits);
+        }
         foreach (string warning in link.Warnings)
         {
             var label = new TextBlock { Text = LocaleManager.Loc("Str_QrWarn_" + warning), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 5) };

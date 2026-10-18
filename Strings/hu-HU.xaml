@@ -411,6 +411,13 @@
     <sys:String x:Key="Str_QrWarn_DeepSubdomains">Szokatlanul sok aldomain-szint.</sys:String>
     <sys:String x:Key="Str_QrWarn_Shortener">Rövidített hivatkozás. A cél nincs feloldva.</sys:String>
     <sys:String x:Key="Str_QrWarn_DirectDownload">Közvetlen letöltési hivatkozás.</sys:String>
+    <sys:String x:Key="Str_QrScan_Clear">Nem találhatók problémák</sys:String>
+    <sys:String x:Key="Str_QrScan_Review">Megnyitás előtt ellenőrizze</sys:String>
+    <sys:String x:Key="Str_QrScan_Blocked">Megnyitás letiltva</sys:String>
+    <sys:String x:Key="Str_QrScan_Local">Csak helyi ellenőrzések. A cél nem lett megnyitva.</sys:String>
+    <sys:String x:Key="Str_QrWarn_EmbeddedDestination">Másik webes célt tartalmaz. Az átirányításokat nem követtük.</sys:String>
+    <sys:String x:Key="Str_QrWarn_HiddenCharacters">Rejtett karakterek elfedhetik ezt a címet.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DisguisedDownload">Egy futtatható kiterjesztés egy másik kiterjesztés előtt rejtőzik.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Jelszó másolása</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR-kód olvasása</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Hivatkozások a kép szövegében</sys:String>
