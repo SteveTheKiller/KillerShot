@@ -32,16 +32,16 @@ namespace KillerShot.Shell
         /// <summary>How a left or right strip shows its captures: "list" or "rolodex".</summary>
         public string SideView => _sideView;
 
-        internal FrameworkElement TestPicker => _picker;
+        internal FrameworkElement TestCaption => _caption;
         internal FrameworkElement TestCarousel => _flow;
 
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-        // The picker sits above a side column or beside a top or bottom carousel.
+        private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis };
+        // A single caption row leaves the strip's width to its pictures.
         private readonly DockPanel _root = new();
         private readonly DockPanel _header = new() { LastChildFill = true };
-        private readonly StackPanel _headerColumn = new() { Margin = new Thickness(0, 0, 12, 0) };
         private readonly Grid _body = new();
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
@@ -66,6 +66,7 @@ namespace KillerShot.Shell
             Panel.SetZIndex(this, 1);   // above the splitter, so the slider's overhang stays clickable
 
             _count.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+            _caption.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
             _picker.SelectionChanged += (_, _) =>
             {
                 if (_syncing || _picker.SelectedItem is not ComboBoxItem { Tag: string tag }) return;
@@ -161,25 +162,13 @@ namespace KillerShot.Shell
 
             _root.Children.Clear();
             _header.Children.Clear();
-            _headerColumn.Children.Clear();
-            _header.Children.Add(_picker);
-            if (_host.IsHorizontal)
-            {
-                // Beside the carousel: the picker, with the count under it.
-                _header.Margin = new Thickness(0);
-                _count.Margin = new Thickness(2, 6, 0, 0);
-                _headerColumn.Children.Add(_header);
-                _headerColumn.Children.Add(_count);
-                DockPanel.SetDock(_headerColumn, Dock.Left);
-                _root.Children.Add(_headerColumn);
-            }
-            else
-            {
-                // A side column is too narrow for the count beside the picker; it would only show "...".
-                _header.Margin = new Thickness(0, 0, 0, 6);
-                DockPanel.SetDock(_header, Dock.Top);
-                _root.Children.Add(_header);
-            }
+            _header.Margin = new Thickness(0, 0, 0, 4);
+            _count.Margin = new Thickness(12, 0, 0, 0);
+            DockPanel.SetDock(_count, Dock.Right);
+            _header.Children.Add(_count);
+            _header.Children.Add(_caption);
+            DockPanel.SetDock(_header, Dock.Top);
+            _root.Children.Add(_header);
             _root.Children.Add(_body);
             Sync();
         }
@@ -245,6 +234,7 @@ namespace KillerShot.Shell
                 var chosen = _picker.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == _source);
                 if (chosen == null) { _source = "all"; chosen = (ComboBoxItem)_picker.Items[0]; }
                 _picker.SelectedItem = chosen;
+                _caption.Text = chosen.Content?.ToString() ?? "";
 
                 _items = _source switch
                 {
@@ -303,6 +293,19 @@ namespace KillerShot.Shell
         {
             _openDelay.Stop();
             ItemMenuRequested?.Invoke(item, anchor);
+        }
+
+        public ContextMenu SourceMenu(FrameworkElement anchor)
+        {
+            var menu = new ContextMenu { PlacementTarget = anchor, Placement = PlacementMode.Bottom };
+            foreach (var choice in _picker.Items.OfType<ComboBoxItem>())
+            {
+                string tag = (string)choice.Tag;
+                var item = new MenuItem { Header = choice.Content, IsCheckable = true, IsChecked = tag == _source };
+                item.Click += (_, _) => { _source = tag; Load(keepCurrent: true); };
+                menu.Items.Add(item);
+            }
+            return menu;
         }
 
         private void Open(CaptureItem item)

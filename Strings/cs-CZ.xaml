@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Šifrované album snímků obrazovky pro Windows, které kopíruje přesně to, co vyberete, pixel po pixelu, bez účtu a bez odesílání čehokoli domů. Nástroj GPLv3 od </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Pořizujte, upravujte a organizujte snímky obrazovky v šifrovaném albu pro Windows. Nástroj GPLv3 od </sys:String>
     <sys:String x:Key="Str_About_Rendering">VYKRESLOVÁNÍ</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automaticky</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Kopírovat heslo</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Přečíst QR kód</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Odkazy v textu obrázku</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Jeden řádek</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Dva řádky</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Přesunout ikony na druhou stranu</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Obrátit pořadí ikon</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Tiskárna</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Orientace</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Na výšku</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Na šířku</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Měřítko</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Přizpůsobit stránce</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Skutečná velikost (100 %)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Kopie</sys:String>
+    <sys:String x:Key="Str_Print_Color">Barevně</sys:String>
+    <sys:String x:Key="Str_Print_BW">Černobíle</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Formát papíru</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Vlastnosti tiskárny...</sys:String>
 </ResourceDictionary>

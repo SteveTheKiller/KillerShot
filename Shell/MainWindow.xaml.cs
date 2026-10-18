@@ -35,7 +35,6 @@ namespace KillerShot.Shell
                 Editor.Focus();
             };
 
-            // Every flyout opens beside its own button and is clamped inside the content pane.
             Controls.FlyoutPlacement.UsePane(ContentPane);
 
             InitThemePicker();
@@ -50,6 +49,7 @@ namespace KillerShot.Shell
             InitLibrary();
             InitStrip();
             InitFooterView();
+            InitWorkspaceMenus();
 
             _about = new AboutController(this);
             VersionLabel.Text = "v" + Services.AppInfo.Version;

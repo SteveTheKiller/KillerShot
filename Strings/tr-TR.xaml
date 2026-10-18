@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">Tamam</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Seçtiğiniz alanı piksel piksel, hesap olmadan ve hiçbir yere veri göndermeden kopyalayan, Windows için şifreli bir ekran görüntüsü albümü. Bir GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows için şifreli bir albümde ekran görüntüsü alın, düzenleyin ve sıralayın. Bir GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">İŞLEME</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Otomatik</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Donanım</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Parolayı kopyala</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR kodu oku</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Görüntü metnindeki bağlantılar</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Tek satır</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">İki satır</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Simgeleri diğer tarafa taşı</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Simge sırasını ters çevir</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Yazıcı</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Yönlendirme</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Dikey</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Yatay</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Ölçek</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Sayfaya Sığdır</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Gerçek boyut (%100)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Kopya</sys:String>
+    <sys:String x:Key="Str_Print_Color">Renkli</sys:String>
+    <sys:String x:Key="Str_Print_BW">Siyah beyaz</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Kağıt boyutu</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Yazıcı özellikleri...</sys:String>
 </ResourceDictionary>

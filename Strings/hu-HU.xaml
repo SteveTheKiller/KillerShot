@@ -104,7 +104,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Titkosított képernyőkép-album Windowsra, amely pontosan azt másolja, amit kijelöl, képpontról képpontra, fiók nélkül, és semmit sem küld haza. Egy GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Képernyőképek készítése, szerkesztése és rendszerezése titkosított albumban Windowson. Egy GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">MEGJELENÍTÉS</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatikus</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardveres</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Jelszó másolása</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR-kód olvasása</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Hivatkozások a kép szövegében</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Egy sor</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Két sor</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Ikonok áthelyezése a másik oldalra</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Ikonsorrend megfordítása</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Nyomtató</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Papírméret</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Nyomtató tulajdonságai...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Tájolás</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Álló</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Fekvő</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Méretezés</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Oldalhoz igazítás</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Tényleges méret (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Példányszám</sys:String>
+    <sys:String x:Key="Str_Print_Color">Színes</sys:String>
+    <sys:String x:Key="Str_Print_BW">Fekete-fehér</sys:String>
 </ResourceDictionary>

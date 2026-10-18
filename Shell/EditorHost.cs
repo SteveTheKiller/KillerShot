@@ -97,7 +97,7 @@ namespace KillerShot.Shell
         {
             bool has = _doc != null;
             SyncLibraryVisibility();
-            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
+            foreach (var b in new[] { CollectionPickerBtn, SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
             UndoBtn.IsEnabled = _doc?.CanUndo == true;
@@ -324,7 +324,7 @@ namespace KillerShot.Shell
         {
             // A button in the More menu has no place on the bar, so its flyout opens under the
             // More chevron instead.
-            menu.PlacementTarget = anchor.IsVisible ? anchor : MoreBtn;
+            menu.PlacementTarget = anchor.IsVisible ? anchor : _toolbarHidden ? ToolbarOverflowButton : MoreBtn;
             menu.Placement = PlacementMode.Bottom;
             menu.IsOpen = true;
             Anim.FadeIn(menu);
@@ -347,7 +347,8 @@ namespace KillerShot.Shell
                 var m = mode;
                 string gesture = action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) ? sc.Short : "";
                 if (mode == CaptureMode.Region) gesture = "Ctrl+N";
-                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture };
+                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture,
+                    IsCheckable = true, IsChecked = CaptureSettings.LastMode == mode };
                 mi.Click += (_, _) => StartCapture(m);
                 CaptureMenu.Items.Add(mi);
             }

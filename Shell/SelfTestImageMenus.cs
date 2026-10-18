@@ -74,6 +74,15 @@ internal static class SelfTestImageMenus
             if (dockButton == null || !dockButton.IsVisible)
                 throw new InvalidOperationException("Strip position must be available in the rail.");
             report.Add("Collection-strip position button: available in rail PASS");
+            var stripModes = (StackPanel)window.FindName("FooterStripControls");
+            if (!stripModes.IsVisible || stripModes.Children.OfType<RadioButton>().Count(b => b.IsChecked == true) != 1)
+                throw new InvalidOperationException("The footer must mark the displayed collection-strip view.");
+            report.Add("Footer: displayed collection-strip view is marked PASS");
+            var leftBar = (Panel)window.FindName("LeftBar");
+            var rightBar = (Panel)window.FindName("RightBar");
+            if (leftBar.ActualHeight < 70 || rightBar.Children.Count == 0)
+                throw new InvalidOperationException("The default toolbar must have two rows with annotations on the right.");
+            report.Add("Toolbar: two rows with file actions left and annotations right PASS");
             var librarySettings = window.FindName("LibrarySettingsButton") as Button;
             if (librarySettings == null || !librarySettings.IsVisible)
                 throw new InvalidOperationException("Library settings must be available in the title bar.");
@@ -159,6 +168,64 @@ internal static class SelfTestImageMenus
             if (Item("copy").IsEnabled || Item("save").IsEnabled || Item("undo").IsEnabled)
                 throw new InvalidOperationException("Editor menu actions must be disabled without an image.");
             App.Instance.SetDocument(doc);
+            await Task.Delay(100);
+            if (rail.TranslatePoint(new Point(), window).X > window.ActualWidth / 2)
+                throw new InvalidOperationException("The horizontal rail must default to the left after the editor reopens.");
+            var toolbarMenu = (ContextMenu)window.FindName("ToolbarMenu");
+            var hideToolbar = toolbarMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Tag, "hide"));
+            hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            var overflow = (Button)window.FindName("ToolbarOverflowButton");
+            window.UpdateLayout();
+            if (!overflow.IsVisible || ((FrameworkElement)window.FindName("ToolbarGrid")).IsVisible)
+                throw new InvalidOperationException("A hidden toolbar must have a visible title-bar overflow.");
+            overflow.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var more = (ContextMenu)window.FindName("MoreMenu");
+            foreach (string key in new[] { "Str_Btn_Capture", "Str_Btn_Print", "Str_Tool_Pen", "Str_Btn_Color", "Str_Btn_Width", "Str_Strip_Collection" })
+                if (!more.Items.OfType<MenuItem>().Any(m => Equals(m.Header, LocaleManager.Loc(key))))
+                    throw new InvalidOperationException("The hidden toolbar lost " + key);
+            more.IsOpen = false;
+            hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            report.Add("Rail and toolbar: left default survives layout; hidden actions remain in title-bar overflow PASS");
+            var railMenu = rail.ContextMenu!;
+            void OpenRail() => railMenu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
+            OpenRail();
+            var flipRail = railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Flip")));
+            flipRail.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            window.UpdateLayout();
+            if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
+                throw new InvalidOperationException("The rail menu did not move the icons to the right.");
+            var themeButton = (Button)window.FindName("ThemeButton");
+            themeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var themeMenu = (ContextMenu)window.FindName("ThemeMenu");
+            if (!themeMenu.IsOpen || !ReferenceEquals(themeMenu.PlacementTarget, themeButton)
+                || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
+                throw new InvalidOperationException("The theme flyout is not anchored to its own right-side button.");
+            themeMenu.IsOpen = false;
+            var firstRail = rail.Children[0];
+            OpenRail();
+            railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
+                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            if (!ReferenceEquals(firstRail, rail.Children[rail.Children.Count - 1]))
+                throw new InvalidOperationException("The rail menu did not reverse the icon order.");
+            railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
+                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            flipRail.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            report.Add("Rail menu: flips sides, reverses order and anchors the theme flyout to its button PASS");
+            var printPreview = new PrintPreviewWindow(window, doc.Render(), "Edited screenshot");
+            printPreview.Show();
+            await Task.Delay(100);
+            var previewImage = Visuals(printPreview).OfType<Image>().Single(i => System.Windows.Automation.AutomationProperties.GetName(i) == "Edited screenshot");
+            if (previewImage.Source is not BitmapSource previewBitmap || previewBitmap.PixelWidth != 640)
+                throw new InvalidOperationException("The print preview did not show the edited screenshot.");
+            var markPixel = new byte[4];
+            previewBitmap.CopyPixels(new Int32Rect(20, 20, 1, 1), markPixel, 4, 0);
+            if (markPixel[2] < 200 || markPixel[1] > 80) throw new InvalidOperationException("The print preview lost the red annotation.");
+            var printShot = new RenderTargetBitmap((int)printPreview.ActualWidth, (int)printPreview.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+            printShot.Render((Visual)printPreview.Content);
+            ImageOutput.SavePng(printShot, Path.Combine(folder, "print-preview.png"));
+            printPreview.Close();
+            if (printPreview.Printed) throw new InvalidOperationException("Closing print preview sent a job.");
+            report.Add("Print preview: edited image and red annotation visible; closing does not print PASS");
             File.WriteAllLines(reportPath, report);
             if (show)
             {

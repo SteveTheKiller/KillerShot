@@ -31,12 +31,10 @@ namespace KillerShot.Shell
         internal const string ToolbarSeparatorToken = "-";
         private const string ToolbarLayoutSetting = "ToolbarLayout";
 
-        // Everything on the left, in the groups the bar always had.
+        // File and capture operations on the left, annotation tools on the right.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
-            ["capture", "record", "library", "recent", "-", "open", "save", "saveas", "copy", "print", "-", "undo", "redo",
-             "-", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop",
-             "-", "color", "width", "-", "fit", "actualsize"],
-            [],
+            ["capture", "record", "library", "recent", "collection", "-", "open", "save", "saveas", "copy", "print", "fit", "actualsize"],
+            ["undo", "redo", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop", "color", "width"],
             []);
 
         // Buttons leave the bar for the More menu in this order as the window narrows, a group at a
@@ -46,6 +44,7 @@ namespace KillerShot.Shell
             ["print"],
             ["saveas"],
             ["recent"],
+            ["collection"],
             ["open"],
             ["library"],
             ["fit", "actualsize"],
@@ -69,6 +68,7 @@ namespace KillerShot.Shell
         private ToolbarLayout _toolbarLayout = DefaultToolbarLayout;
         private readonly HashSet<string> _toolbarShed = [];
         private bool _toolbarReflowQueued;
+        private int _toolbarRows = 2;
 
         /// <summary>Registers every toolbar button once and arranges the bar from the saved
         /// layout. Call before InitToolbarStyle.</summary>
@@ -78,6 +78,7 @@ namespace KillerShot.Shell
             foreach (var (id, btn, glyph, key) in ToolbarItems())
                 _toolbarUnits.Add(new ToolbarUnit(id, btn, glyph, key));
             _toolbarLayout = NormalizeToolbarLayout(ParseToolbarLayout(Settings.Get(ToolbarLayoutSetting)));
+            _toolbarRows = Settings.Get("ToolbarRows") == "1" ? 1 : 2;
             ApplyToolbarLayout();
             // The bar's own size stops changing once it is clipped, so the window's is watched too.
             ToolbarGrid.SizeChanged += (_, _) => QueueToolbarReflow();
@@ -144,6 +145,7 @@ namespace KillerShot.Shell
         /// the active-tool highlight keep working.</summary>
         private void ApplyToolbarLayout()
         {
+            LeftBar.Rows = RightBar.Rows = _toolbarRows;
             var byId = _toolbarUnits.ToDictionary(unit => unit.Id);
             foreach (ToolbarUnit unit in _toolbarUnits)
                 (unit.Main.Parent as Panel)?.Children.Remove(unit.Main);
@@ -168,7 +170,7 @@ namespace KillerShot.Shell
 
         private static Rectangle MakeToolbarSeparator()
         {
-            var separator = new Rectangle { Width = 1, Margin = new Thickness(4, 6, 4, 6), Tag = ToolbarSeparatorToken };
+            var separator = new Rectangle { Width = 1, Height = 24, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 6, 4, 6), Tag = ToolbarSeparatorToken };
             separator.SetResourceReference(Shape.FillProperty, "CardBorderBrush");
             return separator;
         }
@@ -272,6 +274,12 @@ namespace KillerShot.Shell
             OpenFlyout(MoreMenu, MoreBtn);
         }
 
+        private void TitleToolbarOverflow_Click(object sender, RoutedEventArgs e)
+        {
+            BuildMoreMenu();
+            OpenFlyout(MoreMenu, ToolbarOverflowButton);
+        }
+
         /// <summary>A right-click on the chevron opens the same menu.</summary>
         private void MoreBtn_ContextMenuOpening(object sender, ContextMenuEventArgs e) => BuildMoreMenu();
 
@@ -280,8 +288,8 @@ namespace KillerShot.Shell
             MoreMenu.Items.Clear();
             var byId = _toolbarUnits.ToDictionary(unit => unit.Id);
             // The user's choices first, then whatever the window was too narrow for, in bar order.
-            var ids = _toolbarLayout.More
-                .Concat(_toolbarLayout.Left.Concat(_toolbarLayout.Right).Where(_toolbarShed.Contains));
+            var ids = _toolbarHidden ? _toolbarLayout.Left.Concat(_toolbarLayout.Right).Concat(_toolbarLayout.More).Distinct()
+                : _toolbarLayout.More.Concat(_toolbarLayout.Left.Concat(_toolbarLayout.Right).Where(_toolbarShed.Contains));
             foreach (string id in ids)
             {
                 if (!byId.TryGetValue(id, out ToolbarUnit? unit)) continue;
@@ -291,12 +299,32 @@ namespace KillerShot.Shell
                     Icon = ToolbarUnitIcon(unit.Id),
                     InputGestureText = ShortcutFor(unit.Main) ?? "",
                     IsEnabled = unit.Main.IsEnabled,
+                    IsCheckable = unit.Main.Tag is string tool && Enum.TryParse<KillerShot.Editor.ToolKind>(tool, out _),
+                    IsChecked = unit.Main == ToolButton(Editor.Tool),
                 };
                 Button target = unit.Main;
                 // After the menu closes, so a button that opens its own flyout opens it cleanly.
                 item.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input,
                     new Action(() => target.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, target))));
                 MoreMenu.Items.Add(item);
+            }
+            if (_toolbarHidden)
+            {
+                MoreMenu.Items.Add(new Separator());
+                var appearance = new MenuItem { Header = Loc("Str_Toolbar_Header") };
+                foreach (object option in ToolbarMenu.Items)
+                {
+                    if (option is Separator) { appearance.Items.Add(new Separator()); continue; }
+                    if (option is not MenuItem original || !original.IsEnabled || Equals(original.Tag, "hide")) continue;
+                    var copy = new MenuItem { Header = original.Header, InputGestureText = original.InputGestureText,
+                        IsCheckable = original.IsCheckable, IsChecked = original.IsChecked };
+                    copy.Click += (_, _) => original.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                    appearance.Items.Add(copy);
+                }
+                MoreMenu.Items.Add(appearance);
+                var show = new MenuItem { Header = Loc("Str_Toolbar_Hide"), IsCheckable = true, IsChecked = true, InputGestureText = "Alt+M" };
+                show.Click += (_, _) => ToggleToolbarHidden();
+                MoreMenu.Items.Add(show);
             }
         }
 
@@ -333,6 +361,7 @@ namespace KillerShot.Shell
         {
             _toolbarHidden = hidden;
             ToolbarGrid.Visibility = hidden ? Visibility.Collapsed : Visibility.Visible;
+            ToolbarOverflowButton.Visibility = hidden ? Visibility.Visible : Visibility.Collapsed;
             ToolbarRowDef.MinHeight = hidden ? 0 : 42;
             Settings.SetBool("ToolbarHidden", hidden);
             SyncToolbarMenuChecks();

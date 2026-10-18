@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Un album di screenshot crittografato per Windows che copia esattamente ciò che selezioni, pixel per pixel, senza account e senza inviare nulla a casa. Un'utilità GPLv3 di </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Acquisisci, modifica e organizza screenshot in un album crittografato per Windows. Un'utilità GPLv3 di </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDERING</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatico</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Copia password</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Leggi codice QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Link nel testo dell’immagine</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Una riga</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Due righe</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Sposta le icone sull'altro lato</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Inverti l'ordine delle icone</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Stampante</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Formato carta</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Proprietà stampante...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Orientamento</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Verticale</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Orizzontale</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Scala</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Adatta alla pagina</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Dimensione attuale (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Copie</sys:String>
+    <sys:String x:Key="Str_Print_Color">Colore</sys:String>
+    <sys:String x:Key="Str_Print_BW">Bianco e nero</sys:String>
 </ResourceDictionary>

@@ -12,6 +12,14 @@ namespace KillerShot.Shell
     {
         private CollectionStrip? _strip;
 
+        private void CollectionPickerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_strip == null) return;
+            FrameworkElement anchor = CollectionPickerBtn.IsVisible ? CollectionPickerBtn : _toolbarHidden ? ToolbarOverflowButton : MoreBtn;
+            var menu = _strip.SourceMenu(anchor);
+            menu.IsOpen = true;
+        }
+
         private void InitStrip()
         {
             StripDock.Side = Enum.TryParse(Settings.Get("StripSide"), out DockSide side) ? side : DockSide.Top;

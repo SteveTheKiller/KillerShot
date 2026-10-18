@@ -727,6 +727,11 @@ namespace KillerShot.Shell
             }
             Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
             Add("Str_Lib_Copy", () => Copy(item));
+            Add("Str_Btn_Print", () =>
+            {
+                try { PrintOutput.Print(CaptureLibrary.LoadImage(item.Id), Title(item)); }
+                catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
+            });
             if (FolderCaptures.IsFolderId(item.Id))
             {
                 // A file in the Screenshots folder: the folder keeps it, so no collections, notes

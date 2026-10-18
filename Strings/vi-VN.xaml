@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Album ảnh chụp màn hình được mã hóa cho Windows, sao chép đúng phần bạn chọn, chính xác từng điểm ảnh, không cần tài khoản và không gửi gì đi đâu cả. Một tiện ích GPLv3 của </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Chụp, chỉnh sửa và sắp xếp ảnh chụp màn hình trong album được mã hóa cho Windows. Một tiện ích GPLv3 của </sys:String>
     <sys:String x:Key="Str_About_Rendering">KẾT XUẤT</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Tự động</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Phần cứng</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Sao chép mật khẩu</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Đọc mã QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Liên kết trong văn bản của ảnh</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Một hàng</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Hai hàng</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Chuyển biểu tượng sang phía đối diện</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Đảo thứ tự biểu tượng</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Máy in</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Kích thước giấy</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Thuộc tính máy in...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Hướng giấy</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Dọc</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Ngang</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Tỷ lệ</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Vừa trang</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Kích thước thực (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Số bản in</sys:String>
+    <sys:String x:Key="Str_Print_Color">Màu</sys:String>
+    <sys:String x:Key="Str_Print_BW">Đen trắng</sys:String>
 </ResourceDictionary>

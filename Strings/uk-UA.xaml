@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Зашифрований альбом знімків екрана для Windows, що копіює саме те, що ви виділили, піксель у піксель, без облікового запису й без надсилання будь-чого. Утиліта з ліцензією GPLv3 від </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Створюйте, редагуйте та впорядковуйте знімки екрана в зашифрованому альбомі для Windows. Утиліта з ліцензією GPLv3 від </sys:String>
     <sys:String x:Key="Str_About_Rendering">ВІДОБРАЖЕННЯ</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Автоматично</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Апаратне</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Копіювати пароль</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Прочитати QR-код</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Посилання в тексті зображення</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Один рядок</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Два рядки</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Перемістити піктограми на інший бік</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Обернути порядок піктограм</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Принтер</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Розмір паперу</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Властивості принтера...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Орієнтація</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Книжкова</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Альбомна</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Масштаб</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Вписати в сторінку</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Фактичний розмір (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Копії</sys:String>
+    <sys:String x:Key="Str_Print_Color">Кольоровий</sys:String>
+    <sys:String x:Key="Str_Print_BW">Чорно-біле</sys:String>
 </ResourceDictionary>

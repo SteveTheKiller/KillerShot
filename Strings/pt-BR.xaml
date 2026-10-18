@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Um álbum de capturas de tela criptografado para Windows que copia exatamente o que você seleciona, pixel por pixel, sem conta e sem enviar nada para lugar nenhum. Um utilitário GPLv3 do </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Capture, edite e organize capturas de tela em um álbum criptografado para Windows. Um utilitário GPLv3 do </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDERIZAÇÃO</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automático</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Copiar senha</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Ler código QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links no texto da imagem</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Uma linha</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Duas linhas</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Mover os ícones para o outro lado</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Inverter a ordem dos ícones</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Impressora</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Tamanho do papel</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Propriedades da impressora...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Orientação</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Retrato</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Paisagem</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Escala</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Ajustar à página</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Tamanho real (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Cópias</sys:String>
+    <sys:String x:Key="Str_Print_Color">Colorido</sys:String>
+    <sys:String x:Key="Str_Print_BW">Preto &amp; branco</sys:String>
 </ResourceDictionary>

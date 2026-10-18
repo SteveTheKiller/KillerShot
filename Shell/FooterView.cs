@@ -24,6 +24,7 @@ namespace KillerShot.Shell
         private readonly List<(RadioButton Button, string View)> _footerViews = [];
         private readonly List<(RadioButton Button, string Group)> _footerGroups = [];
         private readonly List<(Button Button, string View)> _stripViews = [];
+        private readonly List<(RadioButton Button, string View)> _footerStripViews = [];
         private Button? _stripButton;
         private bool _footerSyncing;
 
@@ -41,13 +42,29 @@ namespace KillerShot.Shell
                 FooterLibraryViews.Children.Add(button);
             }
             FooterLibraryViews.Children.Add(FooterSeparator());
-            foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8F1", "Str_Lib_ByCollection") })
+            foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8B7", "Str_Lib_ByCollection") })
             {
                 string target = group;
                 var button = FooterRadio("FooterLibraryGroup", glyph, key, null, () => ShowLibraryGroup(target));
                 _footerGroups.Add((button, group));
                 FooterLibraryViews.Children.Add(button);
             }
+
+            foreach (var (view, key) in new[] { ("flow", "Str_Lib_ViewFlow"), ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
+            {
+                string target = view;
+                object icon = view == "flow" ? "\uE7C5" : view == "list" ? ListIcon(typeof(RadioButton)) : RolodexIcon(typeof(RadioButton));
+                var button = FooterRadio("FooterStripView", icon, key, null, () =>
+                {
+                    if (target == "flow") { if (!StripDock.IsHorizontal) StripDock.DockTo(DockSide.Top); }
+                    else { if (StripDock.IsHorizontal) StripDock.DockTo(DockSide.Left); _strip?.SetSideView(target); }
+                    if (StripDock.IsMinimized) StripDock.Restore();
+                    SyncFooterView();
+                });
+                _footerStripViews.Add((button, view));
+                FooterStripControls.Children.Add(button);
+            }
+            FooterStripControls.Children.Add(FooterSeparator());
 
             _stripButton = StripRailButton(DockIcon(StripDock.Side, typeof(Button)), "Str_Dock_Menu");
             _stripButton.Click += (_, _) => ShowStripMenu();
@@ -231,7 +248,7 @@ namespace KillerShot.Shell
         {
             bool library = Library.Visibility == Visibility.Visible;
             bool picture = !library && _doc != null;
-            FooterStripControls.Visibility = Visibility.Collapsed;
+            FooterStripControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
             FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
             if (_stripButton != null)
             {
@@ -246,6 +263,8 @@ namespace KillerShot.Shell
             _footerSyncing = true;
             try
             {
+                string stripView = StripDock.IsHorizontal ? "flow" : _strip?.SideView ?? "list";
+                foreach (var (button, view) in _footerStripViews) button.IsChecked = picture && stripView == view;
                 // Over a picture none is underlined: the library is not what is showing.
                 foreach (var (button, view) in _footerViews) button.IsChecked = library && Library.CurrentView == view;
                 // The timeline is a line of days, so it is always by date.

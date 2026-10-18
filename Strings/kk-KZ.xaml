@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Таңдағаныңызды пиксельге дейін дәл көшіретін, тіркелгісіз және ешқайда ештеңе жібермейтін Windows-қа арналған шифрланған скриншот альбомы. GPLv3 құралы, авторы </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows жүйесіне арналған шифрланған альбомда скриншоттар түсіріңіз, өңдеңіз және реттеңіз. GPLv3 құралы, авторы </sys:String>
     <sys:String x:Key="Str_About_Rendering">КӨРСЕТУ</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Автоматты</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Аппараттық</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Құпиясөзді көшіру</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR кодын оқу</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Сурет мәтініндегі сілтемелер</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Бір қатар</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Екі қатар</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Белгішелерді екінші жаққа жылжыту</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Белгішелер ретін кері айналдыру</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Принтер</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Қағаз өлшемі</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Принтер сипаттары...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Бағдар</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Кітаптық</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Альбомдық</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Масштаб</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Бетке сыйғызу</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Нақты өлшем (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Көшірме</sys:String>
+    <sys:String x:Key="Str_Print_Color">Түсті</sys:String>
+    <sys:String x:Key="Str_Print_BW">Ақ-қара</sys:String>
 </ResourceDictionary>

@@ -108,7 +108,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">An encrypted screenshot album for Windows that copies exactly what you select, pixel for pixel, with no account and nothing phoning home. A GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Capture, edit and organize screenshots in an encrypted album for Windows. A GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDERING</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatic</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
@@ -424,4 +424,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Copy password</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Read QR code</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links in image text</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">One row</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Two rows</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Move icons to the other side</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Reverse icon order</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Printer</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Paper size</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Printer properties...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Orientation</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Portrait</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Landscape</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Scale</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Fit to page</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Actual size (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Copies</sys:String>
+    <sys:String x:Key="Str_Print_Color">Color</sys:String>
+    <sys:String x:Key="Str_Print_BW">Black &amp; white</sys:String>
 </ResourceDictionary>

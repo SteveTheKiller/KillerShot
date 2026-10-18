@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Ein verschlüsseltes Screenshot-Album für Windows, das genau das kopiert, was Sie auswählen, Pixel für Pixel, ohne Konto und ohne Datenübertragung nach Hause. Ein GPLv3-Werkzeug von </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Screenshots in einem verschlüsselten Album für Windows aufnehmen, bearbeiten und organisieren. Ein GPLv3-Werkzeug von </sys:String>
     <sys:String x:Key="Str_About_Rendering">DARSTELLUNG</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatisch</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Passwort kopieren</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR-Code lesen</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links im Bildtext</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Eine Zeile</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Zwei Zeilen</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Symbole auf die andere Seite verschieben</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Symbolreihenfolge umkehren</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Drucker</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Ausrichtung</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Hochformat</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Querformat</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Skalierung</sys:String>
+    <sys:String x:Key="Str_Print_Fit">An Seite anpassen</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Tatsächliche Größe (100 %)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Kopien</sys:String>
+    <sys:String x:Key="Str_Print_Color">Farbe</sys:String>
+    <sys:String x:Key="Str_Print_BW">Schwarz-weiß</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Papierformat</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Druckereigenschaften...</sys:String>
 </ResourceDictionary>

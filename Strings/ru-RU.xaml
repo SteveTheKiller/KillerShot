@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Зашифрованный альбом снимков экрана для Windows, который копирует ровно то, что вы выделили, пиксель в пиксель, без учётной записи и без отправки данных куда-либо. Утилита GPLv3 от </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Создавайте, редактируйте и упорядочивайте снимки экрана в зашифрованном альбоме для Windows. Утилита GPLv3 от </sys:String>
     <sys:String x:Key="Str_About_Rendering">ОТРИСОВКА</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Автоматически</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Аппаратная</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Копировать пароль</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Прочитать QR-код</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Ссылки в тексте изображения</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Один ряд</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Два ряда</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Переместить значки на другую сторону</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Обратить порядок значков</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Принтер</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Размер бумаги</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Свойства принтера...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">ОРИЕНТАЦИЯ</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Книжная</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Альбомная</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Масштаб</sys:String>
+    <sys:String x:Key="Str_Print_Fit">По размеру страницы</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Фактический размер (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Копии</sys:String>
+    <sys:String x:Key="Str_Print_Color">Цвет</sys:String>
+    <sys:String x:Key="Str_Print_BW">Черный &amp; белый</sys:String>
 </ResourceDictionary>

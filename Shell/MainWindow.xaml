@@ -94,6 +94,9 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="{DynamicResource CaptionButtonsMargin}"
                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="ToolbarOverflowButton" Style="{StaticResource ChromeButton}" Content="&#xE712;"
+                        Visibility="Collapsed" ToolTip="{DynamicResource Str_CustomizeToolbar_More}"
+                        Click="TitleToolbarOverflow_Click"/>
                 <!-- The library's name on the right, where Killendar and KillerNotes show their open
                      database, in the file name face. No baseline shift: that lines a name up with
                      the wordmark, and this one centers on the caption buttons. A click opens its
@@ -146,7 +149,8 @@
                         <ColumnDefinition Width="Auto"/>   <!-- right side -->
                         <ColumnDefinition Width="Auto"/>   <!-- More menu -->
                     </Grid.ColumnDefinitions>
-                    <StackPanel x:Name="LeftBar" Orientation="Horizontal" VerticalAlignment="Center">
+                    <icons:ToolbarRowsPanel x:Name="LeftBar" VerticalAlignment="Center">
+                        <Button x:Name="CollectionPickerBtn" Style="{StaticResource ToolbarButton}" Click="CollectionPickerBtn_Click"/>
                         <Button x:Name="CaptureBtn" Style="{StaticResource ToolbarButton}" Click="CaptureBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="CaptureMenu"/>
@@ -187,8 +191,8 @@
                         </Button>
                         <Button x:Name="FitBtn" Style="{StaticResource ToolbarButton}" Click="FitBtn_Click"/>
                         <Button x:Name="ActualSizeBtn" Style="{StaticResource ToolbarButton}" Click="ActualSizeBtn_Click"/>
-                    </StackPanel>
-                    <StackPanel x:Name="RightBar" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"/>
+                    </icons:ToolbarRowsPanel>
+                    <icons:ToolbarRowsPanel x:Name="RightBar" Grid.Column="2" VerticalAlignment="Center"/>
                     <!-- The More menu: buttons the user put there, and those the window is too narrow
                          for. Shown only when it has something in it. -->
                     <Button x:Name="MoreBtn" Grid.Column="3" Style="{StaticResource ToolbarButton}" Visibility="Collapsed"
@@ -324,7 +328,8 @@
         <!-- ================= FOOTER (24px) =================
              Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
              The overlays are declared after this and stay on top. -->
-        <Border Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
+        <Border x:Name="FooterBar" Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True">
             <!-- KillerPDF's footer button styles, with the theme accent for hover and the checked
                  underline. FooterView.cs fills and syncs the view cell. -->
             <Border.Resources>

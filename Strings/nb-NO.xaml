@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA">Et kryptert skjermbildealbum for Windows som kopierer nøyaktig det du markerer, piksel for piksel, uten konto og uten å sende noe hjem. Et GPLv3-</sys:String>
+    <sys:String x:Key="Str_About_DescA">Ta, rediger og organiser skjermbilder i et kryptert album for Windows. Et GPLv3-</sys:String>
     <sys:String x:Key="Str_About_Rendering">GJENGIVELSE</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatisk</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Maskinvare</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Kopier passord</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Les QR-kode</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Lenker i bildeteksten</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Én rad</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">To rader</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Flytt ikonene til den andre siden</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Snu ikonrekkefølgen</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Skriver</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Papirstørrelse</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Skriveregenskaper...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Retning</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Stående</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Liggende</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Skala</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Tilpass til siden</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Faktisk størrelse (100 %)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Antall kopier</sys:String>
+    <sys:String x:Key="Str_Print_Color">Farge</sys:String>
+    <sys:String x:Key="Str_Print_BW">Svart-hvitt</sys:String>
 </ResourceDictionary>

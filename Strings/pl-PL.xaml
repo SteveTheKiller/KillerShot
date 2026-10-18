@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Szyfrowany album zrzutów ekranu dla Windows, który kopiuje dokładnie to, co zaznaczysz, piksel w piksel, bez konta i bez wysyłania czegokolwiek. Narzędzie GPLv3 od </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Rób, edytuj i porządkuj zrzuty ekranu w szyfrowanym albumie dla Windows. Narzędzie GPLv3 od </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDEROWANIE</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatycznie</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Sprzętowe</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">Kopiuj hasło</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Odczytaj kod QR</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Łącza w tekście obrazu</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">Jeden wiersz</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">Dwa wiersze</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">Przenieś ikony na drugą stronę</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">Odwróć kolejność ikon</sys:String>
+    <sys:String x:Key="Str_Print_Printer">Drukarka</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">Orientacja</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">Pionowo</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">Poziomo</sys:String>
+    <sys:String x:Key="Str_Print_Scale">Skala</sys:String>
+    <sys:String x:Key="Str_Print_Fit">Dopasuj do strony</sys:String>
+    <sys:String x:Key="Str_Print_Actual">Rzeczywisty rozmiar (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">Kopie</sys:String>
+    <sys:String x:Key="Str_Print_Color">Kolor</sys:String>
+    <sys:String x:Key="Str_Print_BW">Czarno &amp; biała</sys:String>
+    <sys:String x:Key="Str_Print_Paper">Rozmiar papieru</sys:String>
+    <sys:String x:Key="Str_Print_Properties">Właściwości drukarki...</sys:String>
 </ResourceDictionary>

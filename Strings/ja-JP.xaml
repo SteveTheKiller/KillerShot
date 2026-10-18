@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">選んだ範囲をピクセル単位でそのままコピーする、Windows 用の暗号化スクリーンショット アルバム。アカウント不要で、どこにも通信しません。GPLv3 の </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows 用の暗号化アルバムでスクリーンショットを撮影、編集、整理できます。GPLv3 の </sys:String>
     <sys:String x:Key="Str_About_Rendering">描画</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">自動</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">ハードウェア</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">パスワードをコピー</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR コードを読み取る</sys:String>
     <sys:String x:Key="Str_Ocr_Links">画像内のテキストのリンク</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">1 行</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">2 行</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">アイコンを反対側に移動</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">アイコンの順序を反転</sys:String>
+    <sys:String x:Key="Str_Print_Printer">プリンター</sys:String>
+    <sys:String x:Key="Str_Print_Paper">用紙サイズ</sys:String>
+    <sys:String x:Key="Str_Print_Properties">プリンターのプロパティ...</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">向き</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">縦</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">横</sys:String>
+    <sys:String x:Key="Str_Print_Scale">拡大率</sys:String>
+    <sys:String x:Key="Str_Print_Fit">ページに合わせる</sys:String>
+    <sys:String x:Key="Str_Print_Actual">実際のサイズ (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">部数</sys:String>
+    <sys:String x:Key="Str_Print_Color">カラー</sys:String>
+    <sys:String x:Key="Str_Print_BW">白黒</sys:String>
 </ResourceDictionary>

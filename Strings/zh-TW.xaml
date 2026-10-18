@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">確定</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">一款適用於 Windows 的加密截圖相簿，逐像素準確複製你選取的內容，不需帳號，也不向任何地方回傳。一個 GPLv3 的 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">在適用於 Windows 的加密相簿中擷取、編輯和整理截圖。一個 GPLv3 的 </sys:String>
     <sys:String x:Key="Str_About_Rendering">轉譯</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">自動</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">硬體</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">複製密碼</sys:String>
     <sys:String x:Key="Str_Mode_Qr">讀取 QR 碼</sys:String>
     <sys:String x:Key="Str_Ocr_Links">圖片文字中的連結</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">一列</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">兩列</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">將圖示移至另一側</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">反轉圖示順序</sys:String>
+    <sys:String x:Key="Str_Print_Printer">印表機</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">方向</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">直向</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">橫向</sys:String>
+    <sys:String x:Key="Str_Print_Scale">縮放</sys:String>
+    <sys:String x:Key="Str_Print_Fit">符合頁面</sys:String>
+    <sys:String x:Key="Str_Print_Actual">實際大小 (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">份數</sys:String>
+    <sys:String x:Key="Str_Print_Color">彩色</sys:String>
+    <sys:String x:Key="Str_Print_BW">黑白</sys:String>
+    <sys:String x:Key="Str_Print_Paper">紙張大小</sys:String>
+    <sys:String x:Key="Str_Print_Properties">印表機內容...</sys:String>
 </ResourceDictionary>

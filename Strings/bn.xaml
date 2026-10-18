@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">ঠিক আছে</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows-এর জন্য একটি এনক্রিপ্ট করা স্ক্রিনশট অ্যালবাম, যা আপনার বেছে নেওয়া অংশটি পিক্সেল ধরে হুবহু কপি করে, কোনো অ্যাকাউন্ট ছাড়াই এবং কোথাও কিছু না পাঠিয়ে। একটি GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows-এর জন্য এনক্রিপ্ট করা অ্যালবামে স্ক্রিনশট তুলুন, সম্পাদনা করুন ও সাজান। একটি GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">রেন্ডারিং</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">স্বয়ংক্রিয়</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">হার্ডওয়্যার</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">পাসওয়ার্ড কপি করুন</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR কোড পড়ুন</sys:String>
     <sys:String x:Key="Str_Ocr_Links">ছবির লেখায় থাকা লিংক</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">এক সারি</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">দুই সারি</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">আইকন অন্য পাশে সরান</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">আইকনের ক্রম উল্টান</sys:String>
+    <sys:String x:Key="Str_Print_Printer">প্রিন্টার</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">অভিমুখ</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">পোর্ট্রেট</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">ল্যান্ডস্কেপ</sys:String>
+    <sys:String x:Key="Str_Print_Scale">স্কেল</sys:String>
+    <sys:String x:Key="Str_Print_Fit">পৃষ্ঠায় ফিট</sys:String>
+    <sys:String x:Key="Str_Print_Actual">প্রকৃত আকার (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">কপি</sys:String>
+    <sys:String x:Key="Str_Print_Color">রঙিন</sys:String>
+    <sys:String x:Key="Str_Print_BW">সাদা-কালো</sys:String>
+    <sys:String x:Key="Str_Print_Paper">কাগজের আকার</sys:String>
+    <sys:String x:Key="Str_Print_Properties">প্রিন্টারের বৈশিষ্ট্য...</sys:String>
 </ResourceDictionary>

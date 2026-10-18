@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">确定</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">一款适用于 Windows 的加密截图相册，逐像素准确复制你选中的内容，无需账户，也不向任何地方回传。一个 GPLv3 的 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">在适用于 Windows 的加密相册中截取、编辑和整理截图。一个 GPLv3 的 </sys:String>
     <sys:String x:Key="Str_About_Rendering">渲染</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">自动</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">硬件</sys:String>
@@ -421,4 +421,20 @@
     <sys:String x:Key="Str_Qr_CopyPassword">复制密码</sys:String>
     <sys:String x:Key="Str_Mode_Qr">读取二维码</sys:String>
     <sys:String x:Key="Str_Ocr_Links">图片文字中的链接</sys:String>
+    <sys:String x:Key="Str_Toolbar_OneRow">一行</sys:String>
+    <sys:String x:Key="Str_Toolbar_TwoRows">两行</sys:String>
+    <sys:String x:Key="Str_Rail_Flip">将图标移至另一侧</sys:String>
+    <sys:String x:Key="Str_Rail_Reverse">反转图标顺序</sys:String>
+    <sys:String x:Key="Str_Print_Printer">打印机</sys:String>
+    <sys:String x:Key="Str_Print_Orientation">方向</sys:String>
+    <sys:String x:Key="Str_Print_Portrait">纵向</sys:String>
+    <sys:String x:Key="Str_Print_Landscape">横向</sys:String>
+    <sys:String x:Key="Str_Print_Scale">缩放</sys:String>
+    <sys:String x:Key="Str_Print_Fit">符合页面</sys:String>
+    <sys:String x:Key="Str_Print_Actual">实际大小 (100%)</sys:String>
+    <sys:String x:Key="Str_Print_Copies">份数</sys:String>
+    <sys:String x:Key="Str_Print_Color">彩色</sys:String>
+    <sys:String x:Key="Str_Print_BW">黑白</sys:String>
+    <sys:String x:Key="Str_Print_Paper">纸张大小</sys:String>
+    <sys:String x:Key="Str_Print_Properties">打印机属性...</sys:String>
 </ResourceDictionary>

@@ -49,6 +49,8 @@ public partial class MainWindow
             tools.Items.Add(item);
         }
         menu.Items.Add(tools);
+        menu.Items.Add(ToolbarAction("color"));
+        menu.Items.Add(ToolbarAction("width"));
         var zoom = new MenuItem { Header = Loc("Str_TT_ZoomLevel"), IsEnabled = _doc != null };
         zoom.Items.Add(ToolbarAction("fit"));
         zoom.Items.Add(ToolbarAction("actualsize"));
