@@ -37,6 +37,18 @@ namespace KillerShot.Shell
 
         internal void TestToolbarStyle(int number) => PickToolbarStyle(number);
 
+        internal void TestToolbarLayout(ToolbarLayout? layout) => SetToolbarLayout(layout ?? DefaultToolbarLayout);
+
+        /// <summary>Customize toolbar, shown off screen without the modal loop, for a render.</summary>
+        internal Window TestCustomizeToolbarDialog()
+        {
+            var dialog = new Controls.CustomizeToolbarDialog(_toolbarUnits, _toolbarLayout, DefaultToolbarLayout,
+                id => ToolbarUnitIcon(id), Loc)
+            { ShowActivated = false, WindowStartupLocation = WindowStartupLocation.Manual, Left = -20000, Top = -20000 };
+            dialog.Show();
+            return dialog;
+        }
+
         internal void TestSetLabels(bool under)
         {
             _labelMode = under ? LabelMode.Under : LabelMode.None;

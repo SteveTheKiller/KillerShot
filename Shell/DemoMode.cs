@@ -154,6 +154,27 @@ internal static class SelfTestDemo
                 }
             w.TestToolbarStyle(2);
             w.TestToolbarStyle(3);
+            // Buttons on both sides of the bar and two in the More menu, then Customize toolbar.
+            w.TestToolbarLayout(new MainWindow.ToolbarLayout(
+                ["capture", "record", "library", "-", "open", "save", "saveas", "copy", "-", "undo", "redo",
+                 "-", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop"],
+                ["color", "width", "-", "fit", "actualsize"],
+                ["recent", "print"]));
+            await Shot("demo-toolbar-sides");
+            var customize = w.TestCustomizeToolbarDialog();
+            await Task.Delay(1200);
+            customize.UpdateLayout();
+            if (customize.Content is System.Windows.FrameworkElement croot)
+            {
+                var cdpi = System.Windows.Media.VisualTreeHelper.GetDpi(customize);
+                var crtb = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(croot.ActualWidth * cdpi.DpiScaleX), (int)Math.Ceiling(croot.ActualHeight * cdpi.DpiScaleY),
+                    96 * cdpi.DpiScaleX, 96 * cdpi.DpiScaleY, System.Windows.Media.PixelFormats.Pbgra32);
+                crtb.Render(croot);
+                ImageOutput.SavePng(crtb, Path.Combine(dir, "demo-customize-toolbar.png"));
+                log.AppendLine("shot demo-customize-toolbar");
+            }
+            customize.Close();
+            w.TestToolbarLayout(null);
             w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Left);
             w.TestStrip?.SetSideView("list");
             await Shot("demo-strip-left");
