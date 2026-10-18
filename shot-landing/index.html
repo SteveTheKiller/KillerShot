@@ -8,19 +8,19 @@
 <meta name="darkreader-lock">
 <title data-i18n="page_index_title">KillerShot: Encrypted Screenshot Album for Windows</title>
 <link rel="canonical" href="https://killershot.net/">
-<meta name="description" data-i18n-content="page_index_description" content="Capture a region, window or monitor with Print Screen, mark it up, redact it, and record MP4 or GIF with KillerShot for Windows.">
+<meta name="description" data-i18n-content="page_index_description" content="Keep every screenshot in an encrypted, searchable album on your own PC. KillerShot for Windows captures with Print Screen, marks up and redacts, and records MP4 or GIF.">
 <link rel="icon" type="image/x-icon" href="brand/kst-icon.ico">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://killershot.net/">
 <meta property="og:title" data-i18n-content="page_index_title" content="KillerShot: Encrypted Screenshot Album for Windows">
-<meta property="og:description" data-i18n-content="page_index_description" content="Capture a region, window or monitor with Print Screen, mark it up, redact it, and record MP4 or GIF with KillerShot for Windows.">
+<meta property="og:description" data-i18n-content="page_index_description" content="Keep every screenshot in an encrypted, searchable album on your own PC. KillerShot for Windows captures with Print Screen, marks up and redacts, and records MP4 or GIF.">
 <meta property="og:image" content="https://killershot.net/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" data-i18n-content="page_index_title" content="KillerShot: Encrypted Screenshot Album for Windows">
-<meta name="twitter:description" data-i18n-content="page_index_description" content="Capture a region, window or monitor with Print Screen, mark it up, redact it, and record MP4 or GIF with KillerShot for Windows.">
+<meta name="twitter:description" data-i18n-content="page_index_description" content="Keep every screenshot in an encrypted, searchable album on your own PC. KillerShot for Windows captures with Print Screen, marks up and redacts, and records MP4 or GIF.">
 <meta name="twitter:image" content="https://killershot.net/og-image.png">
 <link rel="stylesheet" href="kst.css?v=1">
 <link rel="stylesheet" href="feature-carousel.css?v=2">
@@ -176,16 +176,17 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 </div>
 </div>
 <div class="hero-blurbs">
-<div class="blurb"><h3 data-i18n="b3_t">What it is for</h3><p data-i18n="b3_d1"><b>Grabbing proof for a ticket.</b> Press Print Screen, drag around the error, paste it into the ticket. The picture is already on the clipboard before you let go of the mouse.</p><br><p data-i18n="b3_d2"><b>Showing someone where to click.</b> Add an arrow, a box and a line of text, black out the account number, and copy the result.</p><br><p data-i18n="b3_d3"><b>When a picture is not enough.</b> Record the steps as a short MP4 or GIF, with the sound if it matters.</p><br><p data-i18n="b3_d4">Read the story behind it on the <a href="about.html">About</a> page.</p></div>
-<div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerShot is written in C# and WPF on .NET 10 for Windows 11.<br><br>Captures crop from one copy of the whole desktop taken at 96 DPI, one image pixel per screen pixel, so nothing is rescaled.<br><br>MP4 uses the H.264 and AAC encoders built into Windows. The GIF encoder, the region selector and the editor were written for KillerShot.<br><br>The <a href="technical.html">Technical</a> page explains the capture and recording pipelines.</p></div>
+<div class="blurb"><h3 data-i18n="b3_t">What it is for</h3><p data-i18n="b3_d0"><b>Finding it again.</b> Every capture lands in an encrypted album on your PC. The screenshot you pasted into a ticket last month is still there, and a search finds it from a word that was on the screen.</p><br><p data-i18n="b3_d1"><b>Grabbing proof for a ticket.</b> Press Print Screen, drag around the error, paste it into the ticket. The picture is already on the clipboard before you let go of the mouse.</p><br><p data-i18n="b3_d2"><b>Showing someone where to click.</b> Add an arrow, a box and a line of text, black out the account number, and copy the result.</p><br><p data-i18n="b3_d3"><b>When a picture is not enough.</b> Record the steps as a short MP4 or GIF, with the sound if it matters.</p><br><p data-i18n="b3_d4">Read the story behind it on the <a href="about.html">About</a> page.</p></div>
+<div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerShot is written in C# and WPF on .NET 10 for Windows 11.<br><br>The album is a SQLCipher database encrypted with AES-256, with a full-text index over the text Windows reads from each picture.<br><br>Captures crop from one copy of the whole desktop taken at 96 DPI, one image pixel per screen pixel, so nothing is rescaled.<br><br>MP4 uses the H.264 and AAC encoders built into Windows. The GIF encoder, the region selector and the editor were written for KillerShot.<br><br>The <a href="technical.html">Technical</a> page explains the album and the capture and recording pipelines.</p></div>
 <div class="blurb"><h3 data-i18n="b1_t">Fully featured</h3><ul class="blurb-list" data-i18n="b1_d">
+<li>An encrypted album of every capture, searchable by the text in each picture</li>
+<li>Collections, notes, and shelf, carousel, grid and timeline views</li>
 <li>Region, window, monitor and all-monitor capture from Print Screen</li>
 <li>A frozen desktop, so menus and tooltips stay in the picture</li>
 <li>Covered windows captured whole through Windows Graphics Capture</li>
 <li>PNG and bitmap on the clipboard, PNG or JPEG to a folder</li>
 <li>Editor with arrows, shapes, text, highlighter, redaction and crop</li>
 <li>MP4 with system sound and microphone, or animated GIF</li>
-<li>Every capture kept in an encrypted, searchable library</li>
 <li>Headless command line and KillerMCP tools for scripts and agents</li>
 <li>Thirteen themes, eight accents and 19 languages</li>
 </ul></div>
@@ -195,6 +196,11 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <section class="features">
 <h2 data-i18n="features_h">What it does</h2>
 <div class="feature-grid">
+<div class="feature-card"><h3 data-i18n="f_recent_t">Encrypted screenshot album</h3><p data-i18n="f_recent_d">Every capture is kept in one AES-256 encrypted file on your PC. It opens with your Windows account and no one else's, or only with a password you set. Nothing is uploaded and there is no cloud account.</p></div>
+<div class="feature-card"><h3 data-i18n="f_search_t">Search inside your screenshots</h3><p data-i18n="f_search_d">Windows reads the text in every capture in the background, so a search finds the screenshot with the error code in it. Window titles, program names, notes and collection names are searched too.</p></div>
+<div class="feature-card"><h3 data-i18n="f_views_t">Shelves, carousels and timelines</h3><p data-i18n="f_views_d">Browse the album as shelves of carousels by day or collection, one large carousel, a grid or a timeline. Sort captures into collections, add notes, and keep everything or only the last 100 to 5,000 captures or 30 to 365 days.</p></div>
+<div class="feature-card"><h3 data-i18n="f_strip_t">The collection strip</h3><p data-i18n="f_strip_d">With a picture open, the rest of its collection runs beside it as a carousel or a column of thumbnails. Dock it to any side with Alt+Shift and an arrow key, or minimize it to a bar.</p></div>
+<div class="feature-card"><h3 data-i18n="f_folder_t">Your Screenshots folder, live</h3><p data-i18n="f_folder_d">Windows' own Screenshots folder shows up as a collection, read straight from the files, so new pictures appear as they arrive. Add any of them to the encrypted album to keep it there.</p></div>
 <div class="feature-card"><h3 data-i18n="f_prtsc_t">Print Screen, taken over</h3><p data-i18n="f_prtsc_d">Plain Print Screen repeats the last mode you used. Alt+Print Screen takes the active window, Ctrl+Print Screen the monitor under the pointer, Shift+Print Screen every monitor, and Ctrl+Shift+Print Screen starts or stops a recording. Every shortcut can be changed or turned off.</p></div>
 <div class="feature-card"><h3 data-i18n="f_frozen_t">Frozen desktop</h3><p data-i18n="f_frozen_d">The whole desktop is copied the moment you press the key, so open menus and tooltips stay in the picture and the selection overlay never does. Drag across monitors with different scaling, hover to highlight a window and click to take it. Escape or a right-click cancels with nothing copied.</p></div>
 <div class="feature-card"><h3 data-i18n="f_window_t">Window capture</h3><p data-i18n="f_window_d">Window mode uses Windows Graphics Capture, so a window that is partly covered still comes out whole, and its rounded corners are filled from the desktop behind it. Turn on window picking to click the window you want instead of taking the active one.</p></div>
@@ -204,7 +210,6 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <div class="feature-card"><h3 data-i18n="f_redact_t">Redaction that holds</h3><p data-i18n="f_redact_d">Redaction is an opaque block, not a blur. The saved file and the clipboard copy carry the flattened pixels, so nothing hidden rides along underneath.</p></div>
 <div class="feature-card"><h3 data-i18n="f_record_t">Screen recording</h3><p data-i18n="f_record_d">Record a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. A countdown, then a frame and a Pause, Stop and Discard bar that never appear in the video.</p></div>
 <div class="feature-card"><h3 data-i18n="f_gif_t">GIFs that stay small</h3><p data-i18n="f_gif_d">The GIF encoder was written for KillerShot. Each frame stores only what changed, with its own palette, and the size, color count, frame rate and looping are yours to set.</p></div>
-<div class="feature-card"><h3 data-i18n="f_recent_t">Encrypted capture library</h3><p data-i18n="f_recent_d">Every capture is kept in one AES-256 encrypted file that opens with your Windows account or a password. Browse it as carousels, a grid or a timeline, sort it into collections, and search the text inside your screenshots.</p></div>
 <div class="feature-card"><h3 data-i18n="f_print_t">Print</h3><p data-i18n="f_print_d">Print the capture from the editor with Ctrl+P or straight from the tray, with options to shrink, enlarge and rotate it to fit the page.</p></div>
 <div class="feature-card"><h3 data-i18n="f_cli_t">Command line ready</h3><p data-i18n="f_cli_d">Capture a monitor, window, rectangle or every monitor, record for a set time, and list, search, copy or export library captures from scripts and scheduled tasks, with JSON output and dependable exit codes. <a href="help.html#command-line">See every command.</a></p></div>
 <div class="feature-card"><h3 data-i18n="f_mcp_t">Works with KillerMCP</h3><p data-i18n="f_mcp_d">Agents connected through KillerMCP can list monitors and windows, take screenshots and recordings, and open an image in the editor on your screen. <a href="mcp.html">See the tools.</a></p></div>

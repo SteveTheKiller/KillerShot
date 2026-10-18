@@ -8,7 +8,7 @@
 <meta name="darkreader-lock">
 <title data-i18n="page_tech_title">KillerShot: Technical</title>
 <link rel="canonical" href="https://killershot.net/technical.html">
-<meta name="description" data-i18n-content="page_tech_description" content="How KillerShot captures the screen: the frozen desktop, Windows Graphics Capture, DPI handling, clipboard formats and the MP4 and GIF recording pipelines.">
+<meta name="description" data-i18n-content="page_tech_description" content="How KillerShot works: the encrypted screenshot album, the frozen desktop, Windows Graphics Capture, DPI handling, clipboard formats and the MP4 and GIF recording pipelines.">
 <link rel="icon" type="image/x-icon" href="brand/kst-icon.ico">
 <link rel="stylesheet" href="kst.css?v=1">
 <style>
@@ -102,6 +102,7 @@
 <div class="sb-tabs"><span class="on" data-i18n="nav_tech">Technical</span></div>
 <nav class="outline">
 <a href="#stack" class="on" data-i18n="t_stack">Tech stack</a>
+<a href="#album" data-i18n="t_album">The encrypted album</a>
 <a href="#pipeline" data-i18n="t_pipe">The capture pipeline</a>
 <a href="#dpi" data-i18n="t_dpi">Pixels, DPI and scaling</a>
 <a href="#clipboard" data-i18n="t_clip">Clipboard and files</a>
@@ -119,7 +120,7 @@
 <section class="page-hero">
 <span class="page-title" data-i18n="tk_1">The Tech of</span>
 <img class="wm-logo" src="brand/killershot-logo-black-teal.svg" alt="KillerShot">
-<p data-i18n="t_hero">A look under the hood at how KillerShot freezes the desktop, captures covered windows, keeps every pixel, and records the screen.</p>
+<p data-i18n="t_hero">A look under the hood at how KillerShot keeps every capture in an encrypted album, freezes the desktop, captures covered windows, keeps every pixel, and records the screen.</p>
 </section>
 
 <div class="tech-grid">
@@ -129,6 +130,8 @@
 <p data-i18n="t_stack_1">KillerShot needs Windows 11 (build 22000 or later) on x64. Window capture uses the Windows Graphics Capture API, and the minimum keeps that one path for every user instead of a fallback that cannot see covered windows.</p>
 <table class="spec-table"><tr><th data-i18n="t_component">Component</th><th data-i18n="t_detail">Detail</th></tr>
 <tr><td>UI</td><td data-i18n="t_ui">WPF on .NET 10, x64, with the family window chrome, rail and themes</td></tr>
+<tr><td>Album</td><td data-i18n="t_db">SQLCipher (AES-256) through Microsoft.Data.Sqlite, with an FTS5 full-text index</td></tr>
+<tr><td>Text search</td><td data-i18n="t_ocr">Windows OCR (<code>Windows.Media.Ocr</code>) in the languages of your Windows profile, run in the background</td></tr>
 <tr><td>Desktop capture</td><td data-i18n="t_gdi">One GDI <code>BitBlt</code> of the whole virtual desktop with <code>CAPTUREBLT</code>, taken when the shortcut fires</td></tr>
 <tr><td>Window capture</td><td data-i18n="t_wgc">Windows Graphics Capture through the Windows SDK projection, composited over the frozen desktop</td></tr>
 <tr><td>Recording capture</td><td data-i18n="t_rec_wgc">Windows Graphics Capture of each monitor the recording covers, with GDI as the fallback when it is unavailable</td></tr>
@@ -136,6 +139,13 @@
 <tr><td>Sound</td><td data-i18n="t_sound">WASAPI loopback of the default playback device and the default microphone, mixed to 48 kHz stereo, encoded as AAC</td></tr>
 <tr><td>GIF</td><td data-i18n="t_gifenc">An encoder written for KillerShot: per-frame palettes, changed-area frames and LZW compression</td></tr>
 </table>
+</div>
+<div class="tech-sec" id="album">
+<h2 data-i18n="t_album">The encrypted album</h2>
+<p data-i18n="t_album_1">The album is one SQLCipher database, <code>Library.kshot</code>, encrypted with AES-256. Each capture is a row holding the full PNG, a thumbnail no larger than 512 pixels on its long side, when it was taken, its size and mode, the window and program it came from, its collection, a note, and the text Windows read from it.</p>
+<p data-i18n="t_album_2"><b>The key.</b> By default the album is keyed with a random 256-bit key, handed to SQLCipher as a raw key and sealed with Windows DPAPI to your account in <code>Library.key</code>. It opens without a prompt for you, and other accounts on the PC cannot open it, nor can a copy of the file on another machine. Setting a password re-encrypts the album under the password with <code>sqlcipher_export</code> and deletes <code>Library.key</code>, so only the password opens it. A forgotten password cannot be recovered.</p>
+<p data-i18n="t_album_3"><b>Search.</b> After a capture is stored, Windows OCR reads its text in the background. That text, the window title, the program name, the note and the collection name go into an FTS5 full-text index that ignores accents, and each word you type matches as the start of a word.</p>
+<p data-i18n="t_album_4"><b>Everything else.</b> A capture taken while a password-protected album is locked waits in memory and is stored when you unlock it. The history limit keeps everything, or only the last 100 to 5,000 captures or 30 to 365 days. Windows' Screenshots folder is read from disk and watched for new files; its pictures enter the database only when you add them.</p>
 </div>
 <div class="tech-sec" id="pipeline">
 <h2 data-i18n="t_pipe">The capture pipeline</h2>
