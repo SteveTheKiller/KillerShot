@@ -1,9 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using KillerShot.Controls;
 using KillerShot.Services;
 
-// The LIBRARY section of Capture settings: how long captures are kept, and the optional
+// The title-bar library settings: how long captures are kept, and the optional
 // password. Without a password the library opens with a random key sealed to the Windows
 // account (DPAPI). With one, the password is the key and nothing else can open the file.
 namespace KillerShot.Shell
@@ -12,6 +13,30 @@ namespace KillerShot.Shell
     {
         private static readonly string[] KeepChoices =
             ["all", "count:100", "count:500", "count:1000", "count:5000", "days:30", "days:90", "days:365"];
+
+        private void LibrarySettingsButton_Click(object sender, RoutedEventArgs e) => ShowLibrarySettings();
+
+        private void ShowLibrarySettings()
+        {
+            if (LibrarySettingsPopup.IsOpen) { LibrarySettingsPopup.IsOpen = false; return; }
+            _syncingOptions = true;
+            try { SyncLibraryOptions(); }
+            finally { _syncingOptions = false; }
+            LibrarySettingsPopup.IsOpen = true;
+            Dispatcher.BeginInvoke(new Action(() => LibraryKeepCombo.Focus()));
+        }
+
+        private void LibrarySettingsPopup_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape) return;
+            LibrarySettingsPopup.IsOpen = false;
+            e.Handled = true;
+        }
+
+        private void LibrarySettingsPopup_Closed(object sender, EventArgs e)
+        {
+            if (IsActive) LibrarySettingsButton.Focus();
+        }
 
         private void SyncLibraryOptions()
         {

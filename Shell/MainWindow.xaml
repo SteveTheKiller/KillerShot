@@ -96,14 +96,17 @@
                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
                 <!-- The library's name on the right, where Killendar and KillerNotes show their open
                      database, in the file name face. No baseline shift: that lines a name up with
-                     the wordmark, and this one centers on the caption buttons. A click opens the
-                     library. -->
+                     the wordmark, and this one centers on the caption buttons. A click opens its
+                     database settings. -->
                 <TextBlock x:Name="TitleLibraryLabel"
                            Foreground="{DynamicResource FilenameBrush}" FontFamily="{DynamicResource FileNameFont}"
                            FontSize="{DynamicResource FileNameFontSize}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="12,0,12,0"
                            MaxWidth="240" TextTrimming="CharacterEllipsis" Cursor="Hand"
                            MouseLeftButtonUp="TitleLibraryLabel_Click"/>
+                <Button x:Name="LibrarySettingsButton" Click="LibrarySettingsButton_Click"
+                        Style="{StaticResource ChromeButton}" FontSize="16" Content="&#xE8F1;"
+                        Foreground="{DynamicResource CaptionGlyphBrush}" ToolTip="{DynamicResource Str_Btn_Library}"/>
                 <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}"
                         Content="&#xE921;" ToolTip="{DynamicResource Str_Sys_Minimize}"/>
                 <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}"
@@ -586,24 +589,6 @@
                                         <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
 
-                                        <TextBlock Text="{DynamicResource Str_CS_Library}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
-                                        <Grid Margin="0,0,0,8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="190"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock x:Name="LibraryKeepLabel" Text="{DynamicResource Str_CS_Keep}" Style="{StaticResource CsLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                            <ComboBox x:Name="LibraryKeepCombo" Grid.Column="1" SelectionChanged="LibraryKeepCombo_Changed"
-                                                      AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
-                                        </Grid>
-                                        <CheckBox x:Name="LibraryFolderToggle" Style="{StaticResource CsCheck}"
-                                                  Checked="LibraryFolderToggle_Changed" Unchecked="LibraryFolderToggle_Changed"/>
-                                        <TextBlock x:Name="LibraryStatusText" Foreground="{DynamicResource DimTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button x:Name="LibraryPasswordBtn" Style="{StaticResource OutlineButton}" Padding="10,3" Click="LibraryPassword_Click"/>
-                                            <Button x:Name="LibraryRemovePasswordBtn" Content="{DynamicResource Str_CS_RemovePassword}" Style="{StaticResource OutlineButton}"
-                                                    Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
-                                        </StackPanel>
                                     </StackPanel>
 
                                     <StackPanel Width="420">
@@ -1167,5 +1152,39 @@
                 BorderBrush="{DynamicResource FrameInnerDarkBrush}"
                 BorderThickness="{DynamicResource FrameInnerDarkThickness}"/>
         </Grid>
+        <Popup x:Name="LibrarySettingsPopup" PlacementTarget="{Binding ElementName=LibrarySettingsButton}"
+               Placement="Bottom" AllowsTransparency="True" StaysOpen="False"
+               HorizontalOffset="-16" VerticalOffset="-14" Closed="LibrarySettingsPopup_Closed">
+            <Border Style="{StaticResource FlyoutCard}" PreviewKeyDown="LibrarySettingsPopup_PreviewKeyDown">
+                <Grid>
+                    <StackPanel x:Name="LibrarySettingsContent" Margin="14" Width="380"
+                                TextElement.FontFamily="{DynamicResource UiFont}" TextElement.Foreground="{DynamicResource TextBrush}"
+                                KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
+                        <TextBlock Text="{DynamicResource Str_CS_Library}" FontFamily="{DynamicResource HeadingFont}"
+                                   FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="LibraryKeepLabel" Text="{DynamicResource Str_CS_Keep}" FontSize="12"
+                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <ComboBox x:Name="LibraryKeepCombo" Grid.Column="1" SelectionChanged="LibraryKeepCombo_Changed"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
+                        </Grid>
+                        <CheckBox x:Name="LibraryFolderToggle" FontSize="11" Margin="0,0,0,8"
+                                  Checked="LibraryFolderToggle_Changed" Unchecked="LibraryFolderToggle_Changed"/>
+                        <TextBlock x:Name="LibraryStatusText" Foreground="{DynamicResource DimTextBrush}" FontSize="11"
+                                   TextWrapping="Wrap" Margin="0,0,0,6"/>
+                        <WrapPanel>
+                            <Button x:Name="LibraryPasswordBtn" Style="{StaticResource OutlineButton}" Padding="10,3" Click="LibraryPassword_Click"/>
+                            <Button x:Name="LibraryRemovePasswordBtn" Content="{DynamicResource Str_CS_RemovePassword}" Style="{StaticResource OutlineButton}"
+                                    Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <Border Style="{StaticResource FlyoutGrain}"/>
+                </Grid>
+            </Border>
+        </Popup>
     </Grid>
 </Window>

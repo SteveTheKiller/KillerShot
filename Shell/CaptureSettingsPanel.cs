@@ -79,7 +79,6 @@ namespace KillerShot.Shell
             int di = Array.IndexOf(DelayChoices, CaptureSettings.DelaySeconds);
             DelayCombo.SelectedIndex = di >= 0 ? di : 0;
 
-            SyncLibraryOptions();
             _syncingOptions = false;
             RefreshFileNameExample();
         }

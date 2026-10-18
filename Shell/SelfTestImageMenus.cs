@@ -74,6 +74,23 @@ internal static class SelfTestImageMenus
             if (dockButton == null || !dockButton.IsVisible)
                 throw new InvalidOperationException("Strip position must be available in the rail.");
             report.Add("Collection-strip position button: available in rail PASS");
+            var librarySettings = window.FindName("LibrarySettingsButton") as Button;
+            if (librarySettings == null || !librarySettings.IsVisible)
+                throw new InvalidOperationException("Library settings must be available in the title bar.");
+            var buttonPosition = librarySettings.TranslatePoint(new Point(), window);
+            if (buttonPosition.Y >= 40 || buttonPosition.X <= window.ActualWidth / 2)
+                throw new InvalidOperationException("Library settings must be on the right of the title bar.");
+            string keepBefore = CaptureLibrary.Keep;
+            librarySettings.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Task.Delay(150);
+            var libraryPopup = (System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup");
+            if (!libraryPopup.IsOpen || !ReferenceEquals(libraryPopup.PlacementTarget, librarySettings)
+                || !((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible
+                || ((FrameworkElement)window.FindName("CaptureSettingsOverlay")).IsVisible)
+                throw new InvalidOperationException("The title-bar button must open its own library settings card.");
+            libraryPopup.IsOpen = false;
+            if (CaptureLibrary.Keep != keepBefore) throw new InvalidOperationException("Opening library settings changed retention.");
+            report.Add("Library settings: right title-bar button, anchored card and unchanged retention PASS");
             var editor = (EditorCanvas)window.FindName("Editor");
             var stage = (FrameworkElement)window.FindName("EditorStage");
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");
