@@ -58,6 +58,7 @@ namespace KillerShot.Shell
             new("Ctrl+-",   "Str_KS_ZoomOut",    KsCat.View, true,  "Minus"),
             new("Ctrl+Shift+1-6", "Str_KS_ToolbarStyle", KsCat.View, true, "D1", "D2", "D3", "D4", "D5", "D6"),
             new("Alt+M",    "Str_Toolbar_Hide",  KsCat.View, false, "M"),
+            new("Alt+Shift+G", "Str_Theme_FilmGrain", KsCat.View, false),
             new("Alt+Shift+Arrows", "Str_KS_DockStrip", KsCat.View, false),
             new("F5",       "Str_Lib_ViewShelves",  KsCat.View, false, "F5"),
             new("F6",       "Str_Lib_ViewFlow",     KsCat.View, false, "F6"),

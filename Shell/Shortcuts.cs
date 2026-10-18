@@ -58,6 +58,15 @@ namespace KillerShot.Shell
                 return;
             }
 
+            // Alt+Shift+G, the family Film Grain chord. A text field takes no Alt chords, so it is
+            // safe while typing.
+            if (alt && shift && !ctrl && e.Key == Key.System && e.SystemKey == Key.G)
+            {
+                if (!e.IsRepeat) _themePicker.ToggleFilmGrain();
+                e.Handled = true;
+                return;
+            }
+
             // Alt+M hides or shows the toolbar, as in KillerPDF. Alt combinations arrive as
             // Key.System with the letter in SystemKey.
             if (alt && !ctrl && e.Key == Key.System && e.SystemKey == Key.M)

@@ -22,6 +22,7 @@ namespace KillerShot.Controls
         private readonly UIElement _button;
         private Grid? _accentHost;
         private readonly List<Border> _accentDots = [];
+        private CheckBox? _filmGrainCheck;
         internal ThemePicker(Window window, ContextMenu menu, UIElement themeButton)
         {
             _window = window;
@@ -56,6 +57,13 @@ namespace KillerShot.Controls
             FlyoutPlacement.Attach(_menu, _button);
             _menu.IsOpen = true;
             Anim.FadeIn(_menu);
+        }
+
+        /// <summary>Alt+Shift+G: flips Film Grain and keeps the menu's check box in step.</summary>
+        internal void ToggleFilmGrain()
+        {
+            FilmGrain.Set(!FilmGrain.Enabled);
+            if (_filmGrainCheck != null) _filmGrainCheck.IsChecked = FilmGrain.Enabled;
         }
 
         private void BuildPdfMenu(bool animateAccent = false)
@@ -154,6 +162,8 @@ namespace KillerShot.Controls
             };
             filmGrain.SetResourceReference(ContentControl.ContentProperty, "Str_Theme_FilmGrain");
             filmGrain.Click += (_, _) => FilmGrain.Set(filmGrain.IsChecked == true);
+            filmGrain.ToolTip = (Application.Current.TryFindResource("Str_Theme_FilmGrain") as string) + " (Alt+Shift+G)";
+            _filmGrainCheck = filmGrain;
             grainRow.Children.Add(filmGrain);
             panel.Children.Add(grainRow);
 
