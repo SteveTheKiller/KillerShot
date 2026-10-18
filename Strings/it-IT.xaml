@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Aggiungi alla libreria</sys:String>
     <sys:String x:Key="Str_Lib_Added">Aggiunta alla libreria.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Mostra la cartella {0} come raccolta</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Raccolta</sys:String>
+    <sys:String x:Key="Str_Strip_All">Tutte le catture</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Aprire un'altra cattura?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">I segni su questa immagine non sono salvati e andranno persi.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Apri</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Ancora a sinistra</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Ancora in alto</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Ancora a destra</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Ancora in basso</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Riduci</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Mostra la striscia della raccolta</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Posizione della striscia</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Ridimensiona la striscia della raccolta</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Ancora la striscia della raccolta su quel lato, o riducila sul suo lato</sys:String>
 </ResourceDictionary>

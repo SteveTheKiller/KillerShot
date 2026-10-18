@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Agregar a la biblioteca</sys:String>
     <sys:String x:Key="Str_Lib_Added">Agregada a la biblioteca.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Mostrar la carpeta {0} como colección</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Colección</sys:String>
+    <sys:String x:Key="Str_Strip_All">Todas las capturas</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">¿Abrir otra captura?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Las marcas de esta imagen no están guardadas y se perderán.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Abrir</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Acoplar a la izquierda</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Acoplar arriba</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Acoplar a la derecha</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Acoplar abajo</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Minimizar</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Mostrar la tira de colección</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Posición de la tira</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Cambiar el tamaño de la tira de colección</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Acoplar la tira de colección en ese lado, o minimizarla en su propio lado</sys:String>
 </ResourceDictionary>

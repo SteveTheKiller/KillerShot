@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Dodaj do biblioteki</sys:String>
     <sys:String x:Key="Str_Lib_Added">Dodano do biblioteki.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Pokaż folder {0} jako kolekcję</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Kolekcja</sys:String>
+    <sys:String x:Key="Str_Strip_All">Wszystkie zrzuty</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Otworzyć inny zrzut?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Oznaczenia na tym obrazie nie są zapisane i zostaną utracone.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Otwórz</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Zadokuj po lewej</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Zadokuj u góry</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Zadokuj po prawej</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Zadokuj u dołu</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Minimalizuj</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Pokaż pasek kolekcji</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Położenie paska</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Zmień rozmiar paska kolekcji</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Zadokuj pasek kolekcji po tej stronie lub zminimalizuj go po jego własnej stronie</sys:String>
 </ResourceDictionary>

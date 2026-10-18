@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">添加到截图库</sys:String>
     <sys:String x:Key="Str_Lib_Added">已添加到截图库。</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">将 {0} 文件夹显示为收藏集</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">收藏集</sys:String>
+    <sys:String x:Key="Str_Strip_All">所有截图</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">打开另一张截图?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">此图片上的标记尚未保存，将会丢失。</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">打开</sys:String>
+    <sys:String x:Key="Str_Dock_Left">停靠在左侧</sys:String>
+    <sys:String x:Key="Str_Dock_Top">停靠在顶部</sys:String>
+    <sys:String x:Key="Str_Dock_Right">停靠在右侧</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">停靠在底部</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">显示收藏集栏</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">收藏集栏位置</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">调整收藏集栏大小</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">将收藏集栏停靠到该侧，或在其所在一侧最小化</sys:String>
 </ResourceDictionary>

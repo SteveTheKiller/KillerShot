@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Zur Bibliothek hinzufügen</sys:String>
     <sys:String x:Key="Str_Lib_Added">Zur Bibliothek hinzugefügt.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Ordner {0} als Sammlung anzeigen</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Sammlung</sys:String>
+    <sys:String x:Key="Str_Strip_All">Alle Aufnahmen</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Andere Aufnahme öffnen?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Die Markierungen auf diesem Bild sind nicht gespeichert und gehen verloren.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Öffnen</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Links andocken</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Oben andocken</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Rechts andocken</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Unten andocken</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Minimieren</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Sammlungsleiste anzeigen</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Position der Leiste</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Größe der Sammlungsleiste ändern</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Sammlungsleiste an dieser Seite andocken oder an ihrer eigenen Seite minimieren</sys:String>
 </ResourceDictionary>

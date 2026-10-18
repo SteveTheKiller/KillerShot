@@ -290,6 +290,7 @@ namespace KillerShot.Shell
             BuildToolbarMenu();
             ApplyToolbarStyle();
             Library.Relocalize();
+            _strip?.Relocalize();
         }
     }
 }

@@ -80,11 +80,13 @@ namespace KillerShot.Shell
         {
             if (_doc != null) _doc.Changed -= RefreshDocumentUi;
             // A new image comes to the front; the library steps back.
-            if (!ReferenceEquals(doc, _doc)) _libraryShown = false;
+            bool changed = !ReferenceEquals(doc, _doc);
+            if (changed) _libraryShown = false;
             _doc = doc;
             Editor.Document = doc;
             if (_doc != null) _doc.Changed += RefreshDocumentUi;
             RefreshDocumentUi();
+            if (changed) _strip?.Follow(App.Instance.CurrentItem, doc?.FilePath);
         }
 
         /// <summary>Title, enabled states, empty state and footer after any document change.</summary>
@@ -387,6 +389,8 @@ namespace KillerShot.Shell
         {
             bool library = _doc == null || _libraryShown;
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
+            // The strip goes with an open picture; the library is its own browser.
+            StripDock.ShowPane = !library;
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
             // The Library button carries the accent while it covers an image, like a tool.
             if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");

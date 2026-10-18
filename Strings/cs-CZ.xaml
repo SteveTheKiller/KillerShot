@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Přidat do knihovny</sys:String>
     <sys:String x:Key="Str_Lib_Added">Přidáno do knihovny.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Zobrazit složku {0} jako kolekci</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Kolekce</sys:String>
+    <sys:String x:Key="Str_Strip_All">Všechny snímky</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Otevřít jiný snímek?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Značky na tomto obrázku nejsou uložené a ztratí se.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Otevřít</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Ukotvit vlevo</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Ukotvit nahoře</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Ukotvit vpravo</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Ukotvit dole</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Minimalizovat</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Zobrazit pás kolekce</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Umístění pásu</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Změnit velikost pásu kolekce</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Ukotvit pás kolekce na tuto stranu, nebo ho minimalizovat na jeho vlastní straně</sys:String>
 </ResourceDictionary>

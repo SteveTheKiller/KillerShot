@@ -35,7 +35,9 @@ internal sealed class CoverFlow : FrameworkElement
     private const double MaxHeight = 1.0;
     private const double CameraDistance = 3.1;
     private const double CameraY = 0.50;          // the middle of the view: pictures above, reflections below
-    private const double ViewHeight = 1.60;       // model units visible top to bottom at the front picture
+    /// <summary>Model units visible top to bottom at the front picture. Smaller draws the
+    /// pictures larger; the collection strip, which is short, uses a smaller value.</summary>
+    public double ViewHeight { get; set; } = 1.60;
     private const double MinViewWidth = 4.6;      // model units always visible across at the front picture
 
     private readonly Viewport3D _viewport = new();

@@ -4,6 +4,7 @@
         xmlns:icons="clr-namespace:KillerShot.Controls"
         xmlns:editor="clr-namespace:KillerShot.Editor"
         xmlns:local="clr-namespace:KillerShot.Shell"
+        xmlns:kl="clr-namespace:KillerFamily.Layout"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerShot"
         Icon="/Resources/kst-icon.ico"
@@ -189,10 +190,14 @@
                     </Button>
                 </Grid>
 
+                <!-- The editor card, with the collection strip docked to any side of it
+                     (StripHost.cs). The strip shows only while a picture is open. -->
+                <kl:DockHost x:Name="StripDock" Grid.Row="1" Panel.ZIndex="10">
+                <kl:DockHost.Body>
                 <Border x:Name="ContentPane"
-                        Grid.Row="1" Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
+                        Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
                         BorderThickness="{DynamicResource ContentPaneBaseBorderThickness}"
-                        CornerRadius="{DynamicResource PanelCornerRadius}" Margin="{DynamicResource ContentPaneMargin}" Panel.ZIndex="10">
+                        CornerRadius="{DynamicResource PanelCornerRadius}" Margin="{DynamicResource ContentPaneMargin}">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="16" ShadowDepth="0" Opacity="{DynamicResource PaneShadowOpacity}"/>
                     </Border.Effect>
@@ -245,6 +250,8 @@
                                 BorderThickness="{DynamicResource PaneBevel2DarkThickness}"/>
                     </Grid>
                 </Border>
+                </kl:DockHost.Body>
+                </kl:DockHost>
             </Grid>
 
             <!-- Permanent icon rail. Every button sits in the bottom stack in the family order:

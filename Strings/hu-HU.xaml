@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Hozzáadás a könyvtárhoz</sys:String>
     <sys:String x:Key="Str_Lib_Added">Hozzáadva a könyvtárhoz.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">A(z) {0} mappa megjelenítése gyűjteményként</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Gyűjtemény</sys:String>
+    <sys:String x:Key="Str_Strip_All">Minden rögzítés</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Megnyit egy másik rögzítést?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">A kép jelölései nincsenek mentve, és elvesznek.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Megnyitás</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Rögzítés balra</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Rögzítés felülre</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Rögzítés jobbra</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Rögzítés alulra</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Kis méret</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">A gyűjteménysáv megjelenítése</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">A sáv helye</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">A gyűjteménysáv átméretezése</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">A gyűjteménysáv rögzítése arra az oldalra, vagy kis méretre állítása a saját oldalán</sys:String>
 </ResourceDictionary>

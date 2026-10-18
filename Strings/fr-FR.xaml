@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Ajouter à la bibliothèque</sys:String>
     <sys:String x:Key="Str_Lib_Added">Ajoutée à la bibliothèque.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Afficher le dossier {0} comme collection</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Collection</sys:String>
+    <sys:String x:Key="Str_Strip_All">Toutes les captures</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Ouvrir une autre capture ?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Les annotations de cette image ne sont pas enregistrées et seront perdues.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Ouvrir</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Ancrer à gauche</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Ancrer en haut</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Ancrer à droite</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Ancrer en bas</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Réduire</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Afficher le bandeau de collection</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Position du bandeau</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Redimensionner le bandeau de collection</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Ancrer le bandeau de collection de ce côté, ou le réduire de son propre côté</sys:String>
 </ResourceDictionary>

@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Додати до бібліотеки</sys:String>
     <sys:String x:Key="Str_Lib_Added">Додано до бібліотеки.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Показувати папку {0} як колекцію</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Колекція</sys:String>
+    <sys:String x:Key="Str_Strip_All">Усі знімки</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Відкрити інший знімок?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Позначки на цьому зображенні не збережено, їх буде втрачено.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Відкрити</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Закріпити ліворуч</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Закріпити вгорі</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Закріпити праворуч</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Закріпити внизу</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Згорнути</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Показати стрічку колекції</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Положення стрічки</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Змінити розмір стрічки колекції</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Закріпити стрічку колекції з цього боку або згорнути її на своєму боці</sys:String>
 </ResourceDictionary>

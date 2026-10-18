@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Кітапханаға қосу</sys:String>
     <sys:String x:Key="Str_Lib_Added">Кітапханаға қосылды.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">{0} қалтасын жинақ ретінде көрсету</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Жинақ</sys:String>
+    <sys:String x:Key="Str_Strip_All">Барлық түсірілімдер</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Басқа түсірілімді ашу керек пе?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Бұл суреттегі белгілер сақталмаған, олар жоғалады.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Ашу</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Сол жаққа бекіту</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Жоғарыға бекіту</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Оң жаққа бекіту</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Төменге бекіту</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Кішірейту</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Жинақ жолағын көрсету</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Жолақ орны</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Жинақ жолағының өлшемін өзгерту</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Жинақ жолағын сол жаққа бекіту немесе өз жағында кішірейту</sys:String>
 </ResourceDictionary>

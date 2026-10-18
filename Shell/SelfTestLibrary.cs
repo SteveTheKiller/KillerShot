@@ -197,7 +197,25 @@ internal static class SelfTestLibrary
             await Shot("library-over-image");
             w.TestToggleLibrary();
 
+            // The collection strip beside the open picture, on every side and minimized.
+            var dock = w.TestStripDock;
+            log.AppendLine($"strip shown={dock.ShowPane} side={dock.Side}");
+            if (!dock.ShowPane) throw new InvalidOperationException("The collection strip is not shown with a picture open.");
+            foreach (var side in new[] { KillerFamily.Layout.DockSide.Top, KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Bottom })
+            {
+                dock.DockTo(side);
+                await Shot("strip-" + side.ToString().ToLowerInvariant());
+            }
+            dock.Minimize();
+            await Shot("strip-bottom-minimized");
+            dock.Restore();
+            dock.DockTo(KillerFamily.Layout.DockSide.Top);
+            w.TestOpenLibraryCapture(FolderCaptures.Items()[1]);
+            await Shot("strip-folder");
+            log.AppendLine($"strip folder_doc={App.Instance.Document?.FilePath != null} current={App.Instance.CurrentItem?.Id}");
             App.Instance.SetDocument(null);
+            log.AppendLine($"strip hidden_without_picture={!dock.ShowPane}");
+            if (dock.ShowPane) throw new InvalidOperationException("The collection strip stays without a picture.");
 
             // Password: set, lock, refuse a wrong one, unlock, change, remove.
             CaptureLibrary.SetPassword("first pass");

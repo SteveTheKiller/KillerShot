@@ -25,6 +25,8 @@ namespace KillerShot.Shell
         {
             // A shortcut recorder owns every key while it is listening.
             if (_recording != null) { RecorderKey(e); return; }
+            // Alt+Shift+arrow docks the collection strip, or folds it on its own side.
+            if (!AnyOverlayOpen && StripDock.HandleKey(e)) return;
 
             var mods = Keyboard.Modifiers;
             bool ctrl = (mods & ModifierKeys.Control) != 0;

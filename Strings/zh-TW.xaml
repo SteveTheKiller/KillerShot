@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">加入擷取庫</sys:String>
     <sys:String x:Key="Str_Lib_Added">已加入擷取庫。</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">將 {0} 資料夾顯示為收藏集</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">收藏集</sys:String>
+    <sys:String x:Key="Str_Strip_All">所有擷取</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">開啟另一個擷取?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">此圖片上的標記尚未儲存，將會遺失。</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">開啟</sys:String>
+    <sys:String x:Key="Str_Dock_Left">停駐在左側</sys:String>
+    <sys:String x:Key="Str_Dock_Top">停駐在上方</sys:String>
+    <sys:String x:Key="Str_Dock_Right">停駐在右側</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">停駐在下方</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">顯示收藏集列</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">收藏集列位置</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">調整收藏集列大小</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">將收藏集列停駐到該側，或在其所在一側最小化</sys:String>
 </ResourceDictionary>

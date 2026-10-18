@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">ライブラリに追加</sys:String>
     <sys:String x:Key="Str_Lib_Added">ライブラリに追加しました。</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">{0} フォルダーをコレクションとして表示</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">コレクション</sys:String>
+    <sys:String x:Key="Str_Strip_All">すべてのキャプチャ</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">別のキャプチャを開きますか?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">この画像の書き込みは保存されておらず、失われます。</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">開く</sys:String>
+    <sys:String x:Key="Str_Dock_Left">左にドッキング</sys:String>
+    <sys:String x:Key="Str_Dock_Top">上にドッキング</sys:String>
+    <sys:String x:Key="Str_Dock_Right">右にドッキング</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">下にドッキング</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">コレクション ストリップを表示</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">ストリップの位置</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">コレクション ストリップのサイズ変更</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">コレクション ストリップをその側にドッキング、または自分の側で最小化</sys:String>
 </ResourceDictionary>

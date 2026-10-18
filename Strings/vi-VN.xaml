@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Thêm vào thư viện</sys:String>
     <sys:String x:Key="Str_Lib_Added">Đã thêm vào thư viện.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Hiện thư mục {0} như một bộ sưu tập</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Bộ sưu tập</sys:String>
+    <sys:String x:Key="Str_Strip_All">Tất cả ảnh chụp</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Mở ảnh chụp khác?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Các đánh dấu trên ảnh này chưa được lưu và sẽ bị mất.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Mở</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Gắn bên trái</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Gắn ở trên</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Gắn bên phải</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Gắn ở dưới</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Thu nhỏ</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Hiện dải bộ sưu tập</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Vị trí của dải</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Đổi cỡ dải bộ sưu tập</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Gắn dải bộ sưu tập vào phía đó, hoặc thu nhỏ nó ở chính phía của nó</sys:String>
 </ResourceDictionary>

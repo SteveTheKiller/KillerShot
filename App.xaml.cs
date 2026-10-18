@@ -162,12 +162,19 @@ public partial class App : Application
         // A picture from the Screenshots folder opens as the file it is, so Save writes it back.
         if (FolderCaptures.IsFolderId(item.Id) && FolderCaptures.PathOf(item.Id) is { } path)
         {
-            OpenImage(path);
+            _opening = item;
+            try { OpenImage(path); } finally { _opening = null; }
             return;
         }
         var bmp = CaptureLibrary.LoadImage(item.Id);
+        _opening = item;
         SetDocument(new EditorDocument(bmp, null, item.Taken));
     }
+
+    /// <summary>The library or Screenshots folder picture in the editor, or null for a new
+    /// capture or another file. The collection strip follows it.</summary>
+    internal CaptureItem? CurrentItem { get; private set; }
+    private CaptureItem? _opening;
 
     /// <summary>Theme, locale, grain and rendering, in the order the family kit expects, before
     /// any window exists.</summary>
@@ -199,6 +206,8 @@ public partial class App : Application
 
     internal void SetDocument(EditorDocument? doc)
     {
+        CurrentItem = doc != null ? _opening : null;
+        _opening = null;
         Document = doc;
         DocumentChanged?.Invoke();
     }

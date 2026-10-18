@@ -372,4 +372,18 @@
     <sys:String x:Key="Str_Lib_AddToLibrary">Добавить в библиотеку</sys:String>
     <sys:String x:Key="Str_Lib_Added">Добавлено в библиотеку.</sys:String>
     <sys:String x:Key="Str_CS_ShowFolder">Показывать папку {0} как коллекцию</sys:String>
+    <sys:String x:Key="Str_Strip_Collection">Коллекция</sys:String>
+    <sys:String x:Key="Str_Strip_All">Все снимки</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardTitle">Открыть другой снимок?</sys:String>
+    <sys:String x:Key="Str_Strip_DiscardDetail">Пометки на этом изображении не сохранены и будут потеряны.</sys:String>
+    <sys:String x:Key="Str_Strip_Discard">Открыть</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Закрепить слева</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Закрепить сверху</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Закрепить справа</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Закрепить снизу</sys:String>
+    <sys:String x:Key="Str_Dock_Minimize">Свернуть</sys:String>
+    <sys:String x:Key="Str_Dock_Restore">Показать ленту коллекции</sys:String>
+    <sys:String x:Key="Str_Dock_Menu">Положение ленты</sys:String>
+    <sys:String x:Key="Str_Dock_Resize">Изменить размер ленты коллекции</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Закрепить ленту коллекции с этой стороны или свернуть её на своей стороне</sys:String>
 </ResourceDictionary>
