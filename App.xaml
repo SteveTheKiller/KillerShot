@@ -7,10 +7,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- [0] is the live palette: ThemeManager updates this dictionary in place and paints
                      the accent overlay into it, so it must stay first and be the only palette here.
-                     Black is KillerShot's shipped default with the Teal accent applied over it by
+                     Dark is KillerShot's shipped default with the Teal accent applied over it by
                      ThemeManager; this must match ThemeManager's _current or the first paint
                      flashes the wrong palette. -->
-                <ResourceDictionary Source="Themes/Black.xaml"/>
+                <ResourceDictionary Source="Themes/Dark.xaml"/>
                 <ResourceDictionary Source="Controls/Controls.xaml"/>
                 <!-- [2] English string base, always present. LocaleManager layers the chosen locale
                      at [3], so a partial translation falls back to English. -->

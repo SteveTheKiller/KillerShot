@@ -40,9 +40,9 @@ namespace KillerShot.Services
 
         // Default theme/accent when nothing is stored. Tweak per app if you like.
         //
-        // KillerShot ships BLACK + TEAL.
-        private static Theme _current = Theme.Black;
-        private static Accent _darkAccent  = Accent.Red;
+        // KillerShot ships DARK + TEAL.
+        private static Theme _current = Theme.Dark;
+        private static Accent _darkAccent  = Accent.Teal;
         private static Accent _lightAccent = Accent.Green;
         private static Accent _blackAccent = Accent.Teal;
         private static Accent _se98Accent  = Accent.Blue;

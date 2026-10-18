@@ -23,7 +23,7 @@ How-tos and every shortcut are on the [help page](https://killershot.net/help.ht
 - A headless command line for scripts and scheduled tasks, with JSON output and dependable exit codes; run `KillerShot.exe --cli help` for the commands
 - Works with KillerMCP, so connected agents can list monitors and windows, take screenshots and recordings, and open an image in the editor
 - Lives in the notification area and can start with Windows
-- Thirteen themes with Black and Teal as the default, eight accents on Dark, Light, Black and 98SE, Film Grain on or off, and 19 languages. F1 shows every shortcut as a list or a keyboard map
+- Thirteen themes with Dark and Teal as the default, eight accents on Dark, Light, Black and 98SE, Film Grain on or off, and 19 languages. F1 shows every shortcut as a list or a keyboard map
 - Private by design: no account, no analytics, no update check, and nothing uploaded
 
 ## Requirements
