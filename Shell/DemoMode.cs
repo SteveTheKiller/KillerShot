@@ -21,13 +21,14 @@ internal static class DemoMode
 
     private static string? _source;
 
-    /// <summary>Points settings, the library and the Screenshots folder at the demo copies.</summary>
-    public static bool TryEnter(string[] args)
+    /// <summary>Points settings, the library and the Screenshots folder at the demo copies.
+    /// The self-test passes its own folder so it can run while a demo window is open.</summary>
+    public static bool TryEnter(string[] args, string folder = "Demo")
     {
         if (!args.Any(a => a.Equals("--demo", StringComparison.OrdinalIgnoreCase) || a.Equals("/demo", StringComparison.OrdinalIgnoreCase)))
             return false;
         IsDemo = true;
-        string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", "Demo");
+        string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", folder);
         string library = Path.Combine(root, "Library");
         try { if (Directory.Exists(library)) Directory.Delete(library, true); } catch { /* a locked old copy is reused */ }
         Settings.UseFolder(Path.Combine(root, "Settings"));
@@ -98,7 +99,7 @@ internal static class SelfTestDemo
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-demo");
         Directory.CreateDirectory(dir);
-        DemoMode.TryEnter(["--demo"]);
+        DemoMode.TryEnter(["--demo"], "DemoSelfTest");
         App.InitializeKit();
         _ = RunAsync(dir);
         return true;
@@ -148,6 +149,11 @@ internal static class SelfTestDemo
             await Shot("demo-strip-left");
             w.TestStrip?.SetSideView("rolodex");
             await Shot("demo-strip-rolodex");
+            w.TestStrip?.TestRolodexZoom(Controls.Rolodex.MaxZoom);
+            await Shot("demo-strip-rolodex-zoomed-in");
+            w.TestStrip?.TestRolodexZoom(0.5);
+            await Shot("demo-strip-rolodex-zoomed-out");
+            w.TestStrip?.TestRolodexZoom(0.85);
             w.TestStrip?.SetSideView("list");
             w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Top);
             w.Close();

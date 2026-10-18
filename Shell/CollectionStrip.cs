@@ -107,6 +107,8 @@ namespace KillerShot.Shell
                 _rolodex.Refresh();
                 _list.Items.Refresh();
             };
+            if (double.TryParse(Settings.Get("RolodexZoom"), NumberStyles.Float, CultureInfo.InvariantCulture, out double zoom)) _rolodex.Zoom = zoom;
+            _rolodex.ZoomChanged += () => Settings.Set("RolodexZoom", _rolodex.Zoom.ToString("0.###", CultureInfo.InvariantCulture));
             _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
             _rolodex.ItemActivated += item => Open(item);
 
@@ -302,6 +304,9 @@ namespace KillerShot.Shell
             if (item.Id == _current) return;
             OpenRequested?.Invoke(item);
         }
+
+        /// <summary>For the self-test: the rolodex at a given zoom, as Ctrl+wheel sets it.</summary>
+        internal void TestRolodexZoom(double zoom) => _rolodex.Zoom = zoom;
 
         /// <summary>For the self-test: show a source by its tag.</summary>
         internal void TestShow(string source)

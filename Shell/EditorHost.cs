@@ -378,6 +378,7 @@ namespace KillerShot.Shell
                 catch (Exception ex) { StatusText.Text = ex.Message; }
             };
             Library.CaptureRequested += () => StartCapture(CaptureMode.Region);
+            Library.ViewChanged += SyncContentPane;
             Library.StatusMessage += text => StatusText.Text = text;
         }
 
@@ -410,11 +411,16 @@ namespace KillerShot.Shell
             // The Library button carries the accent while it covers an image, like a tool.
             if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");
             else LibraryBtn.ClearValue(ForegroundProperty);
-            ShowContentPane(!library);
+            SyncContentPane();
             SyncFooterView();
         }
 
         private System.Windows.Media.Effects.Effect? _paneShadow;
+
+        /// <summary>The picture and the library's one big carousel sit on the lifted pane; the
+        /// library's other views have none.</summary>
+        private void SyncContentPane()
+            => ShowContentPane(_doc != null && !_libraryShown || Library.CurrentView == "flow");
 
         /// <summary>The library has no pane of its own: it sits on the window background and grain,
         /// and its cards are the pane gray instead. The picture keeps the lifted pane.</summary>

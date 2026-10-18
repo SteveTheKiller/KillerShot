@@ -23,17 +23,17 @@ namespace KillerShot.Controls;
 /// models.
 ///
 /// Mouse: click a card to bring it to the front, click the front card to open it, wheel to
-/// turn, right-click for the item menu. Keyboard: Up, Down, Home, End, Page Up and Page Down
+/// turn, Ctrl+wheel to draw the cards larger or smaller, right-click for the item menu. Keyboard: Up, Down, Home, End, Page Up and Page Down
 /// move; Enter opens; the context menu key or Shift+F10 opens the item menu.
 /// </summary>
 internal sealed class Rolodex : FrameworkElement
 {
-    private const int Window = 12;              // models kept on each side of the position
+    private const int Window = 30;              // models kept on each side of the position
     private const double CardWidth = 1.0;       // model units
     private const double CardHeight = 0.74;
     private const double CaptionBand = 0.13;    // the strip at the foot of a card that holds its title
     private const double Inset = 0.035;         // the card stock around the picture
-    private const double ViewWidth = 1.24;      // model units visible across: the risen front card, a little inset
+    private const double ViewWidth = 1.24;      // model units visible across at Zoom 1: the risen front card, a little inset
     private const double CameraDistance = 3.2;
     private const double Reveal = 0.40;         // how much of the next card shows past the front one
     private const double MaxAngle = 86;         // cards past this, at the drum's top or bottom, are dropped
@@ -52,6 +52,8 @@ internal sealed class Rolodex : FrameworkElement
     private TimeSpan _lastFrame;
     private bool _animating;
     private Color _cardColor = Color.FromRgb(0x14, 0x14, 0x14);
+    private double _zoom = 0.85;
+    private static ImageBrush? s_shadow;
 
     private sealed class Card
     {
@@ -87,6 +89,26 @@ internal sealed class Rolodex : FrameworkElement
         get => _cardColor;
         set { if (_cardColor == value) return; _cardColor = value; ClearCards(); Rebuild(); }
     }
+
+    /// <summary>How large the cards are drawn: 1 fills the column with the front card, smaller
+    /// values shrink every card so more of the drum fits. Ctrl+wheel changes it.</summary>
+    public double Zoom
+    {
+        get => _zoom;
+        set
+        {
+            double z = Math.Clamp(value, MinZoom, MaxZoom);
+            if (Math.Abs(z - _zoom) < 0.0001) return;
+            _zoom = z;
+            InvalidateArrange();
+            ZoomChanged?.Invoke();
+        }
+    }
+
+    public const double MinZoom = 0.35, MaxZoom = 1.0;
+
+    /// <summary>Ctrl+wheel changed the zoom, so the host can remember it.</summary>
+    public event Action? ZoomChanged;
 
     /// <summary>The caption text color, chosen against <see cref="CardColor"/>.</summary>
     private Brush CaptionBrush => _cardColor.R * 0.299 + _cardColor.G * 0.587 + _cardColor.B * 0.114 > 150
@@ -184,13 +206,14 @@ internal sealed class Rolodex : FrameworkElement
         {
             // The front card fills the width; the drum is sized to the height, so a taller column
             // shows more cards and the spacing between them stays the same.
-            camera.FieldOfView = 2 * Math.Atan(ViewWidth / 2 / CameraDistance) * 180 / Math.PI;
-            double halfHeight = ViewWidth * finalSize.Height / finalSize.Width / 2;
+            double viewWidth = ViewWidth / _zoom;
+            camera.FieldOfView = 2 * Math.Atan(viewWidth / 2 / CameraDistance) * 180 / Math.PI;
+            double halfHeight = viewWidth * finalSize.Height / finalSize.Width / 2;
             // Grow the drum until its farthest card, seen in perspective, reaches the column's edge.
             double radius = 0.5;
             while (radius < 20 && Extent(radius * 1.05) < halfHeight * 0.97) radius *= 1.05;
             _radius = radius;
-            _step = Math.Clamp(Math.Asin(Math.Min(1, Reveal / _radius)) * 180 / Math.PI, 6, 35);
+            _step = Math.Clamp(Math.Asin(Math.Min(1, Reveal / _radius)) * 180 / Math.PI, 2, 35);
             Rebuild();
         }
         return finalSize;
@@ -274,6 +297,8 @@ internal sealed class Rolodex : FrameworkElement
         brush.Freeze();
 
         var face = new GeometryModel3D(Quad(), new DiffuseMaterial(brush)) { BackMaterial = new DiffuseMaterial(brush) };
+        // A soft drop shadow just behind the card and a little below it.
+        var shadow = new GeometryModel3D(ShadowQuad(), new DiffuseMaterial(ShadowBrush()));
         var rotation = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
         var translation = new TranslateTransform3D();
         var scale = new ScaleTransform3D();
@@ -282,10 +307,53 @@ internal sealed class Rolodex : FrameworkElement
         transforms.Children.Add(new RotateTransform3D(rotation));
         transforms.Children.Add(translation);
         var group = new Model3DGroup { Transform = transforms };
+        group.Children.Add(shadow);
         group.Children.Add(face);
         _scene.Children.Add(group);
         _hits[face] = index;
         return new Card { Group = group, Face = face, Rotation = rotation, Translation = translation, Scale = scale };
+    }
+
+    private const double ShadowMargin = 0.09, ShadowDrop = 0.03;
+
+    /// <summary>The shadow's quad: the card grown by the blur margin, dropped a little, and set a
+    /// hair behind the card so the card always draws over it.</summary>
+    private static MeshGeometry3D ShadowQuad()
+    {
+        double x = CardWidth / 2 + ShadowMargin, y = CardHeight / 2 + ShadowMargin, dy = -ShadowDrop, z = -0.006;
+        var mesh = new MeshGeometry3D
+        {
+            Positions = [new Point3D(-x, -y + dy, z), new Point3D(x, -y + dy, z), new Point3D(x, y + dy, z), new Point3D(-x, y + dy, z)],
+            TextureCoordinates = [new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0)],
+            TriangleIndices = [0, 1, 2, 0, 2, 3],
+        };
+        mesh.Freeze();
+        return mesh;
+    }
+
+    /// <summary>A blurred dark rounded rectangle, rendered once and shared by every card.</summary>
+    private static ImageBrush ShadowBrush()
+    {
+        if (s_shadow != null) return s_shadow;
+        const double ppu = 220;   // pixels per model unit
+        double w = (CardWidth + 2 * ShadowMargin) * ppu, h = (CardHeight + 2 * ShadowMargin) * ppu;
+        var rect = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)),
+            CornerRadius = new CornerRadius(8),
+            Margin = new Thickness(ShadowMargin * ppu),
+            Effect = new System.Windows.Media.Effects.BlurEffect { Radius = ShadowMargin * ppu * 0.8 },
+        };
+        var host = new Grid { Width = w, Height = h, Background = Brushes.Transparent };
+        host.Children.Add(rect);
+        host.Measure(new Size(w, h));
+        host.Arrange(new Rect(0, 0, w, h));
+        var bitmap = new RenderTargetBitmap((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(host);
+        bitmap.Freeze();
+        s_shadow = new ImageBrush(bitmap);
+        s_shadow.Freeze();
+        return s_shadow;
     }
 
     /// <summary>A card-sized quad centered on the origin, texture upright.</summary>
@@ -406,9 +474,11 @@ internal sealed class Rolodex : FrameworkElement
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
+        e.Handled = true;
+        // Ctrl+wheel: larger cards and fewer of them, or smaller cards and more of the drum.
+        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0) { Zoom *= e.Delta > 0 ? 1.1 : 1 / 1.1; return; }
         if (_items.Count == 0) return;
         SelectedIndex += e.Delta > 0 ? -1 : 1;
-        e.Handled = true;
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
