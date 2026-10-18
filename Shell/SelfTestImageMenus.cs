@@ -48,6 +48,13 @@ internal static class SelfTestImageMenus
             window = new MainWindow { ShowActivated = false, Left = -20000, Top = -20000, Width = 1100, Height = 800, WindowStartupLocation = WindowStartupLocation.Manual };
             window.Show();
             await Task.Delay(200);
+            window.TestStripDock.DockTo(DockSide.Top);
+            window.UpdateLayout();
+            var contentPane = (FrameworkElement)window.FindName("ContentPane");
+            double leftGutter = contentPane.TranslatePoint(new Point(), window.TestStripDock).X;
+            if (Math.Abs(leftGutter - 8) > .01)
+                throw new InvalidOperationException("Top-docked editor left gutter must be 8px; actual=" + leftGutter);
+            report.Add("Top-docked editor: 8px outer left gutter PASS");
             var editor = (EditorCanvas)window.FindName("Editor");
             var stage = (FrameworkElement)window.FindName("EditorStage");
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");

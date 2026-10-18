@@ -29,6 +29,21 @@ namespace KillerShot.Shell
                 Settings.Set("StripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
                 Settings.Set("StripHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
                 _strip.Relocalize();
+                SyncEditorPaneMargin();
+            };
+            ThemeManager.ThemeChanged += SyncEditorPaneMargin;
+            Closed += (_, _) => ThemeManager.ThemeChanged -= SyncEditorPaneMargin;
+            SyncEditorPaneMargin();
+        }
+
+        private void SyncEditorPaneMargin()
+        {
+            var margin = (Thickness)FindResource("ContentPaneMargin");
+            ContentPane.Margin = StripDock.Side switch
+            {
+                DockSide.Right => new Thickness(margin.Right, margin.Top, margin.Left, margin.Bottom),
+                DockSide.Top or DockSide.Bottom => new Thickness(margin.Right, margin.Top, margin.Right, margin.Bottom),
+                _ => margin,
             };
         }
 
