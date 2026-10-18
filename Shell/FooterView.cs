@@ -9,8 +9,7 @@ using KillerFamily.Layout;
 
 // The footer's view cell, as KillerPDF has it: icon radio buttons with the accent underline on the
 // one in use. They pick the library's view (F5 to F8) and its grouping, and with a picture open
-// they bring the library up in that view. A picture also gets the collection strip's button, whose
-// flyout docks the strip to a side and picks its view, and the zoom buttons.
+// they bring the library up in that view. Strip positioning and side views live in the rail.
 namespace KillerShot.Shell
 {
     public partial class MainWindow
@@ -24,6 +23,7 @@ namespace KillerShot.Shell
 
         private readonly List<(RadioButton Button, string View)> _footerViews = [];
         private readonly List<(RadioButton Button, string Group)> _footerGroups = [];
+        private readonly List<(Button Button, string View)> _stripViews = [];
         private Button? _stripButton;
         private bool _footerSyncing;
 
@@ -49,20 +49,47 @@ namespace KillerShot.Shell
                 FooterLibraryViews.Children.Add(button);
             }
 
-            // The strip: one button showing the side it is on, with a flyout of the sides (and their
-            // Alt+Shift shortcuts), its two side views, and Minimize.
-            _stripButton = new Button { Width = 26, Content = DockIcon(StripDock.Side, typeof(Button)) };
-            _stripButton.SetResourceReference(StyleProperty, "FooterNavButton");
-            _stripButton.SetResourceReference(ToolTipProperty, "Str_Dock_Menu");
-            _stripButton.SetResourceReference(AutomationProperties.NameProperty, "Str_Dock_Menu");
+            _stripButton = StripRailButton(DockIcon(StripDock.Side, typeof(Button)), "Str_Dock_Menu");
             _stripButton.Click += (_, _) => ShowStripMenu();
-            FooterStripControls.Children.Add(_stripButton);
-            FooterStripControls.Children.Add(FooterSeparator());
+            RailStack.Children.Insert(0, _stripButton);
+            foreach (var (view, key) in new[] { ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
+            {
+                var button = StripRailButton(view == "list" ? ListIcon(typeof(Button)) : RolodexIcon(typeof(Button)), key);
+                string target = view;
+                button.Click += (_, _) => _strip?.SetSideView(target);
+                _stripViews.Add((button, view));
+                RailStack.Children.Insert(_stripViews.Count, button);
+            }
 
             if (_strip != null) _strip.SideViewChanged += SyncFooterView;
             Library.ViewChanged += SyncFooterView;
             StripDock.LayoutChanged += SyncFooterView;
             SyncFooterView();
+        }
+
+        private Button StripRailButton(object icon, string key)
+        {
+            // These geometry icons use the same rail size and states as font glyphs.
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(Border.BackgroundProperty, System.Windows.Media.Brushes.Transparent);
+            var content = new FrameworkElementFactory(typeof(ContentPresenter));
+            content.SetValue(ContentPresenter.ContentSourceProperty, "Content");
+            content.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            content.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(content);
+            var style = new Style(typeof(Button), (Style)FindResource("RailButton"));
+            style.Setters.Add(new Setter(Control.TemplateProperty, new ControlTemplate(typeof(Button)) { VisualTree = border }));
+            style.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("TextBrush")));
+            foreach (var state in new[] { new Trigger { Property = IsMouseOverProperty, Value = true }, new Trigger { Property = TagProperty, Value = "on" } })
+            {
+                state.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("PrimaryBrush")));
+                style.Triggers.Add(state);
+            }
+            var button = new Button { Content = icon, Style = style,
+                Margin = StripDock.IsHorizontal ? new Thickness(0, 0, 6, 0) : new Thickness(0, 0, 0, 6) };
+            button.SetResourceReference(ToolTipProperty, key);
+            button.SetResourceReference(AutomationProperties.NameProperty, key);
+            return button;
         }
 
         /// <summary>One radio button: a glyph, a tooltip that follows the language with its shortcut
@@ -166,36 +193,25 @@ namespace KillerShot.Shell
             return icon;
         }
 
-        /// <summary>The strip's flyout: the four sides with their shortcuts, the list or rolodex for a
-        /// side strip, and Minimize.</summary>
+        /// <summary>The strip's flyout: the four sides with their shortcuts, and Minimize.</summary>
         private void ShowStripMenu()
         {
             if (_stripButton == null) return;
-            var menu = new ContextMenu { PlacementTarget = _stripButton, Placement = PlacementMode.Top };
+            var menu = new ContextMenu { PlacementTarget = _stripButton,
+                Placement = StripDock.Side switch { DockSide.Left => PlacementMode.Right, DockSide.Right => PlacementMode.Left,
+                    DockSide.Top => PlacementMode.Bottom, _ => PlacementMode.Top } };
+            if (StripDock.IsHorizontal) menu.VerticalOffset = 4;
+            else menu.HorizontalOffset = 4;
             foreach (var (side, key, arrow) in StripSides)
             {
                 var item = new MenuItem
                 {
                     Header = Loc(key), InputGestureText = "Alt+Shift+" + arrow,
                     Icon = DockIcon(side, typeof(MenuItem)),
-                    FontWeight = StripDock.Side == side ? FontWeights.SemiBold : FontWeights.Normal,
+                    IsCheckable = true, IsChecked = StripDock.Side == side,
                 };
                 DockSide target = side;
                 item.Click += (_, _) => StripDock.DockTo(target);
-                menu.Items.Add(item);
-            }
-            menu.Items.Add(new Separator());
-            foreach (var (view, key) in new[] { ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
-            {
-                var item = new MenuItem
-                {
-                    Header = Loc(key),
-                    Icon = view == "list" ? ListIcon(typeof(MenuItem)) : RolodexIcon(typeof(MenuItem)),
-                    IsEnabled = !StripDock.IsHorizontal,
-                    FontWeight = !StripDock.IsHorizontal && _strip?.SideView == view ? FontWeights.SemiBold : FontWeights.Normal,
-                };
-                string target = view;
-                item.Click += (_, _) => _strip?.SetSideView(target);
                 menu.Items.Add(item);
             }
             menu.Items.Add(new Separator());
@@ -215,9 +231,18 @@ namespace KillerShot.Shell
         {
             bool library = Library.Visibility == Visibility.Visible;
             bool picture = !library && _doc != null;
-            FooterStripControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
+            FooterStripControls.Visibility = Visibility.Collapsed;
             FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
-            if (_stripButton != null) _stripButton.Content = DockIcon(StripDock.Side, typeof(Button));
+            if (_stripButton != null)
+            {
+                _stripButton.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
+                _stripButton.Content = DockIcon(StripDock.Side, typeof(Button));
+            }
+            foreach (var (button, view) in _stripViews)
+            {
+                button.Visibility = picture && !StripDock.IsHorizontal ? Visibility.Visible : Visibility.Collapsed;
+                button.Tag = _strip?.SideView == view ? "on" : null;
+            }
             _footerSyncing = true;
             try
             {

@@ -38,9 +38,7 @@ namespace KillerShot.Shell
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-        private readonly Button _dockBtn;
-        // The picker and the dock button make a row above a side column, but sit in a column of
-        // their own beside a top or bottom carousel, so that strip spends no height on them.
+        // The picker sits above a side column or beside a top or bottom carousel.
         private readonly DockPanel _root = new();
         private readonly DockPanel _header = new() { LastChildFill = true };
         private readonly StackPanel _headerColumn = new() { Margin = new Thickness(0, 0, 12, 0) };
@@ -74,8 +72,6 @@ namespace KillerShot.Shell
                 _source = tag;
                 Load(keepCurrent: true);
             };
-            _dockBtn = HeaderButton("", ShowDockMenu);
-
             _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.LoadThumb, Describe = LibraryView.Describe, ViewHeight = 1.2 };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
@@ -148,18 +144,6 @@ namespace KillerShot.Shell
             Relocalize();
         }
 
-        private Button HeaderButton(string glyph, Action click)
-        {
-            var b = new Button
-            {
-                Content = glyph, FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 12,
-                Width = 26, Height = 24, Padding = new Thickness(0), Margin = new Thickness(2, 0, 0, 0),
-            };
-            b.SetResourceReference(StyleProperty, "ToolbarButton");
-            b.Click += (_, _) => click();
-            return b;
-        }
-
         /// <summary>Carousel across the top or bottom, a thumbnail column down the sides.</summary>
         private void Relayout()
         {
@@ -178,12 +162,10 @@ namespace KillerShot.Shell
             _root.Children.Clear();
             _header.Children.Clear();
             _headerColumn.Children.Clear();
-            DockPanel.SetDock(_dockBtn, Dock.Right);
-            _header.Children.Add(_dockBtn);
             _header.Children.Add(_picker);
             if (_host.IsHorizontal)
             {
-                // Beside the carousel: the picker and dock button, with the count under them.
+                // Beside the carousel: the picker, with the count under it.
                 _header.Margin = new Thickness(0);
                 _count.Margin = new Thickness(2, 6, 0, 0);
                 _headerColumn.Children.Add(_header);
@@ -204,8 +186,6 @@ namespace KillerShot.Shell
 
         public void Relocalize()
         {
-            _dockBtn.ToolTip = Loc("Str_Dock_Menu");
-            AutomationProperties.SetName(_dockBtn, Loc("Str_Dock_Menu"));
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_list, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_rolodex, Loc("Str_Strip_Collection"));
@@ -219,24 +199,6 @@ namespace KillerShot.Shell
         {
             DockSide.Left => "Left", DockSide.Top => "Up", DockSide.Right => "Right", _ => "Down",
         };
-
-        private void ShowDockMenu()
-        {
-            var menu = new ContextMenu { PlacementTarget = _dockBtn, Placement = PlacementMode.Bottom };
-            foreach (var (side, key) in new[] { (DockSide.Left, "Str_Dock_Left"), (DockSide.Top, "Str_Dock_Top"), (DockSide.Right, "Str_Dock_Right"), (DockSide.Bottom, "Str_Dock_Bottom") })
-            {
-                var mi = new MenuItem { Header = Loc(key), InputGestureText = "Alt+Shift+" + Arrow(side), IsCheckable = true, IsChecked = _host.Side == side };
-                var target = side;
-                mi.Click += (_, _) => _host.DockTo(target);
-                menu.Items.Add(mi);
-            }
-            menu.Items.Add(new Separator());
-            var min = new MenuItem { Header = Loc("Str_Dock_Minimize"), InputGestureText = "Alt+Shift+" + Arrow(_host.Side) };
-            min.Click += (_, _) => _host.Minimize();
-            menu.Items.Add(min);
-            menu.IsOpen = true;
-            Anim.FadeIn(menu);
-        }
 
         /// <summary>Picks the thumbnail list or the rolodex for a left or right strip, and remembers it.</summary>
         public void SetSideView(string view)

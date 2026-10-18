@@ -55,6 +55,12 @@ internal static class SelfTestImageMenus
             if (Math.Abs(leftGutter - 8) > .01)
                 throw new InvalidOperationException("Top-docked editor left gutter must be 8px; actual=" + leftGutter);
             report.Add("Top-docked editor: 8px outer left gutter PASS");
+            var rail = (StackPanel)window.FindName("RailStack");
+            var dockButton = rail.Children.OfType<Button>().SingleOrDefault(button =>
+                System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc("Str_Dock_Menu"));
+            if (dockButton == null || !dockButton.IsVisible)
+                throw new InvalidOperationException("Strip position must be available in the rail.");
+            report.Add("Collection-strip position button: available in rail PASS");
             var editor = (EditorCanvas)window.FindName("Editor");
             var stage = (FrameworkElement)window.FindName("EditorStage");
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");
