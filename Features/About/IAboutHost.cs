@@ -26,6 +26,10 @@ namespace KillerShot.Features
         /// <summary>SHA-256 of the running exe, filled in once it has been computed.</summary>
         string Sha256 { set; }
 
+        /// <summary>The "Start with Windows" checkbox, under the rendering options and above Close to
+        /// system tray. Off until the user turns it on.</summary>
+        bool StartWithWindows { set; }
+
         /// <summary>Fades the About card in.</summary>
         void ShowCard();
     }

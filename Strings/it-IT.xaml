@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatico usa il rendering software durante le sessioni Desktop remoto o di controllo remoto, dove il rendering hardware può mostrare una finestra nera. Le modifiche valgono dalla prossima apertura della finestra.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Chiudi nell'area di notifica</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Avvia all'avvio di Windows</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Se disattivato, chiudere la finestra esce da KillerShot e le sue scorciatoie smettono di funzionare.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Cattura</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Fai clic su una scorciatoia, poi premi i nuovi tasti. Backspace la disattiva, Esc la mantiene.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Fai clic, poi premi la nuova scorciatoia</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">SCORCIATOIE GLOBALI</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Avvia KillerShot all'avvio di Windows</sys:String>
     <sys:String x:Key="Str_CS_Title">Impostazioni di cattura</sys:String>
     <sys:String x:Key="Str_Color_Red">Rosso</sys:String>
     <sys:String x:Key="Str_Color_Orange">Arancione</sys:String>

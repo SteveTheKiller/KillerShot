@@ -467,7 +467,6 @@
                                         <CheckBox x:Name="AskToSaveToggle" Content="{DynamicResource Str_CS_AskToSave}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
-                                        <CheckBox x:Name="StartupToggle" Content="{DynamicResource Str_CS_Startup}" Style="{StaticResource CsCheck}"/>
 
                                         <TextBlock Text="{DynamicResource Str_CS_Library}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
                                         <Grid Margin="0,0,0,8">
@@ -1001,6 +1000,8 @@
                                 <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
                                            Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
                                            TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
+                                <CheckBox x:Name="AboutStartWithWindows" Content="{DynamicResource Str_About_StartWithWindows}"
+                                          FontSize="11" Margin="0,12,0,0" Click="AboutStartWithWindows_Click"/>
                                 <CheckBox x:Name="CloseToTrayCheck" Content="{DynamicResource Str_About_CloseToTray}"
                                           FontSize="11" Margin="0,12,0,0"
                                           Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed"/>

@@ -66,6 +66,7 @@ namespace KillerShot.Shell
         string IAboutHost.Alias       { set => AboutAkaRun.Text = value; }
         string IAboutHost.Thumbprint  { set => AboutThumbprintBlock.Text = value; }
         string IAboutHost.Sha256      { set => AboutSha256Block.Text = value; }
+        bool IAboutHost.StartWithWindows { set => AboutStartWithWindows.IsChecked = value; }
 
         bool IAboutHost.AliasVisible
         {
@@ -105,6 +106,9 @@ namespace KillerShot.Shell
         private void AboutClose_Click(object sender, RoutedEventArgs e) => FadeOverlayOut(AboutOverlay);
 
         private void AboutVersion_Click(object sender, MouseButtonEventArgs e) => _about.OpenReleaseNotes();
+
+        private void AboutStartWithWindows_Click(object sender, RoutedEventArgs e)
+            => _about.SetStartWithWindows(AboutStartWithWindows.IsChecked == true);
 
         private void AboutLink_Navigate(object sender, RequestNavigateEventArgs e)
         {

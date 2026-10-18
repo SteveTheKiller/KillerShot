@@ -51,7 +51,6 @@ namespace KillerShot.Shell
             AskToSaveToggle.IsChecked = CaptureSettings.AskToSave;
             OpenEditorToggle.IsChecked = CaptureSettings.OpenEditorAfterCapture;
             NotifyToggle.IsChecked = CaptureSettings.Notify;
-            StartupToggle.IsChecked = StartupRegistration.Enabled;
             CursorToggle.IsChecked = CaptureSettings.IncludeCursor;
             SoundToggle.IsChecked = CaptureSettings.PlaySound;
             PickWindowToggle.IsChecked = CaptureSettings.PickWindow;
@@ -165,12 +164,6 @@ namespace KillerShot.Shell
             else if (box == PrintShrinkToggle) CaptureSettings.PrintShrink = on;
             else if (box == PrintEnlargeToggle) CaptureSettings.PrintEnlarge = on;
             else if (box == PrintRotateToggle) CaptureSettings.PrintRotate = on;
-            else if (box == StartupToggle && !StartupRegistration.Set(on))
-            {
-                _syncingOptions = true;
-                StartupToggle.IsChecked = StartupRegistration.Enabled;
-                _syncingOptions = false;
-            }
         }
 
         private void BuildShortcutRows()

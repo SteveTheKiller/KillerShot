@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Yazılım</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Otomatik, donanımla işlemenin siyah pencere gösterebildiği Uzak Masaüstü ve uzaktan kontrol oturumlarında yazılımla işleme kullanır. Değişiklikler pencere bir sonraki açılışında geçerli olur.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Sistem tepsisine kapat</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Windows ile başlat</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Kapalıyken pencereyi kapatmak KillerShot'tan çıkar ve kısayolları çalışmayı durdurur.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">%100</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Yakala</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Bir kısayola tıklayın, ardından yeni tuşlara basın. Geri tuşu kapatır, Esc olduğu gibi bırakır.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Tıklayın, ardından yeni kısayola basın</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GENEL KISAYOLLAR</sys:String>
-    <sys:String x:Key="Str_CS_Startup">KillerShot'ı Windows ile başlat</sys:String>
     <sys:String x:Key="Str_CS_Title">Yakalama ayarları</sys:String>
     <sys:String x:Key="Str_Color_Red">Kırmızı</sys:String>
     <sys:String x:Key="Str_Color_Orange">Turuncu</sys:String>

@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Программная</sys:String>
     <sys:String x:Key="Str_About_RenderHint">В автоматическом режиме используется программная отрисовка в сеансах удалённого рабочего стола и удалённого управления, где аппаратная отрисовка может показать чёрное окно. Изменения вступают в силу при следующем открытии окна.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Сворачивать в системный трей при закрытии</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Запускать вместе с Windows</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Если отключено, закрытие окна завершает KillerShot, и его сочетания клавиш перестают работать.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Снимок</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Нажмите на сочетание, затем нажмите новые клавиши. Backspace отключает его, Esc оставляет как есть.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Нажмите, затем введите новое сочетание</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">ГЛОБАЛЬНЫЕ СОЧЕТАНИЯ</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Запускать KillerShot вместе с Windows</sys:String>
     <sys:String x:Key="Str_CS_Title">Параметры снимков</sys:String>
     <sys:String x:Key="Str_Color_Red">Красный</sys:String>
     <sys:String x:Key="Str_Color_Orange">Оранжевый</sys:String>

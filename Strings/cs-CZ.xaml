@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automaticky používá softwarové vykreslování ve Vzdálené ploše a při vzdálené správě, kde hardwarové vykreslování může zobrazit černé okno. Změny platí při příštím otevření okna.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Zavírat do oznamovací oblasti</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Spouštět se systémem Windows</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Když je tato možnost vypnutá, zavřením okna se KillerShot ukončí a jeho klávesové zkratky přestanou fungovat.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Zachytit</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Klikněte na zkratku a stiskněte nové klávesy. Backspace ji vypne, Esc ji ponechá.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klikněte a stiskněte novou zkratku</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBÁLNÍ ZKRATKY</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Spouštět KillerShot se systémem Windows</sys:String>
     <sys:String x:Key="Str_CS_Title">Nastavení snímání</sys:String>
     <sys:String x:Key="Str_Color_Red">Červená</sys:String>
     <sys:String x:Key="Str_Color_Orange">Oranžová</sys:String>

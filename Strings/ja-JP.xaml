@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">ソフトウェア</sys:String>
     <sys:String x:Key="Str_About_RenderHint">自動では、ハードウェア描画でウィンドウが黒く表示されることがあるリモート デスクトップやリモート操作のセッション中にソフトウェア描画を使います。変更は次にウィンドウを開いたときに反映されます。</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">閉じるときにシステム トレイに格納</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Windows の起動時に起動する</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">オフにすると、ウィンドウを閉じたときに KillerShot が終了し、ショートカットも使えなくなります。</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">キャプチャ</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">ショートカットをクリックして新しいキーを押します。Backspace でオフ、Esc で変更しません。</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">クリックして新しいショートカットを押します</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">グローバル ショートカット</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Windows の起動時に KillerShot を起動する</sys:String>
     <sys:String x:Key="Str_CS_Title">キャプチャ設定</sys:String>
     <sys:String x:Key="Str_Color_Red">赤</sys:String>
     <sys:String x:Key="Str_Color_Orange">オレンジ</sys:String>

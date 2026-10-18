@@ -111,6 +111,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Szoftveres</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Az automatikus mód szoftveres megjelenítést használ Távoli asztal és távvezérlési munkamenetekben, ahol a hardveres megjelenítés fekete ablakot mutathat. A változás az ablak következő megnyitásakor lép életbe.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Bezárás az értesítési területre</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Indítás a Windows-zal</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Ha ki van kapcsolva, az ablak bezárása kilép a KillerShotból, és a billentyűparancsai nem működnek tovább.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Rögzítés</sys:String>
@@ -133,7 +134,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Kattintson egy billentyűparancsra, majd nyomja le az új billentyűket. A Backspace kikapcsolja, az Esc megtartja.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Kattintson, majd nyomja le az új billentyűparancsot</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBÁLIS BILLENTYŰPARANCSOK</sys:String>
-    <sys:String x:Key="Str_CS_Startup">A KillerShot indítása a Windows-zal</sys:String>
     <sys:String x:Key="Str_CS_Title">Rögzítési beállítások</sys:String>
     <sys:String x:Key="Str_Color_Red">Piros</sys:String>
     <sys:String x:Key="Str_Color_Orange">Narancs</sys:String>

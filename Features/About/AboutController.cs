@@ -15,6 +15,17 @@ namespace KillerShot.Features
 
         internal AboutController(IAboutHost host) => _host = host;
 
+        /// <summary>KillerShot starts in the tray, with no window, when Windows starts.</summary>
+        internal const string StartArgument = "--tray";
+
+        /// <summary>Adds or removes the app's Run value from the About checkbox, then shows what the
+        /// registry actually holds, so a refused write unchecks the box again.</summary>
+        internal void SetStartWithWindows(bool enabled)
+        {
+            KillerFamily.Deployment.StartupRegistration.Set(AppInfo.DisplayName, enabled, StartArgument);
+            _host.StartWithWindows = KillerFamily.Deployment.StartupRegistration.IsEnabled(AppInfo.DisplayName);
+        }
+
         /// <summary>Fills the card in and shows it, then finishes the hash in the background.</summary>
         internal void Show()
         {
@@ -33,6 +44,7 @@ namespace KillerShot.Features
             _host.AliasVisible = signedByPublisher;
             _host.Thumbprint   = thumb;
             _host.Sha256       = _host.Loc("Str_About_Computing");
+            _host.StartWithWindows = KillerFamily.Deployment.StartupRegistration.IsEnabled(AppInfo.DisplayName);
 
             _host.ShowCard();
 

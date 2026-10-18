@@ -115,6 +115,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatic uses software rendering during Remote Desktop or remote-control sessions, where hardware rendering can show a black window. Changes apply the next time the window opens.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Close to system tray</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Start with Windows</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">When this is off, closing the window quits KillerShot and its shortcuts stop working.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Capture</sys:String>
@@ -137,7 +138,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Click a shortcut, then press the new keys. Backspace turns it off and Esc keeps it.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Click, then press the new shortcut</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBAL SHORTCUTS</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Start KillerShot when Windows starts</sys:String>
     <sys:String x:Key="Str_CS_Title">Capture settings</sys:String>
     <sys:String x:Key="Str_Color_Red">Red</sys:String>
     <sys:String x:Key="Str_Color_Orange">Orange</sys:String>

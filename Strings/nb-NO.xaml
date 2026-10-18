@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Programvare</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatisk bruker programvaregjengivelse i Eksternt skrivebord og fjernstyringsøkter, der maskinvaregjengivelse kan vise et svart vindu. Endringer gjelder neste gang vinduet åpnes.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Lukk til systemstatusfeltet</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Start når Windows starter</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Når dette er av, avslutter KillerShot når vinduet lukkes, og hurtigtastene slutter å virke.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Ta bilde</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Klikk en hurtigtast, og trykk de nye tastene. Tilbaketast slår den av, og Esc beholder den.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klikk, og trykk den nye hurtigtasten</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBALE HURTIGTASTER</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Start KillerShot når Windows starter</sys:String>
     <sys:String x:Key="Str_CS_Title">Innstillinger for skjermbilder</sys:String>
     <sys:String x:Key="Str_Color_Red">Rød</sys:String>
     <sys:String x:Key="Str_Color_Orange">Oransje</sys:String>

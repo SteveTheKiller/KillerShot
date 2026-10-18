@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Бағдарламалық</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Автоматты режим қашықтағы жұмыс үстелі мен қашықтан басқару сеанстарында бағдарламалық көрсетуді қолданады, онда аппараттық көрсету қара терезе көрсетуі мүмкін. Өзгерістер терезе келесі ашылғанда күшіне енеді.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Жүйелік науаға жабу</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Windows-пен бірге іске қосу</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Өшірулі болса, терезені жабу KillerShot жұмысын аяқтайды және оның пернелер тіркесімдері жұмыс істемейді.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Түсіру</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Тіркесімді басып, жаңа пернелерді басыңыз. Backspace оны өшіреді, Esc өзгеріссіз қалдырады.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Басып, жаңа тіркесімді енгізіңіз</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">ЖАЛПЫ ПЕРНЕЛЕР ТІРКЕСІМІ</sys:String>
-    <sys:String x:Key="Str_CS_Startup">KillerShot бағдарламасын Windows-пен бірге іске қосу</sys:String>
     <sys:String x:Key="Str_CS_Title">Түсіру параметрлері</sys:String>
     <sys:String x:Key="Str_Color_Red">Қызыл</sys:String>
     <sys:String x:Key="Str_Color_Orange">Қызғылт сары</sys:String>

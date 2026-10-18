@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">软件</sys:String>
     <sys:String x:Key="Str_About_RenderHint">自动模式会在远程桌面或远程控制会话中使用软件渲染，因为硬件渲染在这些会话中可能显示黑色窗口。更改会在下次打开窗口时生效。</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">关闭时最小化到系统托盘</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Windows 启动时运行</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">关闭此项后，关闭窗口将退出 KillerShot，其快捷键也将失效。</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">截图</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">点击一个快捷键，然后按下新的按键。Backspace 关闭它，Esc 保持不变。</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">点击后按下新的快捷键</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">全局快捷键</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Windows 启动时运行 KillerShot</sys:String>
     <sys:String x:Key="Str_CS_Title">截图设置</sys:String>
     <sys:String x:Key="Str_Color_Red">红色</sys:String>
     <sys:String x:Key="Str_Color_Orange">橙色</sys:String>

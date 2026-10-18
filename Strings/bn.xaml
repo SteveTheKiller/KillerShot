@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">সফটওয়্যার</sys:String>
     <sys:String x:Key="Str_About_RenderHint">স্বয়ংক্রিয় মোড রিমোট ডেস্কটপ বা রিমোট কন্ট্রোল সেশনে সফটওয়্যার রেন্ডারিং ব্যবহার করে, যেখানে হার্ডওয়্যার রেন্ডারিংয়ে উইন্ডো কালো দেখাতে পারে। পরিবর্তন পরের বার উইন্ডো খুললে কার্যকর হবে।</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">সিস্টেম ট্রেতে বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Windows চালু হলে চালু করুন</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">এটি বন্ধ থাকলে উইন্ডো বন্ধ করলে KillerShot বন্ধ হয়ে যায় এবং এর শর্টকাটগুলো আর কাজ করে না।</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">ক্যাপচার</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">একটি শর্টকাটে ক্লিক করে নতুন কী চাপুন। Backspace এটি বন্ধ করে, Esc আগের মতো রাখে।</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">ক্লিক করে নতুন শর্টকাট চাপুন</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">গ্লোবাল শর্টকাট</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Windows চালু হলে KillerShot চালু করুন</sys:String>
     <sys:String x:Key="Str_CS_Title">ক্যাপচার সেটিংস</sys:String>
     <sys:String x:Key="Str_Color_Red">লাল</sys:String>
     <sys:String x:Key="Str_Color_Orange">কমলা</sys:String>

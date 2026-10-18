@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatisch nutzt Softwaredarstellung in Remotedesktop- und Fernwartungssitzungen, in denen Hardwaredarstellung ein schwarzes Fenster zeigen kann. Änderungen gelten ab dem nächsten Öffnen des Fensters.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">In den Infobereich schließen</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Mit Windows starten</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Ist dies aus, beendet das Schließen des Fensters KillerShot, und seine Tastenkombinationen funktionieren nicht mehr.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Aufnahme</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Klicken Sie auf eine Tastenkombination und drücken Sie die neuen Tasten. Rücktaste schaltet sie aus, Esc behält sie.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klicken und die neue Tastenkombination drücken</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBALE TASTENKOMBINATIONEN</sys:String>
-    <sys:String x:Key="Str_CS_Startup">KillerShot mit Windows starten</sys:String>
     <sys:String x:Key="Str_CS_Title">Aufnahmeeinstellungen</sys:String>
     <sys:String x:Key="Str_Color_Red">Rot</sys:String>
     <sys:String x:Key="Str_Color_Orange">Orange</sys:String>

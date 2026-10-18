@@ -112,6 +112,7 @@
     <sys:String x:Key="Str_About_RenderSoftware">Programowe</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Tryb automatyczny używa renderowania programowego w sesjach Pulpitu zdalnego i zdalnej obsługi, w których renderowanie sprzętowe może pokazać czarne okno. Zmiany działają od następnego otwarcia okna.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Zamykaj do zasobnika systemowego</sys:String>
+    <sys:String x:Key="Str_About_StartWithWindows">Uruchamiaj razem z Windows</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Gdy ta opcja jest wyłączona, zamknięcie okna kończy działanie KillerShot, a jego skróty przestają działać.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Przechwyć</sys:String>
@@ -134,7 +135,6 @@
     <sys:String x:Key="Str_CS_RecordHint">Kliknij skrót i naciśnij nowe klawisze. Backspace go wyłącza, a Esc pozostawia bez zmian.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Kliknij i naciśnij nowy skrót</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">SKRÓTY GLOBALNE</sys:String>
-    <sys:String x:Key="Str_CS_Startup">Uruchamiaj KillerShot razem z Windows</sys:String>
     <sys:String x:Key="Str_CS_Title">Ustawienia przechwytywania</sys:String>
     <sys:String x:Key="Str_Color_Red">Czerwony</sys:String>
     <sys:String x:Key="Str_Color_Orange">Pomarańczowy</sys:String>
