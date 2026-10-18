@@ -17,7 +17,7 @@ namespace KillerShot.Controls
     {
         private readonly PromptKind _kind;
 
-        public string Text => TextInput.Text;
+        public string Text => InputText.Text;
         public string Password => PwBox.Password;
 
         internal PromptDialog(string heading, string detail, string confirmText, string initialText = "", PromptKind kind = PromptKind.Text)
@@ -36,10 +36,10 @@ namespace KillerShot.Controls
             UIElement first;
             if (kind == PromptKind.Text)
             {
-                TextInput.Visibility = Visibility.Visible;
-                TextInput.Text = initialText;
-                AutomationProperties.SetName(TextInput, heading);
-                first = TextInput;
+                InputText.Visibility = Visibility.Visible;
+                InputText.Text = initialText;
+                AutomationProperties.SetName(InputText, heading);
+                first = InputText;
             }
             else
             {
@@ -52,7 +52,7 @@ namespace KillerShot.Controls
             {
                 Anim.FadeIn(RootBorder);
                 first.Focus();
-                if (first == TextInput) TextInput.SelectAll();
+                if (first == InputText) InputText.SelectAll();
             };
         }
 

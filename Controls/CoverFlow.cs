@@ -31,8 +31,8 @@ internal sealed class CoverFlow : FrameworkElement
     private const double CenterGap = 1.15;   // distance from the front picture to the first side one
     private const double SideStep = 0.40;    // distance between side pictures
     private const double SideDepth = 0.75;   // how far behind the front picture the side ones stand
-    private const double MaxWidth = 1.5;     // the widest a picture is drawn, in model units
-    private const double MaxHeight = 1.0;
+    private const double MaxPictureWidth = 1.5;     // the widest a picture is drawn, in model units
+    private const double MaxPictureHeight = 1.0;
     private const double CameraDistance = 3.1;
     /// <summary>The height the camera looks along, in model units: the middle of the view, with
     /// the pictures above it and their reflections below. Lower trims the room above the
@@ -237,7 +237,7 @@ internal sealed class CoverFlow : FrameworkElement
         var item = _items[index];
         BitmapSource? thumb = ThumbnailSource?.Invoke(item.Id);
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
-        double w = Math.Min(MaxWidth, MaxHeight * aspect);
+        double w = Math.Min(MaxPictureWidth, MaxPictureHeight * aspect);
         double h = w / aspect;
 
         Brush faceBrush = thumb != null

@@ -93,7 +93,7 @@
                                TextOptions.TextFormattingMode="Ideal" TextWrapping="Wrap" Margin="0,0,0,10"/>
                     <TextBlock x:Name="DetailText" Foreground="{StaticResource MutedTextBrush}"
                                FontSize="12" LineHeight="18" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                    <TextBox x:Name="TextInput" Style="{StaticResource DarkTextBox}" FontSize="13" Padding="6,4"
+                    <TextBox x:Name="InputText" Style="{StaticResource DarkTextBox}" FontSize="13" Padding="6,4"
                              KeyDown="Input_KeyDown" Visibility="Collapsed"/>
                     <PasswordBox x:Name="PwBox" KeyDown="Input_KeyDown" Visibility="Collapsed"
                                  Background="{DynamicResource InputFieldBrush}" Foreground="{DynamicResource TextBrush}"
