@@ -92,6 +92,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Maskinvare</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Programvare</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatisk bruker programvaregjengivelse i Eksternt skrivebord og fjernstyringsøkter, der maskinvaregjengivelse kan vise et svart vindu. Endringer gjelder neste gang vinduet åpnes.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Lukk til systemstatusfeltet</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">Når dette er av, avslutter KillerShot når vinduet lukkes, og hurtigtastene slutter å virke.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Ta bilde</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Ta bilde av et område</sys:String>

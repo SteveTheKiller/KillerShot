@@ -95,6 +95,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatic uses software rendering during Remote Desktop or remote-control sessions, where hardware rendering can show a black window. Changes apply the next time the window opens.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Close to system tray</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">When this is off, closing the window quits KillerShot and its shortcuts stop working.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Capture</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Capture a region</sys:String>

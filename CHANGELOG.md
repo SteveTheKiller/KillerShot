@@ -11,6 +11,7 @@
 - Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
 - Added Open, Save, Save as and Copy, and a Recent list that keeps the last 20 captures.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture, show a notification, and start with Windows.
+- Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Added the family window, rail, toolbar styles, all 13 themes with Black and Teal as the default, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.

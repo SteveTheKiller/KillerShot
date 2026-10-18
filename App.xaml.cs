@@ -175,7 +175,13 @@ public partial class App : Application
         if (_editor == null)
         {
             _editor = new MainWindow();
-            _editor.Closed += (_, _) => _editor = null;
+            _editor.Closed += (_, _) =>
+            {
+                _editor = null;
+                // With Close to system tray off, closing the window quits. Queued, so an Exit from
+                // the tray menu, which closes the window on its way out, is not shut down twice.
+                if (!CloseToTray) Dispatcher.BeginInvoke(new Action(() => Shutdown()));
+            };
             _editor.Show();
         }
         if (_editor.WindowState == WindowState.Minimized) _editor.WindowState = WindowState.Normal;
@@ -186,6 +192,14 @@ public partial class App : Application
     }
 
     internal MainWindow? EditorWindow => _editor;
+
+    /// <summary>Whether closing the editor leaves KillerShot running in the notification area,
+    /// which keeps the capture shortcuts working. On unless turned off in About.</summary>
+    internal static bool CloseToTray
+    {
+        get => Settings.GetBool("CloseToTray", true);
+        set => Settings.SetBool("CloseToTray", value);
+    }
 
     /// <summary>Hides a visible editor and waits for the desktop to repaint without it.</summary>
     private async Task<Action?> HideEditorForCapture()

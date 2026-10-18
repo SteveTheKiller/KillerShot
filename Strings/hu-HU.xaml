@@ -91,6 +91,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Hardveres</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Szoftveres</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Az automatikus mód szoftveres megjelenítést használ Távoli asztal és távvezérlési munkamenetekben, ahol a hardveres megjelenítés fekete ablakot mutathat. A változás az ablak következő megnyitásakor lép életbe.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Bezárás az értesítési területre</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">Ha ki van kapcsolva, az ablak bezárása kilép a KillerShotból, és a billentyűparancsai nem működnek tovább.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Rögzítés</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Terület rögzítése</sys:String>

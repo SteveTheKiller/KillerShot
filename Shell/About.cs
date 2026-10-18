@@ -22,7 +22,19 @@ namespace KillerShot.Shell
             if (CaptureSettingsOverlay.Visibility == Visibility.Visible) CaptureSettingsOverlay.Visibility = Visibility.Collapsed;
             if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
             SyncRenderModeRadios();
+            _syncingCloseToTray = true;
+            CloseToTrayCheck.IsChecked = App.CloseToTray;
+            _syncingCloseToTray = false;
             _about.Show();
+        }
+
+        // ---- Close to system tray ----
+
+        private bool _syncingCloseToTray;
+
+        private void CloseToTray_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_syncingCloseToTray) App.CloseToTray = CloseToTrayCheck.IsChecked == true;
         }
 
         // ---- Rendering mode ----

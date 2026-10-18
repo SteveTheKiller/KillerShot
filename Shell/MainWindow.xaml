@@ -962,6 +962,12 @@
                                 <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
                                            Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
                                            TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
+                                <CheckBox x:Name="CloseToTrayCheck" Content="{DynamicResource Str_About_CloseToTray}"
+                                          FontSize="11" Margin="0,12,0,0"
+                                          Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed"/>
+                                <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
+                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
+                                           TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
                             </StackPanel>
 
                         </StackPanel>

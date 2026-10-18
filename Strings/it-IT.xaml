@@ -92,6 +92,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatico usa il rendering software durante le sessioni Desktop remoto o di controllo remoto, dove il rendering hardware può mostrare una finestra nera. Le modifiche valgono dalla prossima apertura della finestra.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Chiudi nell'area di notifica</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">Se disattivato, chiudere la finestra esce da KillerShot e le sue scorciatoie smettono di funzionare.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Cattura</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Cattura un'area</sys:String>

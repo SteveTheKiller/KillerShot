@@ -92,6 +92,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Matériel</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Logiciel</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automatique utilise le rendu logiciel pendant les sessions Bureau à distance ou de prise en main, où le rendu matériel peut afficher une fenêtre noire. Les changements s'appliquent à la prochaine ouverture de la fenêtre.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Fermer dans la zone de notification</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">Si cette option est désactivée, fermer la fenêtre quitte KillerShot et ses raccourcis cessent de fonctionner.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Capturer</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Capturer une zone</sys:String>

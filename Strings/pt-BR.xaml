@@ -92,6 +92,8 @@
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>
     <sys:String x:Key="Str_About_RenderSoftware">Software</sys:String>
     <sys:String x:Key="Str_About_RenderHint">Automático usa renderização por software em sessões de Área de Trabalho Remota ou de acesso remoto, onde a renderização por hardware pode mostrar uma janela preta. As mudanças valem na próxima vez que a janela abrir.</sys:String>
+    <sys:String x:Key="Str_About_CloseToTray">Fechar para a bandeja do sistema</sys:String>
+    <sys:String x:Key="Str_About_CloseToTrayHint">Quando desativado, fechar a janela encerra o KillerShot e seus atalhos param de funcionar.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Capturar</sys:String>
     <sys:String x:Key="Str_Btn_CaptureRegion">Capturar uma região</sys:String>
