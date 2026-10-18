@@ -36,6 +36,7 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         KillerFamily.Accessibility.AccessibleControls.Initialize();
+        KillerFamily.Theming.AccentShadow.Initialize();
         base.OnStartup(e);
 
         // The command line runs in its own process without the tray, the shortcuts or the

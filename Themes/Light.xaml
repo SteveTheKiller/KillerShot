@@ -27,7 +27,7 @@
     <SolidColorBrush x:Key="TextBrush"           Color="#1a1a1a" po:Freeze="True"/>
     <SolidColorBrush x:Key="MutedTextBrush"      Color="#555555" po:Freeze="True"/>
     <SolidColorBrush x:Key="ChromeTextBrush" Color="#3a3a3a" po:Freeze="True"/>
-    <SolidColorBrush x:Key="DimTextBrush"        Color="#666666" po:Freeze="True"/>
+    <SolidColorBrush x:Key="DimTextBrush"   Color="#616161" po:Freeze="True"/>
 
     <SolidColorBrush x:Key="RowAltBrush"         Color="#14000000" po:Freeze="True"/>
     <SolidColorBrush x:Key="RowHoverBrush"       Color="#b2b2b2" po:Freeze="True"/>
@@ -80,7 +80,7 @@
     <SolidColorBrush x:Key="DialogTitleBarBrush" Color="#FFDCDCDC" po:Freeze="True"/>
     <CornerRadius x:Key="PanelCornerRadius">6</CornerRadius>
     <sys:Double x:Key="TitleWordmarkSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">15</sys:Double>
-    <sys:Double x:Key="BarShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.38</sys:Double>
+    <sys:Double x:Key="BarShadowOpacity" xmlns:sys="clr-namespace:System;assembly=mscorlib">0.18</sys:Double>
     <CornerRadius x:Key="WindowCornerRadius">7</CornerRadius>
     <sys:Double x:Key="TitleWordmarkBoldSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">22.52</sys:Double>
     <sys:Double x:Key="TitleBarHeight" xmlns:sys="clr-namespace:System;assembly=mscorlib">32</sys:Double>
