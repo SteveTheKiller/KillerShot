@@ -35,7 +35,7 @@
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
 - The library's shelves, grid and timeline and the collection strip sit on the window's own background instead of a pane, with each capture on a card in the pane gray; the big carousel keeps its pane. Card color in a capture's menu picks the card color with the family color picker, and Collection color in a collection's menu gives a collection a color that marks its heading and its cards.
 - The title bar shows the library's name on the right, where Killendar and KillerNotes show their open database, centered on the caption buttons, and an open file's name after the wordmark, as KillerPDF shows it. Clicking the library name or its Library button opens retention, folder and password settings.
-- The empty-library heading uses Lacquer.
+- Primary headings use Lacquer in settings, shortcuts, dialogs and the library, with script fallbacks and the family 98SE font.
 - The maximize button opens the Windows 11 snap layouts menu.
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
 - Menu separators draw their divider line instead of leaving an empty gap.

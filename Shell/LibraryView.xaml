@@ -172,7 +172,7 @@
             <!-- Nothing captured yet, or nothing matches the search. -->
             <StackPanel x:Name="EmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
                 <TextBlock x:Name="EmptyTitle" Foreground="{DynamicResource TextBrush}"
-                           FontFamily="{DynamicResource WordmarkAccentFont}" FontSize="22" HorizontalAlignment="Center"/>
+                           FontFamily="{DynamicResource HeadingFont}" FontSize="22" HorizontalAlignment="Center"/>
                 <TextBlock x:Name="EmptyHint" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
                            Margin="0,8,0,16" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420"/>
                 <Button x:Name="EmptyCaptureBtn" Content="{DynamicResource Str_Btn_CaptureRegion}" Style="{StaticResource OutlineButton}"
@@ -184,7 +184,7 @@
                 <a11y:Glyph Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="30" HorizontalAlignment="Center"
                            Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,10"/>
                 <TextBlock x:Name="LockTitle" Text="{DynamicResource Str_Lib_LockedTitle}" Foreground="{DynamicResource TextBrush}"
-                           FontFamily="{DynamicResource BrandSansFont}" FontSize="20" HorizontalAlignment="Center"/>
+                           FontFamily="{DynamicResource HeadingFont}" FontSize="20" HorizontalAlignment="Center"/>
                 <TextBlock x:Name="LockDetail" Foreground="{DynamicResource MutedTextBrush}" FontSize="12" TextWrapping="Wrap"
                            TextAlignment="Center" Margin="0,8,0,14"/>
                 <PasswordBox x:Name="UnlockBox" KeyDown="UnlockBox_KeyDown" AutomationProperties.Name="{DynamicResource Str_Lib_Password}"

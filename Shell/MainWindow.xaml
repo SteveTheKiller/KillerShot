@@ -567,7 +567,7 @@
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
-                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+                                           FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
                                 <WrapPanel x:Name="SettingsColumns" Orientation="Horizontal" MaxWidth="900">
                                     <StackPanel Width="420" Margin="0,0,24,0">
                                         <TextBlock Text="{DynamicResource Str_CS_Shortcuts}" Style="{StaticResource CsHeading}"/>
@@ -716,7 +716,7 @@
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_VS_Title}" Foreground="{DynamicResource TextBrush}"
-                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
+                                           FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
                                 <WrapPanel Orientation="Horizontal" MaxWidth="900">
                                     <StackPanel Width="420" Margin="0,0,24,0">
                                         <TextBlock Text="{DynamicResource Str_VS_Format}" Style="{StaticResource VsHeading}"/>
@@ -908,7 +908,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{DynamicResource Str_KS_Title}" Foreground="{DynamicResource TextBrush}"
-                                           FontFamily="{DynamicResource UiFont}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                           FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0">
                                     <Button x:Name="KsViewList" Style="{StaticResource KsToggle}" Tag="on"
                                             Content="{DynamicResource Str_KS_ViewList}" Click="KsViewList_Click"/>

@@ -345,10 +345,11 @@ namespace KillerShot.Shell
         {
             var title = new TextBlock
             {
-                Text = row.Title, FontFamily = (FontFamily)FindResource("BrandSansFont"), FontSize = 16,
+                Text = row.Title, FontSize = 16,
                 VerticalAlignment = VerticalAlignment.Bottom,
             };
             title.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+            title.SetResourceReference(TextBlock.FontFamilyProperty, "HeadingFont");
             var detail = new TextBlock { Text = row.Detail, FontSize = 11, Margin = new Thickness(10, 0, 0, 2), VerticalAlignment = VerticalAlignment.Bottom };
             detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
             var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 8) };

@@ -89,7 +89,7 @@
 
                 <StackPanel Grid.Row="1" Margin="24,18,24,16">
                     <TextBlock x:Name="HeadingText" Foreground="{StaticResource TextBrush}"
-                               FontFamily="{DynamicResource BrandSansFont}" FontSize="17"
+                               FontFamily="{DynamicResource HeadingFont}" FontSize="17"
                                TextOptions.TextFormattingMode="Ideal" TextWrapping="Wrap" Margin="0,0,0,10"/>
                     <TextBlock x:Name="DetailText" Foreground="{StaticResource MutedTextBrush}"
                                FontSize="12" LineHeight="18" TextWrapping="Wrap" Margin="0,0,0,12"/>

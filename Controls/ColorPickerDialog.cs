@@ -134,6 +134,7 @@ namespace KillerShot.Controls
                 Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = Colors.Black, BlurRadius = 2, ShadowDepth = 1, Direction = 270, Opacity = 0.7 },
                 Cursor = DragCursors.Open
             };
+            title.SetResourceReference(TextBlock.FontFamilyProperty, "HeadingFont");
             title.MouseLeftButtonDown += (_, e) =>
             {
                 if (e.ButtonState != MouseButtonState.Pressed) return;
