@@ -36,4 +36,4 @@
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - Menu separators draw their divider line instead of leaving an empty gap.
 - Dialog frames follow the active theme, with black outlines on 98SE. The shortcut scrollbar reaches the card edge while keeping the text inset.
-- Pane shadows leave content crisp and stay off the footer, with no pane effects on 98SE. Editor, library and dialog lists show scroll-edge cues beneath their scrollbars.
+- Pane shadows leave content crisp, with no pane effects on 98SE. Editor, library and dialog lists show scroll-edge cues beneath their scrollbars.

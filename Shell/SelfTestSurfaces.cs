@@ -42,7 +42,7 @@ internal static partial class SelfTestChrome
         for (int y = (int)Math.Ceiling(bounds.Top); y < Math.Floor(bounds.Bottom) && same; y++)
             for (int x = (int)Math.Ceiling(bounds.Left) * 4; x < Math.Floor(bounds.Right) * 4; x++)
                 if (before[y * stride + x] != after[y * stride + x]) { same = false; break; }
-        check(same, state + " pane shadows do not paint over the footer");
+        check(theme == Theme.SE98 ? same : !same, state + " footer retains the theme's intentional pane shadow");
 
         var menu = new MenuItem { Header = "Menu command", InputGestureText = "Ctrl+S", IsCheckable = true, IsChecked = true };
         var button = new Button { Style = (Style)Application.Current.FindResource("ToolbarButton"), Content = "Toolbar", Width = 100, Height = 30 };
