@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Айналмалы картотека</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Жинақ жолағын сол жаққа бекіту немесе өз жағында кішірейту</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR кодтарын оқу</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Шифрланбаған HTTP сілтемесі.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Әдеттен тыс желілік порт.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">Домен атауының орнына IP мекенжайы.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Хост алдында пайдаланушы ақпараты бар.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Халықаралық немесе punycode домені.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Доменде ұқсас таңбалы жазу жүйелері араласқан.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Ішкі домендер деңгейі әдеттен тыс көп.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Қысқартылған сілтеме. Мақсатты мекенжай ашылмайды.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Тікелей жүктеу сілтемесі.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Құпиясөзді көшіру</sys:String>
 </ResourceDictionary>

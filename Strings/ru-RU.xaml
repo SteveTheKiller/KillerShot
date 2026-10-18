@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Вращающаяся картотека</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Закрепить ленту коллекции с этой стороны или свернуть её на своей стороне</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Чтение QR-кодов</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Незашифрованная HTTP-ссылка.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Необычный сетевой порт.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP-адрес вместо доменного имени.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Перед хостом указаны данные пользователя.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Международное доменное имя или punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">В домене смешаны похожие символы разных письменностей.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Необычно много уровней поддоменов.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Короткая ссылка. Адрес назначения не раскрывается.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Прямая ссылка на скачивание.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Копировать пароль</sys:String>
 </ResourceDictionary>

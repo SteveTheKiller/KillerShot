@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Forgó kartoték</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">A gyűjteménysáv rögzítése arra az oldalra, vagy kis méretre állítása a saját oldalán</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR-kódok olvasása</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Titkosítatlan HTTP-hivatkozás.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Szokatlan hálózati port.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP-cím tartománynév helyett.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Felhasználói adatokat tartalmaz a gépnév előtt.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Nemzetközi vagy punycode-tartomány.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">A tartomány hasonló írásrendszereket kever.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Szokatlanul sok aldomain-szint.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Rövidített hivatkozás. A cél nincs feloldva.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Közvetlen letöltési hivatkozás.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Jelszó másolása</sys:String>
 </ResourceDictionary>

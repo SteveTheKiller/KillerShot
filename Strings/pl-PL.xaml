@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Kartoteka obrotowa</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Zadokuj pasek kolekcji po tej stronie lub zminimalizuj go po jego własnej stronie</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Odczytywanie kodów QR</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Nieszyfrowane łącze HTTP.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Nietypowy port sieciowy.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">Adres IP zamiast nazwy domeny.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Zawiera dane użytkownika przed nazwą hosta.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Domena międzynarodowa lub punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Domena miesza podobnie wyglądające alfabety.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Nietypowo wiele poziomów subdomen.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Skrócone łącze. Cel nie jest rozwijany.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Łącze do bezpośredniego pobrania.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Kopiuj hasło</sys:String>
 </ResourceDictionary>

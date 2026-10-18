@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Обертова картотека</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Закріпити стрічку колекції з цього боку або згорнути її на своєму боці</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Зчитування QR-кодів</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Незашифроване HTTP-посилання.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Незвичний мережевий порт.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP-адреса замість доменного імені.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Перед хостом указано дані користувача.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Міжнародне доменне ім’я або punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">У домені змішані схожі символи різних писемностей.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Незвично багато рівнів піддоменів.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Скорочене посилання. Адреса призначення не розкривається.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Пряме посилання на завантаження.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Копіювати пароль</sys:String>
 </ResourceDictionary>

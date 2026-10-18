@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">রোলোডেক্স</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">সংগ্রহ স্ট্রিপটি সেই দিকে ডক করুন, বা নিজের দিকে ছোট করুন</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR কোড পড়া</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">এনক্রিপশনবিহীন HTTP লিংক।</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">অস্বাভাবিক নেটওয়ার্ক পোর্ট।</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">ডোমেইন নামের বদলে IP ঠিকানা।</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">হোস্টের আগে ব্যবহারকারীর তথ্য রয়েছে।</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">আন্তর্জাতিকীকৃত বা punycode ডোমেইন।</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">ডোমেইনে দেখতে একই রকম একাধিক লিপি রয়েছে।</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">অস্বাভাবিকভাবে বেশি স্তরের সাবডোমেইন।</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">সংক্ষিপ্ত লিংক। গন্তব্য প্রসারিত করা হয়নি।</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">সরাসরি ডাউনলোডের লিংক।</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">পাসওয়ার্ড কপি করুন</sys:String>
 </ResourceDictionary>

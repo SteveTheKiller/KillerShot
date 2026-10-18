@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Hộp thẻ xoay</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Gắn dải bộ sưu tập vào phía đó, hoặc thu nhỏ nó ở chính phía của nó</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Đọc mã QR</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Liên kết HTTP không được mã hóa.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Cổng mạng không thông thường.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">Địa chỉ IP thay vì tên miền.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Có thông tin người dùng trước tên máy chủ.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Tên miền quốc tế hóa hoặc punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Tên miền trộn các hệ chữ có ký tự giống nhau.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Tên miền phụ có quá nhiều cấp.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Liên kết rút gọn. Không truy tìm địa chỉ đích.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Liên kết tải xuống trực tiếp.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Sao chép mật khẩu</sys:String>
 </ResourceDictionary>

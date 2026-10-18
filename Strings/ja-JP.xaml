@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">回転式カードファイル</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">コレクション ストリップをその側にドッキング、または自分の側で最小化</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QRコードの読み取り</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">暗号化されていない HTTP リンクです。</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">通常とは異なるネットワークポートです。</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">ドメイン名ではなく IP アドレスです。</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">ホストの前にユーザー情報が含まれています。</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">国際化ドメインまたは punycode ドメインです。</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">ドメインに似た形の文字体系が混在しています。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">サブドメインの階層が通常より深くなっています。</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">短縮リンクです。転送先は展開していません。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">直接ダウンロードするリンクです。</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">パスワードをコピー</sys:String>
 </ResourceDictionary>

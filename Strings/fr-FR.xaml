@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Fichier rotatif</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Ancrer le bandeau de collection de ce côté, ou le réduire de son propre côté</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Lecture des codes QR</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Lien HTTP non chiffré.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Port réseau inhabituel.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">Adresse IP au lieu d’un nom de domaine.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Contient des informations utilisateur avant l’hôte.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Domaine internationalisé ou punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Le domaine mélange des écritures qui se ressemblent.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Nombre inhabituel de niveaux de sous-domaines.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Lien raccourci. La destination n’est pas résolue.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Lien de téléchargement direct.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Copier le mot de passe</sys:String>
 </ResourceDictionary>

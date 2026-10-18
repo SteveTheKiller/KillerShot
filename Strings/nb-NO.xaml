@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Roterende kortregister</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Fest samlingsstripen på den siden, eller minimer den på sin egen side</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Lese QR-koder</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Ukryptert HTTP-lenke.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Uvanlig nettverksport.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP-adresse i stedet for domenenavn.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Inneholder brukerinformasjon foran verten.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Internasjonalisert domene eller punycode-domene.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Domenet blander skriftsystemer med like tegn.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Uvanlig mange nivåer av underdomener.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Forkortet lenke. Målet blir ikke slått opp.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Lenke til direkte nedlasting.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Kopier passord</sys:String>
 </ResourceDictionary>

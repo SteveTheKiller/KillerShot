@@ -103,6 +103,7 @@ namespace KillerShot.Shell
             HighlightActiveTool();
 
             string name = _doc?.FilePath is string p ? System.IO.Path.GetFileName(p) : "";
+            RefreshDocumentQr();
             TitleFileLabel.Text = PlainTitleFileLabel.Text = name + (_doc?.Dirty == true && name.Length > 0 ? " *" : "");
             TitleFileLabel.Visibility = PlainTitleFileLabel.Visibility = name.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
             Title = name.Length > 0 ? name + " - KillerShot" : "KillerShot";

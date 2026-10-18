@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">旋轉卡片盒</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">將收藏集列停駐到該側，或在其所在一側最小化</sys:String>
     <sys:String x:Key="Str_TT_QrReading">讀取 QR 碼</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">未加密的 HTTP 連結。</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">不常見的網路連接埠。</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">使用 IP 位址而非網域名稱。</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">主機名稱前包含使用者資訊。</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">國際化網域名稱或 punycode 網域名稱。</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">網域名稱混用了字形相似的文字系統。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">子網域層級異常深。</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">短連結。不會展開目標位址。</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">直接下載連結。</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">複製密碼</sys:String>
 </ResourceDictionary>

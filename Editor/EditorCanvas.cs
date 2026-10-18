@@ -8,7 +8,7 @@ namespace KillerShot.Editor;
 
 /// <summary>Draws the document at the current zoom and turns mouse input into marks. Zoom is in
 /// device pixels: at 100% one capture pixel is one screen pixel on any monitor scale.</summary>
-public sealed class EditorCanvas : Canvas
+public sealed partial class EditorCanvas : Canvas
 {
     private EditorDocument? _doc;
     private double _zoom = 1.0;
@@ -50,6 +50,7 @@ public sealed class EditorCanvas : Canvas
             if (_doc != null) _doc.Changed -= OnDocChanged;
             CommitText();
             _doc = value;
+            SetQrCodes([]);
             _selected = null;
             if (_doc != null) _doc.Changed += OnDocChanged;
             InvalidateMeasure();
@@ -119,6 +120,7 @@ public sealed class EditorCanvas : Canvas
 
     protected override Size ArrangeOverride(Size arrangeSize)
     {
+        PositionQrBadges();
         base.ArrangeOverride(arrangeSize);
         return arrangeSize;
     }
@@ -151,6 +153,7 @@ public sealed class EditorCanvas : Canvas
 
         // Chrome drawn in view units so it stays one pixel wide at any zoom.
         var accent = TryFindResource("PrimaryBrush") as Brush ?? Brushes.Teal;
+        DrawQrOutlines(dc);
         var dash = new Pen(accent, 1) { DashStyle = new DashStyle([4, 3], 0) };
         if (_selected != null)
         {

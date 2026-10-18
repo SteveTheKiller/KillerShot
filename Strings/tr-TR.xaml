@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Döner kartotek</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Koleksiyon şeridini o tarafa yerleştir veya kendi tarafında küçült</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR kodu okuma</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Şifrelenmemiş HTTP bağlantısı.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Alışılmadık ağ bağlantı noktası.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">Alan adı yerine IP adresi.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Sunucu adından önce kullanıcı bilgisi içeriyor.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Uluslararasılaştırılmış veya punycode alan adı.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Alan adı benzer görünen yazı sistemlerini karıştırıyor.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Alışılmadık sayıda alt alan adı düzeyi.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Kısaltılmış bağlantı. Hedef çözümlenmiyor.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Doğrudan indirme bağlantısı.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Parolayı kopyala</sys:String>
 </ResourceDictionary>

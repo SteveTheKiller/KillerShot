@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Kartotéka</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Ukotvit pás kolekce na tuto stranu, nebo ho minimalizovat na jeho vlastní straně</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Čtení QR kódů</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Nešifrovaný odkaz HTTP.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Neobvyklý síťový port.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP adresa místo názvu domény.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Před hostitelem jsou údaje uživatele.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Mezinárodní doména nebo punycode.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Doména mísí podobně vypadající písma.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Neobvykle mnoho úrovní subdomén.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Zkrácený odkaz. Cíl se nerozbaluje.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Odkaz pro přímé stažení.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Kopírovat heslo</sys:String>
 </ResourceDictionary>

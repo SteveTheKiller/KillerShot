@@ -402,4 +402,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Rolodex</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Sammlungsleiste an dieser Seite andocken oder an ihrer eigenen Seite minimieren</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR-Codes lesen</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Unverschlüsselter HTTP-Link.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Ungewöhnlicher Netzwerkport.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP-Adresse statt Domainname.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Enthält Benutzerangaben vor dem Host.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Internationalisierte oder Punycode-Domain.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Die Domain mischt ähnlich aussehende Schriftsysteme.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Ungewöhnlich viele Subdomain-Ebenen.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Kurzlink. Das Ziel wird nicht aufgelöst.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Direkter Download-Link.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Passwort kopieren</sys:String>
 </ResourceDictionary>

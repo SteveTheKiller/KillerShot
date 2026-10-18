@@ -405,4 +405,14 @@
     <sys:String x:Key="Str_Strip_ViewRolodex">Rolodex</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Dock the collection strip on that side, or minimize it on its own side</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR code reading</sys:String>
+    <sys:String x:Key="Str_QrWarn_PlainHttp">Unencrypted HTTP link.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UnusualPort">Unusual network port.</sys:String>
+    <sys:String x:Key="Str_QrWarn_RawIp">IP address instead of a domain name.</sys:String>
+    <sys:String x:Key="Str_QrWarn_UserInfo">Contains user information before the host.</sys:String>
+    <sys:String x:Key="Str_QrWarn_InternationalHost">Internationalized or punycode domain.</sys:String>
+    <sys:String x:Key="Str_QrWarn_MixedScripts">Domain mixes lookalike writing systems.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DeepSubdomains">Unusually deep subdomains.</sys:String>
+    <sys:String x:Key="Str_QrWarn_Shortener">Shortened link. Destination is not expanded.</sys:String>
+    <sys:String x:Key="Str_QrWarn_DirectDownload">Direct download link.</sys:String>
+    <sys:String x:Key="Str_Qr_CopyPassword">Copy password</sys:String>
 </ResourceDictionary>

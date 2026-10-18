@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerShot.Editor;
 using KillerShot.Services;
+using KillerTools.Qr;
 
 namespace KillerShot.Shell;
 
@@ -43,6 +44,11 @@ internal static class SelfTestQrUi
             await Task.Delay(200);
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if (!CaptureLibrary.QrReadingEnabled || !Equals(button.Tag, "on")) throw new InvalidOperationException("The rail toggle did not turn reading on.");
+            var editor = (EditorCanvas)window.FindName("Editor");
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (!editor.Children.OfType<Button>().Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b).StartsWith("QrBadge-")) && DateTime.UtcNow < deadline) await Task.Delay(20);
+            if (!editor.Children.OfType<Button>().Any(b => b.ToolTip?.ToString() == "https://killershot.net/qr"))
+                throw new InvalidOperationException("The editor did not mark the decoded QR code.");
             foreach (var theme in new[] { Theme.Black, Theme.Light, Theme.SE98 })
             {
                 ThemeManager.Apply(theme);
@@ -53,10 +59,57 @@ internal static class SelfTestQrUi
                 var image = new RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth), (int)Math.Ceiling(root.ActualHeight), 96, 96, PixelFormats.Pbgra32);
                 image.Render(root);
                 ImageOutput.SavePng(image, Path.Combine(folder, "qr-" + theme + ".png"));
+                editor.Children.OfType<Button>().Single(b => b.ToolTip?.ToString() == "https://killershot.net/qr")
+                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if (window.FindName("QrResultCard") is not FrameworkElement card)
+                    throw new InvalidOperationException("Clicking the QR badge did not create a result card.");
+                card.Measure(new Size(420, double.PositiveInfinity));
+                card.Arrange(new Rect(card.DesiredSize));
+                card.UpdateLayout();
+                if (!Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrCopy")
+                    || !Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrOpen"))
+                    throw new InvalidOperationException("An allowed web result needs Copy and Open.");
+                card.RenderTransform = new TranslateTransform(12, 12);
+                var cardImage = new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth) + 24, (int)Math.Ceiling(card.ActualHeight) + 24, 96, 96, PixelFormats.Pbgra32);
+                cardImage.Render(card);
+                card.RenderTransform = Transform.Identity;
+                ImageOutput.SavePng(cardImage, Path.Combine(folder, "qr-card-" + theme + ".png"));
             }
+            var actual = QrImages.Read(App.Instance.Document!.Image).Single();
+            ThemeManager.Apply(Theme.Black);
+            ThemeManager.ApplyAccent(Theme.Black, Accent.Teal);
+            await Task.Delay(100);
+            foreach (string payload in new[] { "javascript:alert(1)", "A note to copy", "http://example.com/path", "WIFI:S:Shop;P:p@ss\\;word;;" })
+            {
+                editor.SetQrCodes([actual with { Text = payload }]);
+                editor.Children.OfType<Button>().Single(b => b.ToolTip?.ToString() == payload).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                var card = (FrameworkElement)window.FindName("QrResultCard");
+                card.Measure(new Size(420, double.PositiveInfinity)); card.Arrange(new Rect(card.DesiredSize)); card.UpdateLayout();
+                bool hasOpen = Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrOpen");
+                if (hasOpen != payload.StartsWith("http://", StringComparison.Ordinal)) throw new InvalidOperationException("The card offered Open for a display-only or blocked payload.");
+                if (!Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrCopy")) throw new InvalidOperationException("Every payload must offer Copy.");
+                if (payload.StartsWith("WIFI:", StringComparison.Ordinal)
+                    && !Buttons(card).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrCopyPassword"))
+                    throw new InvalidOperationException("A Wi-Fi payload must offer Copy password.");
+                if (payload.StartsWith("http://", StringComparison.Ordinal)
+                    && !TextBlocks(card).Any(t => t.Text == LocaleManager.Loc("Str_QrWarn_PlainHttp")))
+                    throw new InvalidOperationException("The warning card did not explain the HTTP risk.");
+                string kind = payload.StartsWith("WIFI:", StringComparison.Ordinal) ? "wifi" : payload.StartsWith("http://", StringComparison.Ordinal) ? "warning" : payload.StartsWith("javascript:", StringComparison.Ordinal) ? "blocked" : "text";
+                var detailImage = new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth), (int)Math.Ceiling(card.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                detailImage.Render(card);
+                ImageOutput.SavePng(detailImage, Path.Combine(folder, "qr-card-" + kind + ".png"));
+            }
+            editor.SetQrCodes([actual]);
+            var source = new FormatConvertedBitmap(App.Instance.Document.Image, PixelFormats.Bgra32, null, 0);
+            var export = new FormatConvertedBitmap(App.Instance.Document.Render(), PixelFormats.Bgra32, null, 0);
+            int stride = source.PixelWidth * 4;
+            var originalPixels = new byte[stride * source.PixelHeight];
+            var exportedPixels = new byte[originalPixels.Length];
+            source.CopyPixels(originalPixels, stride, 0); export.CopyPixels(exportedPixels, stride, 0);
+            if (!originalPixels.AsSpan().SequenceEqual(exportedPixels)) throw new InvalidOperationException("QR outlines were burned into the exported image.");
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             if (CaptureLibrary.QrReadingEnabled || Equals(button.Tag, "on")) throw new InvalidOperationException("The rail toggle did not turn reading off.");
-            File.WriteAllText(report, "PASS: QR rail starts off, toggles its setting/accent, and renders in Black, Light Yellow and 98SE.");
+            File.WriteAllText(report, "PASS: QR rail, outlines, unchanged export, themed result cards, Copy/Open rules, HTTP warning and Wi-Fi Copy password.");
             code = 0;
         }
         catch (Exception error) { if (report != null) File.WriteAllText(report, "FAIL: " + error.Message); }
@@ -66,6 +119,26 @@ internal static class SelfTestQrUi
             CaptureLibrary.Close();
             window?.Close();
             Application.Current.Shutdown(code);
+        }
+    }
+
+    private static IEnumerable<Button> Buttons(DependencyObject element)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            var child = VisualTreeHelper.GetChild(element, i);
+            if (child is Button button) yield return button;
+            foreach (var nested in Buttons(child)) yield return nested;
+        }
+    }
+
+    private static IEnumerable<TextBlock> TextBlocks(DependencyObject element)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            var child = VisualTreeHelper.GetChild(element, i);
+            if (child is TextBlock text) yield return text;
+            foreach (var nested in TextBlocks(child)) yield return nested;
         }
     }
 }
