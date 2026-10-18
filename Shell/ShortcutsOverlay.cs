@@ -59,6 +59,10 @@ namespace KillerShot.Shell
             new("Ctrl+Shift+1-6", "Str_KS_ToolbarStyle", KsCat.View, true, "D1", "D2", "D3", "D4", "D5", "D6"),
             new("Alt+M",    "Str_Toolbar_Hide",  KsCat.View, false, "M"),
             new("Alt+Shift+Arrows", "Str_KS_DockStrip", KsCat.View, false),
+            new("F5",       "Str_Lib_ViewShelves",  KsCat.View, false, "F5"),
+            new("F6",       "Str_Lib_ViewFlow",     KsCat.View, false, "F6"),
+            new("F7",       "Str_Lib_ViewGrid",     KsCat.View, false, "F7"),
+            new("F8",       "Str_Lib_ViewTimeline", KsCat.View, false, "F8"),
 
             new("V",        "Str_Tool_Select",      KsCat.Nav, false, "V"),
             new("P",        "Str_Tool_Pen",         KsCat.Nav, false, "P"),

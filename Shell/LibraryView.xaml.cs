@@ -131,26 +131,10 @@ namespace KillerShot.Shell
             };
         }
 
-        /// <summary>Sets the captions that carry glyphs and live text. Called on load and after a
-        /// language change.</summary>
+        /// <summary>Redraws with the current language. Called on load and after a language change.</summary>
         public void Relocalize()
         {
-            ViewShelvesBtn.Content = Chip("", "Str_Lib_ViewShelves");
-            ViewFlowBtn.Content = Chip("", "Str_Lib_ViewFlow");
-            ViewGridBtn.Content = Chip("", "Str_Lib_ViewGrid");
-            ViewTimelineBtn.Content = Chip("", "Str_Lib_ViewTimeline");
-            foreach (var (button, key) in new[] { (ViewShelvesBtn, "Str_Lib_ViewShelves"), (ViewFlowBtn, "Str_Lib_ViewFlow"),
-                                                  (ViewGridBtn, "Str_Lib_ViewGrid"), (ViewTimelineBtn, "Str_Lib_ViewTimeline") })
-                AutomationProperties.SetName(button, Loc(key));
             if (IsLoaded) Reload();
-        }
-
-        private static StackPanel Chip(string glyph, string labelKey)
-        {
-            var panel = new StackPanel { Orientation = Orientation.Horizontal };
-            panel.Children.Add(new TextBlock { Text = glyph, FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
-            panel.Children.Add(new TextBlock { Text = Loc(labelKey), VerticalAlignment = VerticalAlignment.Center });
-            return panel;
         }
 
         private void OnLibraryChanged()
@@ -251,15 +235,6 @@ namespace KillerShot.Shell
 
         private void SyncHeader()
         {
-            ViewShelvesBtn.IsChecked = _view == "shelves";
-            ViewFlowBtn.IsChecked = _view == "flow";
-            ViewGridBtn.IsChecked = _view == "grid";
-            ViewTimelineBtn.IsChecked = _view == "timeline";
-            // The timeline is a line of days, so it is always by date.
-            bool grouped = _view != "timeline";
-            GroupDateBtn.IsEnabled = GroupCollectionBtn.IsEnabled = grouped;
-            GroupDateBtn.IsChecked = !grouped || _group == "date";
-            GroupCollectionBtn.IsChecked = grouped && _group == "collection";
             SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -545,20 +520,33 @@ namespace KillerShot.Shell
         // Header bar
         // ============================================================
 
-        private void View_Click(object sender, RoutedEventArgs e)
+        /// <summary>The view: shelves, flow (the carousel), grid or timeline.</summary>
+        public string CurrentView => _view;
+
+        /// <summary>The grouping: date or collection. The timeline is always by date.</summary>
+        public string CurrentGroup => _view == "timeline" ? "date" : _group;
+
+        /// <summary>The view or grouping changed, so the footer's radio buttons follow.</summary>
+        public event Action? ViewChanged;
+
+        /// <summary>Picks a view from the footer or F5 to F8, and remembers it.</summary>
+        public void SetView(string view)
         {
-            if (sender is not FrameworkElement { Tag: string view }) return;
+            if (view is not ("shelves" or "flow" or "grid" or "timeline")) return;
             _view = view;
             Settings.Set("LibraryView", view);
             Reload();
+            ViewChanged?.Invoke();
         }
 
-        private void Group_Click(object sender, RoutedEventArgs e)
+        /// <summary>Picks the grouping from the footer, and remembers it.</summary>
+        public void SetGroup(string group)
         {
-            if (sender is not FrameworkElement { Tag: string group }) return;
+            if (group is not ("date" or "collection")) return;
             _group = group;
             Settings.Set("LibraryGroup", group);
             Reload();
+            ViewChanged?.Invoke();
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -685,6 +673,7 @@ namespace KillerShot.Shell
             SearchBox.Text = search;
             _searchDelay.Stop();
             Reload();
+            ViewChanged?.Invoke();
         }
 
         internal void TestShowBusy(bool on) { if (on) ShowBusy(); else HideBusy(); }
@@ -777,6 +766,7 @@ namespace KillerShot.Shell
                 _group = "collection";
                 Settings.Set("LibraryGroup", _group);
                 Reload();
+                ViewChanged?.Invoke();
             }
         }
 

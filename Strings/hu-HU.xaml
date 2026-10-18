@@ -173,6 +173,7 @@
     <sys:String x:Key="Str_KS_Undo">Visszavonás</sys:String>
     <sys:String x:Key="Str_KS_ZoomIn">Nagyítás</sys:String>
     <sys:String x:Key="Str_KS_ZoomOut">Kicsinyítés</sys:String>
+    <sys:String x:Key="Str_TT_ZoomLevel">Nagyítási szint</sys:String>
     <sys:String x:Key="Str_Menu_Pixels">{0} px</sys:String>
     <sys:String x:Key="Str_Menu_StrokeWidth">Vonalvastagság</sys:String>
     <sys:String x:Key="Str_Menu_TextSize">Szövegméret</sys:String>

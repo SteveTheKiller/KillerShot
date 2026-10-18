@@ -49,6 +49,14 @@ namespace KillerShot.Shell
             if (e.Key == Key.F12) { ShowAboutOverlay(); e.Handled = true; return; }
             if (AnyOverlayOpen) return;
 
+            // F5 to F8 pick the library's view, as they pick KillerPDF's view mode.
+            if (!ctrl && !alt && !shift && Library.IsVisible && e.Key is >= Key.F5 and <= Key.F8)
+            {
+                Library.SetView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", _ => "timeline" });
+                e.Handled = true;
+                return;
+            }
+
             // Alt+M hides or shows the toolbar, as in KillerPDF. Alt combinations arrive as
             // Key.System with the letter in SystemKey.
             if (alt && !ctrl && e.Key == Key.System && e.SystemKey == Key.M)

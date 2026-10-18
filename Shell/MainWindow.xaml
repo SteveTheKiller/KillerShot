@@ -304,13 +304,87 @@
              Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
              The overlays are declared after this and stay on top. -->
         <Border Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
+            <!-- KillerPDF's footer button styles, with the theme accent for hover and the checked
+                 underline. FooterView.cs fills and syncs the view cell. -->
+            <Border.Resources>
+                <Style x:Key="FooterNavButton" TargetType="Button">
+                    <Setter Property="AutomationProperties.Name" Value="{Binding RelativeSource={RelativeSource Self}, Path=ToolTip}"/>
+                    <Setter Property="Width" Value="24"/>
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFooter}"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style x:Key="FooterModeButton" TargetType="RadioButton">
+                    <Setter Property="Width" Value="25"/>
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFooter}"/>
+                    <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="RadioButton">
+                                <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                        BorderBrush="Transparent" BorderThickness="0,0,0,2"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Margin="0,3,0,0"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.4"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Border.Resources>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.ColumnSpan="3" IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}">
+                <Border Grid.ColumnSpan="4" IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}">
                     <Border.Background>
                         <ImageBrush x:Name="StatusGrainBrush" TileMode="Tile" ViewportUnits="Absolute"
                                     Viewport="0,0,256,256" Stretch="None"/>
@@ -329,12 +403,41 @@
                             BorderThickness="{DynamicResource FooterCellDarkThickness}"/>
                 </Grid>
 
-                <!-- Center: picture size, zoom and the pixel under the cursor. -->
+                <!-- Center: picture size and the pixel under the cursor. -->
                 <TextBlock x:Name="ImageInfoText" Grid.Column="1" Foreground="{DynamicResource TextFooter}"
                            FontFamily="{DynamicResource BrandSansFont}" FontSize="16"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
-                <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="{DynamicResource FooterCellMargin}">
+                <!-- The view cell, as in KillerPDF. In the library: its four views (F5 to F8) and the
+                     grouping. With a picture open: where the strip docks (Alt+Shift+arrow) and the
+                     zoom. Radio buttons are built in FooterView.cs. -->
+                <Grid x:Name="FooterViewCell" Grid.Column="2" HorizontalAlignment="Right" Margin="{DynamicResource FooterCellMargin}">
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
+                            BorderThickness="{DynamicResource FooterCellLightThickness}" Panel.ZIndex="2"/>
+                    <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"
+                            BorderThickness="{DynamicResource FooterCellDarkThickness}" Panel.ZIndex="2"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="{DynamicResource FooterCellPadding}">
+                        <StackPanel x:Name="FooterLibraryViews" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,4,0"/>
+                        <StackPanel x:Name="FooterEditorViews" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,4,0">
+                            <StackPanel x:Name="FooterDockRadios" Orientation="Horizontal"/>
+                            <Border Width="1" Height="14" Background="{DynamicResource CardBorderBrush}" Margin="5,0"/>
+                            <Button x:Name="ZoomOutBtn" Content="&#xECC9;" Style="{StaticResource FooterNavButton}"
+                                    Click="ZoomOutBtn_Click" ToolTip="{DynamicResource Str_KS_ZoomOut}"/>
+                            <Button x:Name="ZoomLevelBtn" Style="{StaticResource FooterNavButton}" Width="Auto" MinWidth="48"
+                                    FontFamily="{DynamicResource BrandSansFont}" FontSize="16" Padding="4,0"
+                                    TextOptions.TextFormattingMode="Ideal" Click="ZoomLevelBtn_Click"
+                                    ToolTip="{DynamicResource Str_TT_ZoomLevel}">
+                                <Button.ContextMenu>
+                                    <ContextMenu x:Name="ZoomMenu"/>
+                                </Button.ContextMenu>
+                            </Button>
+                            <Button x:Name="ZoomInBtn" Content="&#xECC8;" Style="{StaticResource FooterNavButton}"
+                                    Click="ZoomInBtn_Click" ToolTip="{DynamicResource Str_KS_ZoomIn}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Column="3" HorizontalAlignment="Right" Margin="{DynamicResource FooterCellMargin}">
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
                             BorderThickness="{DynamicResource FooterCellLightThickness}"/>
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"

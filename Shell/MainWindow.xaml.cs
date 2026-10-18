@@ -4,8 +4,8 @@ using KillerShot.Features;
 
 // The main window's constructor and the handlers that belong to no feature. The rest of MainWindow
 // is split by surface: Chrome.cs (caption buttons, placement, grain), ThemeFlyout.cs, About.cs,
-// EditorHost.cs (the editor and its toolbar), CaptureSettingsPanel.cs, Shortcuts.cs and
-// ShortcutsOverlay.cs.
+// EditorHost.cs (the editor and its toolbar), CaptureSettingsPanel.cs, FooterView.cs, Shortcuts.cs
+// and ShortcutsOverlay.cs.
 namespace KillerShot.Shell
 {
     public partial class MainWindow : Window
@@ -47,6 +47,7 @@ namespace KillerShot.Shell
             InitEditor();
             InitLibrary();
             InitStrip();
+            InitFooterView();
 
             _about = new AboutController(this);
             VersionLabel.Text = "v" + Services.AppInfo.Version;

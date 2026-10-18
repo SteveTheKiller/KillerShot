@@ -174,6 +174,7 @@
     <sys:String x:Key="Str_KS_Undo">Zpět</sys:String>
     <sys:String x:Key="Str_KS_ZoomIn">Přiblížit</sys:String>
     <sys:String x:Key="Str_KS_ZoomOut">Oddálit</sys:String>
+    <sys:String x:Key="Str_TT_ZoomLevel">Úroveň přiblížení</sys:String>
     <sys:String x:Key="Str_Menu_Pixels">{0} px</sys:String>
     <sys:String x:Key="Str_Menu_StrokeWidth">Šířka čáry</sys:String>
     <sys:String x:Key="Str_Menu_TextSize">Velikost textu</sys:String>

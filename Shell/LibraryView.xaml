@@ -99,19 +99,9 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- The bar: views, grouping, search, a new collection, and the count. -->
+        <!-- The bar: search, a new collection, and the count. The views and grouping are in the
+             footer, as KillerPDF's view modes are (FooterView.cs). -->
         <DockPanel x:Name="HeaderBar" Margin="16,12,16,4" LastChildFill="False">
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                <ToggleButton x:Name="ViewShelvesBtn" Style="{StaticResource ChipToggle}" Click="View_Click" Tag="shelves"/>
-                <ToggleButton x:Name="ViewFlowBtn" Style="{StaticResource ChipToggle}" Click="View_Click" Tag="flow"/>
-                <ToggleButton x:Name="ViewGridBtn" Style="{StaticResource ChipToggle}" Click="View_Click" Tag="grid"/>
-                <ToggleButton x:Name="ViewTimelineBtn" Style="{StaticResource ChipToggle}" Click="View_Click" Tag="timeline"/>
-                <Rectangle Width="1" Margin="8,2,12,6" Fill="{DynamicResource CardBorderBrush}"/>
-                <ToggleButton x:Name="GroupDateBtn" Style="{StaticResource ChipToggle}" Click="Group_Click" Tag="date"
-                              Content="{DynamicResource Str_Lib_ByDate}"/>
-                <ToggleButton x:Name="GroupCollectionBtn" Style="{StaticResource ChipToggle}" Click="Group_Click" Tag="collection"
-                              Content="{DynamicResource Str_Lib_ByCollection}"/>
-            </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="CountText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
                            VerticalAlignment="Center" Margin="0,0,12,4"/>

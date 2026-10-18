@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -111,7 +112,10 @@ namespace KillerShot.Shell
         private void RefreshFooter()
         {
             if (_doc == null) { ImageInfoText.Text = ""; return; }
-            string text = $"{_doc.PixelWidth} x {_doc.PixelHeight}   {Math.Round(Editor.Zoom * 100)}%";
+            // The zoom shows on the footer's zoom button (FooterView.cs).
+            string zoom = Math.Round(Editor.Zoom * 100).ToString(CultureInfo.CurrentCulture) + "%";
+            if (!Equals(ZoomLevelBtn.Content, zoom)) ZoomLevelBtn.Content = zoom;
+            string text = $"{_doc.PixelWidth} x {_doc.PixelHeight}";
             if (Editor.PixelUnderMouse() is Point p) text += $"   {p.X:0}, {p.Y:0}";
             if (ImageInfoText.Text != text) ImageInfoText.Text = text;
         }
@@ -395,6 +399,7 @@ namespace KillerShot.Shell
             // The Library button carries the accent while it covers an image, like a tool.
             if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");
             else LibraryBtn.ClearValue(ForegroundProperty);
+            SyncFooterView();
         }
 
         /// <summary>Window mode from inside the editor captures the window that was in front before
