@@ -33,10 +33,13 @@ internal sealed class Rolodex : FrameworkElement
     private const double CardHeight = 0.74;
     private const double CaptionBand = 0.13;    // the strip at the foot of a card that holds its title
     private const double Inset = 0.035;         // the card stock around the picture
-    private const double ViewWidth = 1.12;      // model units visible across at the front card
+    private const double ViewWidth = 1.24;      // model units visible across: the risen front card, a little inset
     private const double CameraDistance = 3.2;
     private const double Reveal = 0.40;         // how much of the next card shows past the front one
     private const double MaxAngle = 86;         // cards past this, at the drum's top or bottom, are dropped
+    private const double SinkBack = 0.45;       // how far every other card sits behind the front one
+    private const double Lift = 0.25;           // how far the front card rises toward the viewer
+    private const double Grow = 0.1;            // and how much larger it is drawn there
 
     private readonly Viewport3D _viewport = new();
     private readonly ModelVisual3D _root = new();
@@ -56,6 +59,7 @@ internal sealed class Rolodex : FrameworkElement
         public required GeometryModel3D Face { get; init; }
         public required AxisAngleRotation3D Rotation { get; init; }
         public required TranslateTransform3D Translation { get; init; }
+        public required ScaleTransform3D Scale { get; init; }
     }
 
     /// <summary>Gives a capture's thumbnail; null draws an empty card.</summary>
@@ -272,14 +276,16 @@ internal sealed class Rolodex : FrameworkElement
         var face = new GeometryModel3D(Quad(), new DiffuseMaterial(brush)) { BackMaterial = new DiffuseMaterial(brush) };
         var rotation = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
         var translation = new TranslateTransform3D();
+        var scale = new ScaleTransform3D();
         var transforms = new Transform3DGroup();
+        transforms.Children.Add(scale);
         transforms.Children.Add(new RotateTransform3D(rotation));
         transforms.Children.Add(translation);
         var group = new Model3DGroup { Transform = transforms };
         group.Children.Add(face);
         _scene.Children.Add(group);
         _hits[face] = index;
-        return new Card { Group = group, Face = face, Rotation = rotation, Translation = translation };
+        return new Card { Group = group, Face = face, Rotation = rotation, Translation = translation, Scale = scale };
     }
 
     /// <summary>A card-sized quad centered on the origin, texture upright.</summary>
@@ -297,15 +303,21 @@ internal sealed class Rolodex : FrameworkElement
     }
 
     /// <summary>Puts every card on the drum by its distance from the position: earlier cards turn
-    /// up and back over the top, later ones down and back under the bottom.</summary>
+    /// up and back over the top, later ones down and back under the bottom. The front card rises
+    /// out of the drum toward the viewer, larger, so its whole picture shows; the rest sink back
+    /// behind it. Both follow the position, so a card rises as it turns to the front.</summary>
     private void Place()
     {
         foreach (var (index, card) in _cards)
         {
-            double theta = -(index - _position) * _step * Math.PI / 180;
+            double d = index - _position;
+            double front = 1 - Math.Min(1, Math.Abs(d));   // 1 at the front, 0 a card away
+            double theta = -d * _step * Math.PI / 180;
             card.Translation.OffsetY = _radius * Math.Sin(theta);
-            card.Translation.OffsetZ = _radius * (Math.Cos(theta) - 1);
+            card.Translation.OffsetZ = _radius * (Math.Cos(theta) - 1) - SinkBack * (1 - front) + Lift * front;
             card.Rotation.Angle = -theta * 180 / Math.PI;
+            double grow = 1 + Grow * front;
+            card.Scale.ScaleX = card.Scale.ScaleY = grow;
         }
         // Back to front, so the front card covers the ones behind it.
         var order = _cards.OrderByDescending(kv => Math.Abs(kv.Key - _position)).Select(kv => kv.Value.Group).ToList();

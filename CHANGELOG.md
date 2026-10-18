@@ -17,7 +17,7 @@
 - Added view buttons to the footer, as KillerPDF has: the library's four views (F5 to F8) and its grouping, which bring the library up over an open picture, and with a picture open a collection strip button, whose flyout lists the sides with their shortcuts and the strip's views, and zoom out, zoom level and zoom in.
 - The title bar shows the library's name on the right, where Killendar and KillerNotes show their open database, centered on the caption buttons, and an open file's name after the wordmark, as KillerPDF shows it.
 - Captures sit on dark cards in the library grid and timeline, and on gray cards in the collection strip, which now sits on the window's own background instead of a pane. Card color in a capture's menu picks the card color with the family color picker, and Collection color in a collection's menu gives a collection a color that marks its heading and its cards.
-- Added a rolodex view for a strip docked at the side: the captures are cards on a turning drum, the current one facing you and the others leaning back above and below it, as an alternative to the thumbnail list.
+- Added a rolodex view for a strip docked at the side: the captures are cards on a turning drum, the current one rising out in front at full size and the others leaning back above and below it, as an alternative to the thumbnail list.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
