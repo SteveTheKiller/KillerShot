@@ -11,7 +11,7 @@
 - Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.
-- Added local QR reading from image files or a selected region with killershot qr, JSON output and link warnings. Links never open automatically.
+- Added local QR reading from image files or a selected region with killershot qr, JSON output and link warnings. A rail toggle, off by default, reads new captures and the existing album in the background. Decoded text stays in the encrypted album and is searchable. Links never open automatically.
 - Added a command line (KillerShot.exe --cli, or KillerShot.Cli.exe in a console) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP.
 - Added Open, Save, Save as and Copy, and a Recent menu of the latest captures.
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.

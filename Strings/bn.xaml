@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">থাম্বনেইল তালিকা</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">রোলোডেক্স</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">সংগ্রহ স্ট্রিপটি সেই দিকে ডক করুন, বা নিজের দিকে ছোট করুন</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">QR কোড পড়া</sys:String>
 </ResourceDictionary>

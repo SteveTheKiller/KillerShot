@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">Küçük resim listesi</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">Döner kartotek</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Koleksiyon şeridini o tarafa yerleştir veya kendi tarafında küçült</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">QR kodu okuma</sys:String>
 </ResourceDictionary>

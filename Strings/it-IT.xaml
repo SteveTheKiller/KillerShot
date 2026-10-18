@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">Elenco miniature</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">Schedario rotante</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Ancora la striscia della raccolta su quel lato, o riducila sul suo lato</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">Lettura codici QR</sys:String>
 </ResourceDictionary>

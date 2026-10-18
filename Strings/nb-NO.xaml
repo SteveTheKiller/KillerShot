@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">Miniatyrliste</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">Roterende kortregister</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Fest samlingsstripen på den siden, eller minimer den på sin egen side</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">Lese QR-koder</sys:String>
 </ResourceDictionary>

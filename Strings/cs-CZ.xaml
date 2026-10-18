@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">Seznam náhledů</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">Kartotéka</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Ukotvit pás kolekce na tuto stranu, nebo ho minimalizovat na jeho vlastní straně</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">Čtení QR kódů</sys:String>
 </ResourceDictionary>

@@ -401,4 +401,5 @@
     <sys:String x:Key="Str_Strip_ViewList">サムネイル一覧</sys:String>
     <sys:String x:Key="Str_Strip_ViewRolodex">回転式カードファイル</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">コレクション ストリップをその側にドッキング、または自分の側で最小化</sys:String>
+    <sys:String x:Key="Str_TT_QrReading">QRコードの読み取り</sys:String>
 </ResourceDictionary>
