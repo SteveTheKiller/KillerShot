@@ -31,10 +31,18 @@ namespace KillerShot.Shell
         /// <summary>How a left or right strip shows its captures: "list" or "rolodex".</summary>
         public string SideView => _sideView;
 
+        internal FrameworkElement TestPicker => _picker;
+        internal FrameworkElement TestCarousel => _flow;
+
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly Button _dockBtn;
+        // The picker and the dock button make a row above a side column, but sit in a column of
+        // their own beside a top or bottom carousel, so that strip spends no height on them.
+        private readonly DockPanel _root = new();
+        private readonly DockPanel _header = new() { LastChildFill = true };
+        private readonly StackPanel _headerColumn = new() { Margin = new Thickness(0, 0, 12, 0) };
         private readonly Grid _body = new();
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
@@ -66,12 +74,6 @@ namespace KillerShot.Shell
                 Load(keepCurrent: true);
             };
             _dockBtn = HeaderButton("", ShowDockMenu);
-
-            var header = new DockPanel { LastChildFill = true, Margin = new Thickness(0, 0, 0, 6) };
-            DockPanel.SetDock(_dockBtn, Dock.Right);
-            header.Children.Add(_dockBtn);
-            header.Children.Add(_picker);
-            header.Children.Add(_count);
 
             _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.LoadThumb, Describe = LibraryView.Describe, ViewHeight = 1.2 };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
@@ -118,11 +120,7 @@ namespace KillerShot.Shell
                 if (_openDelay.Tag is CaptureItem item) Open(item);
             };
 
-            var root = new DockPanel();
-            DockPanel.SetDock(header, Dock.Top);
-            root.Children.Add(header);
-            root.Children.Add(_body);
-            Child = root;
+            Child = _root;
 
             _host.SideChanged += Relayout;
             CaptureLibrary.Changed += () => Dispatcher.BeginInvoke(new Action(() => { if (IsVisible) Load(keepCurrent: true); }));
@@ -158,8 +156,31 @@ namespace KillerShot.Shell
                 _body.Children.Add(_slider);
             }
             else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
-            // A side column is too narrow for the count beside the picker; it would only show "...".
-            _count.Visibility = _host.IsHorizontal ? Visibility.Visible : Visibility.Collapsed;
+
+            _root.Children.Clear();
+            _header.Children.Clear();
+            _headerColumn.Children.Clear();
+            DockPanel.SetDock(_dockBtn, Dock.Right);
+            _header.Children.Add(_dockBtn);
+            _header.Children.Add(_picker);
+            if (_host.IsHorizontal)
+            {
+                // Beside the carousel: the picker and dock button, with the count under them.
+                _header.Margin = new Thickness(0);
+                _count.Margin = new Thickness(2, 6, 0, 0);
+                _headerColumn.Children.Add(_header);
+                _headerColumn.Children.Add(_count);
+                DockPanel.SetDock(_headerColumn, Dock.Left);
+                _root.Children.Add(_headerColumn);
+            }
+            else
+            {
+                // A side column is too narrow for the count beside the picker; it would only show "...".
+                _header.Margin = new Thickness(0, 0, 0, 6);
+                DockPanel.SetDock(_header, Dock.Top);
+                _root.Children.Add(_header);
+            }
+            _root.Children.Add(_body);
             Sync();
         }
 

@@ -205,6 +205,15 @@ internal static class SelfTestLibrary
             {
                 dock.DockTo(side);
                 await Shot("strip-" + side.ToString().ToLowerInvariant());
+                if (dock.IsHorizontal && w.TestStrip is { } strip)
+                {
+                    // A top or bottom strip spends no row on its picker: it sits beside the carousel.
+                    var picker = strip.TestPicker.TransformToAncestor(strip).TransformBounds(new Rect(strip.TestPicker.RenderSize));
+                    var flow = strip.TestCarousel.TransformToAncestor(strip).TransformBounds(new Rect(strip.TestCarousel.RenderSize));
+                    log.AppendLine($"strip {side} picker={picker} carousel={flow}");
+                    if (picker.Bottom <= flow.Top + 0.5 && picker.Right > flow.Left + 0.5)
+                        throw new InvalidOperationException($"The {side} strip's picker takes a row above the carousel.");
+                }
             }
             dock.Minimize();
             await Shot("strip-bottom-minimized");
