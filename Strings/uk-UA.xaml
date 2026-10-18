@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Без тексту</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Лише текст</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Текст під значками</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Налаштувати панель інструментів...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Сховати панель інструментів</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Налаштування панелі інструментів</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Кнопки над позначкою стоять ліворуч на панелі інструментів, кнопки під нею праворуч. Кнопки з меню «Ще» чекають під стрілкою в кінці панелі. Перетягуйте, щоб змінити порядок, або двічі клацніть, щоб перенести кнопку в інший список.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Панель інструментів</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Меню «Ще»</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Перенести до меню «Ще»</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Перенести на панель</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Вгору</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Вниз</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Додати роздільник</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Видалити роздільник</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Вище ліва сторона, нижче права</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Роздільник</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Скинути</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Панель інструментів схована - Alt+M показує її знову</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Панель інструментів показано</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Вигляд панелі інструментів</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Інструмент для знімків екрана, що копіює саме те, що ви виділили, піксель у піксель, без облікового запису й без надсилання будь-чого. Утиліта з ліцензією GPLv3 від </sys:String>

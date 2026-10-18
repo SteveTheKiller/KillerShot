@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Sans texte</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Texte seul</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Texte sous les icônes</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Personnaliser la barre d'outils...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Masquer la barre d'outils</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Personnaliser la barre d'outils</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Les boutons au-dessus du repère se placent à gauche de la barre d'outils, ceux en dessous à droite. Les boutons du menu Plus attendent sous le chevron au bout de la barre. Faites glisser pour réorganiser, ou double-cliquez pour déplacer un bouton d'une liste à l'autre.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Barre d'outils</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menu Plus</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Déplacer vers le menu Plus</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Déplacer vers la barre</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Monter</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Descendre</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Ajouter un séparateur</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Retirer le séparateur</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Côté gauche au-dessus, côté droit en dessous</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Séparateur</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Réinitialiser</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Barre d'outils masquée - Alt+M la réaffiche</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Barre d'outils affichée</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Apparence de la barre d'outils</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Un outil de capture d'écran qui copie exactement ce que vous sélectionnez, pixel par pixel, sans compte et sans rien envoyer nulle part. Un utilitaire GPLv3 de </sys:String>

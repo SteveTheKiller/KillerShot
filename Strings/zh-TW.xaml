@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">無文字</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">僅文字</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">圖示下顯示文字</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">自訂工具列...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">隱藏工具列</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">自訂工具列</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">標記上方的按鈕位於工具列左側，下方的按鈕位於右側。「更多」功能表中的按鈕放在工具列末端的箭頭下。拖曳可重新排列，按兩下可在兩個清單之間移動按鈕。</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">工具列</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">「更多」功能表</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">移到「更多」功能表</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">移到工具列</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">上移</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">下移</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">新增分隔線</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">移除分隔線</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">上方為左側，下方為右側</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">分隔線</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">重設</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">工具列已隱藏 - Alt+M 可重新顯示</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">已顯示工具列</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">工具列外觀</sys:String>
+    <sys:String x:Key="Str_Btn_OK">確定</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">一款截圖工具，逐像素準確複製你選取的內容，不需帳號，也不向任何地方回傳。一個 GPLv3 的 </sys:String>

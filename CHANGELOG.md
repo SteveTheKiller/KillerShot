@@ -13,6 +13,7 @@
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture, show a notification, and start with Windows.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
+- Added Customize toolbar to reorder the toolbar's buttons, move them between its sides or into the More menu, and add or remove separators. Buttons that do not fit a narrow window wait in the More menu, Alt+M hides the toolbar, and Ctrl+Shift+1 to 6 pick the toolbar style.
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.

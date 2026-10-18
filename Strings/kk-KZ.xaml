@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Мәтінсіз</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Тек мәтін</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Мәтін белгішелердің астында</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Құралдар тақтасын баптау...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Құралдар тақтасын жасыру</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Құралдар тақтасын баптау</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Белгіден жоғарыдағы түймелер құралдар тақтасының сол жағында, төмендегілері оң жағында тұрады. Қосымша мәзірдегі түймелер тақтаның соңындағы көрсеткі астында тұрады. Ретін өзгерту үшін сүйреңіз немесе түймені тізімдер арасында жылжыту үшін екі рет басыңыз.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Құралдар тақтасы</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Қосымша мәзір</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Қосымша мәзірге жылжыту</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Тақтаға жылжыту</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Жоғары жылжыту</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Төмен жылжыту</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Бөлгіш қосу</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Бөлгішті алып тастау</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Жоғарыда сол жақ, төменде оң жақ</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Бөлгіш</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Қалпына келтіру</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Құралдар тақтасы жасырылды - Alt+M оны қайта көрсетеді</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Құралдар тақтасы көрсетілді</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Құралдар тақтасының түрі</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Таңдағаныңызды пиксельге дейін дәл көшіретін, тіркелгісіз және ешқайда ештеңе жібермейтін скриншот құралы. GPLv3 құралы, авторы </sys:String>

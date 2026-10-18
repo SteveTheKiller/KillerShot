@@ -152,6 +152,8 @@ namespace KillerShot.Shell
             }
             // The width button shows the text size while the text tool is active.
             RefreshWidthButton();
+            // The active tool stays on the bar however narrow the window is.
+            QueueToolbarReflow();
         }
 
         /// <summary>The Record button reads Stop, in the accent, while a recording runs.</summary>
@@ -160,6 +162,7 @@ namespace KillerShot.Shell
             bool on = App.Instance.Video?.IsRecording == true;
             RecordBtn.Content = BuildToolbarContent(_iconSize, _labelMode, on ? 0xE71A : 0xE7C8, Loc(on ? "Str_Rec_Stop" : "Str_Btn_Record"));
             if (on) RecordBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush"); else RecordBtn.ClearValue(ForegroundProperty);
+            QueueToolbarReflow();
         }
 
         private void RefreshWidthButton() =>
@@ -307,9 +310,11 @@ namespace KillerShot.Shell
             OpenFlyout(WidthMenu, WidthBtn);
         }
 
-        private static void OpenFlyout(ContextMenu menu, Button anchor)
+        private void OpenFlyout(ContextMenu menu, Button anchor)
         {
-            menu.PlacementTarget = anchor;
+            // A button in the More menu has no place on the bar, so its flyout opens under the
+            // More chevron instead.
+            menu.PlacementTarget = anchor.IsVisible ? anchor : MoreBtn;
             menu.Placement = PlacementMode.Bottom;
             menu.IsOpen = true;
             Anim.FadeIn(menu);

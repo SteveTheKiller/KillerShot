@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Ingen tekst</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Bare tekst</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Tekst under ikoner</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Tilpass verktøylinjen...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Skjul verktøylinjen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Tilpass verktøylinjen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Knapper over markøren står til venstre på verktøylinjen, knapper under den til høyre. Knapper i Mer-menyen venter under pilen i enden av verktøylinjen. Dra for å endre rekkefølgen, eller dobbeltklikk for å flytte en knapp mellom listene.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Verktøylinje</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Mer-meny</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Flytt til Mer-menyen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Flytt til verktøylinjen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Flytt opp</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Flytt ned</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Legg til skillelinje</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Fjern skillelinje</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Venstre side over, høyre side under</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Skillelinje</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Tilbakestill</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Verktøylinjen er skjult. Alt+M viser den igjen</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Verktøylinjen vises</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Verktøylinjeutseende</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA">Et skjermbildeverktøy som kopierer nøyaktig det du markerer, piksel for piksel, uten konto og uten å sende noe hjem. Et GPLv3-</sys:String>

@@ -87,6 +87,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">No text</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Text only</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Text under icons</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Customize toolbar...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Hide toolbar</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Customize Toolbar</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Buttons above the marker sit on the left of the toolbar, buttons below it on the right. Buttons in the More menu wait under the chevron at the end of the toolbar. Drag to rearrange, or double-click to move a button between the lists.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Toolbar</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">More menu</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Move to More menu</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Move to toolbar</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Move up</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Move down</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Add separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Remove separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Left side above, right side below</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Reset</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Toolbar hidden. Press Alt+M to show it again</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Toolbar shown</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Toolbar appearance</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">A screenshot tool that copies exactly what you select, pixel for pixel, with no account and nothing phoning home. A GPLv3 </sys:String>

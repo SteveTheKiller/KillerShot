@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Kein Text</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Nur Text</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Text unter Symbolen</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Symbolleiste anpassen...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Symbolleiste ausblenden</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Symbolleiste anpassen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Schaltflächen über der Markierung stehen links in der Symbolleiste, Schaltflächen darunter rechts. Schaltflächen im Menü Mehr warten unter dem Pfeil am Ende der Symbolleiste. Zum Umordnen ziehen oder doppelklicken, um eine Schaltfläche zwischen den Listen zu verschieben.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Symbolleiste</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menü Mehr</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">In das Menü Mehr</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">In die Symbolleiste</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Nach oben</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Nach unten</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Trennlinie hinzufügen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Trennlinie entfernen</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Oben linke Seite, unten rechte Seite</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Trennlinie</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Zurücksetzen</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Symbolleiste ausgeblendet - Alt+M zeigt sie wieder an</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Symbolleiste eingeblendet</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Darstellung der Symbolleiste</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Ein Screenshot-Werkzeug, das genau das kopiert, was Sie auswählen, Pixel für Pixel, ohne Konto und ohne Datenübertragung nach Hause. Ein GPLv3-Werkzeug von </sys:String>

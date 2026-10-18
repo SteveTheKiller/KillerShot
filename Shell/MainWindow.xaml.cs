@@ -40,7 +40,9 @@ namespace KillerShot.Shell
 
             InitThemePicker();
             InitLanguageMenu();
-            // After InitLanguageMenu: the toolbar captions are read through Loc().
+            // After InitLanguageMenu: the toolbar captions are read through Loc(). The layout
+            // places the buttons first, then the style builds their content.
+            InitToolbarLayout();
             InitToolbarStyle();
             InitEditor();
 

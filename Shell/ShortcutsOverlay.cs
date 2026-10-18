@@ -56,6 +56,8 @@ namespace KillerShot.Shell
             new("Ctrl+1",   "Str_KS_ActualSize", KsCat.View, true,  "D1"),
             new("Ctrl+=",   "Str_KS_ZoomIn",     KsCat.View, true,  "Equals"),
             new("Ctrl+-",   "Str_KS_ZoomOut",    KsCat.View, true,  "Minus"),
+            new("Ctrl+Shift+1-6", "Str_KS_ToolbarStyle", KsCat.View, true, "D1", "D2", "D3", "D4", "D5", "D6"),
+            new("Alt+M",    "Str_Toolbar_Hide",  KsCat.View, false, "M"),
 
             new("V",        "Str_Tool_Select",      KsCat.Nav, false, "V"),
             new("P",        "Str_Tool_Pen",         KsCat.Nav, false, "P"),

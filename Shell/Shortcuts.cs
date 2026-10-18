@@ -46,6 +46,23 @@ namespace KillerShot.Shell
             if (e.Key == Key.F12) { ShowAboutOverlay(); e.Handled = true; return; }
             if (AnyOverlayOpen) return;
 
+            // Alt+M hides or shows the toolbar, as in KillerPDF. Alt combinations arrive as
+            // Key.System with the letter in SystemKey.
+            if (alt && !ctrl && e.Key == Key.System && e.SystemKey == Key.M)
+            {
+                ToggleToolbarHidden();
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+Shift+1 to 6 pick the toolbar style: two icon sizes, then four text modes.
+            if (ctrl && shift && !alt && e.Key is >= Key.D1 and <= Key.D6)
+            {
+                PickToolbarStyle(e.Key - Key.D0);
+                e.Handled = true;
+                return;
+            }
+
             if (ctrl && !alt)
             {
                 bool handled = true;

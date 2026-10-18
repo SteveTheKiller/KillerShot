@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Sin texto</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Solo texto</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Texto bajo iconos</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Personalizar barra de herramientas...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Ocultar la barra de herramientas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Personalizar barra de herramientas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Los botones por encima del marcador van a la izquierda de la barra de herramientas y los de debajo, a la derecha. Los botones del menú Más esperan bajo la flecha al final de la barra. Arrastre para reordenar, o haga doble clic para mover un botón entre las listas.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Barra de herramientas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menú Más</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Mover al menú Más</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Mover a la barra</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Subir</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Bajar</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Agregar separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Quitar separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Arriba el lado izquierdo, abajo el derecho</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Restablecer</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Barra de herramientas oculta - Alt+M la muestra de nuevo</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Barra de herramientas visible</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Apariencia de la barra de herramientas</sys:String>
+    <sys:String x:Key="Str_Btn_OK">Aceptar</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Una herramienta de capturas que copia exactamente lo que seleccionas, píxel a píxel, sin cuenta y sin enviar nada a ningún sitio. Una utilidad GPLv3 de </sys:String>

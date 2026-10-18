@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Không có văn bản</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Chỉ văn bản</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Văn bản bên dưới biểu tượng</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Tùy chỉnh thanh công cụ...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Ẩn thanh công cụ</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Tùy chỉnh thanh công cụ</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Các nút phía trên vạch đánh dấu nằm bên trái thanh công cụ, các nút phía dưới nằm bên phải. Các nút trong menu Thêm nằm dưới mũi tên ở cuối thanh công cụ. Kéo để sắp xếp lại, hoặc nhấp đúp để chuyển một nút giữa hai danh sách.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Thanh công cụ</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menu Thêm</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Chuyển vào menu Thêm</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Chuyển lên thanh công cụ</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Di chuyển lên</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Di chuyển xuống</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Thêm dấu phân cách</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Xóa dấu phân cách</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Bên trên là bên trái, bên dưới là bên phải</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Dấu phân cách</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Đặt lại</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Đã ẩn thanh công cụ - Nhấn Alt+M để hiện lại</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Đã hiển thị thanh công cụ</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Giao diện thanh công cụ</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Công cụ chụp màn hình sao chép đúng phần bạn chọn, chính xác từng điểm ảnh, không cần tài khoản và không gửi gì đi đâu cả. Một tiện ích GPLv3 của </sys:String>

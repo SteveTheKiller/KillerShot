@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Sem texto</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Somente texto</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Texto abaixo dos ícones</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Personalizar barra de ferramentas...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Ocultar barra de ferramentas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Personalizar barra de ferramentas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Os botões acima do marcador ficam à esquerda da barra de ferramentas, e os abaixo dele, à direita. Os botões do menu Mais ficam sob a seta no fim da barra. Arraste para reorganizar ou clique duas vezes para mover um botão entre as listas.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Barra de ferramentas</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menu Mais</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Mover para o menu Mais</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Mover para a barra</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Mover para cima</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Mover para baixo</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Adicionar separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Remover separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Acima o lado esquerdo, abaixo o direito</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Separador</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Redefinir</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Barra de ferramentas oculta - Alt+M a exibe novamente</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Barra de ferramentas exibida</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Aparência da barra de ferramentas</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Uma ferramenta de captura de tela que copia exatamente o que você seleciona, pixel por pixel, sem conta e sem enviar nada para lugar nenhum. Um utilitário GPLv3 do </sys:String>

@@ -111,18 +111,27 @@
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" MinHeight="42"/>   <!-- toolbar, on the chrome tier -->
+                    <RowDefinition x:Name="ToolbarRowDef" Height="Auto" MinHeight="42"/>   <!-- toolbar, on the chrome tier -->
                     <RowDefinition Height="*"/>                     <!-- the lifted editor card -->
                 </Grid.RowDefinitions>
 
-                <!-- Right-click anywhere on the bar picks the icon and text style (ToolbarStyle.cs).
-                     Background must be Transparent, not null, or the menu never opens. -->
+                <!-- Right-click anywhere on the bar picks the icon and text style, customizes the bar
+                     or hides it (ToolbarStyle.cs). Background must be Transparent, not null, or the
+                     menu never opens. The order below is only the default: ApplyToolbarLayout
+                     (ToolbarLayout.cs) arranges both sides from the saved layout at startup and after
+                     Customize toolbar, and adds the separators, so neither side declares any. -->
                 <Grid x:Name="ToolbarGrid" Grid.Row="0" Margin="10,2,18,6" Background="Transparent"
                       MouseLeftButtonDown="Toolbar_MouseDown">
                     <Grid.ContextMenu>
                         <ContextMenu x:Name="ToolbarMenu"/>
                     </Grid.ContextMenu>
-                    <WrapPanel x:Name="ToolbarPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>   <!-- left side -->
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>   <!-- right side -->
+                        <ColumnDefinition Width="Auto"/>   <!-- More menu -->
+                    </Grid.ColumnDefinitions>
+                    <StackPanel x:Name="LeftBar" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button x:Name="CaptureBtn" Style="{StaticResource ToolbarButton}" Click="CaptureBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="CaptureMenu"/>
@@ -134,16 +143,13 @@
                                 <ContextMenu x:Name="RecentMenu"/>
                             </Button.ContextMenu>
                         </Button>
-                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="OpenBtn" Style="{StaticResource ToolbarButton}" Click="OpenBtn_Click"/>
                         <Button x:Name="SaveBtn" Style="{StaticResource ToolbarButton}" Click="SaveBtn_Click"/>
                         <Button x:Name="SaveAsBtn" Style="{StaticResource ToolbarButton}" Click="SaveAsBtn_Click"/>
                         <Button x:Name="CopyBtn" Style="{StaticResource ToolbarButton}" Click="CopyBtn_Click"/>
                         <Button x:Name="PrintBtn" Style="{StaticResource ToolbarButton}" Click="PrintBtn_Click"/>
-                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="UndoBtn" Style="{StaticResource ToolbarButton}" Click="UndoBtn_Click"/>
                         <Button x:Name="RedoBtn" Style="{StaticResource ToolbarButton}" Click="RedoBtn_Click"/>
-                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="ToolSelectBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Select"/>
                         <Button x:Name="ToolPenBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Pen"/>
                         <Button x:Name="ToolHighlighterBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Highlighter"/>
@@ -153,7 +159,6 @@
                         <Button x:Name="ToolTextBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Text"/>
                         <Button x:Name="ToolRedactBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Redact"/>
                         <Button x:Name="ToolCropBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Crop"/>
-                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="ColorMenu"/>
@@ -164,10 +169,22 @@
                                 <ContextMenu x:Name="WidthMenu"/>
                             </Button.ContextMenu>
                         </Button>
-                        <Rectangle Width="1" Fill="{DynamicResource CardBorderBrush}" Margin="4,6"/>
                         <Button x:Name="FitBtn" Style="{StaticResource ToolbarButton}" Click="FitBtn_Click"/>
                         <Button x:Name="ActualSizeBtn" Style="{StaticResource ToolbarButton}" Click="ActualSizeBtn_Click"/>
-                    </WrapPanel>
+                    </StackPanel>
+                    <StackPanel x:Name="RightBar" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"/>
+                    <!-- The More menu: buttons the user put there, and those the window is too narrow
+                         for. Shown only when it has something in it. -->
+                    <Button x:Name="MoreBtn" Grid.Column="3" Style="{StaticResource ToolbarButton}" Visibility="Collapsed"
+                            Width="26" MinWidth="0" Padding="0" VerticalAlignment="Center"
+                            Content="&#xE712;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                            Foreground="{DynamicResource MutedTextBrush}"
+                            ToolTip="{DynamicResource Str_CustomizeToolbar_More}" Click="MoreBtn_Click"
+                            ContextMenuOpening="MoreBtn_ContextMenuOpening">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="MoreMenu"/>
+                        </Button.ContextMenu>
+                    </Button>
                 </Grid>
 
                 <Border x:Name="ContentPane"

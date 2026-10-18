@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">লেখা নেই</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">শুধু লেখা</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">আইকনের নিচে লেখা</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">টুলবার কাস্টমাইজ করুন...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">টুলবার লুকান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">টুলবার কাস্টমাইজ করুন</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">চিহ্নের উপরের বোতামগুলো টুলবারের বাম দিকে থাকে, নিচেরগুলো ডান দিকে। আরও মেনুর বোতামগুলো টুলবারের শেষের শেভরনের নিচে থাকে। সাজাতে টানুন, অথবা তালিকার মধ্যে বোতাম সরাতে ডাবল-ক্লিক করুন।</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">টুলবার</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">আরও মেনু</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">আরও মেনুতে সরান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">টুলবারে সরান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">উপরে সরান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">নিচে সরান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">বিভাজক যোগ করুন</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">বিভাজক সরান</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">উপরে বাম দিক, নিচে ডান দিক</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">বিভাজক</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">রিসেট</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">টুলবার লুকানো হয়েছে - Alt+M আবার দেখাবে</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">টুলবার দেখানো হয়েছে</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">টুলবারের চেহারা</sys:String>
+    <sys:String x:Key="Str_Btn_OK">ঠিক আছে</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">একটি স্ক্রিনশট টুল, যা আপনার বেছে নেওয়া অংশটি পিক্সেল ধরে হুবহু কপি করে, কোনো অ্যাকাউন্ট ছাড়াই এবং কোথাও কিছু না পাঠিয়ে। একটি GPLv3 </sys:String>

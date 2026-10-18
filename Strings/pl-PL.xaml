@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Brak tekstu</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Tylko tekst</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Tekst pod ikonami</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Dostosuj pasek narzędzi...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Ukryj pasek narzędzi</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Dostosuj pasek narzędzi</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Przyciski nad znacznikiem są po lewej stronie paska narzędzi, a pod nim po prawej. Przyciski w menu Więcej czekają pod strzałką na końcu paska. Przeciągnij, aby zmienić kolejność, lub kliknij dwukrotnie, aby przenieść przycisk między listami.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Pasek narzędzi</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Menu Więcej</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Przenieś do menu Więcej</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Przenieś na pasek</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Przenieś w górę</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Przenieś w dół</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Dodaj separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Usuń separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Wyżej lewa strona, niżej prawa</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Separator</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Resetuj</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Pasek narzędzi ukryty - Alt+M przywraca go</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Pasek narzędzi widoczny</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Wygląd paska narzędzi</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Narzędzie do zrzutów ekranu, które kopiuje dokładnie to, co zaznaczysz, piksel w piksel, bez konta i bez wysyłania czegokolwiek. Narzędzie GPLv3 od </sys:String>

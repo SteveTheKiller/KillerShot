@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Metin yok</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Yalnızca metin</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Simgelerin altında metin</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Araç çubuğunu özelleştir...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Araç çubuğunu gizle</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Araç çubuğunu özelleştir</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">İşaretin üstündeki düğmeler araç çubuğunun solunda, altındakiler sağında yer alır. Diğer menüsündeki düğmeler araç çubuğunun sonundaki okun altında bekler. Yeniden sıralamak için sürükleyin veya bir düğmeyi listeler arasında taşımak için çift tıklayın.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Araç çubuğu</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Diğer menüsü</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Diğer menüsüne taşı</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Araç çubuğuna taşı</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Yukarı taşı</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Aşağı taşı</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Ayırıcı ekle</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Ayırıcıyı kaldır</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Üstte sol taraf, altta sağ taraf</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Ayırıcı</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Sıfırla</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Araç çubuğu gizlendi - Alt+M yeniden gösterir</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Araç çubuğu gösteriliyor</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Araç çubuğu görünümü</sys:String>
+    <sys:String x:Key="Str_Btn_OK">Tamam</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Seçtiğiniz alanı piksel piksel, hesap olmadan ve hiçbir yere veri göndermeden kopyalayan bir ekran görüntüsü aracı. Bir GPLv3 </sys:String>

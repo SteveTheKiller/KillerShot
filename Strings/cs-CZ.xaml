@@ -84,6 +84,25 @@
     <sys:String x:Key="Str_Toolbar_TextNone">Bez textu</sys:String>
     <sys:String x:Key="Str_Toolbar_TextOnly">Pouze text</sys:String>
     <sys:String x:Key="Str_Toolbar_TextUnder">Text pod ikonami</sys:String>
+    <sys:String x:Key="Str_Toolbar_Customize">Přizpůsobit panel nástrojů...</sys:String>
+    <sys:String x:Key="Str_Toolbar_Hide">Skrýt panel nástrojů</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Title">Přizpůsobit panel nástrojů</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Hint">Tlačítka nad značkou jsou na levé straně panelu nástrojů, tlačítka pod ní na pravé. Tlačítka v nabídce Další čekají pod šipkou na konci panelu. Přetažením je přeuspořádáte, dvojklikem přesunete tlačítko mezi seznamy.</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Toolbar">Panel nástrojů</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_More">Nabídka Další</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToMore">Přesunout do nabídky Další</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_ToBar">Přesunout na panel nástrojů</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveUp">Posunout nahoru</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_MoveDown">Posunout dolů</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_AddSeparator">Přidat oddělovač</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_RemoveSeparator">Odebrat oddělovač</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Space">Nahoře levá strana, dole pravá</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Separator">Oddělovač</sys:String>
+    <sys:String x:Key="Str_CustomizeToolbar_Reset">Obnovit výchozí</sys:String>
+    <sys:String x:Key="Str_St_ToolbarHidden">Panel nástrojů skryt - Alt+M jej znovu zobrazí</sys:String>
+    <sys:String x:Key="Str_St_ToolbarShown">Panel nástrojů zobrazen</sys:String>
+    <sys:String x:Key="Str_KS_ToolbarStyle">Vzhled panelu nástrojů</sys:String>
+    <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
     <sys:String x:Key="Str_About_DescA" xml:space="preserve">Nástroj pro snímky obrazovky, který kopíruje přesně to, co vyberete, pixel po pixelu, bez účtu a bez odesílání čehokoli domů. Nástroj GPLv3 od </sys:String>
