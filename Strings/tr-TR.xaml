@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">Tamam</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Seçtiğiniz alanı piksel piksel, hesap olmadan ve hiçbir yere veri göndermeden kopyalayan bir ekran görüntüsü aracı. Bir GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Seçtiğiniz alanı piksel piksel, hesap olmadan ve hiçbir yere veri göndermeden kopyalayan, Windows için şifreli bir ekran görüntüsü albümü. Bir GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">İŞLEME</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Otomatik</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Donanım</sys:String>

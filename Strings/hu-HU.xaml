@@ -104,7 +104,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Képernyőkép-készítő, amely pontosan azt másolja, amit kijelöl, képpontról képpontra, fiók nélkül, és semmit sem küld haza. Egy GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Titkosított képernyőkép-album Windowsra, amely pontosan azt másolja, amit kijelöl, képpontról képpontra, fiók nélkül, és semmit sem küld haza. Egy GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">MEGJELENÍTÉS</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatikus</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardveres</sys:String>

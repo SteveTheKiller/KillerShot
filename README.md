@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://killershot.net"><img src="docs/banner.png" height="180" alt="KillerShot - Free Screen Capture"></a>
+  <a href="https://killershot.net"><img src="docs/banner.png" height="180" alt="KillerShot - Encrypted Screenshot Album for Windows"></a>
 </p>
 
-Free and open-source screenshot and screen recording tool for Windows. KillerShot copies exactly what you select, pixel for pixel, with an editor for marking it up and a recorder for MP4 and GIF. Captures go straight to the clipboard, so a picture is ready to paste before you let go of the mouse.
+**Encrypted Screenshot Album for Windows.** KillerShot is a free and open-source screenshot and screen recording tool that copies exactly what you select, pixel for pixel, with an editor for marking it up and a recorder for MP4 and GIF. Captures go straight to the clipboard, so a picture is ready to paste before you let go of the mouse.
 
 KillerShot is in development. Public downloads are not available yet.
 

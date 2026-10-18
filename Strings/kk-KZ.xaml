@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Таңдағаныңызды пиксельге дейін дәл көшіретін, тіркелгісіз және ешқайда ештеңе жібермейтін скриншот құралы. GPLv3 құралы, авторы </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Таңдағаныңызды пиксельге дейін дәл көшіретін, тіркелгісіз және ешқайда ештеңе жібермейтін Windows-қа арналған шифрланған скриншот альбомы. GPLv3 құралы, авторы </sys:String>
     <sys:String x:Key="Str_About_Rendering">КӨРСЕТУ</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Автоматты</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Аппараттық</sys:String>

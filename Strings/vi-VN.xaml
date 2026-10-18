@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Công cụ chụp màn hình sao chép đúng phần bạn chọn, chính xác từng điểm ảnh, không cần tài khoản và không gửi gì đi đâu cả. Một tiện ích GPLv3 của </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Album ảnh chụp màn hình được mã hóa cho Windows, sao chép đúng phần bạn chọn, chính xác từng điểm ảnh, không cần tài khoản và không gửi gì đi đâu cả. Một tiện ích GPLv3 của </sys:String>
     <sys:String x:Key="Str_About_Rendering">KẾT XUẤT</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Tự động</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Phần cứng</sys:String>

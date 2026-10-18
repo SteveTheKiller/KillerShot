@@ -108,7 +108,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">A screenshot tool that copies exactly what you select, pixel for pixel, with no account and nothing phoning home. A GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">An encrypted screenshot album for Windows that copies exactly what you select, pixel for pixel, with no account and nothing phoning home. A GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDERING</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatic</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>

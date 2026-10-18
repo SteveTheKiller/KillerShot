@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Uma ferramenta de captura de tela que copia exatamente o que você seleciona, pixel por pixel, sem conta e sem enviar nada para lugar nenhum. Um utilitário GPLv3 do </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Um álbum de capturas de tela criptografado para Windows que copia exatamente o que você seleciona, pixel por pixel, sem conta e sem enviar nada para lugar nenhum. Um utilitário GPLv3 do </sys:String>
     <sys:String x:Key="Str_About_Rendering">RENDERIZAÇÃO</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automático</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>

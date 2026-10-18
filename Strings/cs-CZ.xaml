@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Nástroj pro snímky obrazovky, který kopíruje přesně to, co vyberete, pixel po pixelu, bez účtu a bez odesílání čehokoli domů. Nástroj GPLv3 od </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Šifrované album snímků obrazovky pro Windows, které kopíruje přesně to, co vyberete, pixel po pixelu, bez účtu a bez odesílání čehokoli domů. Nástroj GPLv3 od </sys:String>
     <sys:String x:Key="Str_About_Rendering">VYKRESLOVÁNÍ</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automaticky</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Hardware</sys:String>

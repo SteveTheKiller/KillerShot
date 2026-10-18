@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Инструмент для снимков экрана, который копирует ровно то, что вы выделили, пиксель в пиксель, без учётной записи и без отправки данных куда-либо. Утилита GPLv3 от </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Зашифрованный альбом снимков экрана для Windows, который копирует ровно то, что вы выделили, пиксель в пиксель, без учётной записи и без отправки данных куда-либо. Утилита GPLv3 от </sys:String>
     <sys:String x:Key="Str_About_Rendering">ОТРИСОВКА</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Автоматически</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Аппаратная</sys:String>

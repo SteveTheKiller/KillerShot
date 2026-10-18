@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">OK</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA">Et skjermbildeverktøy som kopierer nøyaktig det du markerer, piksel for piksel, uten konto og uten å sende noe hjem. Et GPLv3-</sys:String>
+    <sys:String x:Key="Str_About_DescA">Et kryptert skjermbildealbum for Windows som kopierer nøyaktig det du markerer, piksel for piksel, uten konto og uten å sende noe hjem. Et GPLv3-</sys:String>
     <sys:String x:Key="Str_About_Rendering">GJENGIVELSE</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">Automatisk</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">Maskinvare</sys:String>

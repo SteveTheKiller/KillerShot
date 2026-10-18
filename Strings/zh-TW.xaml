@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">確定</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">一款截圖工具，逐像素準確複製你選取的內容，不需帳號，也不向任何地方回傳。一個 GPLv3 的 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">一款適用於 Windows 的加密截圖相簿，逐像素準確複製你選取的內容，不需帳號，也不向任何地方回傳。一個 GPLv3 的 </sys:String>
     <sys:String x:Key="Str_About_Rendering">轉譯</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">自動</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">硬體</sys:String>

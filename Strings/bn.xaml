@@ -105,7 +105,7 @@
     <sys:String x:Key="Str_Btn_OK">ঠিক আছে</sys:String>
 
     <!-- KillerShot -->
-    <sys:String x:Key="Str_About_DescA" xml:space="preserve">একটি স্ক্রিনশট টুল, যা আপনার বেছে নেওয়া অংশটি পিক্সেল ধরে হুবহু কপি করে, কোনো অ্যাকাউন্ট ছাড়াই এবং কোথাও কিছু না পাঠিয়ে। একটি GPLv3 </sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows-এর জন্য একটি এনক্রিপ্ট করা স্ক্রিনশট অ্যালবাম, যা আপনার বেছে নেওয়া অংশটি পিক্সেল ধরে হুবহু কপি করে, কোনো অ্যাকাউন্ট ছাড়াই এবং কোথাও কিছু না পাঠিয়ে। একটি GPLv3 </sys:String>
     <sys:String x:Key="Str_About_Rendering">রেন্ডারিং</sys:String>
     <sys:String x:Key="Str_About_RenderAuto">স্বয়ংক্রিয়</sys:String>
     <sys:String x:Key="Str_About_RenderHardware">হার্ডওয়্যার</sys:String>
