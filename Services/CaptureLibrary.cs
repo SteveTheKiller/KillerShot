@@ -43,7 +43,7 @@ internal static partial class CaptureLibrary
         SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlcipher());
     }
 
-    private const int SchemaVersion = 1;
+    private const int SchemaVersion = 2;
     private const int ThumbLongSide = 512;
     private static readonly byte[] KeyEntropy = "KillerShot.Library.v1"u8.ToArray();
 
@@ -235,6 +235,7 @@ internal static partial class CaptureLibrary
             ImportRecentFolder();
             Prune();
             StartOcr();
+            StartQrReading();
         });
     }
 
@@ -284,6 +285,10 @@ internal static partial class CaptureLibrary
                 image BLOB NOT NULL);
             CREATE INDEX IF NOT EXISTS captures_taken ON captures(taken_utc DESC);
             CREATE INDEX IF NOT EXISTS captures_collection ON captures(collection_id);
+            CREATE TABLE IF NOT EXISTS capture_qr(
+                capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
+                results TEXT NOT NULL,
+                text TEXT NOT NULL);
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
             """);
@@ -365,7 +370,11 @@ internal static partial class CaptureLibrary
         }
         Prune();
         RaiseChanged();
-        if (BackgroundWork) StartOcr();
+        if (BackgroundWork)
+        {
+            StartOcr();
+            StartQrReading();
+        }
         return id;
     }
 
@@ -717,8 +726,9 @@ internal static partial class CaptureLibrary
         cmd.CommandText = """
             DELETE FROM capture_search WHERE rowid = $id;
             INSERT INTO capture_search(rowid, title, process, note, ocr, collection)
-            SELECT c.id, c.window_title, c.process_name, c.note, c.ocr_text, k.name
-            FROM captures c LEFT JOIN collections k ON k.id = c.collection_id WHERE c.id = $id;
+            SELECT c.id, c.window_title, c.process_name, c.note, COALESCE(c.ocr_text, '') || char(10) || COALESCE(q.text, ''), k.name
+            FROM captures c LEFT JOIN collections k ON k.id = c.collection_id
+            LEFT JOIN capture_qr q ON q.capture_id = c.id WHERE c.id = $id;
             """;
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();

@@ -54,6 +54,7 @@ public partial class App : Application
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestLibrary.TryRun(e.Args)) return;
+        if (SelfTestQr.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
         bool demo = DemoMode.TryEnter(e.Args);
