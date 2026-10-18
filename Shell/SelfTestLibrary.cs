@@ -24,6 +24,10 @@ internal static class SelfTestLibrary
         if (Directory.Exists(lib)) Directory.Delete(lib, true);
         Settings.UseFolder(Path.Combine(dir, "settings"));
         CaptureLibrary.UseFolder(lib);
+        string shots = Path.Combine(dir, "Screenshots");
+        if (Directory.Exists(shots)) Directory.Delete(shots, true);
+        Directory.CreateDirectory(shots);
+        FolderCaptures.UseFolder(shots);
         App.InitializeKit();
         _ = RunAsync(dir, lib);
         return true;
@@ -117,6 +121,23 @@ internal static class SelfTestLibrary
             log.AppendLine($"ocr_search crashed={ocr}");
             if (ocr == 0) log.AppendLine("ocr_note=no Windows text recognizer for the profile languages, or still running");
 
+            // The Screenshots folder: five files shown as a live collection, and a sixth that
+            // arrives while it is watched.
+            string shots = Path.Combine(dir, "Screenshots");
+            for (int n = 0; n < 5; n++)
+            {
+                string shotFile = Path.Combine(shots, $"Screenshot 2026-10-{10 + n} 0915{n:00}.png");
+                ImageOutput.SavePng(Picture(70 + n, "Screenshot " + (n + 1), "Saved by Windows", Color.FromRgb(0x5E, 0x35, 0xB1)), shotFile);
+                File.SetLastWriteTime(shotFile, now.AddDays(-n - 1));
+            }
+            int folderCount = FolderCaptures.Items().Count;
+            var firstFile = FolderCaptures.Items()[0];
+            bool folderPixels = SamePixels(CaptureLibrary.LoadImage(firstFile.Id), ImageOutput.Load(FolderCaptures.PathOf(firstFile.Id)!));
+            bool folderThumb = CaptureLibrary.LoadThumb(firstFile.Id) != null;
+            int folderSearch = FolderCaptures.Items("2026-10-12").Count;
+            log.AppendLine($"folder count={folderCount} pixels={folderPixels} thumb={folderThumb} search={folderSearch}");
+            if (folderCount != 5 || !folderPixels || !folderThumb || folderSearch != 1) throw new InvalidOperationException("The Screenshots folder collection is wrong.");
+
             // Window: each view, both groupings, a search and the loading screen.
             App.Instance.SetDocument(null);
             var w = new MainWindow { ShowActivated = false, WindowStartupLocation = WindowStartupLocation.Manual, Left = -20000, Top = -20000, Width = 1280, Height = 820 };
@@ -159,12 +180,23 @@ internal static class SelfTestLibrary
             LocaleManager.Apply(Locale.EnUS);
             w.TestRelocalize();
 
+            // A file arriving in the watched folder shows up without a reload.
+            bool changed = false;
+            FolderCaptures.Changed += () => changed = true;
+            ImageOutput.SavePng(Picture(80, "Screenshot 6", "Arrived later", Color.FromRgb(0x5E, 0x35, 0xB1)), Path.Combine(shots, "Screenshot 2026-10-17 120000.png"));
+            for (int t = 0; t < 20 && !changed; t++) await Task.Delay(200);
+            log.AppendLine($"folder_watch changed={changed} count={FolderCaptures.Items().Count}");
+            if (!changed || FolderCaptures.Items().Count != 6) throw new InvalidOperationException("The Screenshots folder is not watched.");
+            view.TestSet("shelves", "collection", "");
+            await Shot("library-folder-collection");
+
             // Open a capture, then the library over it (Ctrl+L).
             w.TestOpenLibraryCapture(CaptureLibrary.Items().First(c => c.Id == ids[3]));
             await Shot("editor-from-library");
             w.TestToggleLibrary();
             await Shot("library-over-image");
             w.TestToggleLibrary();
+
             App.Instance.SetDocument(null);
 
             // Password: set, lock, refuse a wrong one, unlock, change, remove.

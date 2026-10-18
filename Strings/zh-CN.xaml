@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">截图库将重新使用您的 Windows 帐户打开，不再询问。</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">密码未更改: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">正在打开截图库...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">在文件资源管理器中打开</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">在文件资源管理器中显示</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">添加到截图库</sys:String>
+    <sys:String x:Key="Str_Lib_Added">已添加到截图库。</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">将 {0} 文件夹显示为收藏集</sys:String>
 </ResourceDictionary>

@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Библиотека снова будет открываться вашей учётной записью Windows без запроса.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Пароль не изменён: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Открытие библиотеки снимков...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Открыть в Проводнике</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Показать в Проводнике</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Добавить в библиотеку</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Добавлено в библиотеку.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Показывать папку {0} как коллекцию</sys:String>
 </ResourceDictionary>

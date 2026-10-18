@@ -32,6 +32,7 @@ namespace KillerShot.Shell
         internal string Detail { get; init; } = "";
         internal long? CollectionId { get; init; }
         internal bool IsCollection { get; init; }
+        internal bool IsFolder { get; init; }
         internal bool Timeline { get; init; }
         internal IReadOnlyList<CaptureItem> Items { get; init; } = [];
     }
@@ -86,6 +87,7 @@ namespace KillerShot.Shell
         private string _group = "date";
         private IReadOnlyList<CaptureItem> _items = [];
         private IReadOnlyList<CaptureCollection> _collections = [];
+        private IReadOnlyList<CaptureItem> _folderItems = [];
         private readonly Dictionary<string, long> _shelfFront = [];
         private readonly DispatcherTimer _searchDelay;
         private bool _reloadQueued;
@@ -113,10 +115,15 @@ namespace KillerShot.Shell
             Loaded += (_, _) =>
             {
                 CaptureLibrary.Changed += OnLibraryChanged;
+                FolderCaptures.Changed += OnLibraryChanged;
                 Relocalize();
                 if (_dirty) Reload();
             };
-            Unloaded += (_, _) => CaptureLibrary.Changed -= OnLibraryChanged;
+            Unloaded += (_, _) =>
+            {
+                CaptureLibrary.Changed -= OnLibraryChanged;
+                FolderCaptures.Changed -= OnLibraryChanged;
+            };
             IsVisibleChanged += (_, _) => { if (IsVisible && _dirty) Reload(); };
             SizeChanged += (_, _) =>
             {
@@ -184,6 +191,7 @@ namespace KillerShot.Shell
             string search = SearchBox.Text.Trim();
             _items = CaptureLibrary.Items(search.Length > 0 ? search : null);
             _collections = CaptureLibrary.Collections();
+            _folderItems = FolderCaptures.Items(search.Length > 0 ? search : null);
             int total = search.Length > 0 ? CaptureLibrary.Count : _items.Count;
 
             SyncHeader();
@@ -191,9 +199,11 @@ namespace KillerShot.Shell
                 ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_CountMatches"), _items.Count, total)
                 : string.Format(CultureInfo.CurrentCulture, Loc(total == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), total);
 
-            bool libraryEmpty = total == 0 && _collections.Count == 0;
+            // The Screenshots folder shows as a collection, so only where collections do.
+            bool folderShown = _group == "collection" && _view != "timeline" && _folderItems.Count > 0;
+            bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0;
             HeaderBar.Visibility = libraryEmpty ? Visibility.Collapsed : Visibility.Visible;
-            if (_items.Count == 0 && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
+            if (_items.Count == 0 && !folderShown && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
             {
                 ShowEmpty(searching: search.Length > 0 && !libraryEmpty);
                 return;
@@ -257,7 +267,7 @@ namespace KillerShot.Shell
         // Groups and rows
         // ============================================================
 
-        private sealed record Group(string Key, string Title, long? CollectionId, bool IsCollection, List<CaptureItem> Items);
+        private sealed record Group(string Key, string Title, long? CollectionId, bool IsCollection, List<CaptureItem> Items, bool IsFolder = false);
 
         private List<Group> Groups(bool byCollection)
         {
@@ -266,6 +276,8 @@ namespace KillerShot.Shell
             {
                 var known = _collections.Select(c => c.Id).ToHashSet();
                 bool searching = SearchBox.Text.Trim().Length > 0;
+                if (FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
+                    groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _folderItems.ToList(), IsFolder: true));
                 foreach (var c in _collections)
                 {
                     var members = _items.Where(i => i.CollectionId == c.Id).ToList();
@@ -317,7 +329,7 @@ namespace KillerShot.Shell
                         Kind = g.Items.Count > 0 ? LibraryRowKind.Shelf : LibraryRowKind.Header,
                         Key = g.Key, Title = g.Title,
                         Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
-                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, Items = g.Items,
+                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, IsFolder = g.IsFolder, Items = g.Items,
                     });
                 }
             }
@@ -330,7 +342,7 @@ namespace KillerShot.Shell
                     {
                         Kind = LibraryRowKind.Header, Key = g.Key, Title = g.Title,
                         Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
-                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, Timeline = timeline,
+                        CollectionId = g.CollectionId, IsCollection = g.IsCollection, IsFolder = g.IsFolder, Timeline = timeline,
                     });
                     for (int i = 0; i < g.Items.Count; i += _tilesPerRow)
                         rows.Add(new LibraryRow
@@ -362,6 +374,21 @@ namespace KillerShot.Shell
             var detail = new TextBlock { Text = row.Detail, FontSize = 11, Margin = new Thickness(10, 0, 0, 2), VerticalAlignment = VerticalAlignment.Bottom };
             detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
             var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 8) };
+            if (row.IsFolder)
+            {
+                // A folder on disk, not a collection in the library: a folder mark, and its menu
+                // opens it in File Explorer.
+                var mark = new TextBlock { Text = "\uF12B", FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 15, Margin = new Thickness(0, 0, 8, 2), VerticalAlignment = VerticalAlignment.Bottom };
+                mark.SetResourceReference(TextBlock.ForegroundProperty, "PrimaryBrush");
+                line.Children.Add(mark);
+                line.Background = Brushes.Transparent;
+                var open = new MenuItem { Header = Loc("Str_Lib_OpenFolder") };
+                open.Click += (_, _) => ShowInExplorer(null);
+                line.ContextMenu = new ContextMenu();
+                line.ContextMenu.Items.Add(open);
+                line.ToolTip = FolderCaptures.Folder;
+                AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
+            }
             line.Children.Add(title);
             line.Children.Add(detail);
             if (row.IsCollection && row.CollectionId is long id)
@@ -507,7 +534,8 @@ namespace KillerShot.Shell
         {
             if (BigFlow.SelectedItem is not { } item) { BigFlowTitle.Text = BigFlowDetail.Text = ""; return; }
             BigFlowTitle.Text = Title(item);
-            string collection = item.CollectionId is long cid && _collections.FirstOrDefault(c => c.Id == cid) is { } c ? "  ·  " + c.Name : "";
+            string collection = item.CollectionId == FolderCaptures.CollectionId ? "  ·  " + FolderCaptures.Name
+                : item.CollectionId is long cid && _collections.FirstOrDefault(c => c.Id == cid) is { } c ? "  ·  " + c.Name : "";
             BigFlowDetail.Text = item.Taken.ToString("f", CultureInfo.CurrentCulture) + "  ·  " +
                 item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture) + collection +
                 (string.IsNullOrWhiteSpace(item.Note) ? "" : "  ·  " + item.Note);
@@ -681,6 +709,16 @@ namespace KillerShot.Shell
             }
             Add("Str_Lib_Open", () => OpenRequested?.Invoke(item)).FontWeight = FontWeights.SemiBold;
             Add("Str_Lib_Copy", () => Copy(item));
+            if (FolderCaptures.IsFolderId(item.Id))
+            {
+                // A file in the Screenshots folder: the folder keeps it, so no collections, notes
+                // or delete here, only a way to it and a way into the encrypted library.
+                Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item));
+                Add("Str_Lib_AddToLibrary", () => AddToLibrary(item));
+                menu.IsOpen = true;
+                Anim.FadeIn(menu);
+                return;
+            }
             Add("Str_Lib_SaveAs", () => SaveAs(item));
             menu.Items.Add(new Separator());
 
@@ -783,8 +821,33 @@ namespace KillerShot.Shell
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 
+        /// <summary>Opens the Screenshots folder in File Explorer, with a file selected when one is given.</summary>
+        private void ShowInExplorer(CaptureItem? item)
+        {
+            try
+            {
+                string args = item != null && FolderCaptures.PathOf(item.Id) is { } path
+                    ? "/select,\"" + path + "\""
+                    : "\"" + FolderCaptures.Folder + "\"";
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
+            }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        /// <summary>Copies a file from the Screenshots folder into the encrypted library.</summary>
+        private void AddToLibrary(CaptureItem item)
+        {
+            try
+            {
+                CaptureLibrary.AddNow(FolderCaptures.LoadImage(item.Id), item.Taken, "", item.Window, null);
+                StatusMessage?.Invoke(Loc("Str_Lib_Added"));
+            }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
         private void Delete(CaptureItem item)
         {
+            if (FolderCaptures.IsFolderId(item.Id)) return;   // the folder's files are left alone
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
             dlg.ShowDialog();
             if (dlg.Confirmed) CaptureLibrary.Delete([item.Id]);

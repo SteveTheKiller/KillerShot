@@ -472,6 +472,8 @@
                                             <ComboBox x:Name="LibraryKeepCombo" Grid.Column="1" SelectionChanged="LibraryKeepCombo_Changed"
                                                       AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
                                         </Grid>
+                                        <CheckBox x:Name="LibraryFolderToggle" Style="{StaticResource CsCheck}"
+                                                  Checked="LibraryFolderToggle_Changed" Unchecked="LibraryFolderToggle_Changed"/>
                                         <TextBlock x:Name="LibraryStatusText" Foreground="{DynamicResource DimTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
                                         <StackPanel Orientation="Horizontal">
                                             <Button x:Name="LibraryPasswordBtn" Style="{StaticResource OutlineButton}" Padding="10,3" Click="LibraryPassword_Click"/>

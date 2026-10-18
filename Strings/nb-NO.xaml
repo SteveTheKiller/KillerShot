@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Biblioteket åpnes igjen med Windows-kontoen din, uten å spørre.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Passordet ble ikke endret: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Åpner skjermbildebiblioteket...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Åpne i Filutforsker</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Vis i Filutforsker</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Legg til i biblioteket</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Lagt til i biblioteket.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Vis mappen {0} som en samling</sys:String>
 </ResourceDictionary>

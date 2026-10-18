@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Thư viện sẽ lại mở bằng tài khoản Windows của bạn mà không hỏi.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Mật khẩu chưa được đổi: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Đang mở thư viện ảnh chụp...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Mở trong File Explorer</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Hiện trong File Explorer</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Thêm vào thư viện</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Đã thêm vào thư viện.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Hiện thư mục {0} như một bộ sưu tập</sys:String>
 </ResourceDictionary>

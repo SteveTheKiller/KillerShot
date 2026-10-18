@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">লাইব্রেরি আবার কিছু না জিজ্ঞেস করে আপনার Windows অ্যাকাউন্ট দিয়ে খুলবে।</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">পাসওয়ার্ড বদলানো হয়নি: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">ক্যাপচার লাইব্রেরি খোলা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">ফাইল এক্সপ্লোরারে খুলুন</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">ফাইল এক্সপ্লোরারে দেখান</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">লাইব্রেরিতে যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Lib_Added">লাইব্রেরিতে যোগ হয়েছে।</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">{0} ফোল্ডারটি সংগ্রহ হিসেবে দেখান</sys:String>
 </ResourceDictionary>

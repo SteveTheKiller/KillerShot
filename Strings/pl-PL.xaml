@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Biblioteka znów będzie otwierana Twoim kontem Windows, bez pytania.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Hasło nie zostało zmienione: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Otwieranie biblioteki zrzutów...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Otwórz w Eksploratorze plików</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Pokaż w Eksploratorze plików</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Dodaj do biblioteki</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Dodano do biblioteki.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Pokaż folder {0} jako kolekcję</sys:String>
 </ResourceDictionary>

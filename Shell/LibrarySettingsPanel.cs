@@ -35,6 +35,9 @@ namespace KillerShot.Shell
                 i = LibraryKeepCombo.Items.Count - 1;
             }
             LibraryKeepCombo.SelectedIndex = i;
+            LibraryFolderToggle.Content = string.Format(Loc("Str_CS_ShowFolder"), FolderCaptures.Name);
+            LibraryFolderToggle.ToolTip = FolderCaptures.Folder;
+            LibraryFolderToggle.IsChecked = FolderCaptures.Enabled;
             RefreshLibraryStatus();
         }
 
@@ -50,6 +53,12 @@ namespace KillerShot.Shell
             LibraryPasswordBtn.IsEnabled = open;
             LibraryRemovePasswordBtn.Visibility = pw ? Visibility.Visible : Visibility.Collapsed;
             LibraryRemovePasswordBtn.IsEnabled = open;
+        }
+
+        private void LibraryFolderToggle_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_syncingOptions) return;
+            FolderCaptures.Enabled = LibraryFolderToggle.IsChecked == true;
         }
 
         private void LibraryKeepCombo_Changed(object sender, SelectionChangedEventArgs e)

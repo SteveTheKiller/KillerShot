@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">ライブラリは再び確認なしで Windows アカウントで開くようになります。</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">パスワードは変更されませんでした: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">キャプチャ ライブラリを開いています...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">エクスプローラーで開く</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">エクスプローラーで表示</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">ライブラリに追加</sys:String>
+    <sys:String x:Key="Str_Lib_Added">ライブラリに追加しました。</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">{0} フォルダーをコレクションとして表示</sys:String>
 </ResourceDictionary>

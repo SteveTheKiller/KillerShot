@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">La libreria si aprirà di nuovo con il tuo account Windows, senza chiedere.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">La password non è stata cambiata: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Apertura della libreria delle catture...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Apri in Esplora file</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Mostra in Esplora file</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Aggiungi alla libreria</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Aggiunta alla libreria.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Mostra la cartella {0} come raccolta</sys:String>
 </ResourceDictionary>

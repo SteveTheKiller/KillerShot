@@ -370,4 +370,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">The library will open with your Windows account again, without asking.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">The password was not changed: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Opening the capture library...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Open in File Explorer</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Show in File Explorer</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Add to the library</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Added to the library.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Show the {0} folder as a collection</sys:String>
 </ResourceDictionary>

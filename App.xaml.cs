@@ -159,6 +159,12 @@ public partial class App : Application
     /// asks where to put it.</summary>
     internal void OpenLibraryCapture(CaptureItem item)
     {
+        // A picture from the Screenshots folder opens as the file it is, so Save writes it back.
+        if (FolderCaptures.IsFolderId(item.Id) && FolderCaptures.PathOf(item.Id) is { } path)
+        {
+            OpenImage(path);
+            return;
+        }
         var bmp = CaptureLibrary.LoadImage(item.Id);
         SetDocument(new EditorDocument(bmp, null, item.Taken));
     }

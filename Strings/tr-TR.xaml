@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Kitaplık yeniden sormadan Windows hesabınızla açılır.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Parola değiştirilmedi: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Yakalama kitaplığı açılıyor...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Dosya Gezgini'nde aç</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Dosya Gezgini'nde göster</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Kitaplığa ekle</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Kitaplığa eklendi.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">{0} klasörünü koleksiyon olarak göster</sys:String>
 </ResourceDictionary>

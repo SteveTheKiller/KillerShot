@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">A biblioteca voltará a abrir com sua conta do Windows, sem perguntar.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">A senha não foi alterada: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Abrindo a biblioteca de capturas...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Abrir no Explorador de Arquivos</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Mostrar no Explorador de Arquivos</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Adicionar à biblioteca</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Adicionada à biblioteca.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Mostrar a pasta {0} como coleção</sys:String>
 </ResourceDictionary>

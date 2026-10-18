@@ -504,6 +504,7 @@ internal static partial class CaptureLibrary
     /// <summary>The full capture at its exact pixel size.</summary>
     public static BitmapSource LoadImage(long id)
     {
+        if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadImage(id);
         byte[] png;
         lock (_gate)
         {
@@ -518,6 +519,7 @@ internal static partial class CaptureLibrary
     /// <summary>The PNG exactly as stored, for exporting without re-encoding.</summary>
     public static byte[] LoadPng(long id)
     {
+        if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadPng(id);
         lock (_gate)
         {
             using var cmd = Db.CreateCommand();
@@ -534,6 +536,7 @@ internal static partial class CaptureLibrary
     /// <summary>A capture's thumbnail, cached. Null when it no longer exists.</summary>
     public static BitmapSource? LoadThumb(long id)
     {
+        if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadThumb(id);
         lock (_gate)
         {
             if (_thumbs.TryGetValue(id, out var cached)) return cached;

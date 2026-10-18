@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Кітапхана қайтадан сұраусыз Windows тіркелгіңізбен ашылады.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Құпиясөз өзгертілмеді: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Түсірілім кітапханасы ашылуда...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Сілтеушіде ашу</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Сілтеушіде көрсету</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Кітапханаға қосу</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Кітапханаға қосылды.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">{0} қалтасын жинақ ретінде көрсету</sys:String>
 </ResourceDictionary>

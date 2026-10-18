@@ -367,4 +367,9 @@
     <sys:String x:Key="Str_CS_RemovePasswordDetail">Die Bibliothek öffnet sich wieder ohne Nachfrage mit Ihrem Windows-Konto.</sys:String>
     <sys:String x:Key="Str_CS_PasswordFailed">Das Kennwort wurde nicht geändert: {0}</sys:String>
     <sys:String x:Key="Str_Busy_OpeningLibrary">Aufnahmebibliothek wird geöffnet...</sys:String>
+    <sys:String x:Key="Str_Lib_OpenFolder">Im Explorer öffnen</sys:String>
+    <sys:String x:Key="Str_Lib_ShowInExplorer">Im Explorer anzeigen</sys:String>
+    <sys:String x:Key="Str_Lib_AddToLibrary">Zur Bibliothek hinzufügen</sys:String>
+    <sys:String x:Key="Str_Lib_Added">Zur Bibliothek hinzugefügt.</sys:String>
+    <sys:String x:Key="Str_CS_ShowFolder">Ordner {0} als Sammlung anzeigen</sys:String>
 </ResourceDictionary>
