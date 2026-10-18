@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace KillerTools.Qr;
 
@@ -10,6 +11,26 @@ public sealed record QrLinkResult(QrLinkDisposition Disposition, Uri? Url, IRead
 /// <summary>Local checks only. Assessing a payload never opens it or sends a network request.</summary>
 public static class QrLink
 {
+    private static readonly Regex WebLinks = new("https?://[^\\s<>\"']+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+
+    public static IReadOnlyList<string> FindWebLinks(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var links = new List<string>();
+        foreach (Match match in WebLinks.Matches(text))
+        {
+            string link = match.Value.TrimEnd('.', ',', ';');
+            while (link.Length > 0 && link[^1] is ')' or ']' or '}')
+            {
+                char close = link[^1], open = close == ')' ? '(' : close == ']' ? '[' : '{';
+                if (link.Count(c => c == open) >= link.Count(c => c == close)) break;
+                link = link[..^1].TrimEnd('.', ',', ';');
+            }
+            if (!links.Contains(link, StringComparer.Ordinal)) links.Add(link);
+        }
+        return links;
+    }
+
     private static readonly HashSet<string> Shorteners = new(StringComparer.OrdinalIgnoreCase)
     {
         "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rebrand.ly", "cutt.ly", "shorturl.at", "rb.gy", "tiny.cc", "lnkd.in", "youtu.be"

@@ -413,4 +413,5 @@
     <sys:String x:Key="Str_QrWarn_DirectDownload">直接ダウンロードするリンクです。</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">パスワードをコピー</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR コードを読み取る</sys:String>
+    <sys:String x:Key="Str_Ocr_Links">画像内のテキストのリンク</sys:String>
 </ResourceDictionary>

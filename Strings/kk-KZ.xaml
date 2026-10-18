@@ -413,4 +413,5 @@
     <sys:String x:Key="Str_QrWarn_DirectDownload">Тікелей жүктеу сілтемесі.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Құпиясөзді көшіру</sys:String>
     <sys:String x:Key="Str_Mode_Qr">QR кодын оқу</sys:String>
+    <sys:String x:Key="Str_Ocr_Links">Сурет мәтініндегі сілтемелер</sys:String>
 </ResourceDictionary>

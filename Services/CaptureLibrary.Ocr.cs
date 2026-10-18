@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Data.Sqlite;
+using KillerTools.Qr;
 using WinBitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 using WinBitmapPixelFormat = Windows.Graphics.Imaging.BitmapPixelFormat;
 using WinBitmapAlphaMode = Windows.Graphics.Imaging.BitmapAlphaMode;
@@ -12,6 +14,37 @@ namespace KillerShot.Services;
 
 internal static partial class CaptureLibrary
 {
+    public static IReadOnlyList<string> OcrLinks(long id)
+    {
+        lock (_gate)
+        {
+            if (_db == null) return [];
+            using var command = _db.CreateCommand();
+            command.CommandText = "SELECT ocr_text FROM captures WHERE id = $id";
+            command.Parameters.AddWithValue("$id", id);
+            return command.ExecuteScalar() is string text ? QrLink.FindWebLinks(text) : [];
+        }
+    }
+
+    public static void StoreOcr(long id, string text) => StoreOcr(id, text, null);
+
+    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase)
+    {
+        lock (_gate)
+        {
+            if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
+            using var transaction = _db.BeginTransaction();
+            using var command = _db.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "UPDATE captures SET ocr_text = $text WHERE id = $id";
+            command.Parameters.AddWithValue("$text", text);
+            command.Parameters.AddWithValue("$id", id);
+            if (command.ExecuteNonQuery() > 0) IndexText(id, transaction);
+            transaction.Commit();
+        }
+        RaiseChanged();
+    }
+
     // ============================================================
     // Text in the pictures. Windows OCR reads each capture once, in the background, in the
     // languages of the user's Windows profile, and the text goes into the search index so a
@@ -34,9 +67,11 @@ internal static partial class CaptureLibrary
                 {
                     long id;
                     byte[] png;
+                    SqliteConnection database;
                     lock (_gate)
                     {
                         if (_db == null) return;
+                        database = _db;
                         using var cmd = _db.CreateCommand();
                         cmd.CommandText = "SELECT id, image FROM captures WHERE ocr_text IS NULL ORDER BY taken_utc DESC LIMIT 1";
                         using var r = cmd.ExecuteReader();
@@ -50,15 +85,7 @@ internal static partial class CaptureLibrary
                         try { text = await RecognizeAsync(engine, png); }
                         catch { /* an image OCR cannot read is stored as having no text */ }
                     }
-                    lock (_gate)
-                    {
-                        if (_db == null) return;
-                        using var cmd = _db.CreateCommand();
-                        cmd.CommandText = "UPDATE captures SET ocr_text = $t WHERE id = $id";
-                        cmd.Parameters.AddWithValue("$t", text);
-                        cmd.Parameters.AddWithValue("$id", id);
-                        if (cmd.ExecuteNonQuery() > 0) IndexText(id);
-                    }
+                    StoreOcr(id, text, database);
                 }
             }
             catch { /* search still works on titles, programs, notes and collections */ }

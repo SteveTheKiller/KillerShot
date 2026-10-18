@@ -82,6 +82,7 @@ namespace KillerShot.Shell
 
         /// <summary>A line for the status bar.</summary>
         public event Action<string>? StatusMessage;
+        public event Action<string, FrameworkElement>? LinkRequested;
 
         private string _view = "shelves";
         private string _group = "date";
@@ -733,6 +734,7 @@ namespace KillerShot.Shell
                 return;
             }
             Add("Str_Lib_SaveAs", () => SaveAs(item));
+            if (BuildOcrLinksMenu(item.Id, anchor) is { } links) menu.Items.Add(links);
             menu.Items.Add(new Separator());
 
             var move = new MenuItem { Header = Loc("Str_Lib_MoveTo") };
@@ -758,6 +760,20 @@ namespace KillerShot.Shell
             Add("Str_Lib_Delete", () => Delete(item), "Del");
             menu.IsOpen = true;
             Anim.FadeIn(menu);
+        }
+
+        public MenuItem? BuildOcrLinksMenu(long id, FrameworkElement anchor)
+        {
+            var links = CaptureLibrary.OcrLinks(id);
+            if (links.Count == 0) return null;
+            var menu = new MenuItem { Header = Loc("Str_Ocr_Links") };
+            foreach (string link in links)
+            {
+                var item = new MenuItem { Header = link };
+                item.Click += (_, _) => LinkRequested?.Invoke(link, anchor);
+                menu.Items.Add(item);
+            }
+            return menu;
         }
 
         private void FillCollectionMenu(ContextMenu menu, long id, string name)

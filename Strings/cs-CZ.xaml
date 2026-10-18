@@ -413,4 +413,5 @@
     <sys:String x:Key="Str_QrWarn_DirectDownload">Odkaz pro přímé stažení.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Kopírovat heslo</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Přečíst QR kód</sys:String>
+    <sys:String x:Key="Str_Ocr_Links">Odkazy v textu obrázku</sys:String>
 </ResourceDictionary>

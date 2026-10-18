@@ -413,4 +413,5 @@
     <sys:String x:Key="Str_QrWarn_DirectDownload">Пряме посилання на завантаження.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Копіювати пароль</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Прочитати QR-код</sys:String>
+    <sys:String x:Key="Str_Ocr_Links">Посилання в тексті зображення</sys:String>
 </ResourceDictionary>

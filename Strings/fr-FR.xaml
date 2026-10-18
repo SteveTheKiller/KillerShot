@@ -413,4 +413,5 @@
     <sys:String x:Key="Str_QrWarn_DirectDownload">Lien de téléchargement direct.</sys:String>
     <sys:String x:Key="Str_Qr_CopyPassword">Copier le mot de passe</sys:String>
     <sys:String x:Key="Str_Mode_Qr">Lire un code QR</sys:String>
+    <sys:String x:Key="Str_Ocr_Links">Liens dans le texte de l’image</sys:String>
 </ResourceDictionary>

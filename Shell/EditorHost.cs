@@ -383,6 +383,7 @@ namespace KillerShot.Shell
             Library.CaptureRequested += () => StartCapture(CaptureMode.Region);
             Library.ViewChanged += SyncContentPane;
             Library.StatusMessage += text => StatusText.Text = text;
+            Library.LinkRequested += (payload, anchor) => ShowPayloadCard(payload, anchor, Loc("Str_Ocr_Links"));
         }
 
         private void LibraryBtn_Click(object sender, RoutedEventArgs e) => ToggleLibrary();

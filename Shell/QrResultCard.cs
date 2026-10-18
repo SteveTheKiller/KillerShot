@@ -14,23 +14,26 @@ public partial class MainWindow
     private ToolTip? _qrResultCard;
 
     private void ShowQrCard(QrResult result, Button anchor)
+        => ShowPayloadCard(result.Text, anchor, "QR");
+
+    private void ShowPayloadCard(string payload, FrameworkElement anchor, string title)
     {
         if (_qrResultCard != null) _qrResultCard.IsOpen = false;
         var content = new StackPanel { Width = 340 };
         KeyboardNavigation.SetTabNavigation(content, KeyboardNavigationMode.Cycle);
-        var heading = new TextBlock { Text = "QR", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 4, 0, 8) };
+        var heading = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 4, 0, 8) };
         content.Children.Add(heading);
         var text = new TextBox
         {
-            Text = result.Text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap,
+            Text = payload, IsReadOnly = true, TextWrapping = TextWrapping.Wrap,
             BorderThickness = new Thickness(0), Background = Brushes.Transparent,
             MaxHeight = 180, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             Margin = new Thickness(0, 0, 0, 8)
         };
         text.SetResourceReference(ForegroundProperty, "TextBrush");
-        AutomationProperties.SetName(text, "QR");
+        AutomationProperties.SetName(text, title);
         content.Children.Add(text);
-        var link = QrLink.Check(result.Text);
+        var link = QrLink.Check(payload);
         foreach (string warning in link.Warnings)
         {
             var label = new TextBlock { Text = LocaleManager.Loc("Str_QrWarn_" + warning), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 5) };
@@ -49,10 +52,10 @@ public partial class MainWindow
         }
         var copy = Action("Str_Btn_Copy", "QrCopy", () =>
         {
-            try { Clipboard.SetText(result.Text); }
+            try { Clipboard.SetText(payload); }
             catch (Exception error) { StatusText.Text = error.Message; }
         });
-        if (QrPayload.WifiPassword(result.Text) is { Length: > 0 } password)
+        if (QrPayload.WifiPassword(payload) is { Length: > 0 } password)
             Action("Str_Qr_CopyPassword", "QrCopyPassword", () =>
             {
                 try { Clipboard.SetText(password); }
@@ -62,7 +65,7 @@ public partial class MainWindow
             Action("Str_Btn_Open", "QrOpen", () =>
             {
                 if (_qrResultCard != null) _qrResultCard.IsOpen = false;
-                var checkedLink = QrLink.Check(result.Text);
+                var checkedLink = QrLink.Check(payload);
                 if (checkedLink.Url == null || checkedLink.Disposition is not (QrLinkDisposition.Allowed or QrLinkDisposition.Warning)) return;
                 if (checkedLink.Disposition == QrLinkDisposition.Warning)
                 {

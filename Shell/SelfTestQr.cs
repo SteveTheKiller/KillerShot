@@ -45,6 +45,11 @@ internal static class SelfTestQr
             CaptureLibrary.StoreQr(empty, []);
             if (CaptureLibrary.Items().Single(item => item.Id == empty).HasQr)
                 throw new InvalidOperationException("The album marked an empty QR result as a code.");
+            CaptureLibrary.StoreOcr(empty, "See http://bit.ly/code. Or https://example.com/path.");
+            if (string.Join('|', CaptureLibrary.OcrLinks(empty)) != "http://bit.ly/code|https://example.com/path")
+                throw new InvalidOperationException("Web links in OCR text were not available from the encrypted album.");
+            if (!CaptureLibrary.Items("example.com").Any(item => item.Id == empty))
+                throw new InvalidOperationException("OCR links were not searchable.");
             long backlog = CaptureLibrary.AddNow(image, DateTime.Now, "region", "Backlog fixture", "qr-check");
             CaptureLibrary.BackgroundWork = true;
             Task.Run(CaptureLibrary.ScanQrAsync).GetAwaiter().GetResult();

@@ -142,6 +142,18 @@ internal static class SelfTestQrUi
             var albumImage = new RenderTargetBitmap((int)Math.Ceiling(albumRoot.ActualWidth), (int)Math.Ceiling(albumRoot.ActualHeight), 96, 96, PixelFormats.Pbgra32);
             albumImage.Render(albumRoot);
             ImageOutput.SavePng(albumImage, Path.Combine(folder, "qr-album.png"));
+            CaptureLibrary.StoreOcr(capture, "See http://bit.ly/code.");
+            var library = (LibraryView)window.FindName("Library");
+            var linksMenu = library.BuildOcrLinksMenu(capture, library) ?? throw new InvalidOperationException("OCR links menu is missing.");
+            ((MenuItem)linksMenu.Items[0]).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            var ocrCard = (FrameworkElement)window.FindName("QrResultCard");
+            ocrCard.Measure(new Size(420, double.PositiveInfinity)); ocrCard.Arrange(new Rect(ocrCard.DesiredSize)); ocrCard.UpdateLayout();
+            if (!TextBlocks(ocrCard).Any(t => t.Text == LocaleManager.Loc("Str_QrWarn_Shortener"))
+                || !Buttons(ocrCard).Any(b => System.Windows.Automation.AutomationProperties.GetAutomationId(b) == "QrOpen"))
+                throw new InvalidOperationException("OCR links did not use the checked result card.");
+            var ocrImage = new RenderTargetBitmap((int)Math.Ceiling(ocrCard.ActualWidth), (int)Math.Ceiling(ocrCard.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            ocrImage.Render(ocrCard);
+            ImageOutput.SavePng(ocrImage, Path.Combine(folder, "ocr-link-card.png"));
             File.WriteAllText(report, "PASS: QR rail, outlines, unchanged export, themed result cards, Copy/Open rules, HTTP warning, Wi-Fi Copy password and album mark.");
             code = 0;
         }
