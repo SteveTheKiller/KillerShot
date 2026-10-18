@@ -95,6 +95,7 @@
                                FontFamily="{DynamicResource ChromeFontFamily}" FontSize="11" FontWeight="Bold"
                                Foreground="{DynamicResource ChromeTextBrush}"/>
                     <Button Content="&#xE8BB;" Click="Cancel_Click" HorizontalAlignment="Right"
+                            ToolTip="{DynamicResource Str_Sys_Close}"
                             VerticalAlignment="Center" Margin="{DynamicResource DialogCaptionCloseMargin}"
                             Style="{StaticResource ChromeCloseButton}"/>
                 </Grid>
