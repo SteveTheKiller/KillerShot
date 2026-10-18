@@ -68,7 +68,7 @@
                 </Grid>
                 <!-- The open file's name, after the wordmark as KillerPDF shows it. -->
                 <TextBlock x:Name="TitleFileLabel" Visibility="Collapsed" IsHitTestVisible="False"
-                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           Foreground="{DynamicResource FilenameBrush}" FontFamily="{DynamicResource FileNameFont}"
                            FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="16,0,12,0"
                            MaxWidth="420" TextTrimming="CharacterEllipsis"/>
@@ -85,7 +85,7 @@
                            FontFamily="Microsoft Sans Serif" FontSize="11" FontWeight="Bold"
                            Foreground="{DynamicResource ChromeTextBrush}"/>
                 <TextBlock x:Name="PlainTitleFileLabel" Visibility="Collapsed" IsHitTestVisible="False"
-                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           Foreground="{DynamicResource FilenameBrush}" FontFamily="{DynamicResource FileNameFont}"
                            FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="16,0,12,0"
                            MaxWidth="420" TextTrimming="CharacterEllipsis"/>
@@ -99,7 +99,7 @@
                      the wordmark, and this one centers on the caption buttons. A click opens the
                      library. -->
                 <TextBlock x:Name="TitleLibraryLabel"
-                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           Foreground="{DynamicResource FilenameBrush}" FontFamily="{DynamicResource FileNameFont}"
                            FontSize="{DynamicResource FileNameFontSize}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="12,0,12,0"
                            MaxWidth="240" TextTrimming="CharacterEllipsis" Cursor="Hand"
