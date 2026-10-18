@@ -103,8 +103,8 @@ namespace KillerShot.Shell
             HighlightActiveTool();
 
             string name = _doc?.FilePath is string p ? System.IO.Path.GetFileName(p) : "";
-            TitleFileLabel.Text = name + (_doc?.Dirty == true && name.Length > 0 ? " *" : "");
-            TitleFileLabel.Visibility = name.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            TitleFileLabel.Text = PlainTitleFileLabel.Text = name + (_doc?.Dirty == true && name.Length > 0 ? " *" : "");
+            TitleFileLabel.Visibility = PlainTitleFileLabel.Visibility = name.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
             Title = name.Length > 0 ? name + " - KillerShot" : "KillerShot";
             RefreshFooter();
         }
@@ -363,6 +363,10 @@ namespace KillerShot.Shell
 
         private void InitLibrary()
         {
+            // The library's file name, without its extension, as Killendar and KillerNotes name
+            // their open database; the tooltip has the full path.
+            TitleLibraryLabel.Text = System.IO.Path.GetFileNameWithoutExtension(CaptureLibrary.FilePath);
+            TitleLibraryLabel.ToolTip = CaptureLibrary.FilePath;
             Library.OpenRequested += item =>
             {
                 try
@@ -378,6 +382,13 @@ namespace KillerShot.Shell
         }
 
         private void LibraryBtn_Click(object sender, RoutedEventArgs e) => ToggleLibrary();
+
+        /// <summary>The library's name in the title bar shows the library, over an open picture too.</summary>
+        private void TitleLibraryLabel_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (_doc != null && !_libraryShown) ToggleLibrary();
+        }
 
         /// <summary>Ctrl+L: the library over the open image, and back. With no image open the
         /// library is already showing, so it only takes focus.</summary>

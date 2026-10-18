@@ -66,6 +66,12 @@
                                Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="Black"/></TextBlock>
                     <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"><Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
                 </Grid>
+                <!-- The open file's name, after the wordmark as KillerPDF shows it. -->
+                <TextBlock x:Name="TitleFileLabel" Visibility="Collapsed" IsHitTestVisible="False"
+                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
+                           TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="16,0,12,0"
+                           MaxWidth="420" TextTrimming="CharacterEllipsis"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Visibility="{DynamicResource PlainTitleVisibility}"
@@ -78,17 +84,26 @@
                 <TextBlock Text="KillerShot" VerticalAlignment="Center"
                            FontFamily="Microsoft Sans Serif" FontSize="11" FontWeight="Bold"
                            Foreground="{DynamicResource ChromeTextBrush}"/>
+                <TextBlock x:Name="PlainTitleFileLabel" Visibility="Collapsed" IsHitTestVisible="False"
+                           Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
+                           FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
+                           TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="16,0,12,0"
+                           MaxWidth="420" TextTrimming="CharacterEllipsis"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="{DynamicResource CaptionButtonsMargin}"
                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <!-- The open file's name, KillerPDF's filename treatment. -->
-                <TextBlock x:Name="TitleFileLabel" Visibility="Collapsed"
+                <!-- The library's name on the right, where Killendar and KillerNotes show their open
+                     database, in the file name face. No baseline shift: that lines a name up with
+                     the wordmark, and this one centers on the caption buttons. A click opens the
+                     library. -->
+                <TextBlock x:Name="TitleLibraryLabel"
                            Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource FileNameFont}"
-                           FontSize="{DynamicResource FileNameFontSize}" RenderTransform="{DynamicResource FileNameTransform}"
+                           FontSize="{DynamicResource FileNameFontSize}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="12,0,12,0"
-                           MaxWidth="320" TextTrimming="CharacterEllipsis"/>
+                           MaxWidth="240" TextTrimming="CharacterEllipsis" Cursor="Hand"
+                           MouseLeftButtonUp="TitleLibraryLabel_Click"/>
                 <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}"
                         Content="&#xE921;" ToolTip="{DynamicResource Str_Sys_Minimize}"/>
                 <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}"
