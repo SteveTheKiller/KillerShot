@@ -48,6 +48,19 @@ internal static class SelfTestImageMenus
             window = new MainWindow { ShowActivated = false, Left = -20000, Top = -20000, Width = 1100, Height = 800, WindowStartupLocation = WindowStartupLocation.Manual };
             window.Show();
             await Task.Delay(200);
+            if (SystemParameters.HighContrast)
+            {
+                var frame = (FrameworkElement)window.FindName("FrameHost");
+                var bitmap = new RenderTargetBitmap((int)Math.Ceiling(frame.ActualWidth), (int)Math.Ceiling(frame.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                bitmap.Render(frame);
+                var pixel = new byte[4];
+                bitmap.CopyPixels(new Int32Rect(bitmap.PixelWidth / 2, 0, 1, 1), pixel, 4, 0);
+                var expected = SystemColors.WindowTextColor;
+                if (pixel[0] != expected.B || pixel[1] != expected.G || pixel[2] != expected.R || pixel[3] != 255)
+                    throw new InvalidOperationException("The contrast theme must draw the outer app border in Windows text color.");
+                ImageOutput.SavePng(bitmap, Path.Combine(folder, "contrast-window.png"));
+                report.Add("Windows contrast theme: visible outer app border PASS");
+            }
             window.TestStripDock.DockTo(DockSide.Top);
             window.UpdateLayout();
             var contentPane = (FrameworkElement)window.FindName("ContentPane");
