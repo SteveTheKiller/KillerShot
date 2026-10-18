@@ -8,9 +8,6 @@
                     xmlns:kui="clr-namespace:KillerShot.Controls"
                     xmlns:kl="clr-namespace:KillerFamily.Layout"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="ScrollShadows.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
 
     <!-- Shared film-grain tile. ImageSource is assigned once at startup (Chrome.ApplyGrainTexture)
          so global styles - like the context menus - can layer the same grain as the chrome/flyouts. -->
@@ -1430,7 +1427,7 @@
                                 BorderThickness="1" CornerRadius="{DynamicResource FlyoutCornerRadius}" Margin="{DynamicResource ComboPopupMargin}">
                             <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="{DynamicResource FlyoutShadowOpacity}"/></Border.Effect>
                             <Grid>
-                                <ScrollViewer Style="{StaticResource ShadowScrollViewer}" Padding="0,4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <ScrollViewer Margin="0,4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
                                 </ScrollViewer>
                                 <Border IsHitTestVisible="False" CornerRadius="{DynamicResource FlyoutCornerRadius}" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>

@@ -419,6 +419,8 @@ namespace KillerShot.Shell
             SyncFooterView();
         }
 
+        private System.Windows.Media.Effects.Effect? _paneShadow;
+
         /// <summary>The picture and the library's one big carousel sit on the lifted pane; the
         /// library's other views have none.</summary>
         private void SyncContentPane()
@@ -428,16 +430,18 @@ namespace KillerShot.Shell
         /// and its cards are the pane gray instead. The picture keeps the lifted pane.</summary>
         private void ShowContentPane(bool on)
         {
-            ContentPaneShadow.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            _paneShadow ??= ContentPane.Effect;
             if (on)
             {
                 ContentPane.SetResourceReference(Border.BackgroundProperty, "ContentPaneBrush");
                 ContentPane.SetResourceReference(Border.BorderThicknessProperty, "ContentPaneBaseBorderThickness");
+                ContentPane.Effect = _paneShadow;
             }
             else
             {
                 ContentPane.Background = Brushes.Transparent;
                 ContentPane.BorderThickness = new Thickness(0);
+                ContentPane.Effect = null;
             }
             // The grain, the outline and the bevel rings over the pane go with it.
             if (ContentPane.Child is Grid paneGrid)

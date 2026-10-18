@@ -18,7 +18,6 @@ internal static class SelfTestUi
 {
     public static bool TryRun(string[] args)
     {
-        if (SelfTestChrome.TryRun(args)) return true;
         int i = Array.FindIndex(args, a => a.Equals("--selftest-ui", StringComparison.OrdinalIgnoreCase));
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-ui");
