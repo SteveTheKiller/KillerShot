@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Albümün yeniden adlandırılmasına ilişkin kurtarma dosyaları eksik.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Albümün hem eski hem de yeni yolu mevcut. Kurtarma dosyaları korundu.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Albümün veritabanı yapısı eksik.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Klasör koleksiyonu ekle...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Klasör koleksiyonunu kaldır</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Klasör okunuyor...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Klasör kullanılamıyor</sys:String>
 </ResourceDictionary>

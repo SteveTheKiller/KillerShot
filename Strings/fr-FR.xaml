@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Les fichiers de récupération du changement de nom de l’album sont introuvables.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">L’ancien et le nouveau chemin de l’album existent. Les fichiers de récupération ont été conservés.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">La structure de la base de données de l’album est incomplète.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Ajouter une collection de dossier...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Retirer la collection de dossier</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Lecture du dossier...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Dossier indisponible</sys:String>
 </ResourceDictionary>

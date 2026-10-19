@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Brakuje plików odzyskiwania po zmianie nazwy albumu.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Istnieje zarówno stara, jak i nowa ścieżka albumu. Pliki odzyskiwania zostały zachowane.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Struktura bazy danych albumu jest niekompletna.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Dodaj kolekcję folderu...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Usuń kolekcję folderu</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Odczytywanie folderu...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Folder jest niedostępny</sys:String>
 </ResourceDictionary>

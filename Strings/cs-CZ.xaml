@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Chybí soubory pro obnovu přejmenování alba.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Existuje původní i nová cesta alba. Soubory pro obnovu byly zachovány.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Struktura databáze alba je neúplná.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Přidat kolekci ze složky...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Odebrat kolekci ze složky</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Načítání složky...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Složka není dostupná</sys:String>
 </ResourceDictionary>

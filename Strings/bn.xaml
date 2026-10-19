@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">অ্যালবামের নাম পরিবর্তনের পুনরুদ্ধার ফাইল পাওয়া যায়নি।</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">অ্যালবামের পুরোনো ও নতুন উভয় পথেই ফাইল আছে। পুনরুদ্ধার ফাইলগুলো সংরক্ষিত আছে।</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">অ্যালবামের ডেটাবেস কাঠামো অসম্পূর্ণ।</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">ফোল্ডার সংগ্রহ যোগ করুন...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">ফোল্ডার সংগ্রহ সরান</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">ফোল্ডার পড়া হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">ফোল্ডার পাওয়া যাচ্ছে না</sys:String>
 </ResourceDictionary>

@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">缺少相簿重新命名的復原檔案。</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">相簿的舊路徑和新路徑都存在。復原檔案已保留。</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">相簿資料庫結構不完整。</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">新增資料夾集合...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">移除資料夾集合</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">正在讀取資料夾...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">資料夾無法使用</sys:String>
 </ResourceDictionary>

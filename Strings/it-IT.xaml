@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Mancano i file di ripristino della rinomina dell'album.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Esistono sia il percorso precedente sia quello nuovo dell'album. I file di ripristino sono stati conservati.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">La struttura del database dell'album è incompleta.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Aggiungi raccolta da cartella...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Rimuovi raccolta da cartella</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Lettura della cartella...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Cartella non disponibile</sys:String>
 </ResourceDictionary>

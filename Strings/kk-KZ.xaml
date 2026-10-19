@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Альбом атауын өзгертуді қалпына келтіру файлдары жоқ.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Альбомның ескі және жаңа жолдары бар. Қалпына келтіру файлдары сақталды.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Альбомның дерекқор құрылымы толық емес.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Қалта жинағын қосу...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Қалта жинағын алып тастау</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Қалта оқылуда...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Қалта қолжетімсіз</sys:String>
 </ResourceDictionary>

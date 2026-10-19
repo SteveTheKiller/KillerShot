@@ -16,13 +16,23 @@ namespace KillerShot.Shell;
 /// collections, the history limit and the password, then renders each library view off screen.
 /// Settings and the library live in the output folder, so the user's own library is untouched,
 /// and nothing on screen is captured.</summary>
-internal static class SelfTestLibrary
+internal static partial class SelfTestLibrary
 {
     [DllImport("kernel32.dll")]
     private static extern uint SetErrorMode(uint mode);
 
     public static bool TryRun(string[] args)
     {
+        if (args.Length == 4 && args[0] == "--selftest-folder-probe")
+        {
+            _ = ProbeFolderCollections(args[1], args[2], args[3]);
+            return true;
+        }
+        if (args.Length == 2 && args[0] == "--selftest-folder-collections")
+        {
+            _ = RunFolderCollections(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (SelfTestStorageSafety.TryRun(args)) return true;
         if (SelfTestCliSafety.TryRun(args)) return true;
         if (args.Length == 3 && args[0].Equals("--selftest-library-native-probe", StringComparison.OrdinalIgnoreCase))

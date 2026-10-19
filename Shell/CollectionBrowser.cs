@@ -9,9 +9,10 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
-internal sealed record CollectionChoice(string Source, string Name, IReadOnlyList<CaptureItem> Preview, int Count, string Style)
+internal sealed record CollectionChoice(string Source, string Name, IReadOnlyList<CaptureItem> Preview, int Count, string Style,
+    string? Status = null, string? Path = null)
 {
-    public string Detail => string.Format(CultureInfo.CurrentCulture,
+    public string Detail => Status ?? string.Format(CultureInfo.CurrentCulture,
         LocaleManager.Loc(Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), Count);
     public string AccessibleName => Name + ", " + Detail;
 }
@@ -151,7 +152,7 @@ public sealed class CollectionPreview : StackPanel
         _photos.Height = choice.Style == "pile" ? 112 : 78;
         _photos.ClipToBounds = choice.Style != "pile";
         if (choice.Style == "pile") _photos.Children.Add(_pile);
-        ToolTip = choice.AccessibleName;
+        ToolTip = choice.Path is { } path ? path + "\n" + choice.Detail : choice.AccessibleName;
         if (!IsLoaded) return;
         var preview = choice.Preview.Take(choice.Style == "pile" ? 12 : 4).Reverse().ToArray();
         var bitmaps = new BitmapSource?[preview.Length];

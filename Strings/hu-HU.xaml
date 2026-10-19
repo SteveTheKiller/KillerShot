@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Hiányoznak az album átnevezésének helyreállítási fájljai.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Az album régi és új elérési útja is létezik. A helyreállítási fájlok megmaradtak.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Az album adatbázisszerkezete hiányos.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Mappagyűjtemény hozzáadása...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Mappagyűjtemény eltávolítása</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Mappa olvasása...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">A mappa nem érhető el</sys:String>
 </ResourceDictionary>

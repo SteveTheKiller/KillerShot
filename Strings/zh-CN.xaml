@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">缺少相册重命名恢复文件。</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">相册的旧路径和新路径都存在。恢复文件已保留。</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">相册数据库结构不完整。</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">添加文件夹集合...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">移除文件夹集合</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">正在读取文件夹...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">文件夹不可用</sys:String>
 </ResourceDictionary>

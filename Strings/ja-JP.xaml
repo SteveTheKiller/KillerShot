@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">アルバムの名前変更の復旧ファイルが見つかりません。</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">アルバムの旧パスと新パスの両方が存在します。復旧ファイルは保持されています。</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">アルバムのデータベース構造が不完全です。</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">フォルダーコレクションを追加...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">フォルダーコレクションを削除</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">フォルダーを読み込み中...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">フォルダーを利用できません</sys:String>
 </ResourceDictionary>

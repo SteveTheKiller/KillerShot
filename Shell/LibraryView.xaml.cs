@@ -208,10 +208,10 @@ namespace KillerShot.Shell
                 ? item.CollectionId == null || !_collections.Any(c => c.Id == item.CollectionId)
                 : "c" + item.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source);
             int total;
-            if (_source == "folder")
+            if (FolderCaptures.IsSource(_source))
             {
-                _items = _folderItems;
-                total = search.Length > 0 ? FolderCaptures.Items().Count : _items.Count;
+                _items = FolderCaptures.ItemsForSource(_source, search.Length > 0 ? search : null);
+                total = search.Length > 0 ? FolderCaptures.ItemsForSource(_source).Count : _items.Count;
                 _collections = [];
             }
             else
@@ -229,8 +229,9 @@ namespace KillerShot.Shell
             CountChanged?.Invoke(CountText.Text);
 
             // The Screenshots folder shows as a collection, so only where collections do.
-            bool folderShown = _group == "collection" && _view != "timeline" && _folderItems.Count > 0;
-            bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0;
+            bool linkedPhotos = FolderCaptures.LinkedCollections().Any(folder => FolderCaptures.LinkedItems(folder.Source, search).Count > 0);
+            bool folderShown = _group == "collection" && _view != "timeline" && (_folderItems.Count > 0 || _source == "all" && linkedPhotos);
+            bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0 && !linkedPhotos;
             if (_items.Count == 0 && !folderShown && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
             {
                 ShowEmpty(searching: search.Length > 0 && !libraryEmpty);
@@ -294,15 +295,21 @@ namespace KillerShot.Shell
             if (byCollection)
             {
                 bool searching = SearchBox.Text.Trim().Length > 0;
-                if (_source == "folder")
+                if (FolderCaptures.IsSource(_source))
                 {
                     if (_items.Count > 0 || !searching)
-                        groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _items.ToList(), IsFolder: true));
+                        groups.Add(new Group(_source, FolderCaptures.NameForSource(_source), FolderCaptures.CollectionId, false, _items.ToList(), IsFolder: true));
                     return groups;
                 }
                 var known = _collections.Select(c => c.Id).ToHashSet();
                 if (FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
                     groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _folderItems.ToList(), IsFolder: true));
+                foreach (var folder in _source == "all" ? FolderCaptures.LinkedCollections() : [])
+                {
+                    var members = FolderCaptures.LinkedItems(folder.Source, searching ? SearchBox.Text.Trim() : null);
+                    if (members.Count > 0 || !searching)
+                        groups.Add(new Group(folder.Source, folder.Name, FolderCaptures.CollectionId, false, members.ToList(), IsFolder: true));
+                }
                 foreach (var c in _collections)
                 {
                     var members = _items.Where(i => i.CollectionId == c.Id).ToList();
@@ -409,10 +416,10 @@ namespace KillerShot.Shell
                 line.Children.Add(mark);
                 line.Background = Brushes.Transparent;
                 var open = new MenuItem { Header = Loc("Str_Lib_OpenFolder") };
-                open.Click += (_, _) => ShowInExplorer(null);
+                open.Click += (_, _) => ShowInExplorer(null, row.Key);
                 line.ContextMenu = new ContextMenu();
                 line.ContextMenu.Items.Add(open);
-                line.ToolTip = FolderCaptures.Folder;
+                line.ToolTip = FolderCaptures.PathForSource(row.Key);
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
             if (CardColors.Collection(row.CollectionId) is Color own)
@@ -600,7 +607,8 @@ namespace KillerShot.Shell
         {
             if (BigFlow.SelectedItem is not { } item) { BigFlowTitle.Text = BigFlowDetail.Text = ""; return; }
             BigFlowTitle.Text = Title(item);
-            string collection = item.CollectionId == FolderCaptures.CollectionId ? "  ·  " + FolderCaptures.Name
+            string collection = item.CollectionId == FolderCaptures.CollectionId
+                ? "  ·  " + FolderCaptures.NameForSource(FolderCaptures.IsSource(_source) ? _source : FolderCaptures.SourceForItem(item))
                 : item.CollectionId is long cid && _collections.FirstOrDefault(c => c.Id == cid) is { } c ? "  ·  " + c.Name : "";
             BigFlowDetail.Text = item.Taken.ToString("f", CultureInfo.CurrentCulture) + "  ·  " +
                 item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture) + collection +
@@ -996,13 +1004,13 @@ namespace KillerShot.Shell
         }
 
         /// <summary>Opens the Screenshots folder in File Explorer, with a file selected when one is given.</summary>
-        private void ShowInExplorer(CaptureItem? item)
+        private void ShowInExplorer(CaptureItem? item, string? source = null)
         {
             try
             {
                 string args = item != null && FolderCaptures.PathOf(item.Id) is { } path
                     ? "/select,\"" + path + "\""
-                    : "\"" + FolderCaptures.Folder + "\"";
+                    : "\"" + FolderCaptures.PathForSource(source ?? (FolderCaptures.IsSource(_source) ? _source : "folder")) + "\"";
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
             }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }

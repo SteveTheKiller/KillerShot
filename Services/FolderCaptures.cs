@@ -9,7 +9,7 @@ namespace KillerShot.Services;
 /// the files are never changed. Its pictures carry negative ids, so the library's thumbnail and
 /// image calls can tell them from stored captures and send them here.
 /// </summary>
-internal static class FolderCaptures
+internal static partial class FolderCaptures
 {
     /// <summary>The CollectionId every folder picture carries.</summary>
     public const long CollectionId = -1;
@@ -46,6 +46,7 @@ internal static class FolderCaptures
     /// <summary>For the self-test: another folder in place of the user's.</summary>
     internal static void UseFolder(string dir)
     {
+        ResetLinkedFolders();
         lock (_gate)
         {
             _folderOverride = dir;
@@ -98,7 +99,8 @@ internal static class FolderCaptures
         var current = files.Select(f => f.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase);
         lock (_gate)
         {
-            foreach (string path in _ids.Keys.Where(path => !current.Contains(path)).ToArray())
+            foreach (string path in _ids.Keys.Where(path => string.Equals(Path.GetDirectoryName(path), Folder, StringComparison.OrdinalIgnoreCase)
+                && !current.Contains(path)).ToArray())
             {
                 long id = _ids[path];
                 _ids.Remove(path);
@@ -106,7 +108,8 @@ internal static class FolderCaptures
                 _sizes.Remove(path);
                 RemoveThumb(id);
             }
-            foreach (string path in _sizes.Keys.Where(path => !current.Contains(path)).ToArray())
+            foreach (string path in _sizes.Keys.Where(path => string.Equals(Path.GetDirectoryName(path), Folder, StringComparison.OrdinalIgnoreCase)
+                && !current.Contains(path)).ToArray())
                 _sizes.Remove(path);
             foreach (FileInfo file in files)
             {

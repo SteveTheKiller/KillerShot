@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Gjenopprettingsfilene for navneendringen mangler.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Både den gamle og den nye albumbanen finnes. Gjenopprettingsfilene er bevart.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Albumets databasestruktur er ufullstendig.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Legg til mappesamling...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Fjern mappesamling</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Leser mappe...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Mappen er utilgjengelig</sys:String>
 </ResourceDictionary>

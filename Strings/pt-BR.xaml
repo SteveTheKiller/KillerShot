@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Os arquivos de recuperação da renomeação do álbum estão ausentes.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Existem tanto o caminho antigo quanto o novo do álbum. Os arquivos de recuperação foram preservados.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">A estrutura do banco de dados do álbum está incompleta.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Adicionar coleção de pasta...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Remover coleção de pasta</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Lendo pasta...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Pasta indisponível</sys:String>
 </ResourceDictionary>

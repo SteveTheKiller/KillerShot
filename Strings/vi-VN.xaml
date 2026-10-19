@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Thiếu các tệp khôi phục việc đổi tên album.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Cả đường dẫn cũ và mới của album đều tồn tại. Các tệp khôi phục đã được giữ lại.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Cấu trúc cơ sở dữ liệu của album chưa đầy đủ.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Thêm bộ sưu tập thư mục...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Gỡ bộ sưu tập thư mục</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Đang đọc thư mục...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Thư mục không khả dụng</sys:String>
 </ResourceDictionary>

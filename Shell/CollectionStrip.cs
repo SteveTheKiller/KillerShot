@@ -281,7 +281,9 @@ namespace KillerShot.Shell
             _current = item?.Id;
             if (item != null)
             {
-                string want = item.CollectionId == FolderCaptures.CollectionId ? "folder"
+                string want = item.CollectionId == FolderCaptures.CollectionId
+                    ? FolderCaptures.IsSource(_source) && FolderCaptures.ItemsForSource(_source).Any(photo => photo.Id == item.Id)
+                        ? _source : FolderCaptures.SourceForItem(item)
                     : _source == "all" ? "all"
                     : item.CollectionId is long cid ? "c" + cid.ToString(CultureInfo.InvariantCulture) : "c0";
                 _source = want;
@@ -313,6 +315,8 @@ namespace KillerShot.Shell
                 void Add(string tag, string text) => _picker.Items.Add(new ComboBoxItem { Content = text, Tag = tag });
                 Add("all", Loc("Str_Strip_All"));
                 if (FolderCaptures.Enabled) Add("folder", FolderCaptures.Name);
+                var folders = FolderCaptures.LinkedCollections();
+                foreach (var folder in folders) Add(folder.Source, folder.Name);
                 foreach (var c in collections) Add("c" + c.Id.ToString(CultureInfo.InvariantCulture), c.Name);
                 Add("c0", Loc("Str_Lib_Unfiled"));
                 var chosen = _picker.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == _source);
@@ -326,10 +330,12 @@ namespace KillerShot.Shell
                     var known = collections.Select(c => c.Id).ToHashSet();
                     var membersByCollection = all.ToLookup(i => i.CollectionId);
                     var choices = new List<CollectionChoice>();
-                    void Choice(string source, string name, IReadOnlyList<CaptureItem> members) =>
-                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, PreviewStyle));
+                    void Choice(string source, string name, IReadOnlyList<CaptureItem> members, string? status = null, string? path = null) =>
+                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, PreviewStyle, status, path));
                     Choice("all", Loc("Str_Strip_All"), all);
                     if (FolderCaptures.Enabled) Choice("folder", FolderCaptures.Name, FolderCaptures.Items());
+                    foreach (var folder in folders) Choice(folder.Source, folder.Name, FolderCaptures.LinkedItems(folder.Source),
+                        folder.Loading ? Loc("Str_FolderCollection_Loading") : !folder.Available ? Loc("Str_FolderCollection_Unavailable") : null, folder.Path);
                     foreach (var c in collections)
                         Choice("c" + c.Id.ToString(CultureInfo.InvariantCulture), c.Name, membersByCollection[c.Id].ToArray());
                     Choice("c0", Loc("Str_Lib_Unfiled"), all.Where(i => i.CollectionId is not long id || !known.Contains(id)).ToArray());
@@ -337,6 +343,7 @@ namespace KillerShot.Shell
                     bool unchanged = existing.Length == choices.Count && existing.Zip(choices).All(pair =>
                         pair.First.Source == pair.Second.Source && pair.First.Name == pair.Second.Name
                         && pair.First.Count == pair.Second.Count && pair.First.Style == pair.Second.Style
+                        && pair.First.Status == pair.Second.Status && pair.First.Path == pair.Second.Path
                         && pair.First.Preview.SequenceEqual(pair.Second.Preview));
                     if (!unchanged) _browser.ItemsSource = choices;
                     _browser.SelectedItem = _browser.Items.OfType<CollectionChoice>().FirstOrDefault(c => c.Source == _source);
@@ -344,7 +351,7 @@ namespace KillerShot.Shell
 
                 _items = _source switch
                 {
-                    "folder" => FolderCaptures.Items(),
+                    var folder when FolderCaptures.IsSource(folder) => FolderCaptures.ItemsForSource(folder),
                     "c0" => CaptureLibrary.Items().Where(i => i.CollectionId == null || !collections.Any(c => c.Id == i.CollectionId)).ToList(),
                     "all" => CaptureLibrary.Items(),
                     _ => CaptureLibrary.Items().Where(i => "c" + i.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source).ToList(),
@@ -422,6 +429,26 @@ namespace KillerShot.Shell
                 var item = new MenuItem { Header = choice.Content, IsCheckable = true, IsChecked = tag == _source };
                 item.Click += (_, _) => { _source = tag; Load(keepCurrent: true); };
                 menu.Items.Add(item);
+            }
+            menu.Items.Add(new Separator());
+            var openFolder = new MenuItem { Header = Loc("Str_FolderCollection_Add") };
+            openFolder.Click += (_, _) =>
+            {
+                var dialog = new FileDialog(FileDialogMode.Folder)
+                {
+                    Title = Loc("Str_Btn_Select"),
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                };
+                if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+                try { SetSource(FolderCaptures.AddFolder(dialog.FileName)); }
+                catch (Exception ex) { MessageBox.Show(Window.GetWindow(this), ex.Message, Loc("Str_Btn_Select")); }
+            };
+            menu.Items.Add(openFolder);
+            if (_source.StartsWith("folder:", StringComparison.Ordinal))
+            {
+                var remove = new MenuItem { Header = Loc("Str_FolderCollection_Remove"), ToolTip = FolderCaptures.PathForSource(_source) };
+                remove.Click += (_, _) => { FolderCaptures.RemoveFolder(_source); SetSource("all"); };
+                menu.Items.Add(remove);
             }
             return menu;
         }

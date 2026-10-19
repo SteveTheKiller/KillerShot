@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Файли відновлення перейменування альбому відсутні.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Існують і старий, і новий шляхи альбому. Файли відновлення збережено.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Структура бази даних альбому неповна.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Додати колекцію з папки...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Прибрати колекцію папки</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Читання папки...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Папка недоступна</sys:String>
 </ResourceDictionary>

@@ -472,4 +472,9 @@
     <sys:String x:Key="Str_Album_RecoveryMissing">Die Wiederherstellungsdateien für die Albumumbenennung fehlen.</sys:String>
     <sys:String x:Key="Str_Album_RecoveryConflict">Der alte und der neue Albumpfad sind vorhanden. Die Wiederherstellungsdateien wurden beibehalten.</sys:String>
     <sys:String x:Key="Str_Album_SchemaIncomplete">Die Datenbankstruktur des Albums ist unvollständig.</sys:String>
+    <!-- Linked folder collections -->
+    <sys:String x:Key="Str_FolderCollection_Add">Ordnersammlung hinzufügen...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Remove">Ordnersammlung entfernen</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Loading">Ordner wird gelesen...</sys:String>
+    <sys:String x:Key="Str_FolderCollection_Unavailable">Ordner nicht verfügbar</sys:String>
 </ResourceDictionary>
