@@ -264,9 +264,10 @@
                     </Button>
                 </Grid>
 
-                <!-- The editor card, with the collection strip docked to any side of it
-                     (StripHost.cs). The strip shows only while a picture is open. -->
-                <kl:DockHost x:Name="StripDock" Grid.Row="1" Panel.ZIndex="10">
+                <!-- Collections stay beside the workspace; photos sit above or below the editor. -->
+                <kl:DockHost x:Name="NavigationDock" Grid.Row="1" Panel.ZIndex="10">
+                <kl:DockHost.Body>
+                <kl:DockHost x:Name="StripDock">
                 <kl:DockHost.Body>
                 <Border x:Name="ContentPane"
                         Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
@@ -325,10 +326,9 @@
                     </Grid>
                 </Border>
                 </kl:DockHost.Body>
-                <!-- The icon rail, on the strip's inner edge (DockHost): a column beside a left or
-                     right strip, a row under a top strip or over a bottom one, staying put when the
-                     strip minimizes or hides. The buttons are in the family order: the app's own
-                     toggles, then shortcuts, language and theme. -->
+                </kl:DockHost>
+                </kl:DockHost.Body>
+                <!-- The icon rail remains beside the collection sidebar. -->
                 <kl:DockHost.Rail>
                 <StackPanel x:Name="RailStack">
                     <Button x:Name="LibrarySearchButton" Style="{StaticResource RailButton}"

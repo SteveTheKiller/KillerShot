@@ -63,17 +63,17 @@ internal static class SelfTestImageMenus
             if (railOnly)
             {
                 var icons = (StackPanel)window.FindName("RailStack");
-                foreach (var side in new[] { DockSide.Left, DockSide.Right, DockSide.Top, DockSide.Bottom })
+                foreach (var side in new[] { DockSide.Left, DockSide.Right })
                 {
-                    window.TestStripDock.DockTo(side);
+                    window.TestNavigationDock.DockTo(side);
                     foreach (bool minimized in new[] { false, true })
                     {
-                        window.TestStripDock.IsMinimized = minimized;
+                        window.TestNavigationDock.IsMinimized = minimized;
                         window.UpdateLayout();
-                        var toggle = Visuals(window.TestStripDock).OfType<Button>().Single(button =>
+                        var toggle = Visuals(window.TestNavigationDock).OfType<Button>().Single(button =>
                             button.Parent is Grid parent && parent.Children.Contains(icons));
                         Point t = toggle.TranslatePoint(new Point(), window), i = icons.TranslatePoint(new Point(), window);
-                        if (window.TestStripDock.IsHorizontal ? t.X + toggle.ActualWidth >= i.X : t.Y + toggle.ActualHeight >= i.Y)
+                        if (t.Y + toggle.ActualHeight >= i.Y)
                             throw new InvalidOperationException("Rail ends are swapped: " + side + ", minimized=" + minimized);
                         var snapshot = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth), (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
                         snapshot.Render((Visual)window.Content);
@@ -86,7 +86,7 @@ internal static class SelfTestImageMenus
                     throw new InvalidOperationException("The rail-flip command is still present.");
                 App.Instance.SetDocument(null);
                 await Task.Delay(100);
-                if (window.TestStripDock.Side != DockSide.Left)
+                if (window.TestStripDock.Side != DockSide.Right)
                     throw new InvalidOperationException("A saved flip still moves the library rail.");
                 report.Add("Removed menu command and ignored saved flip preferences PASS");
                 code = 0;
@@ -109,28 +109,36 @@ internal static class SelfTestImageMenus
             window.UpdateLayout();
             var contentPane = (FrameworkElement)window.FindName("ContentPane");
             double leftGutter = contentPane.TranslatePoint(new Point(), window.TestStripDock).X;
-            if (Math.Abs(leftGutter - 8) > .01)
-                throw new InvalidOperationException("Top-docked editor left gutter must be 8px; actual=" + leftGutter);
-            report.Add("Top-docked editor: 8px outer left gutter PASS");
+            if (Math.Abs(leftGutter) > .01)
+                throw new InvalidOperationException("The editor must not add a second gutter beside the collection sidebar; actual=" + leftGutter);
+            report.Add("Editor keeps the collection sidebar without a duplicate inner gutter PASS");
             foreach (var side in new[] { DockSide.Top, DockSide.Left, DockSide.Right, DockSide.Bottom })
             {
-                window.TestStripDock.DockTo(side);
+                var resizeHost = side is DockSide.Left or DockSide.Right ? window.TestNavigationDock : window.TestStripDock;
+                resizeHost.DockTo(side);
                 window.UpdateLayout();
-                var handle = Visuals(window.TestStripDock).OfType<GridSplitter>().Single();
+                var resizePane = (FrameworkElement)resizeHost.Pane!;
+                var handle = Visuals(resizeHost).OfType<GridSplitter>().Single(splitter =>
+                {
+                    DependencyObject? ancestor = VisualTreeHelper.GetParent(splitter);
+                    while (ancestor != null && ancestor is not DockHost) ancestor = VisualTreeHelper.GetParent(ancestor);
+                    return ReferenceEquals(ancestor, resizeHost);
+                });
                 var center = handle.TranslatePoint(new Point(handle.ActualWidth / 2, handle.ActualHeight / 2), window);
                 var hit = window.InputHitTest(center) as DependencyObject;
                 while (hit != null && hit is not GridSplitter) hit = VisualTreeHelper.GetParent(hit);
                 if (!ReferenceEquals(hit, handle)) throw new InvalidOperationException(side + " resize handle is covered by " + window.InputHitTest(center)?.GetType().Name
                     + "; hit=" + (window.InputHitTest(center) as FrameworkElement)?.Name + "; bounds=" + center + " " + handle.RenderSize + "; enabled=" + handle.IsEnabled + "; visible=" + handle.IsVisible + ".");
-                double before = window.TestStripDock.IsHorizontal ? window.TestStrip!.ActualHeight : window.TestStrip!.ActualWidth;
+                double before = resizeHost.IsHorizontal ? resizePane.ActualHeight : resizePane.ActualWidth;
                 handle.Focus();
                 handle.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(handle), 0,
-                    window.TestStripDock.IsHorizontal ? Key.Down : Key.Right) { RoutedEvent = Keyboard.KeyDownEvent });
+                    resizeHost.IsHorizontal ? Key.Down : Key.Right) { RoutedEvent = Keyboard.KeyDownEvent });
                 window.UpdateLayout();
-                double after = window.TestStripDock.IsHorizontal ? window.TestStrip!.ActualHeight : window.TestStrip!.ActualWidth;
+                double after = resizeHost.IsHorizontal ? resizePane.ActualHeight : resizePane.ActualWidth;
                 if (Math.Abs(after - before) < 1) throw new InvalidOperationException(side + " resize handle cannot resize its pane.");
             }
             window.TestStripDock.DockTo(DockSide.Top);
+            window.TestNavigationDock.DockTo(DockSide.Left);
             report.Add("Resize handles: hit target and working pane resize on all four edges PASS");
             var rail = (StackPanel)window.FindName("RailStack");
             var dockButton = rail.Children.OfType<Button>().SingleOrDefault(button =>
@@ -219,32 +227,12 @@ internal static class SelfTestImageMenus
             capture.Render(surface);
             ImageOutput.SavePng(capture, Path.Combine(folder, "editor-menu.png"));
             report.Add("Editor menu: shortcuts, enabled states, Undo, Redo, tool selection and zoom PASS");
-            foreach (var (side, view) in new[] { (DockSide.Top, "flow"), (DockSide.Left, "list"), (DockSide.Left, "rolodex") })
+            foreach (var (side, view) in new[] { (DockSide.Top, "flow"), (DockSide.Bottom, "flow") })
             {
                 window.TestStripDock.DockTo(side);
-                if (side == DockSide.Left) window.TestStrip!.SetSideView(view);
                 await Task.Delay(150);
                 FrameworkElement browser = Visuals(window.TestStrip!).OfType<FrameworkElement>().First(e => e.IsVisible &&
                     (view == "flow" ? e is CoverFlow : view == "list" ? e is ListBox : e is Rolodex));
-                if (browser is ListBox list)
-                {
-                    list.SelectedIndex = 0;
-                    window.UpdateLayout();
-                    var thumb = Visuals(list).OfType<StripThumb>().First(t => t.IsVisible);
-                    var splitter = Visuals(window.TestStripDock).OfType<GridSplitter>().Single();
-                    double gap = splitter.TranslatePoint(new Point(), window.TestStripDock).X
-                        - thumb.TranslatePoint(new Point(thumb.ActualWidth, 0), window.TestStripDock).X;
-                    if (gap > 26) throw new InvalidOperationException("Sidebar card-to-splitter gap exceeds the padding and scrollbar: " + gap);
-                    report.Add("Sidebar card-to-splitter gap: " + gap + "px PASS");
-                    var row = (ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(0);
-                    var rowBitmap = new RenderTargetBitmap((int)Math.Ceiling(row.ActualWidth), (int)Math.Ceiling(row.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-                    rowBitmap.Render(row);
-                    if (thumb.BorderThickness != new Thickness(2)) throw new InvalidOperationException("Sidebar cards need a full 2px frame.");
-                    ImageOutput.SavePng(rowBitmap, Path.Combine(folder, "sidebar-card-frame.png"));
-                    if (thumb.Effect is not System.Windows.Media.Effects.DropShadowEffect)
-                        throw new InvalidOperationException("The active sidebar card must rise with a drop shadow.");
-                    report.Add("Sidebar card: full frame with an active drop shadow PASS");
-                }
                 browser.Focus();
                 browser.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(browser), 0, Key.Apps) { RoutedEvent = Keyboard.KeyDownEvent });
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
@@ -327,6 +315,8 @@ internal static class SelfTestImageMenus
             App.Instance.SetDocument(doc);
             await Task.Delay(100);
             if (window.TestStripDock.Side != DockSide.Top) throw new InvalidOperationException("Returning to the editor must preserve its saved top strip.");
+            window.TestNavigationDock.DockTo(DockSide.Right);
+            window.UpdateLayout();
             if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
                 throw new InvalidOperationException("The horizontal rail must stay on the right after the editor reopens.");
             var toolbarMenu = (ContextMenu)window.FindName("ToolbarMenu");
@@ -359,9 +349,7 @@ internal static class SelfTestImageMenus
                 || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
                 throw new InvalidOperationException("The theme flyout is not anchored to its own rail button.");
             themeMenu.IsOpen = false;
-            Button RailView(string key) => rail.Children.OfType<Button>().Single(button =>
-                System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc(key));
-            FrameworkElement[] expectedRail = [dockButton, RailView("Str_Strip_ViewList"), RailView("Str_Strip_ViewRolodex"),
+            FrameworkElement[] expectedRail = [dockButton,
                 (Button)window.FindName("LibrarySearchButton"), (Button)window.FindName("NewCollectionButton"),
                 (Button)window.FindName("CaptureSettingsButton"), (Button)window.FindName("VideoSettingsButton"),
                 (Button)window.FindName("QrReadingButton"), (Button)window.FindName("ShortcutsButton"),

@@ -26,8 +26,9 @@ namespace KillerShot.Shell
             // A shortcut recorder owns every key while it is listening.
             if (_recording != null) { RecorderKey(e); return; }
             // Alt+Shift+arrow docks the collection strip, or folds it on its own side.
-            if (!AnyOverlayOpen && (!Library.IsVisible || (e.Key == Key.System ? e.SystemKey : e.Key) == Key.Left)
-                && StripDock.HandleKey(e)) return;
+            var dockKey = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (!AnyOverlayOpen && (dockKey is Key.Left or Key.Right ? NavigationDock.HandleKey(e)
+                : !Library.IsVisible && StripDock.HandleKey(e))) return;
 
             var mods = Keyboard.Modifiers;
             bool ctrl = (mods & ModifierKeys.Control) != 0;
@@ -113,7 +114,8 @@ namespace KillerShot.Shell
             }
 
             // Tool keys belong to the editor, not to the library over it.
-            if (alt || TypingInField() || Editor.IsEditingText || Library.IsVisible || _strip?.IsKeyboardFocusWithin == true) return;
+            if (alt || TypingInField() || Editor.IsEditingText || Library.IsVisible || _strip?.IsKeyboardFocusWithin == true
+                || _navigationStrip?.IsKeyboardFocusWithin == true) return;
 
             double step = shift ? 10 : 1;
             switch (e.Key)

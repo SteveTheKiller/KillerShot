@@ -5,7 +5,8 @@
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
 - Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor.
-- Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and album/editor sidebars keep separate sizes with tighter resizing gaps.
+- Keep collection navigation beside the editor, with its photo carousel above or below the open image. Sidebar placement, carousel placement, sizing, and collapse are independent.
+- Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges beneath the scrollbar. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and resizing gaps are tighter.
 - Recording audio stops when Stop is pressed, completed videos survive capture-device errors, and failed graphics initialization releases its resources. Fixed folder cache pruning and capture outline redraws.
 - Command-line captures refresh the open album and search, report when nothing was saved, and explain the password-protected album limit.
 - Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.
@@ -32,10 +33,9 @@
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.
 - The library shows Windows' Screenshots folder as a collection read live from its files, with Open, Copy, Show in File Explorer and Add to the library. The title bar's library settings can turn it off.
 - Selecting Screenshots keeps its images under the Screenshots heading when grouped by collection. (#6)
-- The collection picker and count filter both the album and collection strip. Horizontal carousels also have a picker inside their frame. The strip shows a carousel above or below an open picture, or thumbnails at either side. Alt+Shift+arrow docks or minimizes it, and the editor keeps an 8px gutter at each exposed side.
-- Added a rolodex view for a strip docked at the side: the captures are cards on a turning drum, the current one rising out in front at full size and the others leaning back above and below it, each with a drop shadow. Ctrl+wheel draws the cards larger and fewer or smaller and more, as an alternative to the thumbnail list.
-- Carousel and Rolodex menus independently toggle photo info cards. Ctrl+wheel in album carousels brings the center photo forward while the side photos recede. Clickable photo previews use a pointing hand.
-- Drag images to throw the carousels and Rolodex, coast and settle on a picture. The Rolodex wraps continuously; a new click stops it and a missed mouse release no longer traps the pointer. Long jumps animate smoothly, and the strip opens the selected image after motion settles.
+- The collection picker and count filter the album and editor carousel. Horizontal carousels also have a picker inside their frame.
+- Carousel menus toggle photo info cards. Ctrl+wheel brings the center photo forward while side photos recede. Draggable photo previews use a grab hand.
+- Drag along a carousel to coast and settle on a picture. A new click stops it, long jumps animate smoothly, and the editor opens the selected image after motion settles.
 - Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
 - The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
@@ -51,7 +51,7 @@
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
 - The library's shelves, grid and timeline and the collection strip sit on the window's own background instead of a pane, with each capture on a card in the pane gray; the big carousel keeps its pane. Card color in a capture's menu picks the card color with the family color picker, and Collection color in a collection's menu gives a collection a color that marks its heading and its cards.
-- Photo cards use a full 2px frame with accent and darker edges, and rise with a shadow when hovered or active. Rolodex cards fit closely around the photo while preserving the caption and drop shadow. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
+- Photo cards use a full 2px frame with accent and darker edges, and rise with a shadow when hovered or active. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
 - The title bar shows the active album name on the right and an open image's name after the wordmark. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
 - Primary headings use Lacquer in settings, shortcuts, dialogs and the library, with script fallbacks and the family 98SE font.
 - The maximize button opens the Windows 11 snap layouts menu.

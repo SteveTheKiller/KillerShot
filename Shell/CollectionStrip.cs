@@ -448,6 +448,9 @@ namespace KillerShot.Shell
 
         /// <summary>For the self-test: show a source by its tag.</summary>
         internal void TestShow(string source)
+            => SetSource(source);
+
+        internal void SetSource(string source)
         {
             _source = source;
             Load(keepCurrent: true);

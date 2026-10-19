@@ -84,9 +84,9 @@ public partial class MainWindow
 
     private void AddDroppedImage(BitmapSource image, DateTime taken, string title)
     {
-        if (_strip?.Source == "folder") { App.Instance.SetDocument(new Editor.EditorDocument(image)); return; }
+        if (_navigationStrip?.Source == "folder") { App.Instance.SetDocument(new Editor.EditorDocument(image)); return; }
         if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(CaptureLibrary.LoadError ?? Loc("Str_Lib_LockedTitle"));
-        long? collection = _strip?.Source is { } source && source.StartsWith('c') && long.TryParse(source.AsSpan(1), NumberStyles.None,
+        long? collection = _navigationStrip?.Source is { } source && source.StartsWith('c') && long.TryParse(source.AsSpan(1), NumberStyles.None,
             CultureInfo.InvariantCulture, out long id) && id > 0 ? id : null;
         long added = CaptureLibrary.AddNow(image, taken, "", title, null);
         if (collection.HasValue) CaptureLibrary.Move([added], collection);

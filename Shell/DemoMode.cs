@@ -184,18 +184,13 @@ internal static class SelfTestDemo
             }
             customize.Close();
             w.TestToolbarLayout(null);
-            w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Left);
-            w.TestStrip?.SetSideView("list");
-            await Shot("demo-strip-left");
-            w.TestStrip?.SetSideView("rolodex");
-            await Shot("demo-strip-rolodex");
-            w.TestStrip?.TestRolodexZoom(Controls.Rolodex.MaxZoom);
-            await Shot("demo-strip-rolodex-zoomed-in");
-            w.TestStrip?.TestRolodexZoom(0.5);
-            await Shot("demo-strip-rolodex-zoomed-out");
-            w.TestStrip?.TestRolodexZoom(0.85);
-            w.TestStrip?.SetSideView("list");
-            w.TestStripDock.DockTo(KillerFamily.Layout.DockSide.Top);
+            foreach (var sidebar in new[] { KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Right })
+            foreach (var carousel in new[] { KillerFamily.Layout.DockSide.Top, KillerFamily.Layout.DockSide.Bottom })
+            {
+                w.TestNavigationDock.DockTo(sidebar);
+                w.TestStripDock.DockTo(carousel);
+                await Shot($"demo-editor-{sidebar}-{carousel}");
+            }
             w.Close();
             log.AppendLine("result=ok");
         }

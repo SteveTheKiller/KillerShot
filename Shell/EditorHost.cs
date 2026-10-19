@@ -388,6 +388,7 @@ namespace KillerShot.Shell
         private void LibrarySearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (_doc != null && !_libraryShown) ToggleLibrary();
+            UpdateLayout();
             Library.FocusSearch();
         }
 
@@ -415,7 +416,6 @@ namespace KillerShot.Shell
         {
             bool library = _doc == null || _libraryShown;
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
-            StripDock.ShowPane = true;
             SyncStripPlacement(library);
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
             SyncContentPane();

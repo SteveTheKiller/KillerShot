@@ -64,6 +64,7 @@ namespace KillerShot.Shell
             StopRecording(apply: null);
             DetachDocument();
             _strip?.Dispose();
+            _navigationStrip?.Dispose();
             WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
             base.OnClosed(e);
         }

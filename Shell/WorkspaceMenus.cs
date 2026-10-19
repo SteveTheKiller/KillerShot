@@ -23,10 +23,12 @@ public partial class MainWindow
         RailStack.Background = Brushes.Transparent;
         Attach(RailStack);
         Attach(StripDock);
+        Attach(NavigationDock);
         if (_strip != null) Attach(_strip);
+        if (_navigationStrip != null) Attach(_navigationStrip);
         Attach(Library);
         Attach(FooterBar);
-        StripDock.LayoutChanged += ApplyRailPreferences;
+        NavigationDock.LayoutChanged += ApplyRailPreferences;
         RailStack.LayoutUpdated += (_, _) => PlaceRailButtons();
         ApplyRailPreferences();
     }
@@ -42,7 +44,7 @@ public partial class MainWindow
 
     private void PlaceRailButtons()
     {
-        if (StripDock.IsHorizontal)
+        if (NavigationDock.IsHorizontal)
         {
             Grid.SetColumn(RailStack, 2);
             RailStack.HorizontalAlignment = HorizontalAlignment.Right;
@@ -62,19 +64,19 @@ public partial class MainWindow
         if (_strip != null)
         {
             var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
-            var choices = _strip.SourceMenu(CollectionPickerBtn);
+            var choices = (_navigationStrip ?? _strip).SourceMenu(CollectionPickerBtn);
             while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
             menu.Items.Add(source);
-            if (Library.IsVisible) menu.Items.Add(_strip.PreviewMenu());
-            if (!Library.IsVisible)
+            menu.Items.Add((_navigationStrip ?? _strip).PreviewMenu());
+            foreach (var (side, key, _) in StripSides)
             {
-                foreach (var (side, key, _) in StripSides)
-                {
-                    var target = side;
-                    Add(key, () => StripDock.DockTo(target), StripDock.Side == side);
-                }
+                if (Library.IsVisible && side is DockSide.Top or DockSide.Bottom) continue;
+                var target = side;
+                var host = side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock;
+                Add(key, () => host.DockTo(target), host.Side == side);
             }
-            Add("Str_Dock_Minimize", () => { if (StripDock.IsMinimized) StripDock.Restore(); else StripDock.Minimize(); }, StripDock.IsMinimized);
+            var activeHost = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock ? StripDock : NavigationDock;
+            Add("Str_Dock_Minimize", () => { if (activeHost.IsMinimized) activeHost.Restore(); else activeHost.Minimize(); }, activeHost.IsMinimized);
         }
         menu.Items.Add(new Separator());
         Add("Str_Rail_Reverse", () => { Settings.SetBool("RailReversed", !Settings.GetBool("RailReversed", false)); ApplyRailPreferences(); }, Settings.GetBool("RailReversed", false));

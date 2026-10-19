@@ -102,7 +102,7 @@ internal static class SelfTestAlbumLayout
             if (failure != null) throw new InvalidOperationException(failure);
             report.Add("timeline_compact_inset_preserves_card_geometry=True");
 
-            var dock = (DockHost)window.FindName("StripDock");
+            var dock = window.TestNavigationDock;
             var pane = (FrameworkElement)dock.Pane!;
             Check(dock.ColumnDefinitions.Count == 3 && dock.ColumnDefinitions[1].ActualWidth == 0,
                 "The resize target must overlap the pane boundary without reserving a blank column.");
@@ -119,7 +119,38 @@ internal static class SelfTestAlbumLayout
             mainFlow.SelectedIndex = 1;
             long? selectedPhoto = mainFlow.SelectedItem?.Id;
             App.Instance.SetDocument(new EditorDocument(image));
-            window.TestStrip.TestShow("c0");
+            var openDocument = App.Instance.Document;
+            var photoDock = window.TestStripDock;
+            window.TestNavigationStrip!.PreviewMenu().Items.OfType<MenuItem>().Single(item => Equals(item.Tag, "pile"))
+                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            foreach (var sidebar in new[] { DockSide.Left, DockSide.Right })
+            foreach (var carousel in new[] { DockSide.Top, DockSide.Bottom })
+            {
+                dock.DockTo(sidebar);
+                photoDock.DockTo(carousel);
+                Layout(root);
+                var photos = (FrameworkElement)photoDock.Pane!;
+                var imageView = (FrameworkElement)window.FindName("EditorScroll");
+                var photoBounds = photos.TransformToAncestor(root).TransformBounds(new Rect(photos.RenderSize));
+                var imageBounds = imageView.TransformToAncestor(root).TransformBounds(new Rect(imageView.RenderSize));
+                Check(pane.IsVisible && ReferenceEquals(App.Instance.Document, openDocument)
+                    && window.TestNavigationStrip!.Source == "c" + collectionId
+                    && ((KillerShot.Controls.CoverFlow)window.TestStrip!.TestCarousel).Items.Count == 2,
+                    "Editor placement must retain the collection sidebar, filtered photo carousel, and document.");
+                Check(carousel == DockSide.Top ? photoBounds.Bottom <= imageBounds.Top : photoBounds.Top >= imageBounds.Bottom,
+                    "The photo carousel must sit above or below the large editor.");
+                Check(Math.Abs(pane.ActualWidth - 180) < 1, "Editor mode must keep the collection sidebar's width.");
+                foreach (var button in ((Panel)window.FindName("RailStack")).Children.OfType<Button>().Where(button => button.IsVisible))
+                {
+                    var point = button.TranslatePoint(new Point(button.ActualWidth / 2, button.ActualHeight / 2), window);
+                    var hit = window.InputHitTest(point) as DependencyObject;
+                    while (hit != null && !ReferenceEquals(hit, button)) hit = VisualTreeHelper.GetParent(hit);
+                    Check(ReferenceEquals(hit, button), "Overflowing collection photos must not cover rail button hit targets.");
+                }
+                Render(root, Path.Combine(folder, $"editor-{sidebar}-{carousel}.png"));
+            }
+            dock.DockTo(DockSide.Left);
+            photoDock.DockTo(DockSide.Top);
             App.Instance.SetDocument(null);
             Layout(root);
             Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
@@ -205,44 +236,47 @@ internal static class SelfTestAlbumLayout
             Render(root, Path.Combine(folder, "album-sidebar-collapsed.png"));
             App.Instance.SetDocument(new EditorDocument(image));
             Layout(root);
-            Check(dock.Side == DockSide.Right && !dock.IsMinimized, "Returning to the editor must restore its right, expanded strip.");
-            Check(Math.Abs(pane.ActualWidth - 340) < 1, "Returning to the editor must restore its independent strip width.");
-            dock.DockTo(DockSide.Bottom);
-            dock.Minimize();
+            Check(dock.Side == DockSide.Left && dock.IsMinimized && !photoDock.IsMinimized,
+                "Collection navigation must stay collapsed while the independent editor carousel stays expanded.");
+            photoDock.DockTo(DockSide.Bottom);
+            photoDock.Minimize();
             App.Instance.SetDocument(null);
             Layout(root);
             Check(dock.Side == DockSide.Left && dock.IsMinimized, "Returning to the album must preserve its own collapsed sidebar.");
             chevron.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             App.Instance.SetDocument(new EditorDocument(image));
             Layout(root);
-            Check(dock.Side == DockSide.Bottom && dock.IsMinimized, "Expanding the album sidebar must preserve the editor's bottom, collapsed strip.");
+            Check(!dock.IsMinimized && photoDock.Side == DockSide.Bottom && photoDock.IsMinimized,
+                "Expanding navigation must preserve the bottom carousel's collapsed state.");
             report.Add("album_sidebar_chevron_available_in_all_views=True");
             report.Add("album_and_editor_minimized_states_are_independent=True");
 
             report.Add("Chooser H1: The populated collection picker is absent from the carousel's visual tree, so adding it restores selection.");
             report.Add("Chooser H2: The picker is present but clipped; measuring its visible bounds inside the strip distinguishes clipping.");
             report.Add("Chooser H3: Collection selection is stale; choosing a source must update the strip and its current caption.");
-            dock.Restore();
+            photoDock.Restore();
             Layout(root);
-            var picker = Visuals(pane).OfType<ComboBox>().SingleOrDefault();
+            var photoPane = (FrameworkElement)photoDock.Pane!;
+            var picker = Visuals(photoPane).OfType<ComboBox>().SingleOrDefault();
             Check(picker != null && picker.IsVisible, "The horizontal carousel frame needs its collection chooser.");
             picker!.IsDropDownOpen = true;
             await Task.Delay(100);
             picker.SelectedItem = picker.Items.OfType<ComboBoxItem>().Single(item => item.Tag is string tag && tag == "c" + collectionId);
             picker.IsDropDownOpen = false;
             Layout(root);
-            var strip = (CollectionStrip)pane;
+            var strip = (CollectionStrip)photoPane;
             Check(strip.Source == "c" + collectionId && strip.SourceCaption == "Layout collection",
                 "The carousel chooser did not switch to its selected collection.");
-            var pickerBounds = picker.TransformToAncestor(pane).TransformBounds(new Rect(picker.RenderSize));
-            Check(pickerBounds.Left >= 0 && pickerBounds.Top >= 0 && pickerBounds.Right <= pane.ActualWidth
-                && pickerBounds.Bottom <= pane.ActualHeight, "The carousel chooser is clipped outside its frame.");
+            var pickerBounds = picker.TransformToAncestor(photoPane).TransformBounds(new Rect(picker.RenderSize));
+            Check(pickerBounds.Left >= 0 && pickerBounds.Top >= 0 && pickerBounds.Right <= photoPane.ActualWidth
+                && pickerBounds.Bottom <= photoPane.ActualHeight, "The carousel chooser is clipped outside its frame.");
             Render(root, Path.Combine(folder, "carousel-collection-chooser.png"));
             report.Add("carousel_collection_chooser_switches_source_inside_frame=True");
 
             ((Button)window.FindName("LibrarySearchButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(150);
             var popup = (Popup)library.FindName("SearchPopup");
+            report.Add($"search_state open={popup.IsOpen} anchor={(popup.PlacementTarget as FrameworkElement)?.Name} libraryVisible={library.IsVisible} loaded={library.IsLoaded} windowLoaded={window.IsLoaded} windowVisible={window.IsVisible} searchAnchor={library.SearchAnchor?.Name}");
             Check(popup.IsOpen && ReferenceEquals(popup.PlacementTarget, window.FindName("LibrarySearchButton")),
                 "The search button did not open its own search flyout.");
             var contentPane = (FrameworkElement)window.FindName("ContentPane");
@@ -323,7 +357,8 @@ internal static class SelfTestAlbumLayout
             Check(Math.Abs(pane.ActualWidth - 180) < 1, "Album width must restore when both modes dock at the left edge.");
             App.Instance.SetDocument(new EditorDocument(image));
             Layout(root);
-            Check(Math.Abs(pane.ActualWidth - 340) < 1, "Editor width must restore when both modes dock at the left edge.");
+            Check(Math.Abs(pane.ActualWidth - 180) < 1 && window.TestStripDock.IsHorizontal,
+                "The collection sidebar must persist beside the editor's independent horizontal carousel.");
             App.Instance.SetDocument(null);
             for (int i = 0; i < 120; i++) CaptureLibrary.CreateCollection("Navigation collection " + i);
             await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);

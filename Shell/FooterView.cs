@@ -23,7 +23,6 @@ namespace KillerShot.Shell
 
         private readonly List<(RadioButton Button, string View)> _footerViews = [];
         private readonly List<(RadioButton Button, string Group)> _footerGroups = [];
-        private readonly List<(Button Button, string View)> _stripViews = [];
         private readonly List<(RadioButton Button, string View)> _footerStripViews = [];
         private Button? _stripButton;
         private bool _footerSyncing;
@@ -50,18 +49,17 @@ namespace KillerShot.Shell
                 FooterLibraryViews.Children.Add(button);
             }
 
-            foreach (var (view, key) in new[] { ("flow", "Str_Lib_ViewFlow"), ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
+            foreach (var (side, key) in new[] { (DockSide.Top, "Str_Dock_Top"), (DockSide.Bottom, "Str_Dock_Bottom") })
             {
-                string target = view;
-                object icon = view == "flow" ? "\uE7C5" : view == "list" ? ListIcon(typeof(RadioButton)) : RolodexIcon(typeof(RadioButton));
+                var target = side;
+                object icon = DockIcon(side, typeof(RadioButton));
                 var button = FooterRadio("FooterStripView", icon, key, null, () =>
                 {
-                    if (target == "flow") { if (!StripDock.IsHorizontal) StripDock.DockTo(DockSide.Top); }
-                    else { if (StripDock.IsHorizontal) StripDock.DockTo(DockSide.Left); _strip?.SetSideView(target); }
+                    StripDock.DockTo(target);
                     if (StripDock.IsMinimized) StripDock.Restore();
                     SyncFooterView();
                 });
-                _footerStripViews.Add((button, view));
+                _footerStripViews.Add((button, side.ToString()));
                 FooterStripControls.Children.Add(button);
             }
             FooterStripControls.Children.Add(FooterSeparator());
@@ -69,18 +67,11 @@ namespace KillerShot.Shell
             _stripButton = StripRailButton(DockIcon(StripDock.Side, typeof(Button)), "Str_Dock_Menu");
             _stripButton.Click += (_, _) => ShowStripMenu();
             RailStack.Children.Insert(0, _stripButton);
-            foreach (var (view, key) in new[] { ("list", "Str_Strip_ViewList"), ("rolodex", "Str_Strip_ViewRolodex") })
-            {
-                var button = StripRailButton(view == "list" ? ListIcon(typeof(Button)) : RolodexIcon(typeof(Button)), key);
-                string target = view;
-                button.Click += (_, _) => _strip?.SetSideView(target);
-                _stripViews.Add((button, view));
-                RailStack.Children.Insert(_stripViews.Count, button);
-            }
 
             if (_strip != null) _strip.SideViewChanged += SyncFooterView;
             Library.ViewChanged += SyncFooterView;
             StripDock.LayoutChanged += SyncFooterView;
+            NavigationDock.LayoutChanged += SyncFooterView;
             SyncFooterView();
         }
 
@@ -103,7 +94,7 @@ namespace KillerShot.Shell
                 style.Triggers.Add(state);
             }
             var button = new Button { Content = icon, Style = style,
-                Margin = StripDock.IsHorizontal ? new Thickness(0, 0, 6, 0) : new Thickness(0, 0, 0, 6) };
+                Margin = new Thickness(0, 0, 0, 6) };
             button.SetResourceReference(ToolTipProperty, key);
             button.SetResourceReference(AutomationProperties.NameProperty, key);
             return button;
@@ -215,30 +206,31 @@ namespace KillerShot.Shell
         {
             if (_stripButton == null) return;
             var menu = new ContextMenu { PlacementTarget = _stripButton,
-                Placement = StripDock.Side switch { DockSide.Left => PlacementMode.Right, DockSide.Right => PlacementMode.Left,
+                Placement = NavigationDock.Side switch { DockSide.Left => PlacementMode.Right, DockSide.Right => PlacementMode.Left,
                     DockSide.Top => PlacementMode.Bottom, _ => PlacementMode.Top } };
-            if (StripDock.IsHorizontal) menu.VerticalOffset = 4;
-            else menu.HorizontalOffset = 4;
+            menu.HorizontalOffset = 4;
             foreach (var (side, key, arrow) in StripSides)
             {
                 var item = new MenuItem
                 {
                     Header = Loc(key), InputGestureText = "Alt+Shift+" + arrow,
                     Icon = DockIcon(side, typeof(MenuItem)),
-                    IsCheckable = true, IsChecked = StripDock.Side == side,
+                    IsCheckable = true, IsChecked = (side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).Side == side,
+                    IsEnabled = side is DockSide.Left or DockSide.Right || !Library.IsVisible,
                 };
                 DockSide target = side;
-                item.Click += (_, _) => StripDock.DockTo(target);
+                item.Click += (_, _) => (target is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).DockTo(target);
                 menu.Items.Add(item);
             }
             menu.Items.Add(new Separator());
-            var arrowOfSide = StripSides.First(s => s.Side == StripDock.Side).Arrow;
+            var minimizeHost = Library.IsVisible ? NavigationDock : StripDock;
+            var arrowOfSide = StripSides.First(s => s.Side == minimizeHost.Side).Arrow;
             var minimize = new MenuItem
             {
-                Header = Loc(StripDock.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"),
+                Header = Loc(minimizeHost.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"),
                 InputGestureText = "Alt+Shift+" + arrowOfSide,
             };
-            minimize.Click += (_, _) => { if (StripDock.IsMinimized) StripDock.Restore(); else StripDock.Minimize(); };
+            minimize.Click += (_, _) => { if (minimizeHost.IsMinimized) minimizeHost.Restore(); else minimizeHost.Minimize(); };
             menu.Items.Add(minimize);
             menu.IsOpen = true;
         }
@@ -252,18 +244,13 @@ namespace KillerShot.Shell
             FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
             if (_stripButton != null)
             {
-                _stripButton.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
-                _stripButton.Content = DockIcon(StripDock.Side, typeof(Button));
-            }
-            foreach (var (button, view) in _stripViews)
-            {
-                button.Visibility = picture && !StripDock.IsHorizontal ? Visibility.Visible : Visibility.Collapsed;
-                button.Tag = _strip?.SideView == view ? "on" : null;
+                _stripButton.Visibility = Visibility.Visible;
+                _stripButton.Content = DockIcon(picture ? StripDock.Side : NavigationDock.Side, typeof(Button));
             }
             _footerSyncing = true;
             try
             {
-                string stripView = StripDock.IsHorizontal ? "flow" : _strip?.SideView ?? "list";
+                string stripView = StripDock.Side.ToString();
                 foreach (var (button, view) in _footerStripViews) button.IsChecked = picture && stripView == view;
                 // Over a picture none is underlined: the library is not what is showing.
                 foreach (var (button, view) in _footerViews) button.IsChecked = library && Library.CurrentView == view;

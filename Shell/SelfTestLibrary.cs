@@ -592,13 +592,14 @@ internal static class SelfTestLibrary
             await Shot("library-over-image");
             w.TestToggleLibrary();
 
-            // The collection strip beside the open picture, on every side and minimized.
+            // Collection navigation at either side and photos above or below the open picture.
             var dock = w.TestStripDock;
             log.AppendLine($"strip shown={dock.ShowPane} side={dock.Side}");
             if (!dock.ShowPane) throw new InvalidOperationException("The collection strip is not shown with a picture open.");
             foreach (var side in new[] { KillerFamily.Layout.DockSide.Top, KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Bottom })
             {
-                dock.DockTo(side);
+                var host = side is KillerFamily.Layout.DockSide.Left or KillerFamily.Layout.DockSide.Right ? w.TestNavigationDock : dock;
+                host.DockTo(side);
                 await Shot("strip-" + side.ToString().ToLowerInvariant());
                 if (dock.IsHorizontal && w.TestStrip is { } strip)
                 {
@@ -616,9 +617,10 @@ internal static class SelfTestLibrary
             await Shot("strip-folder");
             log.AppendLine($"strip folder_doc={App.Instance.Document?.FilePath != null} current={App.Instance.CurrentItem?.Id}");
             App.Instance.SetDocument(null);
-            log.AppendLine($"strip available_in_album={dock.ShowPane} side={dock.Side}");
-            if (!dock.ShowPane || dock.Side != KillerFamily.Layout.DockSide.Left)
-                throw new InvalidOperationException("The album has no left collection sidebar.");
+            var navigation = w.TestNavigationDock;
+            log.AppendLine($"strip available_in_album={navigation.ShowPane} side={navigation.Side}");
+            if (!navigation.ShowPane || navigation.IsHorizontal)
+                throw new InvalidOperationException("The album lost its collection sidebar.");
 
             // Password: set, lock, refuse a wrong one, unlock, change, remove.
             CaptureLibrary.SetPassword("first pass");

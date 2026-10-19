@@ -4,30 +4,40 @@ using KillerFamily.Layout;
 using KillerShot.Controls;
 using KillerShot.Services;
 
-// The collection strip beside the open picture (CollectionStrip, in the family DockHost).
-// Alt+Shift+arrow docks it to that side, and the arrow of its own side folds it to a bar and back.
+// Collections beside the workspace and a separate photo carousel above or below the editor.
 namespace KillerShot.Shell
 {
     public partial class MainWindow
     {
         private CollectionStrip? _strip;
-        private (DockSide Side, bool IsMinimized, double Width, double Height)? _editorStripLayout;
+        private CollectionStrip? _navigationStrip;
+        private bool _syncingSources;
 
         private void CollectionPickerBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_strip == null) return;
+            if (_navigationStrip == null) return;
             FrameworkElement anchor = CollectionPickerBtn.IsVisible ? CollectionPickerBtn : _toolbarHidden ? ToolbarOverflowButton : MoreBtn;
-            var menu = _strip.SourceMenu(anchor);
+            var menu = _navigationStrip.SourceMenu(anchor);
             menu.IsOpen = true;
         }
 
         private void InitStrip()
         {
-            StripDock.Side = Enum.TryParse(Settings.Get("StripSide"), out DockSide side) ? side : DockSide.Top;
-            StripDock.IsMinimized = Settings.GetBool("StripMinimized", false);
-            if (double.TryParse(Settings.Get("StripWidth"), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) StripDock.PaneWidth = w;
-            StripDock.PaneHeight = double.TryParse(Settings.Get("StripHeight"), NumberStyles.Float, CultureInfo.InvariantCulture, out double h) ? h : 230;
+            NavigationDock.Side = Settings.Get("CollectionSidebarSide") == "Right" ? DockSide.Right : DockSide.Left;
+            NavigationDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
+            NavigationDock.PaneWidth = double.TryParse(Settings.Get("AlbumStripWidth"), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
+                && double.IsFinite(w) ? Math.Clamp(w, 110, 600) : 220;
+            StripDock.Side = Settings.Get("EditorCarouselSide") == "Bottom" ? DockSide.Bottom : DockSide.Top;
+            StripDock.IsMinimized = Settings.GetBool("EditorCarouselMinimized", false);
+            StripDock.PaneHeight = double.TryParse(Settings.Get("EditorCarouselHeight"), NumberStyles.Float, CultureInfo.InvariantCulture, out double h)
+                && double.IsFinite(h) ? Math.Clamp(h, 110, 320) : 170;
+            _navigationStrip = new CollectionStrip(NavigationDock, (Style)Library.FindResource("LibSlider"));
+            _navigationStrip.ClipToBounds = true;
+            _navigationStrip.SetAlbumMode(true);
+            NavigationDock.Pane = _navigationStrip;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));
+            _navigationStrip.SourceChanged += () => SyncSources(_navigationStrip);
+            _strip.SourceChanged += () => SyncSources(_strip);
             _strip.SourceChanged += SyncFooterCollection;
             Library.CountChanged += caption => { if (Library.IsVisible) CollectionCountText.Text = caption; };
             _strip.OpenRequested += OpenFromStrip;
@@ -36,68 +46,65 @@ namespace KillerShot.Shell
             SyncFooterCollection();
             StripDock.LayoutChanged += () =>
             {
-                if (_editorStripLayout != null)
-                {
-                    StripDock.Side = DockSide.Left;
-                    Settings.SetBool("AlbumStripMinimized", StripDock.IsMinimized);
-                    Settings.Set("AlbumStripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    Settings.Set("StripSide", StripDock.Side.ToString());
-                    Settings.SetBool("StripMinimized", StripDock.IsMinimized);
-                    Settings.Set("StripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
-                    Settings.Set("StripHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
-                }
+                Settings.Set("EditorCarouselSide", StripDock.Side.ToString());
+                Settings.SetBool("EditorCarouselMinimized", StripDock.IsMinimized);
+                Settings.Set("EditorCarouselHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
                 _strip.Relocalize();
+                SyncEditorPaneMargin();
+            };
+            NavigationDock.LayoutChanged += () =>
+            {
+                Settings.Set("CollectionSidebarSide", NavigationDock.Side.ToString());
+                Settings.SetBool("AlbumStripMinimized", NavigationDock.IsMinimized);
+                Settings.Set("AlbumStripWidth", NavigationDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
+                _navigationStrip.Relocalize();
                 SyncEditorPaneMargin();
             };
             ThemeManager.ThemeChanged += SyncEditorPaneMargin;
             Closed += (_, _) => ThemeManager.ThemeChanged -= SyncEditorPaneMargin;
             SyncLibraryVisibility();
+            if (_doc != null) _strip.Follow(App.Instance.CurrentItem, _doc.FilePath);
             SyncEditorPaneMargin();
         }
 
         private void SyncFooterCollection()
         {
-            if (_strip == null) return;
-            CollectionNameText.Text = _strip.SourceCaption;
-            CollectionCountText.Text = _strip.CountCaption;
-            if (Library.IsVisible && _strip.AlbumMode) Library.SetSource(_strip.Source);
+            if (_navigationStrip == null) return;
+            CollectionNameText.Text = _navigationStrip.SourceCaption;
+            CollectionCountText.Text = _navigationStrip.CountCaption;
+            if (Library.IsVisible) Library.SetSource(_navigationStrip.Source);
+        }
+
+        private void SyncSources(CollectionStrip origin)
+        {
+            if (_syncingSources || _strip == null || _navigationStrip == null) return;
+            _syncingSources = true;
+            try
+            {
+                var other = ReferenceEquals(origin, _strip) ? _navigationStrip : _strip;
+                if (other.Source != origin.Source) other.SetSource(origin.Source);
+                SyncFooterCollection();
+            }
+            finally { _syncingSources = false; }
         }
 
         private void SyncStripPlacement(bool library)
         {
-            if (_strip == null) return;
-            bool modeChanged = _strip.AlbumMode != library;
-            _strip.SetAlbumMode(library);
-            if (library)
-            {
-                if (_editorStripLayout == null)
-                {
-                    _editorStripLayout = (StripDock.Side, StripDock.IsMinimized, StripDock.PaneWidth, StripDock.PaneHeight);
-                    StripDock.PaneWidth = double.TryParse(Settings.Get("AlbumStripWidth"), NumberStyles.Float,
-                        CultureInfo.InvariantCulture, out double width) && double.IsFinite(width) ? Math.Clamp(width, 110, 600) : 220;
-                    StripDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
-                }
-                StripDock.Side = DockSide.Left;
-            }
-            else if (_editorStripLayout is { } layout)
-            {
-                _editorStripLayout = null;
-                StripDock.PaneWidth = layout.Width;
-                StripDock.PaneHeight = layout.Height;
-                StripDock.Side = layout.Side;
-                StripDock.IsMinimized = layout.IsMinimized;
-            }
-            if (modeChanged) StripDock.RefreshLayout();
+            NavigationDock.ShowPane = true;
+            double railSize = library ? 0 : 24;
+            bool railChanged = StripDock.RailSize != railSize;
+            bool paneChanged = StripDock.ShowPane != !library;
+            StripDock.RailSize = railSize;
+            StripDock.ShowPane = !library;
+            if (railChanged && !paneChanged) StripDock.RefreshLayout();
+            if (_navigationStrip != null) SyncSources(_navigationStrip);
             SyncEditorPaneMargin();
         }
 
         private void SyncEditorPaneMargin()
         {
             var margin = (Thickness)FindResource("ContentPaneMargin");
-            ContentPane.Margin = StripDock.Side switch
+            ContentPane.Margin = NavigationDock.Side switch
             {
                 DockSide.Right => new Thickness(margin.Right, margin.Top, margin.Left, margin.Bottom),
                 DockSide.Top or DockSide.Bottom => new Thickness(margin.Right, margin.Top, margin.Right, margin.Bottom),
@@ -114,7 +121,9 @@ namespace KillerShot.Shell
             finally { _strip?.Follow(App.Instance.CurrentItem, _doc?.FilePath); }
         }
 
-        internal CollectionStrip? TestStrip => _strip;
-        internal DockHost TestStripDock => StripDock;
+        internal CollectionStrip? TestStrip => Library.IsVisible ? _navigationStrip : _strip;
+        internal DockHost TestStripDock => Library.IsVisible ? NavigationDock : StripDock;
+        internal CollectionStrip? TestNavigationStrip => _navigationStrip;
+        internal DockHost TestNavigationDock => NavigationDock;
     }
 }

@@ -24,6 +24,26 @@ internal sealed class CollectionBrowser : ListBox
         BorderThickness = new Thickness(0);
         Padding = new Thickness(0);
         HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        Template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse("""
+            <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBox">
+                <Border Background="{TemplateBinding Background}" ClipToBounds="False">
+                    <ScrollViewer x:Name="PART_ScrollViewer" Focusable="False" ClipToBounds="False" CanContentScroll="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer.Template><ControlTemplate TargetType="ScrollViewer">
+                            <Grid ClipToBounds="False">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Column="0" Margin="-4,-4,-6,0"
+                                    Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" CanContentScroll="{TemplateBinding CanContentScroll}"/>
+                                <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Panel.ZIndex="10" Orientation="Vertical" Cursor="Arrow"
+                                    Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
+                                    Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                            </Grid>
+                        </ControlTemplate></ScrollViewer.Template>
+                        <ItemsPresenter/>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+            """);
         ScrollViewer.SetHorizontalScrollBarVisibility(this, ScrollBarVisibility.Disabled);
         VirtualizingPanel.SetIsVirtualizing(this, true);
         VirtualizingPanel.SetVirtualizationMode(this, VirtualizationMode.Recycling);
@@ -66,6 +86,7 @@ public sealed class CollectionPreview : StackPanel
     private readonly Canvas _pile = new() { ClipToBounds = false };
     private readonly TextBlock _name = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 0) };
     private readonly TextBlock _count = new() { FontSize = 11 };
+    private readonly Border _label = new() { HorizontalAlignment = HorizontalAlignment.Left };
     private int _generation;
     private readonly List<(Border Frame, CaptureItem Item, int Index)> _scattered = [];
     private uint _scatterSeed;
@@ -88,8 +109,25 @@ public sealed class CollectionPreview : StackPanel
     public CollectionPreview()
     {
         Children.Add(_photos);
-        Children.Add(_name);
-        Children.Add(_count);
+        var captions = new StackPanel();
+        captions.Children.Add(_name);
+        captions.Children.Add(_count);
+        _label.Child = captions;
+        _label.Style = (Style)System.Windows.Markup.XamlReader.Parse("""
+            <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Style}" Value="pile">
+                        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+                        <Setter Property="Padding" Value="3,0,3,1"/>
+                    </DataTrigger>
+                    <MultiDataTrigger><MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Style}" Value="pile"/>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                    </MultiDataTrigger.Conditions><Setter Property="Background" Value="{DynamicResource SelectionBg}"/></MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+            """);
+        Children.Add(_label);
         _photos.SizeChanged += (_, _) => PlaceScatteredPhotos();
         DataContextChanged += (_, _) => Refresh();
         Loaded += (_, _) => { ThemeManager.ThemeChanged += Refresh; Refresh(); };
@@ -110,7 +148,7 @@ public sealed class CollectionPreview : StackPanel
         _name.Text = choice.Name;
         _count.Text = choice.Detail;
         _photos.Visibility = choice.Preview.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        _photos.Height = choice.Style == "pile" ? 120 : 78;
+        _photos.Height = choice.Style == "pile" ? 112 : 78;
         _photos.ClipToBounds = choice.Style != "pile";
         if (choice.Style == "pile") _photos.Children.Add(_pile);
         ToolTip = choice.AccessibleName;
@@ -216,6 +254,7 @@ public sealed class CollectionPreview : StackPanel
     {
         double availableWidth = _photos.ActualWidth, availableHeight = _photos.Height;
         if (availableWidth <= 12 || availableHeight <= 12) return;
+        _label.MaxWidth = availableWidth;
         foreach (var (frame, item, index) in _scattered)
         {
             uint variation = unchecked((uint)item.Id * 2654435761U ^ _scatterSeed);
@@ -232,11 +271,9 @@ public sealed class CollectionPreview : StackPanel
             var slot = slots[index % slots.Length];
             if (_scattered.Count == 2) slot = index == 0 ? (.24, .35) : (.76, .80);
             double jitter = ((int)(variation % 13) - 6) * .006;
-            double y = Math.Clamp((slot.Y - jitter) * availableHeight * 1.35 - 18, halfHeight - 24, availableHeight - halfHeight + 40);
+            double y = Math.Clamp((slot.Y - jitter) * availableHeight * 1.35 - 18, halfHeight - 12, availableHeight - halfHeight + 40);
             if (_scattered.Count == 2 && index == 0) y = Math.Max(y, halfHeight + 2);
             double x = (slot.X + jitter) * availableWidth;
-            // Overflow joins the next group along the right, leaving its left-hand labels clear.
-            if (y - halfHeight < 0 || y + halfHeight > availableHeight) x = Math.Max(x, availableWidth * .72);
             x = Math.Clamp(x, halfWidth - 6, availableWidth - halfWidth + 14);
             frame.Width = width;
             frame.Height = height;

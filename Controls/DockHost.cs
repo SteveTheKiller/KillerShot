@@ -200,10 +200,13 @@ namespace KillerFamily.Layout
         /// and body.</summary>
         private void Relayout()
         {
-            Children.Clear();
+            // Keep the body attached while folding or moving a pane. Nested hosts otherwise
+            // unload the editor and its popups during a layout-only change.
+            foreach (var child in Children.Cast<UIElement>().Where(child => child != _inner).ToArray()) Children.Remove(child);
             RowDefinitions.Clear();
             ColumnDefinitions.Clear();
-            _inner.Children.Clear();
+            foreach (var child in _inner.Children.Cast<UIElement>().Where(child => child != _body && child != _railGrid).ToArray())
+                _inner.Children.Remove(child);
             _inner.RowDefinitions.Clear();
             _inner.ColumnDefinitions.Clear();
             _railGrid.Children.Clear();
@@ -227,12 +230,12 @@ namespace KillerFamily.Layout
                 else _inner.ColumnDefinitions.Add(new ColumnDefinition { Width = inner[i].Size });
                 if (horizontal) { SetRow(inner[i].Element, i); SetColumn(inner[i].Element, 0); }
                 else { SetColumn(inner[i].Element, i); SetRow(inner[i].Element, 0); }
-                _inner.Children.Add(inner[i].Element);
+                if (!_inner.Children.Contains(inner[i].Element)) _inner.Children.Add(inner[i].Element);
             }
 
             if (!paneOpen)
             {
-                Children.Add(_inner);
+                if (!Children.Contains(_inner)) Children.Add(_inner);
                 return;
             }
 
@@ -251,8 +254,9 @@ namespace KillerFamily.Layout
                 else ColumnDefinitions.Add(new ColumnDefinition { Width = size, MinWidth = min });
                 if (horizontal) { SetRow(element, i); SetColumn(element, 0); }
                 else { SetColumn(element, i); SetRow(element, 0); }
-                Children.Add(element);
+                if (!Children.Contains(element)) Children.Add(element);
             }
+            SetZIndex(_inner, 1);
 
             _splitter.ResizeDirection = horizontal ? GridResizeDirection.Rows : GridResizeDirection.Columns;
             // The resize target occupies the pane's last pixels, leaving the rail unobstructed.
