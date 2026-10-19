@@ -2,6 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerShot.Services;
@@ -227,6 +228,28 @@ internal static class SelfTestLibrary
             if (!changed || FolderCaptures.Items().Count != 6) throw new InvalidOperationException("The Screenshots folder is not watched.");
             view.TestSet("shelves", "collection", "");
             await Shot("library-folder-collection");
+
+            // The folder source must keep its files in the Screenshots group, not Unfiled.
+            view.SetSource("folder");
+            view.TestSet("shelves", "collection", "");
+            var rowsList = view.FindName("RowsList") as ItemsControl
+                ?? throw new InvalidOperationException("Library rows are unavailable.");
+            var folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
+            bool folderGrouped = folderRows.Count == 1 && folderRows[0].Key == "folder"
+                && folderRows[0].Title == FolderCaptures.Name && folderRows[0].Items.Count == 6;
+            log.AppendLine($"folder_grouped={folderGrouped}");
+            if (!folderGrouped) throw new InvalidOperationException("Folder captures were grouped under Unfiled.");
+            await Shot("library-folder-source");
+            view.TestSet("grid", "collection", "2026-10-12");
+            folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
+            if (folderRows.Count < 2 || folderRows[0].Key != "folder" || folderRows.Sum(r => r.Items.Count) != 1)
+                throw new InvalidOperationException("Folder search lost its Screenshots group.");
+            view.TestSet("shelves", "date", "");
+            folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
+            if (folderRows.Sum(r => r.Items.Count) != 6)
+                throw new InvalidOperationException("Folder date grouping lost captures.");
+            view.SetSource("all");
+            view.TestSet("shelves", "collection", "");
 
             // Open a capture, then the library over it (Ctrl+L).
             w.TestOpenLibraryCapture(CaptureLibrary.Items().First(c => c.Id == ids[3]));

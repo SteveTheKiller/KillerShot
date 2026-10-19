@@ -278,8 +278,14 @@ namespace KillerShot.Shell
             var groups = new List<Group>();
             if (byCollection)
             {
-                var known = _collections.Select(c => c.Id).ToHashSet();
                 bool searching = SearchBox.Text.Trim().Length > 0;
+                if (_source == "folder")
+                {
+                    if (_items.Count > 0 || !searching)
+                        groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _items.ToList(), IsFolder: true));
+                    return groups;
+                }
+                var known = _collections.Select(c => c.Id).ToHashSet();
                 if (FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
                     groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _folderItems.ToList(), IsFolder: true));
                 foreach (var c in _collections)
