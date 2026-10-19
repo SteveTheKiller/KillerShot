@@ -101,30 +101,43 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
 
     /// <summary>A grabber for the rectangle, or null when Windows Graphics Capture is not
     /// available or a monitor does not deliver a first frame, so the caller can use GDI.</summary>
-    public static MonitorGrabber? TryCreate(Win32.RECT rect, bool includeCursor)
+    /// <param name="createNativeDevice">Optional native allocation boundary. Each returned COM
+    /// pointer transfers one owned reference to the grabber.</param>
+    /// <param name="enumerateMonitors">Optional display-enumeration boundary.</param>
+    public static MonitorGrabber? TryCreate(Win32.RECT rect, bool includeCursor,
+        Func<(IntPtr Device, IntPtr Context)>? createNativeDevice = null,
+        Func<IEnumerable<MonitorBounds>>? enumerateMonitors = null)
     {
         if (!WindowCapture.IsSupported) return null;
-        MonitorGrabber? grabber = null;
+        var grabber = new MonitorGrabber(rect);
         try
         {
-            grabber = new MonitorGrabber(rect, includeCursor);
+            grabber.Initialize(rect, includeCursor, createNativeDevice, enumerateMonitors);
             if (grabber.WaitForFirstFrames(1500)) return grabber;
         }
         catch { }
-        grabber?.Dispose();
+        grabber.Dispose();
         return null;
     }
 
-    private MonitorGrabber(Win32.RECT rect, bool includeCursor)
+    private MonitorGrabber(Win32.RECT rect)
     {
         Width = rect.Width;
         Height = rect.Height;
-        CreateDevice();
+    }
+
+    // The factory owns this instance before any native allocation can fail. Each part is
+    // likewise registered before acquiring its texture, frame pool, and capture session.
+    private void Initialize(Win32.RECT rect, bool includeCursor,
+        Func<(IntPtr Device, IntPtr Context)>? createNativeDevice,
+        Func<IEnumerable<MonitorBounds>>? enumerateMonitors)
+    {
+        CreateDevice(createNativeDevice);
         try { GraphicsCaptureAccess.RequestAccessAsync(GraphicsCaptureAccessKind.Borderless).AsTask().Wait(1000); }
         catch { /* Borderless is a request, not a requirement. */ }
 
         var interop = ActivationFactory.Get("Windows.Graphics.Capture.GraphicsCaptureItem").AsInterface<IGraphicsCaptureItemInterop>();
-        foreach (var monitor in FrozenDesktop.EnumerateMonitors())
+        foreach (var monitor in (enumerateMonitors ?? FrozenDesktop.EnumerateMonitors)())
         {
             var r = Win32.RECT.Intersect(rect, monitor.Bounds);
             if (r.IsEmpty) continue;
@@ -248,12 +261,16 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
 
     /// <summary>A device of its own, because a D3D11 device context must not be shared between
     /// the recording thread and window captures on the UI thread.</summary>
-    private void CreateDevice()
+    private void CreateDevice(Func<(IntPtr Device, IntPtr Context)>? createNativeDevice)
     {
-        // 0x20 = D3D11_CREATE_DEVICE_BGRA_SUPPORT. Hardware first, WARP if no usable adapter.
-        int hr = D3D11CreateDevice(IntPtr.Zero, 1, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _context);
-        if (hr < 0) hr = D3D11CreateDevice(IntPtr.Zero, 5, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _context);
-        Marshal.ThrowExceptionForHR(hr);
+        if (createNativeDevice != null) (_d3dDevice, _context) = createNativeDevice();
+        else
+        {
+            // 0x20 = D3D11_CREATE_DEVICE_BGRA_SUPPORT. Hardware first, WARP if no usable adapter.
+            int hr = D3D11CreateDevice(IntPtr.Zero, 1, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _context);
+            if (hr < 0) hr = D3D11CreateDevice(IntPtr.Zero, 5, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _context);
+            Marshal.ThrowExceptionForHR(hr);
+        }
 
         var iid = IID_IDXGIDevice;
         Marshal.ThrowExceptionForHR(Marshal.QueryInterface(_d3dDevice, in iid, out IntPtr dxgi));
