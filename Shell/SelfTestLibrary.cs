@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -17,8 +18,65 @@ namespace KillerShot.Shell;
 /// and nothing on screen is captured.</summary>
 internal static class SelfTestLibrary
 {
+    [DllImport("kernel32.dll")]
+    private static extern uint SetErrorMode(uint mode);
+
     public static bool TryRun(string[] args)
     {
+        if (args.Length == 3 && args[0].Equals("--selftest-library-native-probe", StringComparison.OrdinalIgnoreCase))
+        {
+            SetErrorMode(0x0001); // Keep a bad native test fixture from opening a Windows error dialog.
+            string cache = Path.GetFullPath(args[1]);
+            string report = Path.GetFullPath(args[2]);
+            int exitCode = 0;
+            try
+            {
+                SqlCipherBootstrap.UseCacheFolderForTests(cache);
+                Settings.UseFolder(Path.Combine(Path.GetDirectoryName(report)!, "settings"));
+                CaptureLibrary.UseFolder(Path.Combine(Path.GetDirectoryName(report)!, "library"));
+                CaptureLibrary.BackgroundWork = false;
+                if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError ?? "Album did not open.");
+                CaptureLibrary.Close();
+                File.WriteAllText(report, "ok");
+            }
+            catch (Exception ex) { File.WriteAllText(report, ex.ToString()); exitCode = 1; }
+            Application.Current.Shutdown(exitCode);
+            return true;
+        }
+        if (args.Length == 4 && args[0].Equals("--selftest-library-open-probe", StringComparison.OrdinalIgnoreCase))
+        {
+            string library = Path.GetFullPath(args[1]);
+            string report = Path.GetFullPath(args[2]);
+            SqlCipherBootstrap.UseCacheFolderForTests(args[3]);
+            Settings.UseFolder(Path.Combine(Path.GetDirectoryName(report)!, Path.GetFileNameWithoutExtension(report) + ".settings"));
+            CaptureLibrary.UseFolder(library);
+            CaptureLibrary.BackgroundWork = false;
+            int exitCode = 0;
+            try
+            {
+                File.WriteAllText(report + ".ready", "ready");
+                if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError ?? "Album did not open.");
+                var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
+                pixel.Freeze();
+                CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Process probe", null);
+                CaptureLibrary.Close();
+                File.WriteAllText(report, "ok");
+            }
+            catch (Exception ex) { File.WriteAllText(report, ex.ToString()); exitCode = 1; }
+            Application.Current.Shutdown(exitCode);
+            return true;
+        }
+        int focused = Array.FindIndex(args, a => a.Equals("--selftest-library-fixes", StringComparison.OrdinalIgnoreCase));
+        if (focused >= 0)
+        {
+            string output = focused + 1 < args.Length ? args[focused + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-library-fixes");
+            Directory.CreateDirectory(output);
+            SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(output, "native-parent"));
+            Settings.UseFolder(Path.Combine(output, "settings"));
+            App.InitializeKit();
+            _ = RunFocused(output);
+            return true;
+        }
         int i = Array.FindIndex(args, a => a.Equals("--selftest-library", StringComparison.OrdinalIgnoreCase));
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-library");
@@ -45,6 +103,274 @@ internal static class SelfTestLibrary
         ("Event Viewer", "mmc", "Event 7031 service crashed", Color.FromRgb(0xFB, 0x8C, 0x00)),
         ("Settings", "SystemSettings", "Display scale 150 percent", Color.FromRgb(0x2E, 0xC4, 0xB6)),
     ];
+
+    private static async Task RunFocused(string dir)
+    {
+        var log = new StringBuilder();
+        int code = 0;
+        try
+        {
+            CaptureLibrary.BackgroundWork = false;
+            bool nativeCacheRecovered = await TestNativeCacheRecovery(dir);
+            log.AppendLine($"native_cache_recovered={nativeCacheRecovered}");
+            if (!nativeCacheRecovered) throw new InvalidOperationException("A same-size corrupt native cache was accepted.");
+            bool crossProcessOpen = await TestCrossProcessOpen(dir);
+            log.AppendLine($"cross_process_first_open={crossProcessOpen}");
+            if (!crossProcessOpen) throw new InvalidOperationException("Two processes did not safely open one new album.");
+            bool passwordSwapWaited = await TestPasswordSwapWait(dir);
+            log.AppendLine($"password_swap_waited={passwordSwapWaited}");
+            if (!passwordSwapWaited) throw new InvalidOperationException("A password swap bypassed the album lock.");
+            string lib = Path.Combine(dir, "recovery");
+            CaptureLibrary.UseFolder(lib);
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Recovery fixture did not open.");
+            var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
+            pixel.Freeze();
+            CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Recovery", null);
+            CaptureLibrary.Close();
+            string backup = CaptureLibrary.FilePath + ".bak";
+            File.Move(CaptureLibrary.FilePath, backup);
+            bool recovered = CaptureLibrary.OpenAuto() && CaptureLibrary.Count == 1
+                && File.Exists(CaptureLibrary.FilePath) && !File.Exists(backup);
+            log.AppendLine($"missing_active_backup_recovered={recovered}");
+            if (!recovered) throw new InvalidOperationException("A missing active album did not recover from its backup.");
+            CaptureLibrary.Close();
+
+            string protectedDir = Path.Combine(dir, "password-recovery");
+            CaptureLibrary.UseFolder(protectedDir);
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Password recovery fixture did not open.");
+            CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Protected recovery", null);
+            CaptureLibrary.SetPassword("recovery pass");
+            CaptureLibrary.Close();
+            backup = CaptureLibrary.FilePath + ".bak";
+            File.Move(CaptureLibrary.FilePath, backup);
+            bool remainedLocked = !CaptureLibrary.OpenAuto() && CaptureLibrary.NeedsPassword && File.Exists(backup);
+            bool recoveredProtected = remainedLocked && CaptureLibrary.Unlock("recovery pass")
+                && CaptureLibrary.Count == 1 && File.Exists(CaptureLibrary.FilePath) && !File.Exists(backup);
+            log.AppendLine($"password_backup_recovered={recoveredProtected}");
+            if (!recoveredProtected) throw new InvalidOperationException("A protected album did not recover from its backup.");
+            CaptureLibrary.Close();
+
+            string shots = Path.Combine(dir, "Screenshots");
+            Directory.CreateDirectory(shots);
+            FolderCaptures.UseFolder(shots);
+            string removed = Path.Combine(shots, "removed.png");
+            string renamed = Path.Combine(shots, "renamed.png");
+            string kept = Path.Combine(shots, "kept.png");
+            ImageOutput.SavePng(pixel, removed);
+            ImageOutput.SavePng(pixel, renamed);
+            ImageOutput.SavePng(pixel, kept);
+            var before = FolderCaptures.Items();
+            long removedId = before.Single(i => i.Window == "removed").Id;
+            long renamedId = before.Single(i => i.Window == "renamed").Id;
+            long keptId = before.Single(i => i.Window == "kept").Id;
+            if (FolderCaptures.LoadThumb(removedId) == null) throw new InvalidOperationException("Thumbnail fixture did not load.");
+            File.Delete(removed);
+            File.Move(renamed, Path.Combine(shots, "new-name.png"));
+            var after = FolderCaptures.Items("kept");
+            bool pruned = after.Count == 1 && after[0].Id == keptId
+                && FolderCaptures.PathOf(removedId) == null && FolderCaptures.PathOf(renamedId) == null
+                && FolderCaptures.LoadThumb(removedId) == null;
+            log.AppendLine($"folder_cache_pruned={pruned}");
+            if (!pruned) throw new InvalidOperationException("Removed folder files still have cached IDs or thumbnails.");
+
+            string unlockDir = Path.Combine(dir, "unlock-error");
+            CaptureLibrary.UseFolder(unlockDir);
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Unlock fixture did not open.");
+            CaptureLibrary.SetPassword("test pass");
+            CaptureLibrary.Close();
+            string cs = new SqliteConnectionStringBuilder { DataSource = CaptureLibrary.FilePath, Password = "test pass" }.ConnectionString;
+            using (var db = new SqliteConnection(cs))
+            {
+                db.Open();
+                using var cmd = db.CreateCommand();
+                cmd.CommandText = "DROP TABLE meta; CREATE VIEW meta AS SELECT 'schema' AS key, 'broken' AS value";
+                cmd.ExecuteNonQuery();
+            }
+            SqliteConnection.ClearAllPools();
+            if (CaptureLibrary.OpenAuto() || !CaptureLibrary.NeedsPassword) throw new InvalidOperationException("Unlock fixture did not lock.");
+            ThemeManager.Apply(Theme.Dark);
+            LocaleManager.Apply(Locale.EnUS);
+            var view = new LibraryView();
+            var window = new Window { Content = view, Width = 640, Height = 480, ShowActivated = false, ShowInTaskbar = false,
+                WindowStartupLocation = WindowStartupLocation.Manual, Left = -20000, Top = -20000 };
+            window.Show();
+            var passwordBox = (PasswordBox)view.FindName("UnlockBox")!;
+            var unlockButton = (Button)view.FindName("UnlockBtn")!;
+            var unlockError = (TextBlock)view.FindName("UnlockError")!;
+            bool dispatcherError = false;
+            System.Windows.Threading.DispatcherUnhandledExceptionEventHandler onDispatcherError = (_, e) =>
+            {
+                dispatcherError = true;
+                e.Handled = true;
+            };
+            Application.Current.DispatcherUnhandledException += onDispatcherError;
+            passwordBox.Password = "test pass";
+            unlockButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            for (int attempt = 0; attempt < 100 && unlockError.Visibility != Visibility.Visible && !dispatcherError; attempt++)
+                await Task.Delay(50);
+            Application.Current.DispatcherUnhandledException -= onDispatcherError;
+            bool unlockErrorShown = !dispatcherError && !CaptureLibrary.IsOpen
+                && unlockError.Visibility == Visibility.Visible
+                && unlockError.Text.StartsWith("The library could not be opened:", StringComparison.Ordinal);
+            log.AppendLine($"unlock_error_shown={unlockErrorShown} dispatcher_error={dispatcherError} unlock_visible={unlockError.Visibility} unlock_text={unlockError.Text}");
+            window.Close();
+            if (!unlockErrorShown) throw new InvalidOperationException("A library unlock error escaped the screen.");
+
+            string headerDir = Path.Combine(dir, "header-menu");
+            CaptureLibrary.UseFolder(headerDir);
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Header fixture did not open.");
+            long collection = CaptureLibrary.CreateCollection("Keyboard collection");
+            var headerView = new LibraryView();
+            var header = headerView.BuildRow(new LibraryRow
+            {
+                Kind = LibraryRowKind.Header, Title = "Keyboard collection", Detail = "0 captures",
+                IsCollection = true, CollectionId = collection,
+            });
+            var headerWindow = new Window { Content = header, Width = 640, Height = 160, ShowActivated = false, ShowInTaskbar = false,
+                WindowStartupLocation = WindowStartupLocation.Manual, Left = -20000, Top = -20000 };
+            headerWindow.Show();
+            var menuKey = new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,
+                PresentationSource.FromVisual(header), Environment.TickCount, System.Windows.Input.Key.Apps)
+            { RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent };
+            header.RaiseEvent(menuKey);
+            bool keyboardMenu = header.Focusable && System.Windows.Input.KeyboardNavigation.GetIsTabStop(header)
+                && header.ContextMenu?.IsOpen == true
+                && header.ContextMenu.Items.OfType<MenuItem>().Any(item => Equals(item.Header, "Rename collection..."));
+            log.AppendLine($"collection_header_keyboard_menu={keyboardMenu}");
+            if (header.ContextMenu != null) header.ContextMenu.IsOpen = false;
+            headerWindow.Close();
+            CaptureLibrary.Close();
+            if (!keyboardMenu) throw new InvalidOperationException("A collection header menu cannot be opened with the keyboard.");
+            log.AppendLine("result=ok");
+        }
+        catch (Exception ex)
+        {
+            log.AppendLine($"result=error {ex}");
+            code = 1;
+        }
+        try { File.WriteAllText(Path.Combine(dir, "report.txt"), log.ToString()); } catch { }
+        Application.Current.Shutdown(code);
+    }
+
+    private static async Task<bool> TestCrossProcessOpen(string dir)
+    {
+        string root = Path.Combine(dir, "process-race");
+        string library = Path.Combine(root, "library");
+        string nativeCache = Path.Combine(root, "native-cache");
+        Directory.CreateDirectory(library);
+        string firstReport = Path.Combine(root, "first.txt");
+        string secondReport = Path.Combine(root, "second.txt");
+        string executable = Environment.ProcessPath ?? throw new InvalidOperationException("Executable path is unavailable.");
+        System.Diagnostics.Process Start(string report)
+        {
+            var start = new System.Diagnostics.ProcessStartInfo(executable)
+            {
+                UseShellExecute = false, CreateNoWindow = true, WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+            };
+            start.ArgumentList.Add("--selftest-library-open-probe");
+            start.ArgumentList.Add(library);
+            start.ArgumentList.Add(report);
+            start.ArgumentList.Add(nativeCache);
+            return System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("Open probe did not start.");
+        }
+        System.Diagnostics.Process? first = null;
+        System.Diagnostics.Process? second = null;
+        try
+        {
+            bool blocked;
+            using (new FileStream(Path.Combine(library, "Library.open.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                first = Start(firstReport);
+                second = Start(secondReport);
+                for (int attempt = 0; attempt < 250 &&
+                    (!File.Exists(firstReport + ".ready") || !File.Exists(secondReport + ".ready")); attempt++)
+                    await Task.Delay(20);
+                if (!File.Exists(firstReport + ".ready") || !File.Exists(secondReport + ".ready"))
+                    throw new InvalidOperationException("Open probes did not reach the shared album.");
+                await Task.Delay(350);
+                blocked = !File.Exists(Path.Combine(library, "Library.key")) &&
+                    !File.Exists(Path.Combine(library, "Library.kshot")) &&
+                    !first.HasExited && !second.HasExited;
+            }
+            if (!blocked) return false;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            await Task.WhenAll(first.WaitForExitAsync(timeout.Token), second.WaitForExitAsync(timeout.Token));
+            if (first.ExitCode != 0 || second.ExitCode != 0 ||
+                File.ReadAllText(firstReport) != "ok" || File.ReadAllText(secondReport) != "ok") return false;
+            string nativeDir = Path.Combine(nativeCache, typeof(SqlCipherBootstrap).Assembly.GetName().Version?.ToString() ?? "0");
+            if (!File.Exists(Path.Combine(nativeDir, "e_sqlcipher.dll")) || Directory.EnumerateFiles(nativeDir, "*.tmp").Any()) return false;
+            CaptureLibrary.UseFolder(library);
+            bool reopened = CaptureLibrary.OpenAuto() && CaptureLibrary.Count == 2;
+            CaptureLibrary.Close();
+            return reopened;
+        }
+        finally
+        {
+            if (first is { HasExited: false }) first.Kill(entireProcessTree: true);
+            if (second is { HasExited: false }) second.Kill(entireProcessTree: true);
+            first?.Dispose();
+            second?.Dispose();
+        }
+    }
+
+    private static async Task<bool> TestNativeCacheRecovery(string dir)
+    {
+        string root = Path.Combine(dir, "native-corrupt-cache");
+        string cache = Path.Combine(root, "cache");
+        string version = typeof(SqlCipherBootstrap).Assembly.GetName().Version?.ToString() ?? "0";
+        string nativeDir = Path.Combine(cache, version);
+        Directory.CreateDirectory(nativeDir);
+        using var resource = typeof(SqlCipherBootstrap).Assembly.GetManifestResourceStream("KillerShot.SqlCipherNative.e_sqlcipher.dll")
+            ?? throw new InvalidOperationException("Native fixture resource is unavailable.");
+        using var bytes = new MemoryStream();
+        resource.CopyTo(bytes);
+        byte[] expectedHash = SHA256.HashData(bytes.ToArray());
+        string target = Path.Combine(nativeDir, "e_sqlcipher.dll");
+        File.WriteAllBytes(target, new byte[bytes.Length]);
+        string report = Path.Combine(root, "probe.txt");
+        var start = new System.Diagnostics.ProcessStartInfo(Environment.ProcessPath!)
+        {
+            UseShellExecute = false, CreateNoWindow = true, WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+        };
+        start.ArgumentList.Add("--selftest-library-native-probe");
+        start.ArgumentList.Add(cache);
+        start.ArgumentList.Add(report);
+        using var process = System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("Native probe did not start.");
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            await process.WaitForExitAsync(timeout.Token);
+            return process.ExitCode == 0 && File.ReadAllText(report) == "ok" &&
+                SHA256.HashData(File.ReadAllBytes(target)).SequenceEqual(expectedHash) &&
+                !Directory.EnumerateFiles(nativeDir, "*.tmp").Any();
+        }
+        finally { if (!process.HasExited) process.Kill(entireProcessTree: true); }
+    }
+
+    private static async Task<bool> TestPasswordSwapWait(string dir)
+    {
+        string library = Path.Combine(dir, "password-swap-lock");
+        CaptureLibrary.UseFolder(library);
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Password swap fixture did not open.");
+        var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
+        pixel.Freeze();
+        CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Swap lock", null);
+        bool blocked;
+        Task swap;
+        using (new FileStream(Path.Combine(library, "Library.open.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            swap = Task.Run(() => CaptureLibrary.SetPassword("swap pass"));
+            await Task.Delay(350);
+            blocked = !swap.IsCompleted && !File.Exists(CaptureLibrary.FilePath + ".rekey") &&
+                !File.Exists(Path.Combine(library, "Library.key.next"));
+        }
+        await swap.WaitAsync(TimeSpan.FromSeconds(20));
+        CaptureLibrary.Close();
+        bool protectedAlbum = !CaptureLibrary.OpenAuto() && CaptureLibrary.NeedsPassword &&
+            CaptureLibrary.Unlock("swap pass") && CaptureLibrary.Count == 1;
+        CaptureLibrary.Close();
+        return blocked && protectedAlbum;
+    }
 
     private static async Task RunAsync(string dir, string lib)
     {
@@ -200,6 +526,11 @@ internal static class SelfTestLibrary
                 view.TestSet(v, g, "");
                 await Shot($"library-{v}-{g}");
             }
+            view.TestSet("grid", "date", "");
+            FilmGrain.Set(false);
+            await Shot("library-grid-grain-off");
+            FilmGrain.Set(true);
+            await Shot("library-grid-grain-on");
             view.TestSet("grid", "date", "mmc");
             await Shot("library-search");
             view.TestSet("shelves", "collection", "");

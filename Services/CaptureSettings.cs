@@ -5,7 +5,7 @@ namespace KillerShot.Services;
 /// <summary>Typed access to the capture choices stored in <see cref="Settings"/>.</summary>
 internal static class CaptureSettings
 {
-    /// <summary>Default shortcut per action. Plain Print Screen repeats the last mode used.</summary>
+    /// <summary>Default shortcut per action. Plain Print Screen starts Region selection.</summary>
     public static readonly IReadOnlyDictionary<ShortcutAction, string> Defaults = new Dictionary<ShortcutAction, string>
     {
         [ShortcutAction.LastMode] = "Print Screen",

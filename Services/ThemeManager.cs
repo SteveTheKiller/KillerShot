@@ -309,6 +309,8 @@ namespace KillerShot.Services
             if (!d.Contains("FlyoutCornerRadius")) d["FlyoutCornerRadius"] = new CornerRadius(square ? 0 : 6);
             if (!d.Contains("ControlCornerRadius")) d["ControlCornerRadius"] = new CornerRadius(square ? 0 : 4);
             if (!d.Contains("SmallCornerRadius")) d["SmallCornerRadius"] = new CornerRadius(square ? 0 : 3);
+            d["LibrarySliderTrackCornerRadius"] = new CornerRadius(square ? 0 : 1);
+            d["ToolbarWidthBarRadius"] = square ? 0d : 1d;
             if (!d.Contains("AccentSwatchCornerRadius")) d["AccentSwatchCornerRadius"] = new CornerRadius(square ? 0 : 9);
             d["ScrollThumbRadius"] = square ? new CornerRadius(0) : new CornerRadius(6);
             d["DialogTitleCornerRadius"] = square ? new CornerRadius(0) : new CornerRadius(6, 6, 0, 0);

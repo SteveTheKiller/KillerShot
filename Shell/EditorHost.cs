@@ -219,13 +219,17 @@ namespace KillerShot.Shell
         private Func<double, FrameworkElement>? DrawnIcon(Button b)
         {
             if (b == ColorBtn)
-                return size => new Border
+                return size =>
                 {
-                    Width = size, Height = size,
-                    CornerRadius = new CornerRadius(3),
-                    Background = new SolidColorBrush(Editor.Color),
-                    BorderBrush = (Brush)FindResource("CardBorderBrush"),
-                    BorderThickness = new Thickness(1),
+                    var swatch = new Border
+                    {
+                        Width = size, Height = size,
+                        Background = new SolidColorBrush(Editor.Color),
+                        BorderBrush = (Brush)FindResource("CardBorderBrush"),
+                        BorderThickness = new Thickness(1),
+                    };
+                    swatch.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
+                    return swatch;
                 };
             if (b == WidthBtn)
                 return size =>
@@ -238,8 +242,9 @@ namespace KillerShot.Shell
                     var bar = new Rectangle
                     {
                         Width = size, Height = Math.Max(1.5, Math.Min(size * 0.6, Editor.StrokeWidth * size / 20)),
-                        RadiusX = 1, RadiusY = 1,
                     };
+                    bar.SetResourceReference(Rectangle.RadiusXProperty, "ToolbarWidthBarRadius");
+                    bar.SetResourceReference(Rectangle.RadiusYProperty, "ToolbarWidthBarRadius");
                     bar.SetBinding(Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = WidthBtn });
                     return bar;
                 };
@@ -330,7 +335,7 @@ namespace KillerShot.Shell
                 string gesture = action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) ? sc.Short : "";
                 if (mode == CaptureMode.Region) gesture = "Ctrl+N";
                 var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture,
-                    IsCheckable = true, IsChecked = CaptureSettings.LastMode == mode };
+                    IsCheckable = true, IsChecked = mode == CaptureMode.Region };
                 mi.Click += (_, _) => StartCapture(m);
                 CaptureMenu.Items.Add(mi);
             }

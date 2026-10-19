@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 
@@ -10,6 +11,7 @@ namespace KillerShot
     /// </summary>
     internal static class Settings
     {
+        private static readonly object Gate = new();
         private static string Dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KillerShot");
         private static string FilePath => Path.Combine(Dir, "settings.json");
@@ -18,8 +20,11 @@ namespace KillerShot
         /// never touches the user's choices. Call before the first read.</summary>
         internal static void UseFolder(string dir)
         {
-            Dir = dir;
-            _cache = null;
+            lock (Gate)
+            {
+                Dir = dir;
+                _cache = null;
+            }
         }
 
         private static Dictionary<string, string>? _cache;
@@ -27,31 +32,72 @@ namespace KillerShot
         private static Dictionary<string, string> Load()
         {
             if (_cache != null) return _cache;
-            try
-            {
-                _cache = File.Exists(FilePath)
-                    ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(FilePath)) ?? []
-                    : [];
-            }
+            try { _cache = ReadCurrent(); }
             catch { _cache = []; }
             return _cache;
         }
 
-        internal static string? Get(string key) => Load().TryGetValue(key, out var v) ? v : null;
+        private static Dictionary<string, string> ReadCurrent()
+        {
+            try
+            {
+                using var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? [];
+            }
+            catch (FileNotFoundException) { return []; }
+            catch (DirectoryNotFoundException) { return []; }
+            catch (JsonException) { return []; }
+        }
+
+        private static FileStream AcquireWriteLock()
+        {
+            string path = Path.Combine(Dir, "settings.json.lock");
+            var clock = Stopwatch.StartNew();
+            while (true)
+            {
+                try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+                catch (IOException) when (clock.Elapsed < TimeSpan.FromSeconds(5)) { Thread.Sleep(25); }
+            }
+        }
+
+        internal static string? Get(string key)
+        {
+            lock (Gate) return Load().TryGetValue(key, out var v) ? v : null;
+        }
 
         internal static void Set(string key, string value)
         {
-            var d = Load();
-            if (d.TryGetValue(key, out var old) && old == value) return;
-            d[key] = value;
-            try
+            lock (Gate)
             {
-                Directory.CreateDirectory(Dir);
-                var tmp = FilePath + ".tmp";
-                File.WriteAllText(tmp, JsonSerializer.Serialize(d, new JsonSerializerOptions { WriteIndented = true }));
-                File.Move(tmp, FilePath, true);
+                Load()[key] = value;
+                try
+                {
+                    Directory.CreateDirectory(Dir);
+                    using var writeLock = AcquireWriteLock();
+                    // Re-read while locked so another process's settings survive this write.
+                    var current = ReadCurrent();
+                    if (current.TryGetValue(key, out var old) && old == value)
+                    {
+                        _cache = current;
+                        return;
+                    }
+                    current[key] = value;
+                    string temp = Path.Combine(Dir, $"settings.json.{Guid.NewGuid():N}.tmp");
+                    try
+                    {
+                        using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        {
+                            JsonSerializer.Serialize(stream, current, new JsonSerializerOptions { WriteIndented = true });
+                            stream.Flush(true);
+                        }
+                        File.Move(temp, FilePath, true);
+                        _cache = current;
+                    }
+                    finally { try { File.Delete(temp); } catch { } }
+                }
+                catch { /* unwritable profile: the setting just does not persist */ }
             }
-            catch { /* unwritable profile: the setting just does not persist */ }
         }
 
         internal static bool GetBool(string key, bool fallback) => Get(key) switch

@@ -17,6 +17,12 @@ namespace KillerShot.Controls
     {
         // ── Quick places (pinned + drives) ───────────────────────────────────────
 
+        internal readonly record struct PlaceCandidate(string Path, string? Label, bool Pinned);
+        internal Func<string?, List<PlaceCandidate>> PlaceDiscovery { get; set; } = DiscoverPlaces;
+        internal Func<string, System.Windows.Media.ImageSource?> PlaceIconLoader { get; set; } =
+            Services.ShellIcons.Place;
+        private int _placesGeneration;
+
         /// <summary>
         /// Pinned folders first (persisted, user-editable via right-click), then the ready
         /// drives. Drives are enumerated live every build - they come and go with USB sticks -
@@ -24,23 +30,83 @@ namespace KillerShot.Controls
         /// </summary>
         private void BuildPlaces()
         {
-            Places.Clear();
+            int generation = ++_placesGeneration;
+            _ = BuildPlacesAsync(generation, Services.ThemeManager.GetSetting(PinnedKey));
+        }
+
+        private async Task BuildPlacesAsync(int generation, string? pinnedSetting)
+        {
+            List<(PlaceCandidate Place, System.Windows.Media.ImageSource? Icon)> found;
+            try
+            {
+                found = await RunStaAsync(() => PlaceDiscovery(pinnedSetting).Select(place =>
+                {
+                    System.Windows.Media.ImageSource? icon;
+                    try { icon = PlaceIconLoader(place.Path); }
+                    catch { icon = null; }
+                    return (place, icon);
+                }).ToList());
+            }
+            catch { return; }
+            if (_dialogClosed || generation != _placesGeneration) return;
+            _navigating = true;
+            try
+            {
+                Places.Clear();
+                foreach (var place in found)
+                    Places.Add(new PickerPlace(place.Place.Label ?? LabelFor(place.Place.Path),
+                        place.Place.Path, place.Place.Pinned, place.Icon));
+            }
+            finally { _navigating = false; }
+            SyncPlacesSelection();
+        }
+
+        private static Task<T> RunStaAsync<T>(Func<T> work)
+        {
+            var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var thread = new System.Threading.Thread(() =>
+            {
+                try { completion.TrySetResult(work()); }
+                catch (Exception ex) { completion.TrySetException(ex); }
+            }) { IsBackground = true };
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            return completion.Task;
+        }
+
+        private static List<PlaceCandidate> DiscoverPlaces(string? pinnedSetting)
+        {
+            var places = new List<PlaceCandidate>();
             var added = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var p in PinnedPaths())
-                if (added.Add(p.TrimEnd('\\'))) AddPlace(LabelFor(p), p, pinned: true);
+            foreach (var p in PinnedPaths(pinnedSetting))
+                if (!string.IsNullOrEmpty(p) && added.Add(p.TrimEnd('\\')) && Directory.Exists(p))
+                    places.Add(new PlaceCandidate(p, null, true));
 
-            foreach (var place in ExplorerQuickAccessPlaces())
-                if (added.Add(place.Path.TrimEnd('\\'))) AddPlace(place.Label, place.Path);
-
-            foreach (var d in DriveInfo.GetDrives().Where(d => d.IsReady))
+            try
             {
+                foreach (var place in ExplorerQuickAccessPlaces())
+                    if (added.Add(place.Path.TrimEnd('\\')))
+                        places.Add(new PlaceCandidate(place.Path, place.Label.Length == 0 ? null : place.Label, false));
+            }
+            catch { /* Quick Access is optional when Explorer cannot answer. */ }
+
+            DriveInfo[] drives;
+            try { drives = DriveInfo.GetDrives(); }
+            catch { return places; }
+            foreach (var d in drives)
+            {
+                bool ready;
+                try { ready = d.IsReady; }
+                catch { continue; }
+                if (!ready) continue;
                 string label;
                 try { label = string.IsNullOrWhiteSpace(d.VolumeLabel) ? d.DriveType.ToString() : d.VolumeLabel.Trim(); }
                 catch { label = d.DriveType.ToString(); }
                 if (added.Add(d.RootDirectory.FullName.TrimEnd('\\')))
-                    AddPlace($"{d.Name.TrimEnd('\\')}  {label}", d.RootDirectory.FullName);
+                    places.Add(new PlaceCandidate(d.RootDirectory.FullName, $"{d.Name.TrimEnd('\\')}  {label}", false));
             }
+            return places;
         }
 
         /// <summary>Explorer's current Quick Access folders. Reflection keeps the COM automation
@@ -77,8 +143,7 @@ namespace KillerShot.Controls
                             "Path", BindingFlags.GetProperty, null, item, null)) ?? "";
                         string name = Convert.ToString(itemType.InvokeMember(
                             "Name", BindingFlags.GetProperty, null, item, null)) ?? "";
-                        if (Directory.Exists(path))
-                            yield return (name.Length > 0 ? name : LabelFor(path), path);
+                        if (Directory.Exists(path)) yield return (name, path);
                     }
                     finally { if (item != null && Marshal.IsComObject(item)) Marshal.FinalReleaseComObject(item); }
                 }
@@ -96,8 +161,10 @@ namespace KillerShot.Controls
         /// an EMPTY stored value means the user unpinned everything and must stay empty.
         /// </summary>
         private static List<string> PinnedPaths()
+            => PinnedPaths(Services.ThemeManager.GetSetting(PinnedKey));
+
+        private static List<string> PinnedPaths(string? saved)
         {
-            string? saved = Services.ThemeManager.GetSetting(PinnedKey);
             if (saved != null)
                 return [.. saved.Split('|').Where(s => s.Length > 0)];
 
@@ -127,12 +194,6 @@ namespace KillerShot.Controls
 
             var name = Path.GetFileName(p);
             return name.Length == 0 ? p : name;
-        }
-
-        private void AddPlace(string label, string path, bool pinned = false)
-        {
-            if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
-                Places.Add(new PickerPlace(label, path, pinned));
         }
 
         private void PinPlace(string path)

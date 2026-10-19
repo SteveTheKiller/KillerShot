@@ -15,6 +15,10 @@ namespace KillerShot.Controls
     {
         // ── Accept / cancel ──────────────────────────────────────────────────────
 
+        internal Func<string, bool> AcceptDirectoryExists { get; set; } = Directory.Exists;
+        internal Func<string, bool> AcceptFileExists { get; set; } = File.Exists;
+        private bool _accepting;
+
         private void OK_Click(object sender, RoutedEventArgs e) => Accept();
 
         /// <summary>
@@ -22,83 +26,124 @@ namespace KillerShot.Controls
         /// leaves the dialog OPEN with focus back in the name box - a file dialog that closes on a
         /// bad name and makes you start over is the worst outcome.
         /// </summary>
-        private void Accept()
+        private async void Accept()
         {
-            if (_mode == FileDialogMode.Folder)
+            if (_dialogClosed || !_directoryReady || _accepting) return;
+            _accepting = true;
+            AcceptButton.IsEnabled = false;
+            long version = _navigationVersion;
+            string currentDir = _currentDir;
+            string originalName = FileNameBox.Text ?? "";
+            int filterIndex = FilterCombo.SelectedIndex;
+            var selection = FileList.SelectedItem;
+            bool Current() => !_dialogClosed && _directoryReady && version == _navigationVersion &&
+                string.Equals(currentDir, _currentDir, StringComparison.OrdinalIgnoreCase) &&
+                FileNameBox.Text == originalName && FilterCombo.SelectedIndex == filterIndex &&
+                ReferenceEquals(FileList.SelectedItem, selection);
+
+            try
             {
-                if (!Directory.Exists(_currentDir)) return;
-                FileName = _currentDir;
+                if (_mode == FileDialogMode.Folder)
+                {
+                    bool exists = await Task.Run(() => AcceptDirectoryExists(currentDir));
+                    if (!Current() || !exists) return;
+                    FileName = currentDir;
+                    DialogResult = true;
+                    Close();
+                    return;
+                }
+
+                var typed = originalName.Trim().Trim('"');
+                if (typed.Length == 0)
+                {
+                    // Nothing typed but a file is highlighted: take that.
+                    if (selection is PickerEntry sel && !sel.IsFolder) typed = sel.Name;
+                    else { FileNameBox.Focus(); return; }
+                }
+
+                var full = Path.IsPathRooted(typed) ? typed : Path.Combine(currentDir, typed);
+
+                if (_mode == FileDialogMode.Save)
+                {
+                    // The extension follows the active filter, with DefaultExt as fallback.
+                    if (AddExtension && string.IsNullOrEmpty(Path.GetExtension(full)))
+                    {
+                        string? ext = ActiveFilterExt();
+                        if (ext == null && !string.IsNullOrEmpty(DefaultExt))
+                            ext = DefaultExt.StartsWith(".") ? DefaultExt : "." + DefaultExt;
+                        if (ext != null) full += ext;
+                    }
+
+                    // The directory must exist; we do not silently create trees on the user's behalf.
+                    var dir = Path.GetDirectoryName(full);
+                    bool exists = !string.IsNullOrEmpty(dir) &&
+                        await Task.Run(() => AcceptDirectoryExists(dir));
+                    if (!Current()) return;
+                    if (!exists)
+                    {
+                        SelMeta.Text = Loc("Str_Dlg_NoSuchFolder");
+                        FileNameBox.Focus();
+                        return;
+                    }
+
+                    if (OverwritePrompt)
+                    {
+                        bool fileExists = await Task.Run(() => AcceptFileExists(full));
+                        if (!Current()) return;
+                        if (fileExists)
+                        {
+                            // Empty detail collapses the optional line in ConfirmDialog.
+                            var confirm = new ConfirmDialog(
+                                string.Format(Loc("Str_Dlg_OverwriteMsg"), Path.GetFileName(full)),
+                                "",
+                                Loc("Str_Btn_Replace")) { Owner = this };
+                            confirm.ShowDialog();
+                            if (!confirm.Confirmed) { FileNameBox.Focus(); return; }
+                        }
+                    }
+                }
+                else if (CheckFileExists)
+                {
+                    bool fileExists = await Task.Run(() => AcceptFileExists(full));
+                    if (!Current()) return;
+                    if (!fileExists)
+                    {
+                        SelMeta.Text = Loc("Str_Dlg_NoSuchFile");
+                        FileNameBox.Focus();
+                        FileNameBox.SelectAll();
+                        return;
+                    }
+                }
+
+                if (!Current()) return;
+                FileName = full;
+                RememberAcceptedDirectory(currentDir);
                 DialogResult = true;
                 Close();
-                return;
             }
-
-            var typed = FileNameBox.Text?.Trim().Trim('"') ?? "";
-            if (typed.Length == 0)
+            catch (IOException) { if (Current()) AcceptFailed(); }
+            catch (UnauthorizedAccessException) { if (Current()) AcceptFailed(); }
+            catch (ArgumentException) { if (Current()) AcceptFailed(); }
+            catch (NotSupportedException) { if (Current()) AcceptFailed(); }
+            finally
             {
-                // Nothing typed but a file is highlighted: take that.
-                if (FileList.SelectedItem is PickerEntry sel && !sel.IsFolder) typed = sel.Name;
-                else { FileNameBox.Focus(); return; }
+                _accepting = false;
+                if (!_dialogClosed) AcceptButton.IsEnabled = _directoryReady;
             }
-
-            var full = Path.IsPathRooted(typed) ? typed : Path.Combine(_currentDir, typed);
-
-            if (_mode == FileDialogMode.Save)
-            {
-                // The extension follows the ACTIVE filter, so picking "CSV files" in the type
-                // combo is enough to get a .csv - DefaultExt only decides when the filter names
-                // no single extension (a wildcard or a multi-pattern entry).
-                if (AddExtension && string.IsNullOrEmpty(Path.GetExtension(full)))
-                {
-                    string? ext = ActiveFilterExt();
-                    if (ext == null && !string.IsNullOrEmpty(DefaultExt))
-                        ext = DefaultExt.StartsWith(".") ? DefaultExt : "." + DefaultExt;
-                    if (ext != null) full += ext;
-                }
-
-                // The directory must exist; we do not silently create trees on the user's behalf.
-                var dir = Path.GetDirectoryName(full);
-                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
-                {
-                    SelMeta.Text = Loc("Str_Dlg_NoSuchFolder");
-                    FileNameBox.Focus();
-                    return;
-                }
-
-                if (OverwritePrompt && File.Exists(full))
-                {
-                    // Empty rather than null: ConfirmDialog takes a non-nullable string and
-                    // collapses the detail line when it is empty.
-                    var confirm = new ConfirmDialog(
-                        string.Format(Loc("Str_Dlg_OverwriteMsg"), Path.GetFileName(full)),
-                        "",
-                        Loc("Str_Btn_Replace")) { Owner = this };
-                    confirm.ShowDialog();
-                    if (!confirm.Confirmed) { FileNameBox.Focus(); return; }
-                }
-            }
-            else
-            {
-                if (CheckFileExists && !File.Exists(full))
-                {
-                    SelMeta.Text = Loc("Str_Dlg_NoSuchFile");
-                    FileNameBox.Focus();
-                    FileNameBox.SelectAll();
-                    return;
-                }
-            }
-
-            FileName = full;
-            RememberAcceptedDirectory();
-            DialogResult = true;
-            Close();
         }
 
-        private void RememberAcceptedDirectory()
+        private void AcceptFailed()
         {
-            if (_currentDir.Length > 0 && Directory.Exists(_currentDir))
+            if (_dialogClosed) return;
+            SelMeta.Text = Loc(_mode == FileDialogMode.Open ? "Str_Dlg_NoSuchFile" : "Str_Dlg_NoSuchFolder");
+            FileNameBox.Focus();
+        }
+
+        private void RememberAcceptedDirectory(string currentDir)
+        {
+            if (currentDir.Length > 0 && string.Equals(currentDir, _lastValidDir, StringComparison.OrdinalIgnoreCase))
                 Services.ThemeManager.SetSetting(
-                    _mode == FileDialogMode.Open ? LastOpenKey : LastSaveKey, _currentDir);
+                    _mode == FileDialogMode.Open ? LastOpenKey : LastSaveKey, currentDir);
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e) => Close();

@@ -59,6 +59,13 @@ internal static class SelfTestCarousel
                 report.Add(control.GetType().Name + ": a missed button-up cannot leave the carousel stuck to the mouse PASS");
                 if (drum != null)
                 {
+                    drum.Zoom = 2;
+                    if (drum.Zoom < 1.11) throw new InvalidOperationException("The Rolodex cannot zoom the front picture to the sidebar width.");
+                    await Task.Delay(150);
+                    var preview = new RenderTargetBitmap((int)drum.ActualWidth, (int)drum.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+                    preview.Render(drum);
+                    ImageOutput.SavePng(preview, Path.Combine(folder, "rolodex-max-zoom.png"));
+                    report.Add("Rolodex: front picture reaches sidebar width PASS");
                     drum.SelectedIndex = items.Length - 1;
                     drum.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(drum), 0, Key.Down) { RoutedEvent = Keyboard.KeyDownEvent });
                     if (drum.SelectedIndex != 0) throw new InvalidOperationException("The Rolodex must wrap from the last card to the first.");

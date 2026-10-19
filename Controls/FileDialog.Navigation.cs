@@ -15,15 +15,95 @@ namespace KillerShot.Controls
     {
         // ── Navigation ───────────────────────────────────────────────────────────
 
+        internal Func<string, bool, List<PickerEntry>> EntryEnumerator { get; set; } = EnumerateEntries;
+        internal Func<string, Task<bool>> InitialDirectoryExistsAsync { get; set; } =
+            dir => Task.Run(() => Directory.Exists(dir));
+        private long _navigationVersion;
+        private string _lastValidDir = string.Empty;
+        private bool _directoryReady;
+        private bool _dialogClosed;
+        private bool _folderFocusPending;
+
+        private async Task NavigateFirstAvailableAsync(IEnumerable<string> candidates)
+        {
+            long version = _navigationVersion;
+            foreach (string dir in candidates.Where(s => !string.IsNullOrWhiteSpace(s))
+                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                bool exists = await InitialDirectoryExistsAsync(dir);
+                if (_dialogClosed || version != _navigationVersion) return;
+                if (exists) { NavigateTo(dir); return; }
+            }
+        }
+
         private void NavigateTo(string dir)
         {
-            if (string.IsNullOrWhiteSpace(dir) || !Directory.Exists(dir)) return;
+            if (_dialogClosed || string.IsNullOrWhiteSpace(dir)) return;
+            _ = NavigateToAsync(dir);
+        }
+
+        private async Task NavigateToAsync(string dir)
+        {
+            long version = ++_navigationVersion;
+            bool showHidden = _showHidden;
+            _directoryReady = false;
+            AcceptButton.IsEnabled = false;
+            UpButton.IsEnabled = false;
 
             _navigating = true;
             _currentDir  = dir;
             PathBox.Text = dir;
             _raw.Clear();
+            ApplySort();
+            UpdateInfoSummary();
+            _navigating = false;
 
+            bool exists;
+            List<PickerEntry> entries;
+            try
+            {
+                (exists, entries) = await Task.Run(() =>
+                    Directory.Exists(dir)
+                        ? (true, EntryEnumerator(dir, showHidden))
+                        : (false, new List<PickerEntry>()));
+            }
+            catch (IOException) { exists = false; entries = []; }
+            catch (UnauthorizedAccessException) { exists = false; entries = []; }
+            if (_dialogClosed || version != _navigationVersion) return;
+            if (!exists)
+            {
+                if (_lastValidDir.Length > 0 && !string.Equals(_lastValidDir, dir, StringComparison.OrdinalIgnoreCase))
+                    NavigateTo(_lastValidDir);
+                return;
+            }
+
+            _lastValidDir = dir;
+
+            _navigating = true;
+            try
+            {
+                _raw.AddRange(entries);
+                ApplySort();
+                UpButton.IsEnabled = Directory.GetParent(dir) != null;
+                UpdateInfoSummary();
+                SyncPlacesSelection();
+            }
+            finally { _navigating = false; }
+
+            _directoryReady = true;
+            AcceptButton.IsEnabled = !_accepting;
+            if (_folderFocusPending)
+            {
+                _folderFocusPending = false;
+                AcceptButton.Focus();
+            }
+            RecordRecent(dir);
+            _ = RevealInTree(dir, version);
+        }
+
+        private static List<PickerEntry> EnumerateEntries(string dir, bool showHidden)
+        {
+            var entries = new List<PickerEntry>();
             try
             {
                 // The toggle gates two things together: attribute Hidden/System AND leading-dot
@@ -33,35 +113,28 @@ namespace KillerShot.Controls
                 {
                     DirectoryInfo info;
                     try { info = new DirectoryInfo(sub); } catch { continue; }
-                    if (!_showHidden)
+                    if (!showHidden)
                     {
                         if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
                         if (info.Name.StartsWith(".", StringComparison.Ordinal)) continue;
                     }
-                    _raw.Add(new PickerEntry(info.Name, sub, true, 0, SafeTime(() => info.LastWriteTime)));
+                    entries.Add(new PickerEntry(info.Name, sub, true, 0, SafeTime(() => info.LastWriteTime)));
                 }
                 foreach (var file in Directory.EnumerateFiles(dir))
                 {
                     FileInfo fi;
                     try { fi = new FileInfo(file); } catch { continue; }
-                    if (!_showHidden)
+                    if (!showHidden)
                     {
                         if ((fi.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
                         if (fi.Name.StartsWith(".", StringComparison.Ordinal)) continue;
                     }
-                    _raw.Add(new PickerEntry(fi.Name, file, false, SafeLen(fi), SafeTime(() => fi.LastWriteTime)));
+                    entries.Add(new PickerEntry(fi.Name, file, false, SafeLen(fi), SafeTime(() => fi.LastWriteTime)));
                 }
             }
             catch { /* unauthorized / unreadable - show what we have */ }
 
-            ApplySort();
-            UpButton.IsEnabled = Directory.GetParent(dir) != null;
-            UpdateInfoSummary();
-            SyncPlacesSelection();
-            _navigating = false;
-
-            RecordRecent(dir);
-            _ = RevealInTree(dir);
+            return entries;
         }
 
         private static DateTime SafeTime(Func<DateTime> get)
@@ -76,6 +149,7 @@ namespace KillerShot.Controls
 
         private void Up_Click(object sender, RoutedEventArgs e)
         {
+            if (_dialogClosed || !_directoryReady) return;
             var parent = Directory.GetParent(_currentDir);
             if (parent != null) NavigateTo(parent.FullName);
         }
@@ -88,25 +162,33 @@ namespace KillerShot.Controls
 
         // ── Folder tree (ported from KillerShell, see Controls/FolderTree.cs) ────
 
-        /// <summary>Ready drives only - an empty optical drive or a dropped mapping would sit
-        /// there as a node that throws the moment anyone touches it.</summary>
-        private void InitTree()
-        {
-            if (TreeRoots.Count > 0) return;
-            FolderTreeCtl.ItemsSource = TreeRoots;
+        internal Func<List<FolderNode>> TreeDiscovery { get; set; } = DiscoverTreeRoots;
+        private bool _treeInitialized;
 
+        private static List<FolderNode> DiscoverTreeRoots()
+        {
+            var roots = new List<FolderNode>();
             DriveInfo[] drives;
             try { drives = DriveInfo.GetDrives(); }
-            catch (IOException) { return; }
-
+            catch (IOException) { return roots; }
             foreach (var d in drives)
             {
                 bool ready;
                 try { ready = d.IsReady; }
-                catch (IOException) { continue; }
-                catch (UnauthorizedAccessException) { continue; }
-                if (ready) TreeRoots.Add(new FolderNode(d));
+                catch { continue; }
+                if (ready) roots.Add(new FolderNode(d));
             }
+            return roots;
+        }
+
+        /// <summary>Ready drives only - an empty optical drive or a dropped mapping would sit
+        /// there as a node that throws the moment anyone touches it.</summary>
+        private void InitTree()
+        {
+            if (_treeInitialized) return;
+            _treeInitialized = true;
+            FolderTreeCtl.ItemsSource = TreeRoots;
+            _ = LoadTreeRootsAsync();
 
             // Edge fades follow the scroll position (KillerShell TreePanel.cs). ScrollChanged is
             // handled at the TreeView rather than dug out of its template: it bubbles, so the
@@ -123,6 +205,16 @@ namespace KillerShot.Controls
                 new ScrollChangedEventHandler((_, _) => SyncPlacesEdgeFades()));
             PlacesList.SizeChanged += (_, _) => SyncPlacesEdgeFades();
             PlacesList.Loaded      += (_, _) => SyncPlacesEdgeFades();
+        }
+
+        private async Task LoadTreeRootsAsync()
+        {
+            List<FolderNode> roots;
+            try { roots = await Task.Run(TreeDiscovery); }
+            catch { return; }
+            if (_dialogClosed) return;
+            foreach (var root in roots) TreeRoots.Add(root);
+            if (_lastValidDir.Length > 0) _ = RevealInTree(_lastValidDir, _navigationVersion);
         }
 
         /// <summary>Places-list twin of SyncTreeEdgeFades: same ramp, same rules.</summary>
@@ -217,7 +309,9 @@ namespace KillerShot.Controls
         {
             if (e.OriginalSource is not TreeViewItem tvi) return;
             if (tvi.DataContext is not FolderNode node) return;
-            await node.LoadChildrenAsync();
+            try { await node.LoadChildrenAsync(); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
         }
 
         private void FolderTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -262,9 +356,9 @@ namespace KillerShot.Controls
         /// own expander is left exactly as the user had it (KillerShell's rule - forcing it
         /// collapsed the branch under the cursor and the whole tree jumped).
         /// </summary>
-        private async Task RevealInTree(string folder)
+        private async Task RevealInTree(string folder, long version)
         {
-            if (string.IsNullOrEmpty(folder)) return;
+            if (string.IsNullOrEmpty(folder) || version != _navigationVersion) return;
 
             string full;
             try { full = Path.GetFullPath(folder); }
@@ -279,7 +373,10 @@ namespace KillerShot.Controls
             var current = root;
             if (segments.Count > 0)
             {
-                await current.LoadChildrenAsync();
+                try { await current.LoadChildrenAsync(); }
+                catch (IOException) { return; }
+                catch (UnauthorizedAccessException) { return; }
+                if (version != _navigationVersion) return;
                 current.IsExpanded = true;
             }
 
@@ -292,13 +389,17 @@ namespace KillerShot.Controls
                 current = next;
                 if (i == segments.Count - 1) break;
 
-                await current.LoadChildrenAsync();   // needed to match the NEXT segment
+                try { await current.LoadChildrenAsync(); }
+                catch (IOException) { return; }
+                catch (UnauthorizedAccessException) { return; }
+                if (version != _navigationVersion) return;
                 current.IsExpanded = true;
             }
 
+            if (version != _navigationVersion) return;
             _treeSyncing = true;
-            current.IsSelected = true;
-            _treeSyncing = false;
+            try { current.IsSelected = true; }
+            finally { _treeSyncing = false; }
         }
 
         private static IEnumerable<string> RelativeSegments(string rootPath, string fullPath)
@@ -323,12 +424,14 @@ namespace KillerShot.Controls
             Services.ThemeManager.SetSetting(RecentsKey, string.Join("|", list));
         }
 
-        private void RecentsBtn_Click(object sender, RoutedEventArgs e)
+        private async void RecentsBtn_Click(object sender, RoutedEventArgs e)
         {
             // Stale entries (unplugged drive, deleted folder) are filtered at open rather than
             // scrubbed from the store - the drive may be back tomorrow.
-            var list = LoadRecents().Where(Directory.Exists).ToList();
-            if (list.Count == 0) return;
+            var recents = LoadRecents();
+            long version = _navigationVersion;
+            var list = await Task.Run(() => recents.Where(Directory.Exists).ToList());
+            if (!IsVisible || version != _navigationVersion || list.Count == 0) return;
 
             _navigating = true;              // rebinding must not raise a navigation
             RecentsList.ItemsSource = list;

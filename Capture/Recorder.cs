@@ -48,18 +48,36 @@ internal sealed class Recorder
 
     public async Task StartAsync()
     {
-        await _sink.StartAsync(_rect.Width, _rect.Height, _fps);
-        // Created off the UI thread, before the clock starts, so the first frame is ready on time.
-        _grabber = await Task.Run(() => (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
-        UsesGraphicsCapture = _grabber is MonitorGrabber;
-        if (_sound != SoundSource.None)
-            _audio = new AudioCapture(_sound, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at));
-        _clock.Start();
-        _audio?.Start();
-        _captureThread = new Thread(CaptureLoop) { IsBackground = true, Name = "KillerShot capture", Priority = ThreadPriority.AboveNormal };
-        _encodeThread = new Thread(EncodeLoop) { IsBackground = true, Name = "KillerShot encode" };
-        _encodeThread.Start();
-        _captureThread.Start();
+        try
+        {
+            await _sink.StartAsync(_rect.Width, _rect.Height, _fps);
+            // Created off the UI thread, before the clock starts, so the first frame is ready on time.
+            _grabber = await Task.Run(() => (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
+            UsesGraphicsCapture = _grabber is MonitorGrabber;
+            if (_sound != SoundSource.None)
+            {
+                _audio = new AudioCapture(_sound, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at));
+                await Task.Run(_audio.Start);
+            }
+            _audio?.DiscardBuffered();
+            _clock.Start();
+            _captureThread = new Thread(CaptureLoop) { IsBackground = true, Name = "KillerShot capture", Priority = ThreadPriority.AboveNormal };
+            _encodeThread = new Thread(EncodeLoop) { IsBackground = true, Name = "KillerShot encode" };
+            _encodeThread.Start();
+            _captureThread.Start();
+        }
+        catch
+        {
+            _stop = true;
+            try { _queue.CompleteAdding(); } catch { }
+            try { if (_encodeThread?.IsAlive == true) await Task.Run(_encodeThread.Join); } catch { }
+            try { _audio?.Dispose(); } catch { }
+            try { _grabber?.Dispose(); } catch { }
+            // The MP4 transcoder may still own the staging file after recording startup fails.
+            try { await _sink.FinishAsync(TimeSpan.Zero); } catch { }
+            try { _sink.Dispose(); } catch { }
+            throw;
+        }
     }
 
     public void Pause()
@@ -81,10 +99,17 @@ internal sealed class Recorder
     {
         var duration = Elapsed;
         _stop = true;
-        await Task.Run(() => { _captureThread?.Join(); _encodeThread?.Join(); _audio?.Stop(); });
-        _audio?.Dispose();
-        if (_error != null) throw new InvalidOperationException(_error.Message, _error);
-        await _sink.FinishAsync(duration);
+        Exception? failure = null;
+        try { await Task.Run(() => { _captureThread?.Join(); _encodeThread?.Join(); _audio?.Stop(); }); }
+        catch (Exception ex) { failure = ex; }
+        failure ??= _error ?? _audio?.Error;
+        try { await _sink.FinishAsync(duration); }
+        catch (Exception ex) { failure ??= ex; }
+        try { _audio?.Dispose(); }
+        catch (Exception ex) { failure ??= ex; }
+        try { _sink.Dispose(); }
+        catch (Exception ex) { failure ??= ex; }
+        if (failure != null) throw new InvalidOperationException(failure.Message, failure);
     }
 
     private void CaptureLoop()

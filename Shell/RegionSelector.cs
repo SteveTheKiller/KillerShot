@@ -15,8 +15,8 @@ namespace KillerShot.Shell;
 /// <summary>Region selection across every monitor. Each monitor gets its own borderless overlay
 /// showing that monitor's slice of the frozen desktop at one image pixel per device pixel, and
 /// all overlays share one selection in physical virtual-desktop coordinates, so a drag can cross
-/// monitors with different scaling. Hovering highlights the window under the pointer, and a
-/// click without a drag takes that window. In window-pick mode a click is the only gesture.</summary>
+/// monitors with different scaling. Region mode selects only by dragging a rectangle;
+/// window-pick mode highlights windows and captures one with a click.</summary>
 internal sealed class RegionSelector
 {
     private readonly FrozenDesktop _frozen;
@@ -31,6 +31,8 @@ internal sealed class RegionSelector
     private CaptureBar? _bar;
     public CaptureMode Mode { get; private set; }
     public bool IsVideo { get; private set; }
+    internal Win32.RECT? CurrentSelection => _selection;
+    internal Task<Win32.RECT?> Result => _result.Task;
 
     /// <summary>The window chosen by a click, or zero when the result is a dragged region.</summary>
     public IntPtr PickedWindow { get; private set; }
@@ -72,7 +74,7 @@ internal sealed class RegionSelector
                 _bar.Show();
                 _bar.FocusFirstControl();
             }
-            Move();   // highlight the window already under the pointer
+            Move();   // Window mode highlights the target under the pointer.
         }
         catch
         {
@@ -86,6 +88,11 @@ internal sealed class RegionSelector
     public void Begin()
     {
         Win32.GetCursorPos(out var p);
+        BeginAt(p);
+    }
+
+    internal void BeginAt(Win32.POINT p)
+    {
         _start = p;
         _dragged = false;
     }
@@ -93,6 +100,21 @@ internal sealed class RegionSelector
     public void Move()
     {
         Win32.GetCursorPos(out var p);
+        MoveAt(p);
+    }
+
+    internal void MoveAt(Win32.POINT p)
+    {
+        if (_start == null && Mode is CaptureMode.Region or CaptureMode.Qr)
+        {
+            _hover = null;
+            if (_selection != null)
+            {
+                _selection = null;
+                RedrawAll();
+            }
+            return;
+        }
         if (_start is { } s && Mode is CaptureMode.Region or CaptureMode.Qr)
         {
             if (!_dragged && Math.Abs(p.X - s.X) < 4 && Math.Abs(p.Y - s.Y) < 4) return;
@@ -121,8 +143,8 @@ internal sealed class RegionSelector
         _start = null;
         _dragged = false;
         if (dragged && _selection is { Width: >= 3, Height: >= 3 } sel) { Finish(sel); return; }
-        // A click without a drag takes the highlighted window.
-        if (_hover is { } w)
+        // In window-pick mode, a click takes the highlighted window.
+        if (Mode is not (CaptureMode.Region or CaptureMode.Qr) && _hover is { } w)
         {
             PickedWindow = w.Handle;   // zero for a whole monitor
             Finish(w.Bounds);
@@ -138,6 +160,7 @@ internal sealed class RegionSelector
     {
         Mode = IsVideo && mode == CaptureMode.Qr ? CaptureMode.Region : mode;
         _start = null; _selection = null; _hover = null;
+        RedrawAll();
         Move();
         _bar?.Sync();
     }

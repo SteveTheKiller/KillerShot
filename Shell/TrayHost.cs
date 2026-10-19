@@ -138,11 +138,10 @@ internal sealed class TrayHost : IDisposable
         else if (msg == CallbackMessage)
         {
             int mouse = lParam.ToInt32() & 0xFFFF;
-            var last = CaptureSettings.LastMode;
             if (mouse == Win32.WM_LBUTTONUP)
             {
                 if (_recording) RecordRequested?.Invoke();   // a click on the tray stops a recording
-                else DeferCapture(null, last == CaptureMode.Window ? CaptureMode.Region : last);
+                else DeferCapture(null, CaptureMode.Region);
             }
             else if (mouse == Win32.WM_RBUTTONUP) ShowMenu();
             else if (mouse == NIN_BALLOONUSERCLICK)

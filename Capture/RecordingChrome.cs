@@ -67,7 +67,8 @@ internal sealed class RecordingChrome
         row.Children.Add(_pause);
         row.Children.Add(_stop);
         row.Children.Add(_discard);
-        var card = new Border { CornerRadius = new CornerRadius(6), BorderThickness = new Thickness(1), Child = row };
+        var card = new Border { BorderThickness = new Thickness(1), Child = row };
+        card.SetResourceReference(Border.CornerRadiusProperty, "PanelCornerRadius");
         card.SetResourceReference(Border.BackgroundProperty, "OverlayWindowBrush");
         card.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
 

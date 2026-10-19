@@ -58,6 +58,20 @@ internal static partial class CaptureLibrary
     public static string FilePath => Path.Combine(_folder, "Library.kshot");
     private static string KeyPath => Path.Combine(_folder, "Library.key");
 
+    /// <summary>Serializes album creation, opening, and key swaps across app and CLI processes.
+    /// The file stays in the folder so waiters always lock the same file after a process exits.</summary>
+    private static FileStream AcquireTransitionLock()
+    {
+        string path = Path.Combine(_folder, "Library.open.lock");
+        var wait = System.Diagnostics.Stopwatch.StartNew();
+        while (true)
+        {
+            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            catch (IOException ex) when (wait.Elapsed < TimeSpan.FromMinutes(2) &&
+                ((uint)ex.HResult == 0x80070020u || (uint)ex.HResult == 0x80070021u)) { Thread.Sleep(75); }
+        }
+    }
+
     /// <summary>The old plain-PNG history folder that the first open imports and empties.</summary>
     private static string _recentFolder = RecentCaptures.Folder;
 
@@ -129,33 +143,8 @@ internal static partial class CaptureLibrary
             try
             {
                 Directory.CreateDirectory(_folder);
-                if (File.Exists(FilePath))
-                {
-                    string stagedKey = KeyPath + ".next";
-                    bool opened = false;
-                    if (File.Exists(KeyPath))
-                    {
-                        try { OpenWith(ReadSealedKey(), byPassword: false); opened = true; }
-                        catch (SqliteException ex) when (IsKeyFailure(ex)) { }
-                    }
-                    if (!opened && File.Exists(stagedKey))
-                    {
-                        try { OpenWith(ReadSealedKey(stagedKey), byPassword: false); opened = true; }
-                        catch (SqliteException ex) when (IsKeyFailure(ex)) { }
-                        if (opened) File.Move(stagedKey, KeyPath, true);
-                    }
-                    if (!opened) { NeedsPassword = true; return false; }
-                    // A verified active file makes interrupted swap artifacts unnecessary.
-                    if (File.Exists(stagedKey)) File.Delete(stagedKey);
-                    string backup = FilePath + ".bak";
-                    if (File.Exists(backup)) File.Delete(backup);
-                }
-                else
-                {
-                    string key = NewRawKey();
-                    WriteSealedKey(key);
-                    OpenWith(key, byPassword: false);
-                }
+                using var transitionLock = AcquireTransitionLock();
+                if (!OpenAutoUnderTransitionLock()) return false;
             }
             catch (Exception ex)
             {
@@ -168,12 +157,115 @@ internal static partial class CaptureLibrary
         return true;
     }
 
+    /// <summary>Opens a fresh album and keeps the cross-process transition lock until the
+    /// command-line capture is committed and its connection is closed.</summary>
+    public static bool TryAddNowFromCli(BitmapSource bmp, DateTime taken, string mode,
+        string? window, string? process, out long id)
+    {
+        lock (_gate)
+        {
+            id = 0;
+            // A connection opened before a password swap may point at the replaced file.
+            Close();
+            LoadError = null;
+            NeedsPassword = false;
+            FileStream transitionLock;
+            try
+            {
+                Directory.CreateDirectory(_folder);
+                transitionLock = AcquireTransitionLock();
+            }
+            catch (Exception ex)
+            {
+                LoadError = ex.Message;
+                return false;
+            }
+            using (transitionLock)
+            {
+                try
+                {
+                    try { if (!OpenAutoUnderTransitionLock()) return false; }
+                    catch (Exception ex)
+                    {
+                        LoadError = ex.Message;
+                        return false;
+                    }
+                    id = AddNow(bmp, taken, mode, window, process);
+                    return true;
+                }
+                finally { Close(); }
+            }
+        }
+    }
+
+    // The caller holds _gate and Library.open.lock through this entire recovery and open.
+    private static bool OpenAutoUnderTransitionLock()
+    {
+        // The move-based password swap can stop after moving the old album to .bak
+        // but before moving the exported album into place. Restore a copy first so
+        // first-run creation cannot replace its matching sealed key.
+        string backup = FilePath + ".bak";
+        string creatingKey = KeyPath + ".creating";
+        if (File.Exists(backup) && (!File.Exists(FilePath) || new FileInfo(FilePath).Length == 0))
+            File.Copy(backup, FilePath, true);
+        if (File.Exists(FilePath))
+        {
+            string stagedKey = KeyPath + ".next";
+            bool opened = false;
+            if (File.Exists(KeyPath))
+            {
+                try { OpenWith(ReadSealedKey(), byPassword: false); opened = true; }
+                catch (SqliteException ex) when (IsKeyFailure(ex)) { }
+            }
+            if (!opened && File.Exists(stagedKey))
+            {
+                try { OpenWith(ReadSealedKey(stagedKey), byPassword: false); opened = true; }
+                catch (SqliteException ex) when (IsKeyFailure(ex)) { }
+                if (opened) File.Move(stagedKey, KeyPath, true);
+            }
+            if (!opened && !File.Exists(KeyPath) && !File.Exists(stagedKey) && File.Exists(creatingKey))
+            {
+                string key = ReadSealedKey(creatingKey);
+                try { OpenWith(key, byPassword: false); }
+                catch (InvalidDataException)
+                {
+                    // Creation stopped before the schema was complete. Keep those bytes
+                    // under a unique name and retry with the same pending key.
+                    string incomplete = FilePath + ".incomplete-" + Guid.NewGuid().ToString("N");
+                    File.Move(FilePath, incomplete);
+                    OpenWith(key, byPassword: false, create: true);
+                }
+                File.Move(creatingKey, KeyPath, true);
+                opened = true;
+            }
+            if (!opened) { NeedsPassword = true; return false; }
+            // A verified active file makes interrupted swap artifacts unnecessary.
+            try { if (File.Exists(creatingKey)) File.Delete(creatingKey); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            try { if (File.Exists(stagedKey)) File.Delete(stagedKey); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            try { if (File.Exists(backup)) File.Delete(backup); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        else
+        {
+            if (File.Exists(KeyPath) || File.Exists(KeyPath + ".next") || File.Exists(FilePath + ".rekey"))
+                throw new IOException("The album file is missing while its key or recovery file remains.");
+            string key = File.Exists(creatingKey) ? ReadSealedKey(creatingKey) : NewRawKey();
+            if (!File.Exists(creatingKey)) WriteSealedKey(key, creatingKey);
+            OpenWith(key, byPassword: false, create: true);
+            File.Move(creatingKey, KeyPath, true);
+        }
+        return true;
+    }
+
     /// <summary>Opens a password-protected library. Returns false for a wrong password.</summary>
     public static bool Unlock(string password)
     {
         lock (_gate)
         {
             if (_db != null) return true;
+            using var transitionLock = AcquireTransitionLock();
             try { OpenWith(password, byPassword: true); }
             catch (SqliteException ex) when (IsKeyFailure(ex)) { return false; }
             NeedsPassword = false;
@@ -183,8 +275,10 @@ internal static partial class CaptureLibrary
             {
                 if (File.Exists(KeyPath)) File.Delete(KeyPath);
                 if (File.Exists(KeyPath + ".next")) File.Delete(KeyPath + ".next");
+                string backup = FilePath + ".bak";
+                if (File.Exists(backup)) File.Delete(backup);
             }
-            catch (IOException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         AfterOpen();
         return true;
@@ -205,16 +299,20 @@ internal static partial class CaptureLibrary
 
     /// <summary>Opens and proves the connection before publishing it to _db, so IsOpen never
     /// reports a connection that failed to open or failed its key check.</summary>
-    private static void OpenWith(string key, bool byPassword)
+    private static void OpenWith(string key, bool byPassword, bool create = false)
     {
-        var db = new SqliteConnection(Cs(FilePath, key));
+        if (!create && new FileInfo(FilePath).Length == 0)
+            throw new InvalidDataException("The existing album file is empty.");
+        var db = new SqliteConnection(Cs(FilePath, key, create));
         try
         {
             db.Open();
             // Open() on its own validates nothing; this is where a wrong key fails.
             using var probe = db.CreateCommand();
-            probe.CommandText = "SELECT count(*) FROM sqlite_master";
-            probe.ExecuteScalar();
+            probe.CommandText = "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name IN ('meta', 'captures')";
+            int coreTables = Convert.ToInt32(probe.ExecuteScalar());
+            if (!create && coreTables != 2)
+                throw new InvalidDataException("The existing album schema is incomplete.");
             Exec(db, "PRAGMA foreign_keys = ON");
             EnsureSchema(db);
         }
@@ -230,9 +328,15 @@ internal static partial class CaptureLibrary
 
     /// <summary>The key rides in the connection string, which is part of the pool key, so a wrong
     /// key gets its own handle and fails with SQLite error 26 instead of reusing a keyed one.</summary>
-    private static string Cs(string path, string key)
+    private static string Cs(string path, string key, bool create)
     {
-        var b = new SqliteConnectionStringBuilder { DataSource = path, Password = key, DefaultTimeout = 30 };
+        var b = new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Password = key,
+            DefaultTimeout = 30,
+            Mode = create ? SqliteOpenMode.ReadWriteCreate : SqliteOpenMode.ReadWrite
+        };
         return b.ConnectionString;
     }
 

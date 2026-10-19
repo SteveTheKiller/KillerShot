@@ -22,7 +22,7 @@ internal sealed class FrozenDesktop
     public IReadOnlyList<WindowBounds> Windows { get; }
     private readonly byte[] _pixels;   // BGRA rows, top-down, stride Bounds.Width * 4
 
-    private FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors, IReadOnlyList<WindowBounds> windows)
+    internal FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors, IReadOnlyList<WindowBounds> windows)
     {
         Bounds = bounds;
         _pixels = pixels;

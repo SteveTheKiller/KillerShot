@@ -5,6 +5,14 @@ namespace KillerShot.Video;
 /// <summary>Which sound a recording carries.</summary>
 internal enum SoundSource { None, System, Microphone, Both }
 
+internal interface IAudioCaptureSource : IDisposable
+{
+    Exception? Error { get; }
+    void Start();
+    void Stop();
+    void Drain(int frames, float[]? mix);
+}
+
 /// <summary>
 /// Records system sound (WASAPI loopback of the default playback device) and/or the default
 /// microphone, converts both to 48 kHz stereo, mixes them, and hands 16-bit PCM chunks to the
@@ -17,13 +25,16 @@ internal sealed class AudioCapture : IDisposable
     public const int Channels = 2;
     private const int ChunkMs = 20;
 
-    private readonly List<WasapiSource> _sources = new();
+    private readonly List<IAudioCaptureSource> _sources = new();
     private readonly Func<TimeSpan> _clock;
     private readonly Func<bool> _paused;
     private readonly Action<byte[], TimeSpan> _output;
     private Thread? _mixer;
     private volatile bool _stop;
+    private volatile Exception? _error;
     private long _emittedFrames;
+
+    public Exception? Error => _error ?? _sources.Select(s => s.Error).FirstOrDefault(e => e != null);
 
     public AudioCapture(SoundSource source, Func<TimeSpan> clock, Func<bool> paused, Action<byte[], TimeSpan> output)
     {
@@ -32,6 +43,16 @@ internal sealed class AudioCapture : IDisposable
         _output = output;
         if (source is SoundSource.System or SoundSource.Both) _sources.Add(new WasapiSource(loopback: true));
         if (source is SoundSource.Microphone or SoundSource.Both) _sources.Add(new WasapiSource(loopback: false));
+    }
+
+    internal AudioCapture(IEnumerable<IAudioCaptureSource> sources, Func<TimeSpan> clock,
+        Func<bool> paused, Action<byte[], TimeSpan> output) : this(SoundSource.None, clock, paused, output)
+        => _sources.AddRange(sources);
+
+    /// <summary>Clears sound captured while the devices were starting, before video time zero.</summary>
+    internal void DiscardBuffered()
+    {
+        foreach (var source in _sources) source.Drain(int.MaxValue, null);
     }
 
     public void Start()
@@ -46,6 +67,7 @@ internal sealed class AudioCapture : IDisposable
         _stop = true;
         _mixer?.Join();
         foreach (var s in _sources) s.Stop();
+        if (Error is { } error) throw new InvalidOperationException("Audio capture failed: " + error.Message, error);
         // Close the last partial stretch so the sound runs to the end of the picture.
         Emit(_clock());
     }
@@ -58,17 +80,21 @@ internal sealed class AudioCapture : IDisposable
 
     private void MixLoop()
     {
-        while (!_stop)
+        try
         {
-            Thread.Sleep(ChunkMs / 2);
-            if (_paused())
+            while (!_stop)
             {
-                // Sound made while paused is thrown away, as the picture is.
-                foreach (var s in _sources) s.Drain(int.MaxValue, null);
-                continue;
+                Thread.Sleep(ChunkMs / 2);
+                if (_paused())
+                {
+                    // Sound made while paused is thrown away, as the picture is.
+                    foreach (var s in _sources) s.Drain(int.MaxValue, null);
+                    continue;
+                }
+                Emit(_clock());
             }
-            Emit(_clock());
         }
+        catch (Exception ex) { _error = ex; _stop = true; }
     }
 
     /// <summary>Writes mixed audio up to the given recording time, in 20 ms chunks.</summary>
@@ -93,30 +119,41 @@ internal sealed class AudioCapture : IDisposable
     }
 
     /// <summary>One WASAPI shared-mode capture stream, converted to 48 kHz stereo float into a buffer.</summary>
-    private sealed class WasapiSource : IDisposable
+    private sealed class WasapiSource : IAudioCaptureSource
     {
         private readonly bool _loopback;
         private readonly Queue<float> _buffer = new();
         private readonly object _lock = new();
+        private readonly ManualResetEventSlim _startDone = new(false);
         private Thread? _thread;
         private volatile bool _stop;
-        private Exception? _error;
+        private volatile Exception? _error;
         private double _resamplePos;
         private float _lastL, _lastR;
 
         public WasapiSource(bool loopback) => _loopback = loopback;
+
+        public Exception? Error => _error;
 
         public void Start()
         {
             _thread = new Thread(Run) { IsBackground = true, Name = _loopback ? "KillerShot loopback" : "KillerShot microphone" };
             _thread.SetApartmentState(ApartmentState.MTA);
             _thread.Start();
+            if (!_startDone.Wait(TimeSpan.FromSeconds(5)))
+            {
+                _stop = true;
+                throw new TimeoutException((_loopback ? "System audio" : "Microphone") + " capture did not start.");
+            }
+            if (_error != null)
+                throw new InvalidOperationException((_loopback ? "System audio" : "Microphone") + " capture could not start.", _error);
         }
 
         public void Stop()
         {
             _stop = true;
-            _thread?.Join(2000);
+            if (_thread?.Join(2000) == false)
+                _error ??= new TimeoutException((_loopback ? "System audio" : "Microphone") + " capture did not stop.");
         }
 
         public void Dispose() => Stop();
@@ -148,40 +185,53 @@ internal sealed class AudioCapture : IDisposable
                 var iid = typeof(IAudioClient).GUID;
                 Check(device.Activate(ref iid, 1 /* CLSCTX_INPROC_SERVER */, IntPtr.Zero, out var obj));
                 client = (IAudioClient)obj;
-                Check(client.GetMixFormat(out IntPtr fmtPtr));
-                var fmt = Marshal.PtrToStructure<WaveFormatEx>(fmtPtr);
-                bool isFloat = fmt.wFormatTag == 3;
-                if (fmt.wFormatTag == 0xFFFE)   // WAVE_FORMAT_EXTENSIBLE: the subformat follows the base struct
+                IntPtr fmtPtr = IntPtr.Zero;
+                int channels, rate, bits;
+                bool isFloat;
+                try
                 {
-                    var sub = Marshal.PtrToStructure<Guid>(fmtPtr + 24);
-                    isFloat = sub == new Guid("00000003-0000-0010-8000-00aa00389b71");
+                    Check(client.GetMixFormat(out fmtPtr));
+                    var fmt = Marshal.PtrToStructure<WaveFormatEx>(fmtPtr);
+                    isFloat = fmt.wFormatTag == 3;
+                    if (fmt.wFormatTag == 0xFFFE)   // WAVE_FORMAT_EXTENSIBLE: the subformat follows the base struct
+                    {
+                        var sub = Marshal.PtrToStructure<Guid>(fmtPtr + 24);
+                        isFloat = sub == new Guid("00000003-0000-0010-8000-00aa00389b71");
+                    }
+                    channels = fmt.nChannels; rate = (int)fmt.nSamplesPerSec; bits = fmt.wBitsPerSample;
+                    int flags = _loopback ? 0x00020000 /* AUDCLNT_STREAMFLAGS_LOOPBACK */ : 0;
+                    Check(client.Initialize(0, flags, 2_000_000 /* 200 ms */, 0, fmtPtr, IntPtr.Zero));
                 }
-                int channels = fmt.nChannels, rate = (int)fmt.nSamplesPerSec, bits = fmt.wBitsPerSample;
-                int flags = _loopback ? 0x00020000 /* AUDCLNT_STREAMFLAGS_LOOPBACK */ : 0;
-                Check(client.Initialize(0, flags, 2_000_000 /* 200 ms */, 0, fmtPtr, IntPtr.Zero));
-                Marshal.FreeCoTaskMem(fmtPtr);
+                finally { Marshal.FreeCoTaskMem(fmtPtr); }
                 var cid = typeof(IAudioCaptureClient).GUID;
                 Check(client.GetService(ref cid, out var capObj));
                 var capture = (IAudioCaptureClient)capObj;
                 Check(client.Start());
+                _startDone.Set();
 
                 while (!_stop)
                 {
                     Thread.Sleep(10);
-                    while (capture.GetNextPacketSize(out uint packet) == 0 && packet > 0)
+                    while (true)
                     {
+                        Check(capture.GetNextPacketSize(out uint packet));
+                        if (packet == 0) break;
                         Check(capture.GetBuffer(out IntPtr data, out uint frames, out uint bufFlags, out _, out _));
                         bool silent = (bufFlags & 0x2) != 0;   // AUDCLNT_BUFFERFLAGS_SILENT
                         Convert(data, (int)frames, channels, rate, bits, isFloat, silent);
-                        capture.ReleaseBuffer(frames);
+                        Check(capture.ReleaseBuffer(frames));
                     }
                 }
-                client.Stop();
             }
             catch (Exception ex) { _error = ex; }
             finally
             {
-                if (client != null) Marshal.ReleaseComObject(client);
+                _startDone.Set();
+                if (client != null)
+                {
+                    try { Check(client.Stop()); } catch (Exception ex) { _error ??= ex; }
+                    try { Marshal.ReleaseComObject(client); } catch (Exception ex) { _error ??= ex; }
+                }
             }
         }
 

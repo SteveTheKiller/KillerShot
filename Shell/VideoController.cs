@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using KillerShot.Capture;
+using KillerShot.Controls;
 using KillerShot.Native;
 using KillerShot.Services;
 using KillerShot.Video;
@@ -20,11 +21,11 @@ internal sealed class VideoController
     private Recorder? _recorder;
     private RecordingChrome? _chrome;
     private DispatcherTimer? _tick;
-    private string? _path;
-    private bool _starting, _discard;
+    private string? _path, _stagingFolder, _outputFolder, _outputName;
+    private bool _starting, _stopping, _stopRequested, _discard;
     private TaskCompletionSource? _countdownSkip;
 
-    public bool IsRecording => _recorder != null || _starting;
+    public bool IsRecording => _recorder != null || _starting || _stopping;
     public string? LastVideoPath { get; private set; }
 
     /// <summary>Raised when recording starts or stops, for the tray and the editor.</summary>
@@ -37,6 +38,7 @@ internal sealed class VideoController
     /// <summary>The video shortcut: start when idle, stop when recording.</summary>
     public void Toggle(bool fromShortcut = false)
     {
+        if (_stopping) return;
         if (_recorder != null) _ = StopAsync(discard: false);
         else if (_starting) _countdownSkip?.TrySetResult();   // pressing again during the countdown starts at once
         else if (App.Instance.Capture is { } capture) _ = capture.StartVideo(fromShortcut);
@@ -45,8 +47,12 @@ internal sealed class VideoController
     public async Task StartAsync(Win32.RECT rect)
     {
         if (IsRecording) return;
+        _discard = false;
+        _stopRequested = false;
         _starting = true;
         StateChanged?.Invoke();
+        IVideoSink? sink = null;
+        bool recorderStarted = false;
         try
         {
             bool gif = VideoSettings.Format == "gif";
@@ -58,10 +64,7 @@ internal sealed class VideoController
             int fps = gif ? VideoSettings.GifFps : VideoSettings.Mp4Fps;
             string ext = gif ? "gif" : "mp4";
             string name = OutputFiles.FileName(VideoSettings.FileNamePattern, DateTime.Now, CaptureMode.Region, rect.Width, rect.Height, ext);
-            _path = OutputFiles.NextPath(VideoSettings.OutputFolder, name);
-            IVideoSink sink = gif
-                ? new GifEncoder(_path, VideoSettings.GifColors >= 256 ? 255 : VideoSettings.GifColors, VideoSettings.GifSize / 100.0, VideoSettings.GifLoop)
-                : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
+            string outputFolder = VideoSettings.OutputFolder;
 
             _chrome = new RecordingChrome(rect);
             _chrome.PauseClicked += TogglePause;
@@ -81,8 +84,20 @@ internal sealed class VideoController
             }
             if (_chrome == null) return;   // discarded during the countdown
 
+            _outputFolder = outputFolder;
+            _outputName = name;
+            _stagingFolder = Path.Combine(outputFolder, $".KillerShot-staging-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(_stagingFolder);
+            try { File.SetAttributes(_stagingFolder, File.GetAttributes(_stagingFolder) | FileAttributes.Hidden); }
+            catch { }
+            _path = OutputFiles.NextPath(_stagingFolder, $"recording.{ext}");
+            sink = gif
+                ? new GifEncoder(_path, VideoSettings.GifColors >= 256 ? 255 : VideoSettings.GifColors, VideoSettings.GifSize / 100.0, VideoSettings.GifLoop)
+                : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
             _recorder = new Recorder(rect, sink, fps, VideoSettings.IncludeCursor, gif ? SoundSource.None : VideoSettings.Sound);
             await _recorder.StartAsync();
+            recorderStarted = true;
+            if (_stopRequested) return;
             _tick = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
             _tick.Tick += (_, _) => { if (_recorder != null) _chrome?.SetRecording(_recorder.Elapsed, _recorder.IsPaused); };
             _tick.Start();
@@ -91,13 +106,25 @@ internal sealed class VideoController
         }
         catch (Exception ex)
         {
+            var failedRecorder = _recorder;
+            _recorder = null;
+            if (recorderStarted && failedRecorder != null)
+            {
+                try { await failedRecorder.StopAsync(); } catch { }
+            }
+            try { sink?.Dispose(); } catch { }
             Cleanup();
-            TryDelete(_path);
+            CleanupStaging();
             _tray.ShowWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
         }
         finally
         {
             _starting = false;
+            if (_stopRequested && _recorder != null)
+            {
+                _stopRequested = false;
+                await StopAsync(_discard);
+            }
             StateChanged?.Invoke();
         }
     }
@@ -111,48 +138,95 @@ internal sealed class VideoController
 
     public async Task StopAsync(bool discard)
     {
+        if (_stopping) { _discard |= discard; return; }
+        if (_starting && _recorder != null)
+        {
+            _stopRequested = true;
+            _discard |= discard;
+            return;
+        }
         _discard = discard;
         if (_recorder == null)
         {
             // Stopped during the countdown: nothing was recorded.
             _countdownSkip?.TrySetResult();
             Cleanup();
-            TryDelete(_path);
+            CleanupStaging();
             return;
         }
         var recorder = _recorder;
+        _stopping = true;
         _recorder = null;
-        _tick?.Stop();
-        _chrome?.SetSaving();
-        string? path = _path;
+        try { _tick?.Stop(); } catch { }
+        try { _chrome?.SetSaving(); } catch { }
+        bool retainFinalizedStage = false;
         try
         {
             await recorder.StopAsync();
-            if (_discard) { TryDelete(path); return; }
-            LastVideoPath = path;
-            if (VideoSettings.CopyFile && path != null) CopyFileToClipboard(path);
-            if (VideoSettings.Notify && path != null)
-                _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(path), () => ShowInFolder(path));
+            if (_discard) return;
+            string published;
+            try { published = OutputFiles.PublishUnique(_path!, _outputFolder!, _outputName!); }
+            catch (Exception ex)
+            {
+                retainFinalizedStage = true;
+                LastVideoPath = _path;
+                ReportPublicationFailure(_path!, ex);
+                return;
+            }
+            LastVideoPath = published;
+            if (VideoSettings.CopyFile) CopyFileToClipboard(published);
+            if (VideoSettings.Notify)
+                _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published), () => ShowInFolder(published));
         }
         catch (Exception ex)
         {
-            TryDelete(path);
             _tray.ShowWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
         }
         finally
         {
+            CleanupStaging(retainFinalizedStage);
             Cleanup();
+            _stopping = false;
             StateChanged?.Invoke();
         }
     }
 
+    private void ReportPublicationFailure(string path, Exception error)
+    {
+        string detail = $"The completed recording could not be moved to the output folder. It is kept at:\n{path}\n\n{error.Message}";
+        try
+        {
+            var dialog = new ConfirmDialog(Loc("Str_Tray_SaveFailedTitle"), detail,
+                Loc("Str_Btn_Open"), Loc("Str_Btn_OK"))
+            {
+                ShowInTaskbar = true,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen
+            };
+            dialog.ShowDialog();
+            if (dialog.Confirmed) ShowInFolder(path);
+        }
+        catch { _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), detail); }
+    }
+
+    private void CleanupStaging(bool retainFile = false)
+    {
+        string? path = _path;
+        string? folder = _stagingFolder;
+        _path = _stagingFolder = _outputFolder = _outputName = null;
+        if (retainFile) return;
+        TryDelete(path);
+        if (folder != null) { try { Directory.Delete(folder); } catch { } }
+    }
+
     private void Cleanup()
     {
-        _tick?.Stop();
+        var tick = _tick;
         _tick = null;
-        _chrome?.Close();
+        var chrome = _chrome;
         _chrome = null;
-        _tray.SetRecording(false);
+        try { tick?.Stop(); } catch { }
+        try { chrome?.Close(); } catch { }
+        try { _tray.SetRecording(false); } catch { }
     }
 
     private static void TryDelete(string? path)

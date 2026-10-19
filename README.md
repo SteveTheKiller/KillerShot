@@ -10,8 +10,8 @@ How-tos and every shortcut are on the [help page](https://killershot.net/help.ht
 
 ## Features
 
-- Print Screen taken over: plain Print Screen repeats the last mode, Alt+Print Screen takes the active window, Ctrl+Print Screen the monitor under the pointer, Shift+Print Screen every monitor, and Ctrl+Shift+Print Screen starts or stops a recording. Every shortcut can be changed or turned off
-- Region capture over a frozen copy of the whole desktop, so open menus and tooltips stay in the picture and the selection overlay never does. Drag across monitors with different scaling, hover to highlight a window and click to take it
+- Print Screen taken over: plain Print Screen starts a region rectangle, Alt+Print Screen takes the active window, Ctrl+Print Screen the monitor under the pointer, Shift+Print Screen every monitor, and Ctrl+Shift+Print Screen starts or stops a recording. Every shortcut can be changed or turned off
+- Region capture over a frozen copy of the whole desktop, so open menus and tooltips stay in the picture and the selection overlay never does. Drag a rectangle across monitors with different scaling; Window mode handles click-to-pick
 - Window capture through Windows Graphics Capture, so a partly covered window still comes out whole, with its rounded corners filled from the desktop behind it
 - Every capture goes to the clipboard as PNG and as a standard bitmap, and can also save straight into a folder as PNG or JPEG, named from a pattern with the date, time, mode and size
 - An editor with pen, highlighter, arrow, rectangle, ellipse, text, redaction and crop, plus select and move, 50 steps of undo and redo, and export at the capture's exact pixel size

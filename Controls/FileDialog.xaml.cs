@@ -145,6 +145,7 @@ namespace KillerShot.Controls
                 }
                 catch { /* not worth failing the close */ }
             };
+            Closed += (_, _) => { _dialogClosed = true; ++_navigationVersion; };
 
             // NO DwmChrome calls, deliberately. On an AllowsTransparency window the DWM corner
             // preference makes DWM composite its own rounded frame around the WINDOW rect - the
@@ -171,6 +172,8 @@ namespace KillerShot.Controls
                 FileDialogMode.Folder => "Str_Btn_Select",
                 _ => "Str_Btn_Open",
             });
+            AcceptButton.IsEnabled = false;
+            UpButton.IsEnabled = false;
             FileFields.Visibility = _mode == FileDialogMode.Folder
                 ? Visibility.Collapsed : Visibility.Visible;
 
@@ -184,34 +187,36 @@ namespace KillerShot.Controls
             ApplyView();
 
             // A seeded FileName can be a bare name ("export.ics"), a full path, or empty.
-            string startDir = InitialDirectory;
+            var startDirs = new List<string>();
             string seedName = "";
             if (!string.IsNullOrWhiteSpace(FileName))
             {
                 if (FileName.IndexOfAny(['\\', '/']) >= 0)
                 {
                     var d = Path.GetDirectoryName(FileName);
-                    if (!string.IsNullOrEmpty(d) && Directory.Exists(d)) startDir = d!;
+                    if (!string.IsNullOrEmpty(d)) startDirs.Add(d);
                     seedName = Path.GetFileName(FileName);
                 }
                 else seedName = FileName;
             }
-            if (string.IsNullOrWhiteSpace(startDir) || !Directory.Exists(startDir))
-            {
-                string? remembered = Services.ThemeManager.GetSetting(
-                    _mode == FileDialogMode.Open ? LastOpenKey : LastSaveKey);
-                startDir = !string.IsNullOrWhiteSpace(remembered) && Directory.Exists(remembered)
-                    ? remembered!
-                    : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            }
+            if (!string.IsNullOrWhiteSpace(InitialDirectory)) startDirs.Add(InitialDirectory);
+            string? remembered = Services.ThemeManager.GetSetting(
+                _mode == FileDialogMode.Open ? LastOpenKey : LastSaveKey);
+            if (!string.IsNullOrWhiteSpace(remembered)) startDirs.Add(remembered);
+            startDirs.Add(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
             _built = true;
-            NavigateTo(startDir);
+            Loaded += (_, _) => _ = NavigateFirstAvailableAsync(startDirs);
             FileNameBox.Text = seedName;
 
             // Save: preselect the stem so typing replaces the name but keeps the extension
             // visible. Open: caret at the end.
-            if (_mode == FileDialogMode.Folder) AcceptButton.Focus();
+            if (_mode == FileDialogMode.Folder)
+            {
+                _folderFocusPending = true;
+                PreviewMouseDown += (_, _) => _folderFocusPending = false;
+                PreviewKeyDown += (_, _) => _folderFocusPending = false;
+            }
             else FileNameBox.Focus();
             if (_mode == FileDialogMode.Save && seedName.Length > 0)
             {

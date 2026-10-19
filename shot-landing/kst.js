@@ -69,7 +69,7 @@
       var swatch = e.target.closest('.swatch[data-theme]');
       if (!swatch) return;
       syncPreview(swatch.getAttribute('data-theme'));
-      closeFlyout(false);
+      closeFlyout(true);
     });
     document.addEventListener('click', function (e) {
       if (!group.contains(e.target) && !toggle.contains(e.target)) closeFlyout(false);
@@ -177,6 +177,10 @@
   if (topbarEl && accDots.length) {
     accentBar = document.createElement('div');
     accentBar.className = 'accent-bar';
+    accentBar.id = 'accentBar';
+    accentBar.inert = true;
+    accentBar.setAttribute('aria-hidden', 'true');
+    if (accToggle) accToggle.setAttribute('aria-controls', accentBar.id);
     var pill = document.createElement('div'); pill.className = 'pill';
     var grip = document.createElement('span'); grip.className = 'grip'; grip.setAttribute('aria-hidden', 'true');
     pill.appendChild(grip);
@@ -221,8 +225,8 @@
     // Default position: top-right corner, nearest the theme picker (still draggable from there).
     requestAnimationFrame(function () { dragDx = dragClamp(1e6); pill.style.transform = 'translateX(' + dragDx + 'px)'; });
   }
-  function showAccentBar() { if (accentBar && NEUTRAL.indexOf(root.getAttribute('data-theme')) >= 0) { var contentPane = document.querySelector('.content'); if (contentPane) accentBar.style.top = Math.round(contentPane.getBoundingClientRect().top) + 'px'; accentBar.classList.add('show'); if (accToggle) accToggle.setAttribute('aria-expanded', 'true'); } }
-  function hideAccentBar() { if (accentBar) { accentBar.classList.remove('show'); if (accToggle) accToggle.setAttribute('aria-expanded', 'false'); } }
+  function showAccentBar() { if (accentBar && NEUTRAL.indexOf(root.getAttribute('data-theme')) >= 0) { var contentPane = document.querySelector('.content'); if (contentPane) accentBar.style.top = Math.round(contentPane.getBoundingClientRect().top) + 'px'; accentBar.inert = false; accentBar.removeAttribute('aria-hidden'); accentBar.classList.add('show'); if (accToggle) accToggle.setAttribute('aria-expanded', 'true'); } }
+  function hideAccentBar() { if (accentBar) { if (accentBar.contains(document.activeElement) && accToggle && !accToggle.hidden) accToggle.focus(); accentBar.inert = true; accentBar.setAttribute('aria-hidden', 'true'); accentBar.classList.remove('show'); if (accToggle) accToggle.setAttribute('aria-expanded', 'false'); } }
   accDots.forEach(function (d) { d.addEventListener('click', function () { applyAccent(d.dataset.accent); }); });
   if (accToggle) {
     accToggle.addEventListener('click', function (e) { e.stopPropagation(); if (accentBar && accentBar.classList.contains('show')) hideAccentBar(); else showAccentBar(); });
@@ -238,6 +242,8 @@
     "ui_language": "Language",
     "ui_click_me": "click me",
     "ui_screenshot_expanded": "Expanded KillerShot screenshot",
+    "ui_diagram_expanded": "Expanded diagram",
+    "ui_enlarge_album_diagram": "Enlarge diagram: how the album is keyed and what it holds",
     "ui_cli_examples": "KillerShot command examples",
     "ui_terminal_examples": "KillerShot terminal command examples",
     "ui_carousel": "carousel",
@@ -299,6 +305,9 @@
   bindLabel('#langToggle', 'title', 'ui_language');
   bindLabel('#verEgg', 'title', 'ui_click_me');
   bindLabel('#lightbox', 'aria-label', 'ui_screenshot_expanded');
+  bindLabel('#diagram-lightbox', 'aria-label', 'ui_diagram_expanded');
+  bindLabel('.diagram-zoom', 'aria-label', 'ui_enlarge_album_diagram');
+  bindLabel('.dlb-close', 'aria-label', 'ui_close');
   bindLabel('.accent-bar .x', 'aria-label', 'ui_close');
   document.querySelectorAll('.swatch[data-theme]').forEach(function (node) {
     var key = 'ui_theme_' + node.getAttribute('data-theme');

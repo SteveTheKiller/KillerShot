@@ -170,7 +170,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <h2 class="help-cat" id="getting-started" data-i18n="help_start">Getting started</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_first_t">Take your first capture</span><span class="kbd">Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_first_1">Run KillerShot. It opens the editor and puts its icon in the notification area. Press <b>Print Screen</b> anywhere in Windows, drag around what you want, and let go. The picture is on the clipboard, ready to paste.</p>
-<p data-i18n="h_first_2">KillerShot is a system tray app. Close the editor and it keeps running in the notification area, so Print Screen keeps working. Turn off <b>Close to system tray</b> in About (F12) to quit when the window closes instead. Click the tray icon to capture again in the last mode (a region when the last mode was a window), or to stop a recording. Right-click it to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
+<p data-i18n="h_first_2">KillerShot is a system tray app. Close the editor and it keeps running in the notification area, so Print Screen keeps working. Turn off <b>Close to system tray</b> in About (F12) to quit when the window closes instead. Click the tray icon to capture a region, or to stop a recording. Right-click it to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_prtsc_t">When Print Screen opens Snipping Tool instead</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_prtsc_1">Windows 11 can give Print Screen to Snipping Tool. When that setting is on, or another program already holds a shortcut, KillerShot cannot register it and says so in a notification.</p>
@@ -182,7 +182,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <h2 class="help-cat" id="modes" data-i18n="h_modes">Capture modes</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_region_t">Region</span><span class="kbd">Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_region_1">The whole desktop is frozen the moment you press the key, and every monitor shows its own slice of that copy. Drag to select. A drag can cross monitors with different scaling, and the result is in screen pixels.</p>
-<p data-i18n="h_region_2">Hovering highlights the window under the pointer, and a single click without a drag takes that window. <b>Escape</b> or a right-click cancels with nothing copied and the last mode unchanged.</p>
+<p data-i18n="h_region_2">Drag a rectangle and release to capture it. A click without a drag leaves Region selection open. Choose Window mode to highlight and click a window. <b>Escape</b> or a right-click cancels with nothing copied.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_window_t">Window</span><span class="kbd">Alt + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_window_1">Takes the active window through Windows Graphics Capture, so a window that is partly covered still comes out whole. The rounded corners of Windows 11 windows are filled from the desktop behind them.</p>
@@ -326,7 +326,7 @@ base: { Esc:['help','Close a card, go back from the library, or cancel'], F1:['h
   E:['nav','Ellipse'], T:['nav','Text'], X:['nav','Redact'], C:['nav','Crop'],
   Del:['appt','Delete the selected mark'], Back:['appt','Delete the selected mark'], Enter:['appt','Finish the text you are typing'],
   Left:['appt','Move the selected mark'], Right:['appt','Move the selected mark'], Up:['appt','Move the selected mark'], Down:['appt','Move the selected mark'],
-  PrtSc:['file','Capture again in the last mode'] },
+  PrtSc:['file','Capture a region'] },
 ctrl: { D0:['view','Fit to the window'], D1:['view','Actual size (100%)'], Equals:['view','Zoom in'], Minus:['view','Zoom out'],
   Z:['appt','Undo'], Y:['appt','Redo'], C:['appt','Copy the finished picture'],
   N:['file','Capture a region'], L:['file','Show or hide the capture library'], F:['file','Search the library'], R:['file','Start or stop a video recording'],
@@ -414,7 +414,7 @@ window.addEventListener('resize', fit);
 </script>
 <div class="kbd-cols"><div class="kbd-col">
 <div class="kbd-group"><h4 data-i18n="hk_global">Anywhere in Windows</h4>
-<div class="kbd-row"><span class="k">Print Screen</span><span class="d" data-i18n="hk_last">Capture again in the last mode</span></div>
+<div class="kbd-row"><span class="k">Print Screen</span><span class="d" data-i18n="hk_last">Capture a region</span></div>
 <div class="kbd-row"><span class="k">Alt + Print Screen</span><span class="d" data-i18n="hk_win">Capture the active window</span></div>
 <div class="kbd-row"><span class="k">Ctrl + Print Screen</span><span class="d" data-i18n="hk_mon">Capture the monitor under the mouse</span></div>
 <div class="kbd-row"><span class="k">Shift + Print Screen</span><span class="d" data-i18n="hk_all">Capture all monitors</span></div>
@@ -483,11 +483,22 @@ window.addEventListener('resize', fit);
 <script>
 (function(){
   var items=[].slice.call(document.querySelectorAll('.acc-item'));
-  items.forEach(function(it){ var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
+  function setOpen(it, open){
+    var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
+    it.classList.toggle('open', open);
+    h.setAttribute('aria-expanded', open ? 'true' : 'false');
+    b.inert=!open;
+    b.setAttribute('aria-hidden', open ? 'false' : 'true');
+    b.style.maxHeight=open ? b.scrollHeight+'px' : null;
+  }
+  items.forEach(function(it, i){ var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
+    b.id='help-panel-'+i;
+    h.setAttribute('aria-controls', b.id);
+    setOpen(it, false);
     h.addEventListener('click', function(){
       var open=it.classList.contains('open');
-      items.forEach(function(o){ o.classList.remove('open'); o.querySelector('.acc-body').style.maxHeight=null; });
-      if(!open){ it.classList.add('open'); b.style.maxHeight=b.scrollHeight+'px'; }
+      items.forEach(function(o){ setOpen(o, false); });
+      if(!open) setOpen(it, true);
     });
   });
   // A locale change rewrites the copy, so a section that is open has to be measured again.

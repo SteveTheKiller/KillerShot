@@ -341,7 +341,7 @@ namespace KillerShot.Shell
         public StripThumb()
         {
             Margin = new Thickness(0, 2, 0, 6);
-            Padding = new Thickness(6, 6, 6, 5);
+            Padding = new Thickness(0);
             Style = (Style)System.Windows.Markup.XamlReader.Parse("""
                 <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
                     <Setter Property="BorderBrush" Value="Transparent"/>
@@ -370,7 +370,15 @@ namespace KillerShot.Shell
             var stack = new StackPanel();
             stack.Children.Add(_image);
             stack.Children.Add(_caption);
-            Child = stack;
+            var layers = new Grid();
+            var grain = new Border { IsHitTestVisible = false };
+            grain.SetResourceReference(BackgroundProperty, "GrainTileBrush");
+            grain.SetResourceReference(OpacityProperty, "GrainOpacity");
+            grain.SetResourceReference(CornerRadiusProperty, "ControlCornerRadius");
+            layers.Children.Add(grain);
+            stack.Margin = new Thickness(6, 6, 6, 5);
+            layers.Children.Add(stack);
+            Child = layers;
             DataContextChanged += (_, _) => Load();
         }
 

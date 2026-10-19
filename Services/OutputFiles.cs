@@ -50,14 +50,84 @@ internal static class OutputFiles
         return name + "." + ext;
     }
 
-    /// <summary>A free path in the folder. A name already taken gets " (2)", " (3)" and so on,
-    /// so a capture never overwrites an earlier one.</summary>
+    /// <summary>Reserves a path for a recording. The caller removes the empty file on failure.
+    /// A name already taken gets " (2)", " (3)" and so on.</summary>
     public static string NextPath(string folder, string fileName)
     {
         Directory.CreateDirectory(folder);
-        string path = Path.Combine(folder, fileName);
-        string stem = Path.GetFileNameWithoutExtension(fileName), ext = Path.GetExtension(fileName);
-        for (int n = 2; File.Exists(path); n++) path = Path.Combine(folder, $"{stem} ({n}){ext}");
-        return path;
+        for (int n = 1; n < int.MaxValue; n++)
+        {
+            string path = CandidatePath(folder, fileName, n);
+            try
+            {
+                using var reservation = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                return path;
+            }
+            catch (IOException) when (File.Exists(path) || Directory.Exists(path)) { }
+        }
+        throw new IOException("No available output file name was found.");
+    }
+
+    /// <summary>Writes to a private file first, then publishes a complete file at the target.</summary>
+    public static void WriteAtomic(string path, bool overwrite, Action<Stream> write)
+    {
+        string full = Path.GetFullPath(path);
+        string folder = Path.GetDirectoryName(full)!;
+        string temp = NewTempPath(folder);
+        try
+        {
+            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                write(stream);
+                stream.Flush(true);
+            }
+            File.Move(temp, full, overwrite);
+        }
+        finally { TryDelete(temp); }
+    }
+
+    /// <summary>Publishes a complete file under a unique name across processes.</summary>
+    public static string WriteUnique(string folder, string fileName, Action<Stream> write)
+    {
+        Directory.CreateDirectory(folder);
+        string temp = NewTempPath(folder);
+        try
+        {
+            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                write(stream);
+                stream.Flush(true);
+            }
+            return PublishUnique(temp, folder, fileName);
+        }
+        finally { TryDelete(temp); }
+    }
+
+    /// <summary>Publishes a completed recording from the same volume without replacing an
+    /// existing file. A failed move leaves the staging file for the caller to clean up.</summary>
+    public static string PublishUnique(string stagedPath, string folder, string fileName)
+    {
+        string stagedRoot = Path.GetPathRoot(Path.GetFullPath(stagedPath))!;
+        string targetRoot = Path.GetPathRoot(Path.GetFullPath(folder))!;
+        if (!string.Equals(stagedRoot, targetRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The recording staging file must be on its output volume.");
+        for (int n = 1; n < int.MaxValue; n++)
+        {
+            string path = CandidatePath(folder, fileName, n);
+            try { File.Move(stagedPath, path); return path; }
+            catch (IOException) when (File.Exists(path) || Directory.Exists(path)) { }
+        }
+        throw new IOException("No available output file name was found.");
+    }
+
+    private static string CandidatePath(string folder, string fileName, int n) => n == 1
+        ? Path.Combine(folder, fileName)
+        : Path.Combine(folder, $"{Path.GetFileNameWithoutExtension(fileName)} ({n}){Path.GetExtension(fileName)}");
+
+    private static string NewTempPath(string folder) => Path.Combine(folder, $".KillerShot-{Guid.NewGuid():N}.tmp");
+
+    private static void TryDelete(string path)
+    {
+        try { File.Delete(path); } catch { }
     }
 }

@@ -23,9 +23,78 @@ internal static class SelfTestCaptureMenus
 
     internal static bool TryRun(string[] args)
     {
+        if (args.Length >= 2 && args[0] == "--selftest-region-gesture")
+        {
+            _ = RunRegionGesture(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (args.Length < 2 || args[0] != "--selftest-capture-menus") return false;
         _ = RunAsync(Path.GetFullPath(args[1]), args.Contains("--show"));
         return true;
+    }
+
+    private static async Task RunRegionGesture(string folder)
+    {
+        int exit = 1;
+        string report;
+        RegionSelector? modeSelector = null;
+        try
+        {
+            Directory.CreateDirectory(folder);
+            Settings.UseFolder(Path.Combine(folder, "settings"));
+            CaptureSettings.LastMode = CaptureMode.Window;
+            if (CaptureController.Resolve(ShortcutAction.LastMode, null) != CaptureMode.Region)
+                throw new InvalidOperationException("Print Screen must start in Region even after a Window capture.");
+            var desktopBounds = new Win32.RECT(0, 0, 200, 200);
+            var windowBounds = new Win32.RECT(10, 10, 150, 150);
+            var desktop = new FrozenDesktop(desktopBounds, new byte[200 * 200 * 4],
+                [new MonitorBounds(IntPtr.Zero, desktopBounds, true)],
+                [new WindowBounds((IntPtr)123, windowBounds)]);
+            var start = new Win32.POINT { X = 30, Y = 40 };
+            var end = new Win32.POINT { X = 65, Y = 70 };
+            var region = new RegionSelector(desktop);
+            if (region.Mode != CaptureMode.Region)
+                throw new InvalidOperationException("Rectangle region must be the default capture mode.");
+            region.MoveAt(start);
+            if (region.CurrentSelection != null)
+                throw new InvalidOperationException("Region hover highlighted a window before a rectangle drag.");
+            region.BeginAt(start);
+            region.End();
+            if (region.Result.IsCompleted)
+                throw new InvalidOperationException("A click without a drag captured a window in Region mode.");
+            region.BeginAt(start);
+            region.MoveAt(end);
+            region.End();
+            var picked = region.Result.GetAwaiter().GetResult();
+            if (picked is not { Left: 30, Top: 40, Right: 66, Bottom: 71 } || region.PickedWindow != IntPtr.Zero)
+                throw new InvalidOperationException("Region drag did not return the selected rectangle.");
+            var window = new RegionSelector(desktop, mode: CaptureMode.Window);
+            window.MoveAt(start);
+            window.BeginAt(start);
+            window.End();
+            if (window.Result.GetAwaiter().GetResult() is not { Left: 10, Top: 10, Right: 150, Bottom: 150 }
+                || window.PickedWindow != (IntPtr)123)
+                throw new InvalidOperationException("Window mode must keep click-to-pick.");
+            modeSelector = new RegionSelector(desktop, mode: CaptureMode.Window);
+            _ = modeSelector.RunAsync();
+            await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            modeSelector.MoveAt(start);
+            var overlay = Application.Current.Windows.OfType<RegionOverlay>().Single();
+            var outline = Visuals(overlay).OfType<System.Windows.Shapes.Rectangle>()
+                .Single(r => r.StrokeThickness == 1);
+            if (outline.Visibility != Visibility.Visible)
+                throw new InvalidOperationException("Window mode did not draw a selection outline.");
+            modeSelector.SetMode(CaptureMode.Region);
+            if (outline.Visibility != Visibility.Collapsed)
+                throw new InvalidOperationException("Switching to Region left the Window selection outline visible.");
+            report = "Print Screen default, Region hover, click, drag, Window click, and mode switch: PASS";
+            exit = 0;
+        }
+        catch (Exception ex) { report = ex.ToString(); }
+        finally { modeSelector?.Cancel(); }
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "region-gesture-report.txt"), report);
+        App.Instance.Shutdown(exit);
     }
 
     private static async Task RunAsync(string folder, bool show)
@@ -203,6 +272,10 @@ internal static class SelfTestCaptureMenus
             await Task.Delay(200);
             var regionOverlay = Application.Current.Windows.OfType<RegionOverlay>()
                 .First(o => o.Monitor.Contains(new Win32.POINT { X = pickX, Y = pickY }));
+            var regionOutline = Visuals(regionOverlay).OfType<System.Windows.Shapes.Rectangle>()
+                .Single(r => r.StrokeThickness == 1);
+            if (regionOutline.Visibility != Visibility.Collapsed)
+                throw new InvalidOperationException("Region mode must not highlight a window before a rectangle drag.");
             regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
                 { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
             regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)

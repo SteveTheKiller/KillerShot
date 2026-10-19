@@ -15,7 +15,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Border x:Name="pill" Width="34" Height="8" CornerRadius="4" Background="{DynamicResource SelectionAccent}"/>
+                        <Border x:Name="pill" Width="34" Height="8" CornerRadius="{DynamicResource ControlCornerRadius}" Background="{DynamicResource SelectionAccent}"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="pill" Property="Height" Value="10"/>
@@ -32,7 +32,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
                         <Grid Background="Transparent">
-                            <Border Height="2" CornerRadius="1" VerticalAlignment="Center" Background="{DynamicResource CardBorderBrush}"/>
+                            <Border Height="2" CornerRadius="{DynamicResource LibrarySliderTrackCornerRadius}" VerticalAlignment="Center" Background="{DynamicResource CardBorderBrush}"/>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -75,8 +75,12 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}" Padding="5">
-                            <ContentPresenter/>
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
+                            <Grid>
+                                <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False"/>
+                                <ContentPresenter Margin="5"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">

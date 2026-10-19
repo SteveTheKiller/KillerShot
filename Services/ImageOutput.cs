@@ -46,14 +46,27 @@ internal static class ImageOutput
 
     /// <summary>Writes PNG, or JPEG for a .jpg or .jpeg path, through a temporary file so a failed
     /// write never leaves a truncated image behind.</summary>
-    public static void Save(BitmapSource bmp, string path, int jpegQuality = 95)
+    public static void Save(BitmapSource bmp, string path, int jpegQuality = 95, bool overwrite = true)
+    {
+        var encoder = CreateEncoder(bmp, path, jpegQuality);
+        OutputFiles.WriteAtomic(path, overwrite, encoder.Save);
+    }
+
+    /// <summary>Saves a complete image under a unique name, including when another process saves
+    /// to the same folder at the same time.</summary>
+    public static string SaveUnique(BitmapSource bmp, string folder, string fileName, int jpegQuality = 95)
+    {
+        var encoder = CreateEncoder(bmp, fileName, jpegQuality);
+        return OutputFiles.WriteUnique(folder, fileName, encoder.Save);
+    }
+
+    private static BitmapEncoder CreateEncoder(BitmapSource bmp, string path, int jpegQuality)
     {
         string ext = Path.GetExtension(path).ToLowerInvariant();
-        BitmapEncoder enc = ext is ".jpg" or ".jpeg" ? new JpegBitmapEncoder { QualityLevel = jpegQuality } : new PngBitmapEncoder();
-        enc.Frames.Add(BitmapFrame.Create(bmp));
-        string tmp = path + ".tmp";
-        using (var fs = File.Create(tmp)) enc.Save(fs);
-        File.Move(tmp, path, true);
+        BitmapEncoder encoder = ext is ".jpg" or ".jpeg"
+            ? new JpegBitmapEncoder { QualityLevel = jpegQuality } : new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bmp));
+        return encoder;
     }
 
     /// <summary>Loads an image at its true pixel size. WPF would otherwise lay out a 144 DPI file

@@ -251,10 +251,11 @@ public static class Program
         {
             try
             {
-                if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(LibraryClosedReason());
                 IntPtr source = window != IntPtr.Zero ? window : IntPtr.Zero;
-                libraryId = CaptureLibrary.AddNow(bmp, taken, ModeName(mode),
-                    source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source));
+                if (!CaptureLibrary.TryAddNowFromCli(bmp, taken, ModeName(mode),
+                    source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source), out long stored))
+                    throw new InvalidOperationException(LibraryClosedReason());
+                libraryId = stored;
             }
             catch (Exception ex) { warnings.Add("The capture was not added to the library: " + OneLine(ex.Message)); }
         }
@@ -263,9 +264,16 @@ public static class Program
         string? saved = null;
         if (save)
         {
-            saved = target?.File ?? OutputFiles.NextPath(target?.Folder ?? CaptureSettings.OutputFolder,
-                OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, bmp.PixelWidth, bmp.PixelHeight, format));
-            ImageOutput.Save(bmp, saved, quality);
+            if (target?.File is { } file)
+            {
+                ImageOutput.Save(bmp, file, quality, o.Has("overwrite"));
+                saved = file;
+            }
+            else
+            {
+                string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, bmp.PixelWidth, bmp.PixelHeight, format);
+                saved = ImageOutput.SaveUnique(bmp, target?.Folder ?? CaptureSettings.OutputFolder, name, quality);
+            }
         }
 
         bool copied = false;
@@ -391,32 +399,55 @@ public static class Program
         }
 
         string ext = gif ? "gif" : "mp4";
-        string path = target?.File ?? OutputFiles.NextPath(target?.Folder ?? VideoSettings.OutputFolder,
-            OutputFiles.FileName(VideoSettings.FileNamePattern, DateTime.Now, mode, area.Width, area.Height, ext));
-        IVideoSink sink = gif
-            ? new GifEncoder(path, gifColors >= 256 ? 255 : gifColors, gifSize / 100.0, loop)
-            : new Mp4Encoder(path, bitsPerPixel, sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
-        var recorder = new Recorder(area, sink, fps, cursor, sound);
+        string path = target?.File ?? "";
+        string outputFolder = target?.File is { } explicitFile ? Path.GetDirectoryName(explicitFile)!
+            : target?.Folder ?? VideoSettings.OutputFolder;
+        string fileName = OutputFiles.FileName(VideoSettings.FileNamePattern, DateTime.Now, mode, area.Width, area.Height, ext);
+        string? stageFolder = null;
+        string? recordingPath = null;
+        bool recordingComplete = false;
+        bool published = false;
+        IVideoSink sink = null!;
+        Recorder recorder = null!;
         TimeSpan duration;
         var stop = new TaskCompletionSource();
         ConsoleCancelEventHandler onCancel = (_, e) => { e.Cancel = true; stop.TrySetResult(); };
         try
         {
+            stageFolder = Path.Combine(outputFolder, $".KillerShot-staging-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(stageFolder);
+            try { File.SetAttributes(stageFolder, File.GetAttributes(stageFolder) | FileAttributes.Hidden); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            recordingPath = OutputFiles.NextPath(stageFolder, $"recording.{ext}");
+            sink = gif
+                ? new GifEncoder(recordingPath, gifColors >= 256 ? 255 : gifColors, gifSize / 100.0, loop)
+                : new Mp4Encoder(recordingPath, bitsPerPixel, sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
+            recorder = new Recorder(area, sink, fps, cursor, sound);
             Console.CancelKeyPress += onCancel;
             await recorder.StartAsync();
             await Task.WhenAny(Task.Delay(seconds * 1000), stop.Task);
             duration = recorder.Elapsed;
             await recorder.StopAsync();
+            recordingComplete = true;
+            if (target?.File == null) path = OutputFiles.PublishUnique(recordingPath, outputFolder, fileName);
+            else if (o.Has("overwrite")) File.Move(recordingPath, path, true);
+            else File.Move(recordingPath, path);
+            published = true;
         }
-        catch
+        catch (Exception ex)
         {
-            TryDelete(path);
+            try { sink?.Dispose(); } catch { }
+            if (recordingComplete)
+                throw new IOException($"The completed recording could not be saved to {target?.File ?? Path.Combine(outputFolder, fileName)}. It remains at {recordingPath}. {ex.Message}", ex);
+            if (recordingPath != null) TryDelete(recordingPath);
             throw;
         }
         finally
         {
             Console.CancelKeyPress -= onCancel;
-            sink.Dispose();
+            if (stageFolder != null && (!recordingComplete || published))
+                try { Directory.Delete(stageFolder); } catch { }
         }
 
         bool copied = false;
@@ -531,12 +562,26 @@ public static class Program
                 break;
             case "export":
                 var target = OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."), null, o.Has("overwrite"));
-                result = target.File ?? OutputFiles.NextPath(target.Folder!,
-                    OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken, ModeFromKey(item.Mode), item.Width, item.Height, "png"));
-                if (target.File == null || target.Format == "png")
-                    File.WriteAllBytes(result, CaptureLibrary.LoadPng(item.Id));
+                if (target.File is { } exportFile && target.Format != "png")
+                {
+                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), exportFile, CaptureSettings.JpegQuality, o.Has("overwrite"));
+                    result = exportFile;
+                }
                 else
-                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), result, CaptureSettings.JpegQuality);
+                {
+                    byte[] png = CaptureLibrary.LoadPng(item.Id);
+                    if (target.File is { } pngFile)
+                    {
+                        OutputFiles.WriteAtomic(pngFile, o.Has("overwrite"), stream => stream.Write(png));
+                        result = pngFile;
+                    }
+                    else
+                    {
+                        string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken,
+                            ModeFromKey(item.Mode), item.Width, item.Height, "png");
+                        result = OutputFiles.WriteUnique(target.Folder!, name, stream => stream.Write(png));
+                    }
+                }
                 break;
             case "open":
                 OpenInEditor(result);

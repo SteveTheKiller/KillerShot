@@ -3,7 +3,8 @@ using System;
 namespace KillerShot.Controls
 {
     // Row and place models for FileDialog.
-    public sealed class PickerPlace(string label, string path, bool pinned = false)
+    public sealed class PickerPlace(string label, string path, bool pinned = false,
+                                    System.Windows.Media.ImageSource? icon = null)
     {
         public string Label { get; } = label;
         public string Path  { get; } = path;
@@ -13,9 +14,8 @@ namespace KillerShot.Controls
         /// <summary>True for a user-pinned (removable) entry; drives are dynamic and never pinned.</summary>
         public bool Pinned { get; } = pinned;
 
-        /// <summary>Real shell icon, resolved by PATH - a drive shows its true icon (USB,
-        /// network, optical) and a special folder its own. Cached in ShellIcons.</summary>
-        public System.Windows.Media.ImageSource? Icon => Services.ShellIcons.Place(Path);
+        /// <summary>Real shell icon, resolved before the row is bound to the UI.</summary>
+        public System.Windows.Media.ImageSource? Icon { get; } = icon;
     }
 
     // One row in the folder pane: a subfolder or a (dimmed, non-pickable) file.

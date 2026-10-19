@@ -35,6 +35,7 @@ internal static partial class CaptureLibrary
         lock (_gate)
         {
             if (_db == null) throw new InvalidOperationException(Loc("Str_Lib_NotOpen"));
+            using var transitionLock = AcquireTransitionLock();
 
             string oldKey = _db.ConnectionString;   // reopen fallback, key included
             bool oldByPassword = _keyedByPassword;
@@ -42,6 +43,9 @@ internal static partial class CaptureLibrary
             string path = FilePath;
             string tmp = path + ".rekey";
             if (File.Exists(tmp)) File.Delete(tmp);
+            // The main connection opens in ReadWrite mode. ATTACH inherits that mode and needs
+            // an existing target file, even though SQLCipher initializes its contents.
+            File.Create(tmp).Dispose();
 
             using (var cmd = _db.CreateCommand())
             {
@@ -75,13 +79,22 @@ internal static partial class CaptureLibrary
             {
                 ReplaceWithRetry(tmp, path, bak);
             }
-            catch
+            catch (Exception swapError)
             {
-                // The original is untouched; reopen it with the old key so the app is never
-                // left without its library, and let the caller report the failure.
+                // A failed move-based swap may have left the only old album in the backup.
+                // Keep every recovery file until that album has reopened with its old key.
+                try
+                {
+                    if (!File.Exists(path) && File.Exists(bak)) File.Copy(bak, path);
+                    OpenWith(oldPassword, oldByPassword);
+                }
+                catch (Exception recoveryError)
+                {
+                    throw new IOException("The album could not reopen after the password change failed. Recovery files were kept.",
+                        new AggregateException(swapError, recoveryError));
+                }
                 try { File.Delete(tmp); } catch { }
                 if (newPassword == null) try { File.Delete(stagedKey); } catch { }
-                OpenWith(oldPassword, oldByPassword);
                 throw;
             }
 

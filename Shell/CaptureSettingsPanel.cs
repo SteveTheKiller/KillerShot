@@ -17,7 +17,7 @@ namespace KillerShot.Shell
     {
         private static readonly (ShortcutAction Action, string LabelKey)[] ShortcutActions =
         [
-            (ShortcutAction.LastMode, "Str_CS_LastMode"),
+            (ShortcutAction.LastMode, "Str_Mode_Region"),
             (ShortcutAction.Window, "Str_Mode_Window"),
             (ShortcutAction.Monitor, "Str_Mode_Monitor"),
             (ShortcutAction.AllMonitors, "Str_Mode_AllMonitors"),

@@ -6,12 +6,14 @@ $start.UseShellExecute = $false
 $start.CreateNoWindow = $true
 $start.RedirectStandardOutput = $true
 $start.RedirectStandardError = $true
+$version = (Select-Xml -Path (Join-Path $PSScriptRoot '..\KillerShot.csproj') -XPath '/Project/PropertyGroup/Version').Node.InnerText
+$expectedVersion = '^' + [regex]::Escape($version)
 foreach ($case in @(
     @{ Args = '--help'; Expected = 'qr <image'; Exit = 0 },
     @{ Args = 'help'; Expected = 'capture \[options\]'; Exit = 0 },
     @{ Args = '--cli help'; Expected = 'capture \[options\]'; Exit = 0 },
-    @{ Args = 'version'; Expected = '^0\.1\.0'; Exit = 0 },
-    @{ Args = '--cli version'; Expected = '^0\.1\.0'; Exit = 0 },
+    @{ Args = 'version'; Expected = $expectedVersion; Exit = 0 },
+    @{ Args = '--cli version'; Expected = $expectedVersion; Exit = 0 },
     @{ Args = 'qr "C:\this-qr-fixture-does-not-exist\code.png" --json'; Expected = 'image file does not exist'; Exit = 1 }
 )) {
 $start.Arguments = $case.Args

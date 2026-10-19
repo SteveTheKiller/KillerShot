@@ -2,10 +2,12 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerShot.Editor;
 using KillerShot.Services;
+using KillerShot.Video;
 
 namespace KillerShot.Shell;
 
@@ -18,6 +20,23 @@ internal static class SelfTestUi
 {
     public static bool TryRun(string[] args)
     {
+        if (args.Length >= 2 && args[0].Equals("--selftest-audio-start", StringComparison.OrdinalIgnoreCase))
+        {
+            string testDir = Path.GetFullPath(args[1]);
+            Directory.CreateDirectory(testDir);
+            _ = RunAudioStartAsync(testDir);
+            return true;
+        }
+        if (args.Length >= 2 && args[0].Equals("--selftest-toolbar-theme", StringComparison.OrdinalIgnoreCase))
+        {
+            string testDir = Path.GetFullPath(args[1]);
+            Directory.CreateDirectory(testDir);
+            Settings.UseFolder(Path.Combine(testDir, "settings"));
+            CaptureLibrary.UseFolder(Path.Combine(testDir, "library"));
+            App.InitializeKit();
+            _ = RunToolbarThemeAsync(testDir);
+            return true;
+        }
         int i = Array.FindIndex(args, a => a.Equals("--selftest-ui", StringComparison.OrdinalIgnoreCase));
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-ui");
@@ -26,6 +45,127 @@ internal static class SelfTestUi
         App.InitializeKit();
         _ = RunAsync(dir);
         return true;
+    }
+
+    private static async Task RunAudioStartAsync(string dir)
+    {
+        AudioCapture? audio = null;
+        int code = 1;
+        string report;
+        try
+        {
+            var first = new FakeAudioSource();
+            var second = new FakeAudioSource();
+            int[] clockMs = [0];
+            var output = new TaskCompletionSource<short>(TaskCreationOptions.RunContinuationsAsynchronously);
+            audio = new AudioCapture([first, second],
+                () => TimeSpan.FromMilliseconds(Volatile.Read(ref clockMs[0])),
+                () => false,
+                (pcm, _) => output.TrySetResult(BitConverter.ToInt16(pcm, 0)));
+            audio.Start();
+            audio.DiscardBuffered();
+            first.Append(0.1f);
+            second.Append(0.1f);
+            Volatile.Write(ref clockMs[0], 20);
+            short firstSample = await output.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            audio.Stop();
+            if (firstSample is < 6000 or > 7000)
+                throw new InvalidOperationException($"Audio captured before time zero was emitted: {firstSample}.");
+            report = "Pre-clock audio is discarded before the first timed PCM chunk: PASS";
+            code = 0;
+        }
+        catch (Exception ex) { report = ex.ToString(); }
+        finally { audio?.Dispose(); }
+        File.WriteAllText(Path.Combine(dir, "audio-start-report.txt"), report);
+        Application.Current.Shutdown(code);
+    }
+
+    private sealed class FakeAudioSource : IAudioCaptureSource
+    {
+        private readonly Queue<float> _samples = new();
+        private readonly object _gate = new();
+        public Exception? Error => null;
+        public void Start() => Append(0.7f);
+        public void Stop() { }
+        public void Dispose() { }
+
+        public void Append(float sample)
+        {
+            lock (_gate)
+                for (int i = 0; i < AudioCapture.Rate * AudioCapture.Channels / 50; i++)
+                    _samples.Enqueue(sample);
+        }
+
+        public void Drain(int frames, float[]? mix)
+        {
+            lock (_gate)
+            {
+                int samples = Math.Min(_samples.Count / AudioCapture.Channels, frames) * AudioCapture.Channels;
+                for (int i = 0; i < samples; i++)
+                {
+                    float value = _samples.Dequeue();
+                    if (mix != null) mix[i] += value;
+                }
+            }
+        }
+    }
+
+    private static async Task RunToolbarThemeAsync(string dir)
+    {
+        MainWindow? window = null;
+        int code = 1;
+        string report;
+        try
+        {
+            ThemeManager.Apply(Theme.Dark);
+            window = new MainWindow
+            {
+                ShowActivated = false,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Left = -20000,
+                Top = -20000,
+            };
+            window.Show();
+            await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
+            var width = window.FindName("WidthBtn") as Button
+                ?? throw new InvalidOperationException("The Width toolbar button is missing.");
+            var bar = FindWidthBar(width.Content as DependencyObject
+                ?? throw new InvalidOperationException("The Width toolbar icon is missing."));
+            if (bar.RadiusX != 1 || bar.RadiusY != 1)
+                throw new InvalidOperationException("The modern Width toolbar icon lost its original corners.");
+
+            ThemeManager.Apply(Theme.SE98);
+            await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            if (bar.RadiusX != 0 || bar.RadiusY != 0)
+                throw new InvalidOperationException("The Width toolbar icon stayed rounded after switching to 98SE.");
+
+            ThemeManager.Apply(Theme.Dark);
+            await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            if (bar.RadiusX != 1 || bar.RadiusY != 1)
+                throw new InvalidOperationException("The Width toolbar icon did not restore modern corners.");
+
+            report = "Width toolbar corners follow Dark, 98SE, and Dark live theme switches: PASS";
+            code = 0;
+        }
+        catch (Exception ex) { report = ex.ToString(); }
+        finally
+        {
+            try { window?.Close(); } catch { }
+        }
+        File.WriteAllText(Path.Combine(dir, "toolbar-theme-report.txt"), report);
+        Application.Current.Shutdown(code);
+    }
+
+    private static System.Windows.Shapes.Rectangle FindWidthBar(DependencyObject root)
+    {
+        if (root is System.Windows.Shapes.Rectangle rectangle) return rectangle;
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            try { return FindWidthBar(VisualTreeHelper.GetChild(root, i)); }
+            catch (InvalidOperationException) { }
+        }
+        throw new InvalidOperationException("The Width toolbar icon has no bar.");
     }
 
     private static async Task RunAsync(string dir)

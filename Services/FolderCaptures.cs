@@ -20,6 +20,9 @@ internal static class FolderCaptures
     private static readonly Dictionary<long, string> _paths = [];
     private static readonly Dictionary<string, (DateTime Stamp, int W, int H)> _sizes = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<long, BitmapSource> _thumbs = [];
+    private static readonly LinkedList<long> _thumbOrder = new();
+    private static readonly Dictionary<long, LinkedListNode<long>> _thumbNodes = [];
+    private const int ThumbCacheSize = 128;
     private static long _nextId = -2;
     private static FileSystemWatcher? _watcher;
     private static Timer? _debounce;
@@ -48,7 +51,8 @@ internal static class FolderCaptures
             _folderOverride = dir;
             _watcher?.Dispose();
             _watcher = null;
-            _ids.Clear(); _paths.Clear(); _sizes.Clear(); _thumbs.Clear();
+            _ids.Clear(); _paths.Clear(); _sizes.Clear();
+            _thumbs.Clear(); _thumbOrder.Clear(); _thumbNodes.Clear();
         }
     }
 
@@ -66,10 +70,15 @@ internal static class FolderCaptures
         try
         {
             var dir = new DirectoryInfo(folder);
-            if (!dir.Exists) return [];
+            if (!dir.Exists)
+            {
+                Reconcile([]);
+                return [];
+            }
             files = dir.GetFiles().Where(f => Extensions.Contains(f.Extension, StringComparer.OrdinalIgnoreCase)).ToArray();
         }
         catch { return []; }
+        Reconcile(files);
         Watch(folder);
         string[] words = (search ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var list = new List<CaptureItem>();
@@ -81,6 +90,31 @@ internal static class FolderCaptures
             list.Add(new CaptureItem(IdOf(f.FullName), f.LastWriteTime, w, h, "file", name, null, CollectionId, null));
         }
         return list;
+    }
+
+    /// <summary>Prunes only after a complete scan, including files hidden by the search.</summary>
+    private static void Reconcile(FileInfo[] files)
+    {
+        var current = files.Select(f => f.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        lock (_gate)
+        {
+            foreach (string path in _ids.Keys.Where(path => !current.Contains(path)).ToArray())
+            {
+                long id = _ids[path];
+                _ids.Remove(path);
+                _paths.Remove(id);
+                _sizes.Remove(path);
+                RemoveThumb(id);
+            }
+            foreach (string path in _sizes.Keys.Where(path => !current.Contains(path)).ToArray())
+                _sizes.Remove(path);
+            foreach (FileInfo file in files)
+            {
+                if (!_sizes.TryGetValue(file.FullName, out var size) || size.Stamp == file.LastWriteTimeUtc) continue;
+                _sizes.Remove(file.FullName);
+                if (_ids.TryGetValue(file.FullName, out long id)) RemoveThumb(id);
+            }
+        }
     }
 
     private static long IdOf(string path)
@@ -114,7 +148,16 @@ internal static class FolderCaptures
 
     public static BitmapSource? LoadThumb(long id)
     {
-        lock (_gate) if (_thumbs.TryGetValue(id, out var t)) return t;
+        lock (_gate)
+        {
+            if (_thumbs.TryGetValue(id, out var t))
+            {
+                var node = _thumbNodes[id];
+                _thumbOrder.Remove(node);
+                _thumbOrder.AddLast(node);
+                return t;
+            }
+        }
         if (PathOf(id) is not { } path) return null;
         try
         {
@@ -129,10 +172,24 @@ internal static class FolderCaptures
                 bmp.EndInit();
             }
             bmp.Freeze();
-            lock (_gate) _thumbs[id] = bmp;
+            lock (_gate)
+            {
+                if (!_paths.TryGetValue(id, out string? current) || !string.Equals(current, path, StringComparison.OrdinalIgnoreCase))
+                    return null;
+                RemoveThumb(id);
+                _thumbs[id] = bmp;
+                _thumbNodes[id] = _thumbOrder.AddLast(id);
+                while (_thumbOrder.Count > ThumbCacheSize) RemoveThumb(_thumbOrder.First!.Value);
+            }
             return bmp;
         }
         catch { return null; }
+    }
+
+    private static void RemoveThumb(long id)
+    {
+        _thumbs.Remove(id);
+        if (_thumbNodes.Remove(id, out var node)) _thumbOrder.Remove(node);
     }
 
     public static BitmapSource LoadImage(long id) =>
@@ -169,7 +226,7 @@ internal static class FolderCaptures
     {
         lock (_gate)
         {
-            if (_ids.TryGetValue(path, out long id)) _thumbs.Remove(id);
+            if (_ids.TryGetValue(path, out long id)) RemoveThumb(id);
             _sizes.Remove(path);
             _debounce?.Dispose();
             _debounce = new Timer(_ => Changed?.Invoke(), null, 400, Timeout.Infinite);

@@ -415,6 +415,22 @@ namespace KillerShot.Shell
                 line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title); };
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
+            if (line.ContextMenu != null)
+            {
+                line.Focusable = true;
+                KeyboardNavigation.SetIsTabStop(line, true);
+                line.KeyDown += (_, e) =>
+                {
+                    if (e.Key is not (Key.Apps or Key.Enter or Key.Space) &&
+                        !(e.SystemKey == Key.F10 && (Keyboard.Modifiers & ModifierKeys.Shift) != 0)) return;
+                    if (row.IsCollection && row.CollectionId is long collectionId)
+                        FillCollectionMenu(line.ContextMenu, collectionId, row.Title);
+                    line.ContextMenu.PlacementTarget = line;
+                    line.ContextMenu.Placement = PlacementMode.Bottom;
+                    line.ContextMenu.IsOpen = true;
+                    e.Handled = true;
+                };
+            }
             if (!row.Timeline) return line;
 
             // On the timeline a day is a dot on the line, with its name beside it.
@@ -659,11 +675,21 @@ namespace KillerShot.Shell
             // The password goes through SQLCipher's key derivation, which takes a moment, so the
             // loading screen covers it off the interface thread.
             ShowBusy();
-            bool ok;
+            bool ok = false;
+            string? openError = null;
             try { ok = await Task.Run(() => CaptureLibrary.Unlock(password)); }
+            catch (Exception ex) { openError = ex.Message; }
             finally { HideBusy(); }
-            UnlockError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
             UnlockBox.Clear();
+            if (openError != null)
+            {
+                UnlockError.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_OpenFailed"), openError);
+                UnlockError.Visibility = Visibility.Visible;
+                UnlockBox.Focus();
+                return;
+            }
+            UnlockError.SetResourceReference(TextBlock.TextProperty, "Str_Lib_WrongPassword");
+            UnlockError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
             if (ok) Reload();
             else UnlockBox.Focus();
         }
@@ -908,7 +934,10 @@ namespace KillerShot.Shell
             try
             {
                 if (Path.GetExtension(dlg.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                    File.WriteAllBytes(dlg.FileName, CaptureLibrary.LoadPng(item.Id));
+                {
+                    byte[] png = CaptureLibrary.LoadPng(item.Id);
+                    OutputFiles.WriteAtomic(dlg.FileName, true, stream => stream.Write(png));
+                }
                 else
                     ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), dlg.FileName, CaptureSettings.JpegQuality);
                 StatusMessage?.Invoke(dlg.FileName);

@@ -47,12 +47,12 @@ internal sealed class CaptureController
 
     public Task StartVideo(bool fromShortcut) => RunAsync(fromShortcut ? ShortcutAction.Video : null, CaptureMode.Region, IntPtr.Zero, video: true);
 
-    private static CaptureMode Resolve(ShortcutAction? action, CaptureMode? mode) => mode ?? action switch
+    internal static CaptureMode Resolve(ShortcutAction? action, CaptureMode? mode) => mode ?? action switch
     {
         ShortcutAction.Window => CaptureMode.Window,
         ShortcutAction.Monitor => CaptureMode.Monitor,
         ShortcutAction.AllMonitors => CaptureMode.AllMonitors,
-        _ => CaptureSettings.LastMode,
+        _ => CaptureMode.Region,
     };
 
     private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false)
@@ -149,8 +149,7 @@ internal sealed class CaptureController
                 {
                     string ext = CaptureSettings.Format;
                     string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, result.PixelWidth, result.PixelHeight, ext);
-                    saved = OutputFiles.NextPath(CaptureSettings.OutputFolder, name);
-                    ImageOutput.Save(result, saved, CaptureSettings.JpegQuality);
+                    saved = ImageOutput.SaveUnique(result, CaptureSettings.OutputFolder, name, CaptureSettings.JpegQuality);
                     LastSavedPath = saved;
                 }
                 catch (Exception ex)

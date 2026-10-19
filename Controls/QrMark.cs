@@ -15,9 +15,10 @@ internal static class QrMark
         grid.Children.Add(image);
         var glyph = new TextBlock { Text = "\uED14", FontFamily = new FontFamily("Segoe Fluent Icons"), FontSize = 14,
             Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        var mark = new Border { Width = 22, Height = 22, Background = Brushes.Black, CornerRadius = new CornerRadius(3),
+        var mark = new Border { Width = 22, Height = 22, Background = Brushes.Black,
             HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(3),
             Child = glyph, IsHitTestVisible = false };
+        mark.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
         AutomationProperties.SetAutomationId(mark, "QrAlbumMark");
         AutomationProperties.SetName(mark, "QR");
         grid.Children.Add(mark);
@@ -32,7 +33,8 @@ internal static class QrMark
         using var dc = drawing.Append();
         double size = Math.Min(22, Math.Min(width, height) / 3);
         double x = width - size - 3;
-        dc.DrawRoundedRectangle(Brushes.Black, null, new Rect(x, 3, size, size), 3, 3);
+        double radius = Application.Current.TryFindResource("SmallCornerRadius") is CornerRadius corner ? corner.TopLeft : 3;
+        dc.DrawRoundedRectangle(Brushes.Black, null, new Rect(x, 3, size, size), radius, radius);
         var text = new FormattedText("\uED14", CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
             new Typeface("Segoe Fluent Icons"), size * 14 / 22, Brushes.White, 1);
         dc.DrawText(text, new Point(x + (size - text.Width) / 2, 3 + (size - text.Height) / 2));

@@ -1,6 +1,10 @@
 # Changelog
 
 ## [1.0.0] - Unreleased
+- Fixed album and native cache recovery, concurrent settings writes, and output file collisions.
+- Fixed recording cleanup, audio errors, folder cache pruning, and capture outline redraws.
+- File picker navigation stays responsive on slow folders. Collection menus and website dialogs support keyboard access.
+- 98SE controls use square corners.
 - QR and image-text links now use a private local scanner for hidden destinations, encoded download names and disguised executable extensions. Invisible address characters block opening. Result cards explain each finding and state that the destination was not visited; links are never submitted to a third party.
 - Added the capture library: every capture is kept in one encrypted file (SQLCipher, AES-256) that opens with your Windows account, or with a password set from the title bar. With no image open the window shows it as shelves of carousels, one big carousel, a grid or a timeline, by date or by collection, with search across window titles, program names, notes and the text in each picture. Ctrl+L shows it over an open image. Captures can be moved into collections, noted, copied, saved as files or deleted, and Keep captures limits the history by count or age. The old Recent folder is imported into it on first start.
 - The album recovers after an interrupted password removal without losing captures. (#1)
@@ -11,13 +15,13 @@
 - Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.
 - Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
 - Printing from the editor, album or tray opens a themed preview of the edited screenshot, with printer, paper, orientation, scale, color and copies controls.
-- Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
-- Print Screen preserves open menus in the captured desktop and immediately shows the active border and a movable capture bar near the top of the main monitor, with Photo, Video, capture mode, output folder, Capture and Cancel. Region photos capture on release; Escape or a right-click cancels without output.
+- Added a tray app that captures with Print Screen. Plain Print Screen starts a region rectangle, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
+- Print Screen preserves open menus in the captured desktop and immediately shows the active border and a movable capture bar near the top of the main monitor, with Photo, Video, capture mode, output folder, Capture and Cancel. Region capture selects only a dragged rectangle and captures on release; Escape or a right-click cancels without output.
 - Added window capture through Windows Graphics Capture, including covered windows, with rounded corners filled from the desktop behind them.
 - Picking a window captures its covered areas and warns if only visible desktop pixels are available. (#5)
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
-- Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.
+- Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Window mode highlights a window and captures it with a click.
 - Added a command line (killershot followed by a command, with --cli and KillerShot.Cli.exe still supported) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP. killershot --help lists the commands; portable copies run from their folder or full path.
 - The compact single-row toolbar groups Open with recent captures and Save with Save as, alongside Capture, Record, Copy, Print and the annotation tools. Zoom choices stay in the footer. Icon size, label placement, order and overflow remain customizable; Alt+M replaces the toolbar with a title-bar menu.
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.

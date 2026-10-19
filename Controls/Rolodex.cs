@@ -54,7 +54,7 @@ internal sealed class Rolodex : FrameworkElement
     public bool IsMoving => _motion.IsMoving;
     private Color _cardColor = Color.FromRgb(0x14, 0x14, 0x14);
     private double _zoom = 0.85;
-    private static ImageBrush? s_shadow;
+    private static ImageBrush? s_shadowModern, s_shadowSquare;
 
     private sealed class Card
     {
@@ -91,8 +91,8 @@ internal sealed class Rolodex : FrameworkElement
         set { if (_cardColor == value) return; _cardColor = value; ClearCards(); Rebuild(); }
     }
 
-    /// <summary>How large the cards are drawn: 1 fills the column with the front card, smaller
-    /// values shrink every card so more of the drum fits. Ctrl+wheel changes it.</summary>
+    /// <summary>How large the cards are drawn. At maximum the front picture fills the column;
+    /// smaller values show more of the drum. Ctrl+wheel changes it.</summary>
     public double Zoom
     {
         get => _zoom;
@@ -106,7 +106,7 @@ internal sealed class Rolodex : FrameworkElement
         }
     }
 
-    public const double MinZoom = 0.35, MaxZoom = 1.0;
+    public const double MinZoom = 0.35, MaxZoom = 1.12;
 
     /// <summary>Ctrl+wheel changed the zoom, so the host can remember it.</summary>
     public event Action? ZoomChanged;
@@ -167,6 +167,8 @@ internal sealed class Rolodex : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
+        Loaded += (_, _) => ThemeManager.ThemeChanged += Refresh;
+        Unloaded += (_, _) => ThemeManager.ThemeChanged -= Refresh;
     }
 
     private int IndexOf(long id)
@@ -286,7 +288,8 @@ internal sealed class Rolodex : FrameworkElement
         // The card: stock with a faint edge, the picture fitted inside its frame, and the title
         // at the foot. Drawn as vectors, so it stays sharp at any size.
         var drawing = new DrawingGroup();
-        drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), 0.03, 0.03)));
+        double corner = ThemeManager.Current == Theme.SE98 ? 0 : 0.03;
+        drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), corner, corner)));
         if (Accent?.Invoke(item) is Color accent)
             drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, new RectangleGeometry(new Rect(0.03, 0, CardWidth - 0.06, 0.016))));
         var frame = new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand);
@@ -347,16 +350,18 @@ internal sealed class Rolodex : FrameworkElement
         return mesh;
     }
 
-    /// <summary>A blurred dark rounded rectangle, rendered once and shared by every card.</summary>
+    /// <summary>A blurred card shadow, cached for modern and classic corners.</summary>
     private static ImageBrush ShadowBrush()
     {
-        if (s_shadow != null) return s_shadow;
+        bool square = ThemeManager.Current == Theme.SE98;
+        if (square && s_shadowSquare != null) return s_shadowSquare;
+        if (!square && s_shadowModern != null) return s_shadowModern;
         const double ppu = 220;   // pixels per model unit
         double w = (CardWidth + 2 * ShadowMargin) * ppu, h = (CardHeight + 2 * ShadowMargin) * ppu;
         var rect = new Border
         {
             Background = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)),
-            CornerRadius = new CornerRadius(8),
+            CornerRadius = new CornerRadius(square ? 0 : 8),
             Margin = new Thickness(ShadowMargin * ppu),
             Effect = new System.Windows.Media.Effects.BlurEffect { Radius = ShadowMargin * ppu * 0.8 },
         };
@@ -367,9 +372,11 @@ internal sealed class Rolodex : FrameworkElement
         var bitmap = new RenderTargetBitmap((int)w, (int)h, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(host);
         bitmap.Freeze();
-        s_shadow = new ImageBrush(bitmap);
-        s_shadow.Freeze();
-        return s_shadow;
+        var shadow = new ImageBrush(bitmap);
+        shadow.Freeze();
+        if (square) s_shadowSquare = shadow;
+        else s_shadowModern = shadow;
+        return shadow;
     }
 
     /// <summary>A card-sized quad centered on the origin, texture upright.</summary>

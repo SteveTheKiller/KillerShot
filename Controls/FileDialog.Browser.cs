@@ -39,24 +39,17 @@ namespace KillerShot.Controls
         {
             if (e.Key != Key.Enter) return;
             var typed = PathBox.Text?.Trim();
-            if (!string.IsNullOrEmpty(typed) && Directory.Exists(typed)) NavigateTo(typed!);
+            if (!string.IsNullOrEmpty(typed)) NavigateTo(typed!);
             e.Handled = true;
         }
 
-        private void FileNameBox_KeyDown(object sender, KeyEventArgs e)
+        private async void FileNameBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Enter) return;
             e.Handled = true;
+            if (!_directoryReady) return;
 
             var typed = FileNameBox.Text?.Trim() ?? "";
-
-            // A directory typed into the name box navigates instead of accepting - matches the
-            // Win32 dialogs, and is how people paste a path in.
-            if (typed.Length > 0)
-            {
-                var asDir = Path.IsPathRooted(typed) ? typed : Path.Combine(_currentDir, typed);
-                if (Directory.Exists(asDir)) { NavigateTo(asDir); FileNameBox.Clear(); return; }
-            }
 
             // A wildcard retargets the listing rather than naming a file.
             if (typed.IndexOfAny(['*', '?']) >= 0)
@@ -66,6 +59,17 @@ namespace KillerShot.Controls
                 FilterCombo.SelectedIndex = 0;
                 FileNameBox.Clear();
                 return;
+            }
+
+            // A directory typed into the name box navigates instead of accepting. The check can
+            // take seconds on a disconnected share, so keep it away from the UI thread.
+            if (typed.Length > 0)
+            {
+                long version = _navigationVersion;
+                var asDir = Path.IsPathRooted(typed) ? typed : Path.Combine(_currentDir, typed);
+                bool isDirectory = await Task.Run(() => Directory.Exists(asDir));
+                if (!IsVisible || version != _navigationVersion || FileNameBox.Text?.Trim() != typed) return;
+                if (isDirectory) { NavigateTo(asDir); FileNameBox.Clear(); return; }
             }
 
             Accept();

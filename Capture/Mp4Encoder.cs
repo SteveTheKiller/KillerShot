@@ -166,19 +166,27 @@ internal sealed class Mp4Encoder : IVideoSink
 
     public async Task FinishAsync(TimeSpan duration)
     {
-        _queue.Add(null);
-        if (_audioDesc != null) _audio.Add(null);
-        if (_transcode != null) await _transcode;
-        _queue.CompleteAdding();
-        _audio.CompleteAdding();
-        _stream?.Dispose();
-        _stream = null;
+        CompleteQueues();
+        try { if (_transcode != null) await _transcode; }
+        finally { DisposeStream(); }
     }
 
     public void Dispose()
     {
-        if (!_queue.IsAddingCompleted) { try { _queue.Add(null); _queue.CompleteAdding(); } catch { } }
+        CompleteQueues();
+        DisposeStream();
+    }
+
+    private void CompleteQueues()
+    {
+        if (!_queue.IsAddingCompleted) _queue.CompleteAdding();
+        if (!_audio.IsAddingCompleted) _audio.CompleteAdding();
+    }
+
+    private void DisposeStream()
+    {
         _stream?.Dispose();
+        _stream = null;
     }
 
     /// <summary>The largest frame the Windows H.264 encoder accepts: no side over 4096 pixels and

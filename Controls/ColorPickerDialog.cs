@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using KillerShot.Services;
 
 namespace KillerShot.Controls
 {
@@ -157,8 +158,9 @@ namespace KillerShot.Controls
             var svGrid = new Grid { Width = SvW, Height = SvH };
             svGrid.Children.Add(_svHue); svGrid.Children.Add(svWhite); svGrid.Children.Add(svBlack); svGrid.Children.Add(_svThumb);
             // ClipToBounds off so the indicator dot shows fully when it sits at an edge/corner.
-            _svArea = new Border { Width = SvW, Height = SvH, CornerRadius = new CornerRadius(3), ClipToBounds = false,
+            _svArea = new Border { Width = SvW, Height = SvH, ClipToBounds = false,
                 BorderBrush = R("InputBorderBrush"), BorderThickness = new Thickness(1), Child = svGrid, Cursor = Cursors.Cross };
+            _svArea.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             _svArea.MouseLeftButtonDown += (s, e) => { _svArea.CaptureMouse(); SvPick(e.GetPosition(svGrid)); };
             _svArea.MouseMove += (s, e) => { if (e.LeftButton == MouseButtonState.Pressed) SvPick(e.GetPosition(svGrid)); };
             _svArea.MouseLeftButtonUp += (s, e) => _svArea.ReleaseMouseCapture();
@@ -166,14 +168,15 @@ namespace KillerShot.Controls
 
             var hueRect = new Rectangle { Width = HueW, Height = SvH, Fill = HueStripBrush() };
             _hueThumb = new Border { Width = HueW + 6, Height = 6, BorderBrush = Brushes.White, BorderThickness = new Thickness(1.5),
-                Background = R("PrimaryBrush"), CornerRadius = new CornerRadius(2), IsHitTestVisible = false };
+                Background = R("PrimaryBrush"), CornerRadius = new CornerRadius(ThemeManager.Current == Theme.SE98 ? 0 : 2), IsHitTestVisible = false };
             var hueCanvas = new Canvas { Width = HueW + 6, Height = SvH };
             Canvas.SetLeft(_hueThumb, -3);
             hueCanvas.Children.Add(_hueThumb);
             var hueGrid = new Grid { Margin = new Thickness(8, 0, 0, 0) };
             hueGrid.Children.Add(hueRect); hueGrid.Children.Add(hueCanvas);
-            var hueArea = new Border { Child = hueGrid, Cursor = Cursors.SizeNS, CornerRadius = new CornerRadius(3),
+            var hueArea = new Border { Child = hueGrid, Cursor = Cursors.SizeNS,
                 BorderBrush = R("InputBorderBrush"), BorderThickness = new Thickness(1) };
+            hueArea.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             hueArea.MouseLeftButtonDown += (s, e) => { hueArea.CaptureMouse(); HuePick(e.GetPosition(hueRect)); };
             hueArea.MouseMove += (s, e) => { if (e.LeftButton == MouseButtonState.Pressed) HuePick(e.GetPosition(hueRect)); };
             hueArea.MouseLeftButtonUp += (s, e) => hueArea.ReleaseMouseCapture();
@@ -182,8 +185,9 @@ namespace KillerShot.Controls
 
             // RGB + hex + preview + eyedropper
             var inputRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
-            _newSwatch = new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(3),
+            _newSwatch = new Border { Width = 34, Height = 34,
                 BorderBrush = R("InputBorderBrush"), BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 10, 0) };
+            _newSwatch.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             inputRow.Children.Add(_newSwatch);
             _rBox = NumBox(); _gBox = NumBox(); _bBox = NumBox();
             inputRow.Children.Add(FieldGroup("R", _rBox));
@@ -334,11 +338,12 @@ namespace KillerShot.Controls
             {
                 var c = saved[i];
                 int idx = i;
-                var sw = new Border { Width = 20, Height = 20, CornerRadius = new CornerRadius(3), Margin = new Thickness(0, 0, 4, 4),
+                var sw = new Border { Width = 20, Height = 20, Margin = new Thickness(0, 0, 4, 4),
                     Background = new SolidColorBrush(c), BorderThickness = new Thickness(_replaceArmed ? 2 : 1), Cursor = Cursors.Hand,
                     ToolTip = _replaceArmed
                         ? L("Str_TT_SwatchReplace", "Click to set this swatch to the current color")
                         : L("Str_TT_SwatchUse", "Click to use this color") };
+                sw.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
                 if (_replaceArmed) sw.SetResourceReference(Border.BorderBrushProperty, "PrimaryBrush"); else sw.BorderBrush = R("InputBorderBrush");
                 sw.MouseLeftButtonUp += (_, _) =>
                 {
@@ -401,11 +406,12 @@ namespace KillerShot.Controls
 
         private Border Chip(string text, string tip)
         {
-            var b = new Border { Height = 20, MinWidth = 22, CornerRadius = new CornerRadius(3), Cursor = Cursors.Hand,
+            var b = new Border { Height = 20, MinWidth = 22, Cursor = Cursors.Hand,
                 BorderBrush = R("InputBorderBrush"), BorderThickness = new Thickness(1), Background = R("PaneBrush"),
                 Padding = new Thickness(6, 0, 6, 0), ToolTip = tip,
                 Child = new TextBlock { Text = text, Foreground = R("TextBrush"), FontSize = 11,
                     HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
+            b.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             // Unified hover, respecting Replace's armed highlight.
             b.MouseEnter += (_, _) => { if (b != _replaceBtn || !_replaceArmed) b.Background = R("InputBorderBrush"); };
             b.MouseLeave += (_, _) => { b.Background = (b == _replaceBtn && _replaceArmed) ? R("RowSelectedBrush") : R("PaneBrush"); };
@@ -417,7 +423,7 @@ namespace KillerShot.Controls
             var b = new FrameworkElementFactory(typeof(Border));
             foreach (var pair in new[] { (Border.BackgroundProperty, "Background"), (Border.BorderBrushProperty, "BorderBrush"), (Border.BorderThicknessProperty, "BorderThickness") })
                 b.SetBinding(pair.Item1, new Binding(pair.Item2) { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            b.SetValue(Border.CornerRadiusProperty, new CornerRadius(3));
+            b.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             var sv = new FrameworkElementFactory(typeof(ScrollViewer)) { Name = "PART_ContentHost" };
             sv.SetValue(ScrollViewer.VerticalAlignmentProperty, VerticalAlignment.Center);
             b.AppendChild(sv);
@@ -429,7 +435,7 @@ namespace KillerShot.Controls
             var bf = new FrameworkElementFactory(typeof(Border));
             foreach (var pair in new[] { (Border.BackgroundProperty, "Background"), (Border.BorderBrushProperty, "BorderBrush"), (Border.BorderThicknessProperty, "BorderThickness") })
                 bf.SetBinding(pair.Item1, new Binding(pair.Item2) { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            bf.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+            bf.SetResourceReference(Border.CornerRadiusProperty, "ControlCornerRadius");
             var cp = new FrameworkElementFactory(typeof(ContentPresenter));
             cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
             cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);

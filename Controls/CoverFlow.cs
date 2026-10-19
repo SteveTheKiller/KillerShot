@@ -146,6 +146,8 @@ internal sealed class CoverFlow : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
+        Loaded += (_, _) => ThemeManager.ThemeChanged += RefreshCards;
+        Unloaded += (_, _) => ThemeManager.ThemeChanged -= RefreshCards;
     }
 
     private int IndexOf(long id)
@@ -206,6 +208,12 @@ internal sealed class CoverFlow : FrameworkElement
     }
 
     // ---- models ----
+
+    private void RefreshCards()
+    {
+        ClearCards();
+        Rebuild();
+    }
 
     private void ClearCards()
     {

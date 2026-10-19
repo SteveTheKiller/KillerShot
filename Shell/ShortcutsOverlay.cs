@@ -107,7 +107,7 @@ namespace KillerShot.Shell
                 foreach (var b in KsFixed) yield return b;
                 foreach (var (action, key) in new[]
                 {
-                    (KillerShot.Capture.ShortcutAction.LastMode, "Str_KS_CaptureLast"),
+                    (KillerShot.Capture.ShortcutAction.LastMode, "Str_Mode_Region"),
                     (KillerShot.Capture.ShortcutAction.Window, "Str_KS_CaptureWindow"),
                     (KillerShot.Capture.ShortcutAction.Monitor, "Str_KS_CaptureMonitor"),
                     (KillerShot.Capture.ShortcutAction.AllMonitors, "Str_KS_CaptureAll"),
@@ -387,7 +387,9 @@ namespace KillerShot.Shell
             };
             var bar = new Rectangle
             {
-                Height = 3, VerticalAlignment = VerticalAlignment.Bottom, RadiusX = 1.5, RadiusY = 1.5,
+                Height = 3, VerticalAlignment = VerticalAlignment.Bottom,
+                RadiusX = ThemeManager.Current == Theme.SE98 ? 0 : 1.5,
+                RadiusY = ThemeManager.Current == Theme.SE98 ? 0 : 1.5,
                 Margin = new Thickness(3, 0, 3, 0), Visibility = Visibility.Collapsed,
             };
 
@@ -398,10 +400,11 @@ namespace KillerShot.Shell
 
             var key = new Border
             {
-                Width = KbUnit * w - 4, Height = 44, CornerRadius = new CornerRadius(4),
+                Width = KbUnit * w - 4, Height = 44,
                 BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 4, 0),
                 Child = inner,
             };
+            key.SetResourceReference(Border.CornerRadiusProperty, "ControlCornerRadius");
             // KeyCapBrush, not SurfaceBrush directly: the cap tracks SurfaceBrush on every theme
             // that does not declare it, but 98SE paints its caps white so the map does not read as
             // a slab of button-face gray. Same key in KillerScan and KillerShell.
