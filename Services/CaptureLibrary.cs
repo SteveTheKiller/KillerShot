@@ -160,11 +160,19 @@ internal static partial class CaptureLibrary
     /// <summary>Opens a fresh album and keeps the cross-process transition lock until the
     /// command-line capture is committed and its connection is closed.</summary>
     public static bool TryAddNowFromCli(BitmapSource bmp, DateTime taken, string mode,
-        string? window, string? process, out long id)
+        string? window, string? process, out long id) =>
+        TryUseAlbumFromCli(() => AddNow(bmp, taken, mode, window, process), out id);
+
+    /// <summary>Loads command-line recent data while holding the transition lock. The caller
+    /// performs clipboard, file, and editor actions after this returns.</summary>
+    public static bool TryReadForCli(Action read) =>
+        TryUseAlbumFromCli(() => { read(); return true; }, out _);
+
+    private static bool TryUseAlbumFromCli<T>(Func<T> operation, out T result)
     {
         lock (_gate)
         {
-            id = 0;
+            result = default!;
             // A connection opened before a password swap may point at the replaced file.
             Close();
             LoadError = null;
@@ -190,7 +198,7 @@ internal static partial class CaptureLibrary
                         LoadError = ex.Message;
                         return false;
                     }
-                    id = AddNow(bmp, taken, mode, window, process);
+                    result = operation();
                     return true;
                 }
                 finally { Close(); }

@@ -1,7 +1,7 @@
 # Changelog
 
 ## [1.0.0] - Unreleased
-- Fixed album and native cache recovery, concurrent settings writes, and output file collisions.
+- Fixed album recovery and concurrency, native cache recovery, settings writes, and output file collisions.
 - Fixed recording cleanup, audio errors, folder cache pruning, and capture outline redraws.
 - File picker navigation stays responsive on slow folders. Collection menus and website dialogs support keyboard access.
 - 98SE controls use square corners.

@@ -496,18 +496,43 @@ public static class Program
     {
         var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "out"], ["json", "overwrite"]);
         o.NoPositionals();
-        if (!CaptureLibrary.OpenAuto()) throw new CliException(LibraryClosedReason(), ExitFailed);
-        var items = CaptureLibrary.Items(o.Value("search"));
         string[] actions = ["copy", "export", "open"];
         var chosen = actions.Where(o.Has).ToArray();
         if (chosen.Length > 1) throw new CliException("Use one of --copy, --export and --open at a time.");
         if (o.Has("out") && (chosen.Length == 0 || chosen[0] != "export")) throw new CliException("--out goes with --export.");
+        string? action = chosen.Length == 0 ? null : chosen[0];
+        if (action != null && o.Has("limit")) throw new CliException("--limit only applies to the list.");
+        int limit = action == null ? o.Int("limit", 1, RecentListMax) ?? RecentListDefault : 0;
+        int index = action == null ? 0 : o.Int(action, 1, int.MaxValue)!.Value;
+        OutputTarget? target = action == "export"
+            ? OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."),
+                null, o.Has("overwrite"))
+            : null;
+        bool imageExport = action == "export" && target!.File != null && target.Format != "png";
 
-        if (chosen.Length == 0)
+        IReadOnlyList<CaptureItem> items = [];
+        Dictionary<long, string> collections = new();
+        CaptureItem? selected = null;
+        BitmapSource? image = null;
+        byte[]? png = null;
+        if (!CaptureLibrary.TryReadForCli(() =>
         {
-            int limit = o.Int("limit", 1, RecentListMax) ?? RecentListDefault;
+            items = CaptureLibrary.Items(o.Value("search"));
+            if (action == null)
+            {
+                collections = CaptureLibrary.Collections().ToDictionary(c => c.Id, c => c.Name);
+                return;
+            }
+            if (index > items.Count)
+                throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
+            selected = items[index - 1];
+            if (action == "copy" || imageExport) image = CaptureLibrary.LoadImage(selected.Id);
+            else if (action == "export") png = CaptureLibrary.LoadPng(selected.Id);
+        })) throw new CliException(LibraryClosedReason(), ExitFailed);
+
+        if (action == null)
+        {
             var shown = items.Take(limit).ToList();
-            var collections = CaptureLibrary.Collections().ToDictionary(c => c.Id, c => c.Name);
             if (o.Has("json"))
             {
                 Out.WriteLine(Json(j =>
@@ -547,39 +572,32 @@ public static class Program
             return ExitOk;
         }
 
-        if (o.Has("limit")) throw new CliException("--limit only applies to the list.");
-        string action = chosen[0];
-        int index = o.Int(action, 1, int.MaxValue)!.Value;
-        if (index > items.Count)
-            throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
-        var item = items[index - 1];
+        var item = selected!;
         string result = LibraryRef(item.Id);
         switch (action)
         {
             case "copy":
-                if (!ImageOutput.TryCopy(CaptureLibrary.LoadImage(item.Id), out var error))
+                if (!ImageOutput.TryCopy(image!, out var error))
                     throw new CliException("The clipboard is busy: " + OneLine(error ?? "another app is holding it"), ExitFailed);
                 break;
             case "export":
-                var target = OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."), null, o.Has("overwrite"));
-                if (target.File is { } exportFile && target.Format != "png")
+                if (target!.File is { } exportFile && imageExport)
                 {
-                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), exportFile, CaptureSettings.JpegQuality, o.Has("overwrite"));
+                    ImageOutput.Save(image!, exportFile, CaptureSettings.JpegQuality, o.Has("overwrite"));
                     result = exportFile;
                 }
                 else
                 {
-                    byte[] png = CaptureLibrary.LoadPng(item.Id);
                     if (target.File is { } pngFile)
                     {
-                        OutputFiles.WriteAtomic(pngFile, o.Has("overwrite"), stream => stream.Write(png));
+                        OutputFiles.WriteAtomic(pngFile, o.Has("overwrite"), stream => stream.Write(png!));
                         result = pngFile;
                     }
                     else
                     {
                         string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken,
                             ModeFromKey(item.Mode), item.Width, item.Height, "png");
-                        result = OutputFiles.WriteUnique(target.Folder!, name, stream => stream.Write(png));
+                        result = OutputFiles.WriteUnique(target.Folder!, name, stream => stream.Write(png!));
                     }
                 }
                 break;
