@@ -63,7 +63,7 @@ namespace KillerShot.Shell
             if (library)
             {
                 _editorStripSide ??= StripDock.Side;
-                StripDock.Side = Settings.GetBool("LibraryRailAtRight", false) ? DockSide.Right : DockSide.Left;
+                StripDock.Side = DockSide.Left;
             }
             else if (_editorStripSide is { } side)
             {

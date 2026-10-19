@@ -35,7 +35,7 @@
 - The main window opens inside the work area of the monitor it starts on, so a small or high-scaling display, or a size saved on a bigger monitor, shows all of it, and changing the app size keeps it on its own monitor.
 - Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
 - Footer controls stay clickable at the resize edge and mark the displayed album or strip view. Collection grouping uses a folder icon, distinct from the title-bar database settings.
-- Album mode uses a left sidebar rail. Theme, Language, Help and Settings lead its icons in that order; the context menu flips sides and reverses the remaining controls. The editor keeps its own dock position, and flyouts follow their buttons.
+- Album mode uses a left sidebar rail. Theme, Language, Help and Settings lead its icons in that order; the context menu reverses the remaining controls. The editor keeps its own dock position, and flyouts follow their buttons.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
@@ -46,6 +46,7 @@
 - The maximize button opens the Windows 11 snap layouts menu.
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
 - Menus show action icons and visible separator lines.
+- Removed the option to move rail icons to the opposite end. Horizontal rails keep icons on the right and vertical rails keep them at the bottom.
 - Restored film grain on the file picker sidebar.
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.

@@ -16,12 +16,12 @@ internal static class SelfTestImageMenus
 {
     internal static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] != "--selftest-image-menus") return false;
-        _ = RunAsync(Path.GetFullPath(args[1]), args.Contains("--show"));
+        if (args.Length < 2 || (args[0] != "--selftest-image-menus" && args[0] != "--selftest-rail")) return false;
+        _ = RunAsync(Path.GetFullPath(args[1]), args.Contains("--show"), args[0] == "--selftest-rail");
         return true;
     }
 
-    private static async Task RunAsync(string folder, bool show)
+    private static async Task RunAsync(string folder, bool show, bool railOnly)
     {
         int code = 1;
         MainWindow? window = null;
@@ -33,6 +33,11 @@ internal static class SelfTestImageMenus
             Directory.CreateDirectory(folder);
             reportPath = Path.Combine(folder, "image-menu-report.txt");
             Settings.UseFolder(Path.Combine(folder, "settings"));
+            if (railOnly)
+            {
+                Settings.SetBool("RailAtRight", false);
+                Settings.SetBool("LibraryRailAtRight", true);
+            }
             CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
             CaptureLibrary.BackgroundWork = false;
             App.InitializeKit();
@@ -48,6 +53,38 @@ internal static class SelfTestImageMenus
             window = new MainWindow { ShowActivated = false, Left = -20000, Top = -20000, Width = 1100, Height = 800, WindowStartupLocation = WindowStartupLocation.Manual };
             window.Show();
             await Task.Delay(200);
+            if (railOnly)
+            {
+                var icons = (StackPanel)window.FindName("RailStack");
+                foreach (var side in new[] { DockSide.Left, DockSide.Right, DockSide.Top, DockSide.Bottom })
+                {
+                    window.TestStripDock.DockTo(side);
+                    foreach (bool minimized in new[] { false, true })
+                    {
+                        window.TestStripDock.IsMinimized = minimized;
+                        window.UpdateLayout();
+                        var toggle = Visuals(window.TestStripDock).OfType<Button>().Single(button =>
+                            button.Parent is Grid parent && parent.Children.Contains(icons));
+                        Point t = toggle.TranslatePoint(new Point(), window), i = icons.TranslatePoint(new Point(), window);
+                        if (window.TestStripDock.IsHorizontal ? t.X + toggle.ActualWidth >= i.X : t.Y + toggle.ActualHeight >= i.Y)
+                            throw new InvalidOperationException("Rail ends are swapped: " + side + ", minimized=" + minimized);
+                        var snapshot = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth), (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                        snapshot.Render((Visual)window.Content);
+                        ImageOutput.SavePng(snapshot, Path.Combine(folder, side + "-" + minimized + ".png"));
+                        report.Add("Fixed rail ends: " + side + ", minimized=" + minimized + " PASS");
+                    }
+                }
+                icons.ContextMenu!.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
+                if (icons.ContextMenu.Items.OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Rail_Flip"))))
+                    throw new InvalidOperationException("The rail-flip command is still present.");
+                App.Instance.SetDocument(null);
+                await Task.Delay(100);
+                if (window.TestStripDock.Side != DockSide.Left)
+                    throw new InvalidOperationException("A saved flip still moves the library rail.");
+                report.Add("Removed menu command and ignored saved flip preferences PASS");
+                code = 0;
+                return;
+            }
             if (SystemParameters.HighContrast)
             {
                 var frame = (FrameworkElement)window.FindName("FrameHost");
@@ -250,8 +287,8 @@ internal static class SelfTestImageMenus
             App.Instance.SetDocument(doc);
             await Task.Delay(100);
             if (window.TestStripDock.Side != DockSide.Top) throw new InvalidOperationException("Returning to the editor must preserve its saved top strip.");
-            if (rail.TranslatePoint(new Point(), window).X > window.ActualWidth / 2)
-                throw new InvalidOperationException("The horizontal rail must default to the left after the editor reopens.");
+            if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
+                throw new InvalidOperationException("The horizontal rail must stay on the right after the editor reopens.");
             var toolbarMenu = (ContextMenu)window.FindName("ToolbarMenu");
             var hideToolbar = toolbarMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Tag, "hide"));
             hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
@@ -266,21 +303,21 @@ internal static class SelfTestImageMenus
                     throw new InvalidOperationException("The hidden toolbar lost " + key);
             more.IsOpen = false;
             hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            report.Add("Rail and toolbar: left default survives layout; hidden actions remain in title-bar overflow PASS");
+            report.Add("Rail and toolbar: fixed right end survives layout; hidden actions remain in title-bar overflow PASS");
             var railMenu = rail.ContextMenu!;
             void OpenRail() => railMenu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
             OpenRail();
-            var flipRail = railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Flip")));
-            flipRail.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            if (railMenu.Items.OfType<MenuItem>().Any(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Flip"))))
+                throw new InvalidOperationException("The removed rail-flip command is still present.");
             window.UpdateLayout();
             if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
-                throw new InvalidOperationException("The rail menu did not move the icons to the right.");
+                throw new InvalidOperationException("The horizontal rail must stay on the right.");
             var themeButton = (Button)window.FindName("ThemeButton");
             themeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var themeMenu = (ContextMenu)window.FindName("ThemeMenu");
             if (!themeMenu.IsOpen || !ReferenceEquals(themeMenu.PlacementTarget, themeButton)
                 || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
-                throw new InvalidOperationException("The theme flyout is not anchored to its own right-side button.");
+                throw new InvalidOperationException("The theme flyout is not anchored to its own rail button.");
             themeMenu.IsOpen = false;
             FrameworkElement[] leadingRail = [themeButton, (Button)window.FindName("LangButton"), (Button)window.FindName("ShortcutsButton"), (Button)window.FindName("CaptureSettingsButton")];
             if (!rail.Children.Cast<UIElement>().Take(4).SequenceEqual(leadingRail)) throw new InvalidOperationException("Rail order must start Theme, Locale, Help, Settings.");
@@ -292,8 +329,7 @@ internal static class SelfTestImageMenus
                 throw new InvalidOperationException("Reversing app controls must preserve Theme, Locale, Help, Settings in order.");
             railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            flipRail.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            report.Add("Rail menu: flips sides, reverses order and anchors the theme flyout to its button PASS");
+            report.Add("Rail menu: fixed ends, reversible order and theme flyout anchored to its button PASS");
             var printPreview = new PrintPreviewWindow(window, doc.Render(), "Edited screenshot");
             printPreview.Show();
             await Task.Delay(100);

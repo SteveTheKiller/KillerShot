@@ -23,7 +23,7 @@ internal static class MenuIcons
         ("Str_Lib_Delete", 0xE74D), ("Str_KS_Delete", 0xE74D), ("Str_KS_GrpTools", 0xE70F),
         ("Str_TT_ZoomLevel", 0xE71E), ("Str_KS_ZoomIn", 0xE8A3), ("Str_KS_ZoomOut", 0xE71F),
         ("Str_Strip_Collection", 0xE8B7), ("Str_Dock_Minimize", 0xE921), ("Str_Dock_Restore", 0xE923),
-        ("Str_Rail_Flip", 0xE8AB), ("Str_Rail_Reverse", 0xE8CB),
+        ("Str_Rail_Reverse", 0xE8CB),
         ("Str_Lib_ViewShelves", 0xE8A9), ("Str_Lib_ViewFlow", 0xE7C5),
         ("Str_Lib_ViewGrid", 0xE80A), ("Str_Lib_ViewTimeline", 0xE823),
         ("Str_Lib_ByDate", 0xE787), ("Str_Lib_ByCollection", 0xE8B7),

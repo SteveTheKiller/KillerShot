@@ -43,8 +43,8 @@ public partial class MainWindow
     {
         if (StripDock.IsHorizontal)
         {
-            Grid.SetColumn(RailStack, Settings.GetBool("RailAtRight", true) ? 2 : 1);
-            RailStack.HorizontalAlignment = Settings.GetBool("RailAtRight", true) ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            Grid.SetColumn(RailStack, 2);
+            RailStack.HorizontalAlignment = HorizontalAlignment.Right;
         }
     }
 
@@ -72,17 +72,6 @@ public partial class MainWindow
             Add("Str_Dock_Minimize", () => { if (StripDock.IsMinimized) StripDock.Restore(); else StripDock.Minimize(); }, StripDock.IsMinimized);
         }
         menu.Items.Add(new Separator());
-        Add("Str_Rail_Flip", () =>
-        {
-            if (Library.IsVisible)
-            {
-                Settings.SetBool("LibraryRailAtRight", !Settings.GetBool("LibraryRailAtRight", false));
-                SyncStripPlacement(library: true);
-            }
-            else if (StripDock.IsHorizontal) Settings.SetBool("RailAtRight", !Settings.GetBool("RailAtRight", true));
-            else StripDock.DockTo(StripDock.Side == DockSide.Left ? DockSide.Right : DockSide.Left);
-            ApplyRailPreferences();
-        });
         Add("Str_Rail_Reverse", () => { Settings.SetBool("RailReversed", !Settings.GetBool("RailReversed", false)); ApplyRailPreferences(); }, Settings.GetBool("RailReversed", false));
         menu.Items.Add(new Separator());
         foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline") })
