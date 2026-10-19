@@ -160,8 +160,12 @@ internal static partial class CaptureLibrary
     /// <summary>Opens a fresh album and keeps the cross-process transition lock until the
     /// command-line capture is committed and its connection is closed.</summary>
     public static bool TryAddNowFromCli(BitmapSource bmp, DateTime taken, string mode,
-        string? window, string? process, out long id) =>
-        TryUseAlbumFromCli(() => AddNow(bmp, taken, mode, window, process), out id);
+        string? window, string? process, out long id)
+    {
+        bool saved = TryUseAlbumFromCli(() => AddNow(bmp, taken, mode, window, process), out id);
+        if (saved) NotifyExternalChange();
+        return saved;
+    }
 
     /// <summary>Loads command-line recent data while holding the transition lock. The caller
     /// performs clipboard, file, and editor actions after this returns.</summary>
@@ -296,6 +300,8 @@ internal static partial class CaptureLibrary
     {
         lock (_gate)
         {
+            _externalChanges?.Dispose();
+            _externalChanges = null;
             _db?.Dispose();
             _db = null;
             _keyedByPassword = false;
@@ -332,6 +338,7 @@ internal static partial class CaptureLibrary
         }
         _db = db;
         _keyedByPassword = byPassword;
+        ObserveExternalChanges();
     }
 
     /// <summary>The key rides in the connection string, which is part of the pool key, so a wrong
