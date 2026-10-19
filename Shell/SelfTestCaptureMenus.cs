@@ -2,12 +2,14 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Automation;
 using KillerShot.Services;
 using KillerShot.Native;
 using KillerShot.Capture;
+using CaptureMode = KillerShot.Capture.CaptureMode;
 
 namespace KillerShot.Shell;
 
@@ -84,6 +86,23 @@ internal static class SelfTestCaptureMenus
             var photo = Visuals(bar).OfType<ToggleButton>().Single(b => AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Capture_Photo"));
             var video = Visuals(bar).OfType<ToggleButton>().Single(b => AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Capture_Video"));
             var modes = Visuals(bar).OfType<ComboBox>().Single();
+            if (!bar.IsActive || !photo.IsKeyboardFocused)
+                throw new InvalidOperationException("The visible capture bar must begin with keyboard focus on Photo.");
+            if (!photo.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)) || !video.IsKeyboardFocused)
+                throw new InvalidOperationException("Tab must move from Photo to Video.");
+            if (!video.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)) || !modes.IsKeyboardFocused)
+                throw new InvalidOperationException("Tab must move from Video to capture mode.");
+            if (!modes.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous)) || !video.IsKeyboardFocused)
+                throw new InvalidOperationException("Shift+Tab must return from capture mode to Video.");
+            var folderButton = Visuals(bar).OfType<Button>().Single(b => AutomationProperties.GetName(b) == LocaleManager.Loc("Str_CS_Folder"));
+            var captureButton = Visuals(bar).OfType<Button>().Single(b => AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Btn_Capture"));
+            var cancelButton = Visuals(bar).OfType<Button>().Single(b => AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Btn_Cancel"));
+            var controls = new UIElement[] { video, modes, folderButton, captureButton, cancelButton };
+            for (int i = 1; i < controls.Length; i++)
+                if (!controls[i - 1].MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)) || !controls[i].IsKeyboardFocused)
+                    throw new InvalidOperationException("Tab must reach every capture bar control.");
+            if (!cancelButton.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous)) || !captureButton.IsKeyboardFocused)
+                throw new InvalidOperationException("Shift+Tab must return from Cancel to Capture.");
             video.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             if (!selector.IsVideo || video.IsChecked != true || photo.IsChecked != false)
                 throw new InvalidOperationException("Video must select recording in the same capture picker.");

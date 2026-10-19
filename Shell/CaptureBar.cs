@@ -35,7 +35,7 @@ internal sealed class CaptureBar : Window
         AllowsTransparency = true;
         Background = Brushes.Transparent;
         ShowInTaskbar = false;
-        ShowActivated = false;
+        ShowActivated = true;
         Topmost = true;
         UseLayoutRounding = true;
         WindowStartupLocation = WindowStartupLocation.Manual;
@@ -100,6 +100,12 @@ internal sealed class CaptureBar : Window
         KeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; _selector.Cancel(); } };
         Closed += (_, _) => _selector.Cancel();
         Sync();
+    }
+
+    internal void FocusFirstControl()
+    {
+        Activate();
+        Keyboard.Focus(_photo);
     }
 
     private static StackPanel Label(string key, int glyph)

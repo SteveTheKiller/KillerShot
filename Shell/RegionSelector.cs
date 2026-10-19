@@ -70,6 +70,7 @@ internal sealed class RegionSelector
             {
                 _bar = new CaptureBar(this, _frozen.Monitors.FirstOrDefault(m => m.Primary) ?? _frozen.Monitors[0]) { Owner = home };
                 _bar.Show();
+                _bar.FocusFirstControl();
             }
             Move();   // highlight the window already under the pointer
         }
