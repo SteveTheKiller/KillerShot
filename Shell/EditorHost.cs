@@ -424,13 +424,12 @@ namespace KillerShot.Shell
 
         private System.Windows.Media.Effects.Effect? _paneShadow;
 
-        /// <summary>The picture and the library's one big carousel sit on the lifted pane; the
-        /// library's other views have none.</summary>
+        /// <summary>The editor and both carousel views use the lifted content pane.</summary>
         private void SyncContentPane()
-            => ShowContentPane(_doc != null && !_libraryShown || Library.CurrentView == "flow");
+            => ShowContentPane(_doc != null && !_libraryShown || Library.CurrentView is "flow" or "shelves");
 
-        /// <summary>The library has no pane of its own: it sits on the window background and grain,
-        /// and its cards are the pane gray instead. The picture keeps the lifted pane.</summary>
+        /// <summary>Grid and timeline sit on the window background; carousel views and the editor
+        /// use the themed content surface, border and grain.</summary>
         private void ShowContentPane(bool on)
         {
             _paneShadow ??= ContentPane.Effect;

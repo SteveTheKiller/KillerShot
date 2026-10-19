@@ -220,6 +220,14 @@ internal static class SelfTestAlbumLayout
                 Layout(root);
                 await Task.Delay(180);
                 Render(root, Path.Combine(folder, "browser-theme-" + theme + ".png"));
+                if (theme is Theme.Dark or Theme.Light or Theme.SE98)
+                {
+                    library.SetView("shelves");
+                    Layout(root);
+                    Render(root, Path.Combine(folder, "multiple-carousels-pane-" + theme + ".png"));
+                    library.SetView("flow");
+                    Layout(root);
+                }
                 Check(mainFlow.ActualWidth > 0 && mainFlow.ActualHeight > 0 && browser.IsVisible,
                     "The collection browser and main photo must remain available in " + theme);
             }
@@ -243,6 +251,9 @@ internal static class SelfTestAlbumLayout
             {
                 library.SetView(view);
                 Layout(root);
+                var viewPane = (Border)window.FindName("ContentPane");
+                Check(ReferenceEquals(viewPane.Background, window.FindResource("ContentPaneBrush")) == (view is "shelves" or "flow"),
+                    "Both carousel views must use the main content pane background; grid and timeline keep their existing background.");
                 Check(dock.ShowPane && dock.Side == DockSide.Left && Visuals(dock).Contains(pane)
                     && chevron.Visibility == Visibility.Visible, "The album view hides its existing sidebar and chevron: " + view);
             }
