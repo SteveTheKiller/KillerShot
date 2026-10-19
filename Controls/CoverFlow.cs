@@ -149,6 +149,12 @@ internal sealed class CoverFlow : FrameworkElement
         _motion = new CarouselMotion(this, Rebuild, false,
             () => ActualWidth * SideStep / Math.Max(.1, _visibleWidth),
             () => Math.Max(0, _items.Count - 1), index => SetCurrentValue(SelectedIndexProperty, index));
+        ImageDrag.Attach(this, point =>
+        {
+            if (IndexAt(point) is not int index || index >= _items.Count) return null;
+            var item = _items[index];
+            return () => CaptureLibrary.LoadImage(item);
+        }, verticalNavigation: false);
         Focusable = true;
         FocusVisualStyle = null;
         ClipToBounds = true;
@@ -487,7 +493,7 @@ internal sealed class CoverFlow : FrameworkElement
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) { base.OnMouseLeftButtonDown(e); _motion.Press(e); }
     protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); UpdateHover(e.GetPosition(this)); }
-    public void UpdateHover(Point position) => Cursor = IndexAt(position).HasValue ? Cursors.Hand : Cursors.Arrow;
+    public void UpdateHover(Point position) => Cursor = IndexAt(position).HasValue ? DragCursors.Open : Cursors.Arrow;
     protected override void OnMouseLeave(MouseEventArgs e) { base.OnMouseLeave(e); Cursor = Cursors.Arrow; }
     protected override void OnLostMouseCapture(MouseEventArgs e) { base.OnLostMouseCapture(e); _motion.LostCapture(); }
 

@@ -59,6 +59,7 @@ internal static class SelfTestImageMenus
             window = new MainWindow { ShowActivated = false, Left = -20000, Top = -20000, Width = 1100, Height = 800, WindowStartupLocation = WindowStartupLocation.Manual };
             window.Show();
             await Task.Delay(200);
+            if (!railOnly) CheckImageTransfers(window, image, folder, report);
             if (railOnly)
             {
                 var icons = (StackPanel)window.FindName("RailStack");
@@ -438,6 +439,43 @@ internal static class SelfTestImageMenus
             if (reportPath != null) File.WriteAllLines(reportPath, report);
             App.Instance.Shutdown(code);
         }
+    }
+
+    private static void CheckImageTransfers(MainWindow window, BitmapSource image, string folder, List<string> report)
+    {
+        string fixture = Path.Combine(folder, "dropped.png");
+        ImageOutput.SavePng(image, fixture);
+        var files = new DataObject(DataFormats.FileDrop, new[] { fixture });
+        var before = App.Instance.Document;
+        if (!window.DropImages(files) || App.Instance.Document?.FilePath != fixture)
+            throw new InvalidOperationException("A dropped file must open through the editor's image boundary.");
+        var incoming = App.Instance.Document;
+        if (window.DropImages(new DataObject(DataFormats.Text, "not an image")) || !ReferenceEquals(incoming, App.Instance.Document))
+            throw new InvalidOperationException("Unsupported drops must preserve the document.");
+        incoming!.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(10, 10), new Point(40, 40), Colors.Black, 1));
+        string exported;
+        using (var transfer = ImageDrag.CreateTransfer(incoming.Render()))
+        {
+            var data = new DataObject(transfer.Data);
+            report.Add("Native image transfer formats: " + string.Join(", ", data.GetFormats()));
+            if (data.GetData(DataFormats.FileDrop) is not string[] { Length: 1 } paths)
+                throw new InvalidOperationException("A dragged image must offer a shell file drop.");
+            exported = paths[0];
+            var result = ImageOutput.Load(exported);
+            var pixel = new byte[4];
+            result.CopyPixels(new Int32Rect(20, 20, 1, 1), pixel, 4, 0);
+            if (result.PixelWidth != 640 || result.PixelHeight != 400 || pixel[0] != 0 || pixel[1] != 0 || pixel[2] != 0 || pixel[3] != 255)
+                throw new InvalidOperationException("Drag export must preserve full resolution and current annotations.");
+        }
+        if (File.Exists(exported) || !File.Exists(fixture) || !incoming.Dirty)
+            throw new InvalidOperationException("Canceling a drag must remove its export and preserve the original image and edits.");
+        incoming.MarkSaved();
+        App.Instance.SetDocument(null);
+        int count = CaptureLibrary.Items().Count;
+        if (!window.DropImages(files) || CaptureLibrary.Items().Count != count + 1 || App.Instance.Document != null)
+            throw new InvalidOperationException("Dropping into the album must import without opening an editor.");
+        App.Instance.SetDocument(before);
+        report.Add("Image transfers: file drop opens editor, album drop imports, unsupported data ignored, full-size annotated shell export and cancellation cleanup PASS");
     }
 
     private static IEnumerable<object> Descendants(ItemsControl parent)

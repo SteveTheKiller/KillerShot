@@ -128,8 +128,8 @@ internal static class SelfTestViewCards
             strip.SetSideView("list");
             window.UpdateLayout();
             await Task.Delay(80);
-            Check(Visuals(strip).OfType<StripThumb>().First().Cursor == Cursors.Hand,
-                "The clickable strip thumbnail needs the hand cursor.");
+            Check(Visuals(strip).OfType<StripThumb>().First().Cursor == DragCursors.Open,
+                "The draggable strip thumbnail needs the open hand cursor.");
             var narrow = new CoverFlow
             {
                 ShowInfoCards = true, ThumbnailSource = _ => image,

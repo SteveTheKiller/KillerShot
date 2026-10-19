@@ -201,6 +201,7 @@ namespace KillerShot.Shell
 
         private void OpenDelayElapsed(object? sender, EventArgs e)
         {
+            if (ImageDrag.Active) { CancelPendingOpen(); return; }
             if (_host.IsHorizontal ? _flow.IsMoving : _sideView == "rolodex" && _rolodex.IsMoving) return;
             var item = _openDelay.Tag as CaptureItem;
             string? source = _pendingSource;
@@ -326,7 +327,7 @@ namespace KillerShot.Shell
                     var membersByCollection = all.ToLookup(i => i.CollectionId);
                     var choices = new List<CollectionChoice>();
                     void Choice(string source, string name, IReadOnlyList<CaptureItem> members) =>
-                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 8 : 4).ToArray(), members.Count, PreviewStyle));
+                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, PreviewStyle));
                     Choice("all", Loc("Str_Strip_All"), all);
                     if (FolderCaptures.Enabled) Choice("folder", FolderCaptures.Name, FolderCaptures.Items());
                     foreach (var c in collections)
@@ -505,6 +506,8 @@ namespace KillerShot.Shell
             stack.Margin = new Thickness(6, 6, 6, 5);
             layers.Children.Add(stack);
             Child = layers;
+            Cursor = DragCursors.Open;
+            ImageDrag.Attach(this, _ => DataContext is CaptureItem item ? () => CaptureLibrary.LoadImage(item) : null);
             DataContextChanged += (_, _) => Load();
         }
 

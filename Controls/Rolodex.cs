@@ -159,6 +159,12 @@ internal sealed class Rolodex : FrameworkElement
         _motion = new CarouselMotion(this, Rebuild, true,
             () => ActualWidth * _zoom * Reveal / ViewWidth, () => Math.Max(0, _items.Count - 1),
             index => SetCurrentValue(SelectedIndexProperty, index), cyclic: true);
+        ImageDrag.Attach(this, point =>
+        {
+            if (IndexAt(point) is not int index || index >= _items.Count) return null;
+            var item = _items[index];
+            return () => CaptureLibrary.LoadImage(item);
+        }, verticalNavigation: true);
         Focusable = true;
         FocusVisualStyle = null;
         ClipToBounds = true;
@@ -472,7 +478,7 @@ internal sealed class Rolodex : FrameworkElement
     }
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) { base.OnMouseLeftButtonDown(e); _motion.Press(e); }
-    protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); }
+    protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); Cursor = IndexAt(e.GetPosition(this)).HasValue ? DragCursors.Open : Cursors.Arrow; }
     protected override void OnLostMouseCapture(MouseEventArgs e) { base.OnLostMouseCapture(e); _motion.LostCapture(); }
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)

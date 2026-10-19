@@ -324,6 +324,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        ImageDrag.Cleanup();
         _wakeWait?.Unregister(null);
         _wake?.Dispose();
         Tray?.Dispose();

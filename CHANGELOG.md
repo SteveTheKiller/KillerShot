@@ -4,7 +4,8 @@
 - Unsaved edits require confirmation before another image opens. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
-- Browse collections in the album sidebar with Stack, Tiny grid, Mini carousel or Scattered pile previews. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and album/editor sidebars keep separate sizes with tighter resizing gaps.
+- Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor.
+- Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and album/editor sidebars keep separate sizes with tighter resizing gaps.
 - Recording audio stops when Stop is pressed, completed videos survive capture-device errors, and failed graphics initialization releases its resources. Fixed folder cache pruning and capture outline redraws.
 - Command-line captures refresh the open album and search, report when nothing was saved, and explain the password-protected album limit.
 - Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.

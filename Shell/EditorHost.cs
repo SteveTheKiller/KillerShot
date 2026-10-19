@@ -571,17 +571,19 @@ namespace KillerShot.Shell
 
         internal void CommitPendingText() => Editor.CommitText();
 
-        private void OpenPath(string path)
+        private bool OpenPath(string path)
         {
             try
             {
                 var bmp = ImageOutput.Load(path);
-                if (App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path))))
-                    StatusText.Text = Loc("Str_Status_Ready");
+                if (!App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path)))) return false;
+                StatusText.Text = Loc("Str_Status_Ready");
+                return true;
             }
             catch (Exception ex)
             {
                 StatusText.Text = string.Format(Loc("Str_Status_OpenFailed"), ex.Message);
+                return false;
             }
         }
 

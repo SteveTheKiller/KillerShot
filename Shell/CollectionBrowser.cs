@@ -58,17 +58,32 @@ internal sealed class CollectionBrowser : ListBox
     }
 }
 
-/// <summary>A bounded preview for a virtualized collection row.</summary>
+/// <summary>A small photo preview for a virtualized collection row.</summary>
 public sealed class CollectionPreview : StackPanel
 {
     private static readonly SemaphoreSlim LoadSlots = new(2);
     private readonly Grid _photos = new() { Height = 78, ClipToBounds = true };
+    private readonly Canvas _pile = new() { ClipToBounds = false };
     private readonly TextBlock _name = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 0) };
     private readonly TextBlock _count = new() { FontSize = 11 };
     private int _generation;
     private readonly List<(Border Frame, CaptureItem Item, int Index)> _scattered = [];
-    private static readonly (double X, double Y)[] ScatterSlots =
-        [(.27, .28), (.72, .73), (.74, .23), (.25, .77), (.48, .47), (.51, .82), (.80, .47), (.47, .17)];
+    private uint _scatterSeed;
+    private static readonly (double X, double Y)[][] ScatterLayouts =
+    [
+        [(.27,.28),(.72,.73),(.74,.23),(.25,.77),(.48,.47),(.51,.82),(.80,.47),(.47,.17)],
+        [(.24,.20),(.37,.35),(.52,.49),(.69,.66),(.78,.82),(.22,.63),(.70,.24),(.43,.80)],
+        [(.50,.17),(.28,.29),(.22,.51),(.31,.74),(.53,.83),(.74,.70),(.79,.44),(.67,.26)],
+        [(.21,.27),(.46,.21),(.74,.30),(.66,.49),(.37,.52),(.22,.73),(.50,.80),(.78,.73)],
+        [(.20,.20),(.75,.20),(.28,.44),(.69,.44),(.39,.65),(.59,.66),(.26,.83),(.77,.83)],
+        [(.50,.18),(.29,.36),(.73,.36),(.50,.49),(.21,.66),(.78,.66),(.48,.81),(.61,.30)],
+        [(.23,.24),(.48,.29),(.76,.22),(.26,.50),(.70,.49),(.23,.78),(.49,.72),(.78,.80)],
+        [(.75,.18),(.59,.34),(.42,.51),(.26,.69),(.20,.84),(.24,.25),(.77,.67),(.54,.82)],
+        [(.29,.18),(.68,.29),(.35,.40),(.73,.51),(.28,.63),(.64,.75),(.43,.84),(.48,.28)],
+        [(.21,.36),(.39,.22),(.65,.20),(.80,.38),(.65,.56),(.42,.52),(.27,.76),(.70,.81)],
+        [(.24,.19),(.49,.35),(.77,.21),(.22,.51),(.74,.51),(.23,.80),(.51,.66),(.77,.81)],
+        [(.39,.18),(.67,.25),(.23,.43),(.54,.45),(.79,.56),(.32,.70),(.60,.81),(.72,.73)],
+    ];
 
     public CollectionPreview()
     {
@@ -78,24 +93,29 @@ public sealed class CollectionPreview : StackPanel
         _photos.SizeChanged += (_, _) => PlaceScatteredPhotos();
         DataContextChanged += (_, _) => Refresh();
         Loaded += (_, _) => { ThemeManager.ThemeChanged += Refresh; Refresh(); };
-        Unloaded += (_, _) => { ThemeManager.ThemeChanged -= Refresh; _generation++; _photos.Children.Clear(); _scattered.Clear(); };
+        Unloaded += (_, _) => { ThemeManager.ThemeChanged -= Refresh; _generation++; _photos.Children.Clear(); _pile.Children.Clear(); _scattered.Clear(); };
     }
 
     private async void Refresh()
     {
         int generation = ++_generation;
         _photos.Children.Clear();
+        _pile.Children.Clear();
         _scattered.Clear();
         _photos.RowDefinitions.Clear();
         _photos.ColumnDefinitions.Clear();
         if (DataContext is not CollectionChoice choice) return;
+        _scatterSeed = 2166136261;
+        foreach (char character in choice.Source) _scatterSeed = unchecked((_scatterSeed ^ character) * 16777619);
         _name.Text = choice.Name;
         _count.Text = choice.Detail;
         _photos.Visibility = choice.Preview.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        _photos.Height = choice.Style == "pile" ? 140 : 78;
+        _photos.Height = choice.Style == "pile" ? 120 : 78;
+        _photos.ClipToBounds = choice.Style != "pile";
+        if (choice.Style == "pile") _photos.Children.Add(_pile);
         ToolTip = choice.AccessibleName;
         if (!IsLoaded) return;
-        var preview = choice.Preview.Take(choice.Style == "pile" ? 8 : 4).Reverse().ToArray();
+        var preview = choice.Preview.Take(choice.Style == "pile" ? 12 : 4).Reverse().ToArray();
         var bitmaps = new BitmapSource?[preview.Length];
         if (choice.Style == "grid")
         {
@@ -111,7 +131,7 @@ public sealed class CollectionPreview : StackPanel
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
             var frame = new Border
             {
-                Child = image, Padding = new Thickness(2), HorizontalAlignment = HorizontalAlignment.Center,
+                Child = image, Padding = new Thickness(1), HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center, RenderTransform = new TranslateTransform(i * 5 - 8, -i * 3),
             };
             frame.SetResourceReference(BackgroundProperty, "ContentPaneBrush");
@@ -129,6 +149,7 @@ public sealed class CollectionPreview : StackPanel
             }
             else if (choice.Style == "pile")
             {
+                frame.Padding = new Thickness(0);
                 image.Width = image.Height = double.NaN;
                 frame.HorizontalAlignment = HorizontalAlignment.Left;
                 frame.VerticalAlignment = VerticalAlignment.Top;
@@ -138,8 +159,11 @@ public sealed class CollectionPreview : StackPanel
                 frame.Effect = shadow;
                 shadow.Opacity = TryFindResource("SelectedTileShadowOpacity") is double opacity ? opacity : 0;
             }
-            _photos.Children.Add(frame);
+            if (choice.Style == "pile") _pile.Children.Add(frame);
+            else _photos.Children.Add(frame);
             var item = preview[i];
+            frame.Cursor = Controls.DragCursors.Open;
+            ImageDrag.Attach(frame, _ => () => CaptureLibrary.LoadImage(item));
             await LoadSlots.WaitAsync();
             try
             {
@@ -158,7 +182,8 @@ public sealed class CollectionPreview : StackPanel
             int current = 0;
             var left = new Image { Width = 52, Height = 42, Opacity = .55, HorizontalAlignment = HorizontalAlignment.Left, IsHitTestVisible = false };
             var right = new Image { Width = 52, Height = 42, Opacity = .55, HorizontalAlignment = HorizontalAlignment.Right, IsHitTestVisible = false };
-            var center = new Image { Width = 108, Height = 66, IsHitTestVisible = false };
+            var center = new Image { Width = 108, Height = 66, Cursor = Controls.DragCursors.Open };
+            ImageDrag.Attach(center, _ => { var item = preview[current]; return () => CaptureLibrary.LoadImage(item); });
             void Show()
             {
                 center.Source = bitmaps[current];
@@ -193,20 +218,30 @@ public sealed class CollectionPreview : StackPanel
         if (availableWidth <= 12 || availableHeight <= 12) return;
         foreach (var (frame, item, index) in _scattered)
         {
+            uint variation = unchecked((uint)item.Id * 2654435761U ^ _scatterSeed);
+            variation ^= variation >> 16;
             double aspect = item.Width > 0 && item.Height > 0 ? (double)item.Width / item.Height : 1.5;
-            double width = Math.Min(Math.Min(100, availableWidth * (.43 + index % 3 * .025)), 60 * aspect);
-            double height = width / aspect;
-            double angle = ((item.Id % 37 + 37) % 37) - 18;
+            double photoWidth = Math.Min(Math.Min(140, availableWidth * (.52 + variation % 12 * .012)), 82 * aspect);
+            double width = photoWidth + 2;
+            double height = photoWidth / aspect + 2;
+            double angle = (int)(variation % 43) - 21;
             double radians = angle * Math.PI / 180;
             double halfWidth = (Math.Abs(Math.Cos(radians)) * width + Math.Abs(Math.Sin(radians)) * height) / 2;
             double halfHeight = (Math.Abs(Math.Sin(radians)) * width + Math.Abs(Math.Cos(radians)) * height) / 2;
-            var slot = ScatterSlots[index % ScatterSlots.Length];
-            double jitter = ((item.Id % 11 + 11) % 11 - 5) * .006;
-            double x = Math.Clamp((slot.X + jitter) * availableWidth, halfWidth + 6, availableWidth - halfWidth - 6);
-            double y = Math.Clamp((slot.Y - jitter) * availableHeight, halfHeight + 6, availableHeight - halfHeight - 6);
+            var slots = ScatterLayouts[_scatterSeed % (uint)ScatterLayouts.Length];
+            var slot = slots[index % slots.Length];
+            if (_scattered.Count == 2) slot = index == 0 ? (.24, .35) : (.76, .80);
+            double jitter = ((int)(variation % 13) - 6) * .006;
+            double y = Math.Clamp((slot.Y - jitter) * availableHeight * 1.35 - 18, halfHeight - 24, availableHeight - halfHeight + 40);
+            if (_scattered.Count == 2 && index == 0) y = Math.Max(y, halfHeight + 2);
+            double x = (slot.X + jitter) * availableWidth;
+            // Overflow joins the next group along the right, leaving its left-hand labels clear.
+            if (y - halfHeight < 0 || y + halfHeight > availableHeight) x = Math.Max(x, availableWidth * .72);
+            x = Math.Clamp(x, halfWidth - 6, availableWidth - halfWidth + 14);
             frame.Width = width;
             frame.Height = height;
-            frame.Margin = new Thickness(x - width / 2, y - height / 2, 0, 0);
+            Canvas.SetLeft(frame, x - width / 2);
+            Canvas.SetTop(frame, y - height / 2);
             frame.RenderTransformOrigin = new Point(.5, .5);
             frame.RenderTransform = new RotateTransform(angle);
         }

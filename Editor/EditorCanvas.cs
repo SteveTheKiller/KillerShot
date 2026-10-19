@@ -40,6 +40,12 @@ public sealed partial class EditorCanvas : Canvas
         Background = Brushes.Transparent;
         Cursor = Cursors.Cross;
         SnapsToDevicePixels = true;
+        Services.ImageDrag.Attach(this, point =>
+        {
+            if (Tool != ToolKind.Select || _doc == null || HitTest(ToImage(point)) != null) return null;
+            var document = _doc;
+            return () => { CommitText(); return document.Render(); };
+        }, capturePointer: true);
     }
 
     public EditorDocument? Document
@@ -257,7 +263,7 @@ public sealed partial class EditorCanvas : Canvas
         var p = ToImage(e.GetPosition(this));
         if (!_dragging)
         {
-            if (Tool == ToolKind.Select) Cursor = HitTest(p) != null ? Cursors.SizeAll : Cursors.Arrow;
+            if (Tool == ToolKind.Select) Cursor = HitTest(p) != null ? Cursors.SizeAll : Controls.DragCursors.Open;
             return;
         }
         bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;

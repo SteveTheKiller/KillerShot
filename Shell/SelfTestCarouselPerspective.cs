@@ -110,7 +110,7 @@ internal static class SelfTestCarouselPerspective
         var before = Bounds(flow);
         Render(flow, Path.Combine(folder, name + "-before.png"));
         flow.UpdateHover(new Point(before.Center.X + before.Center.Width / 2, before.Center.Y + before.Center.Height / 2));
-        Check(flow.Cursor == Cursors.Hand, "Hovering a clickable center image does not show a hand cursor.");
+        Check(flow.Cursor == DragCursors.Open, "Hovering a draggable center image does not show the open hand cursor.");
         flow.UpdateHover(new Point(2, 2));
         Check(flow.Cursor == Cursors.Arrow, "Hovering an empty gap does not restore the arrow cursor.");
         flow.HandleWheel(0, ModifierKeys.Control);
@@ -121,9 +121,9 @@ internal static class SelfTestCarouselPerspective
         var closer = Bounds(flow);
         Render(flow, Path.Combine(folder, name + "-closer.png"));
         flow.UpdateHover(new Point(closer.Center.X + closer.Center.Width / 2, closer.Center.Y + closer.Center.Height / 2));
-        Check(flow.Cursor == Cursors.Hand, "The zoomed image lost its clickable hand cursor.");
+        Check(flow.Cursor == DragCursors.Open, "The zoomed image lost its open hand cursor.");
         flow.UpdateHover(new Point(closer.Side.X + closer.Side.Width / 2, closer.Side.Y + closer.Side.Height / 2));
-        Check(flow.Cursor == Cursors.Hand, "A side image does not show a hand cursor.");
+        Check(flow.Cursor == DragCursors.Open, "A side image does not show the open hand cursor.");
         Check(closer.Center.Height > before.Center.Height * 1.15, "Ctrl+wheel did not enlarge the selected image.");
         Check(closer.Side.Height < before.Side.Height * .90, "Ctrl+wheel did not shrink the side image.");
         Check(closer.Center.Top >= -1 && closer.Center.Bottom <= flow.ActualHeight + 1,
