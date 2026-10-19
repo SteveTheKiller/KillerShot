@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Noch nicht im Album gespeicherte Aufnahmen: {0}. Beim Beenden werden sie verworfen.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Erneut versuchen</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Die Fensteroberfläche war nicht verfügbar. Diese Aufnahme zeigt nur, was auf dem Desktop sichtbar war.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBEN</sys:String>
+    <sys:String x:Key="Str_Album_New">Neues Album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Datei öffnen...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Neues Album benennen</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Album umbenennen</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Aufnahmealben|*.kshot|Alle Dateien|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Aktiv</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} entsperren</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Beim Öffnen eines externen Albums wird eine Kopie in diesem Albumordner angelegt.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Das Album wurde nicht geändert: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Speichere die ausstehenden Aufnahmen, bevor du dieses Album wechselst oder umbenennst.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Gib einen Dateinamen ohne Ordner oder reservierte Zeichen ein.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Das ausgewählte Album fehlt.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Der Kontoschlüssel dieses Albums konnte nicht gelesen werden. Öffne es mit dem Windows-Konto, mit dem es erstellt wurde, oder verwende eine passwortgeschützte Kopie.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Das aktive Album wurde gewechselt. Wähle die Aufnahme erneut aus.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Infokarten anzeigen</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Ein Album mit diesem Namen ist bereits vorhanden.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Der Wiederherstellungseintrag für die Albumumbenennung ist unvollständig.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Der Wiederherstellungseintrag für die Albumumbenennung ist ungültig.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Die Wiederherstellungsdateien für die Albumumbenennung fehlen.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Der alte und der neue Albumpfad sind vorhanden. Die Wiederherstellungsdateien wurden beibehalten.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Die Datenbankstruktur des Albums ist unvollständig.</sys:String>
 </ResourceDictionary>

@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0} felvétel nincs elmentve az albumba. Ha most kilép, ezek elvesznek.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Újra</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Az ablak felülete nem volt elérhető. Ez a felvétel csak az asztalon látható tartalmat mutatja.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUMOK</sys:String>
+    <sys:String x:Key="Str_Album_New">Új album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Fájl megnyitása...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Az új album neve</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Album átnevezése</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Felvételalbumok|*.kshot|Minden fájl|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Aktív</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} feloldása</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Külső album megnyitásakor egy másolat kerül ebbe az albummappába.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Az album nem változott: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Az albumváltás vagy átnevezés előtt mentse a függőben lévő felvételeket.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Adjon meg egy fájlnevet mappák és fenntartott karakterek nélkül.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">A kiválasztott album nem található.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Az album fiókkulcsa nem olvasható. Nyissa meg az albumot az azt létrehozó Windows-fiókban, vagy használjon jelszóval védett másolatot.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Az aktív album megváltozott. Válassza ki újra a felvételt.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Információs kártyák megjelenítése</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Már létezik ilyen nevű album.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Az album átnevezésének helyreállítási bejegyzése hiányos.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Az album átnevezésének helyreállítási bejegyzése érvénytelen.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Hiányoznak az album átnevezésének helyreállítási fájljai.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Az album régi és új elérési útja is létezik. A helyreállítási fájlok megmaradtak.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Az album adatbázisszerkezete hiányos.</sys:String>
 </ResourceDictionary>

@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Skjermbilder som ennå ikke er lagret i albumet: {0}. Hvis du avslutter nå, går de tapt.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Prøv igjen</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Vinduets overflate var ikke tilgjengelig. Dette skjermbildet viser bare det som var synlig på skrivebordet.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>
+    <sys:String x:Key="Str_Album_New">Nytt album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Åpne fil...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Navngi det nye albumet</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Gi albumet nytt navn</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Opptaksalbum|*.kshot|Alle filer|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Aktivt</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Lås opp {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Når du åpner et eksternt album, legges en kopi i denne albummappen.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Albumet ble ikke endret: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Lagre ventende opptak før du bytter album eller gir det nytt navn.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Skriv inn et filnavn uten mapper eller reserverte tegn.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Det valgte albumet finnes ikke.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Kontonøkkelen til dette albumet kunne ikke leses. Åpne det med Windows-kontoen som opprettet det, eller bruk en passordbeskyttet kopi.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Det aktive albumet er endret. Velg opptaket på nytt.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Vis informasjonskort</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Et album med dette navnet finnes allerede.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Gjenopprettingsoppføringen for navneendringen er ufullstendig.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Gjenopprettingsoppføringen for navneendringen er ugyldig.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Gjenopprettingsfilene for navneendringen mangler.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Både den gamle og den nye albumbanen finnes. Gjenopprettingsfilene er bevart.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Albumets databasestruktur er ufullstendig.</sys:String>
 </ResourceDictionary>

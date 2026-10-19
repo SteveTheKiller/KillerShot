@@ -29,7 +29,7 @@ namespace KillerShot.Shell
                 if (o.Visibility == Visibility.Visible) o.Visibility = Visibility.Collapsed;
             SyncVideoOptions();
             BuildShortcutRows();
-            VideoSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110);
+            VideoSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110) + VideoSettingsScroll.Padding.Top + VideoSettingsScroll.Padding.Bottom;
             FadeOverlayIn(VideoSettingsOverlay);
         }
 

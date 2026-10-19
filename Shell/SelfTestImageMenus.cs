@@ -26,7 +26,13 @@ internal static class SelfTestImageMenus
         int code = 1;
         MainWindow? window = null;
         string? reportPath = null;
-        var report = new List<string>();
+        var report = new List<string>
+        {
+            "H1: The old left-edge assertion assumes a hidden album pane; the restored pane places the rail between the pane and body.",
+            "H2: The album inherited the editor's top side; public side and orientation checks distinguish this from the expected inset.",
+            "H3: A delayed layout leaves stale positions; settled bounds must preserve pane, rail, body ordering and visible chevron.",
+            "H4: The exact rail-order fixture predates Search and New collection; both controls must participate in reversal."
+        };
         try
         {
             if (Directory.Exists(folder)) throw new InvalidOperationException("Use a new image-menu test folder.");
@@ -252,10 +258,24 @@ internal static class SelfTestImageMenus
                 report.Add("Strip " + view + ": context menu and unchanged editor PASS");
             }
             window.TestStripDock.DockTo(DockSide.Top);
+            doc.MarkSaved();
             App.Instance.SetDocument(null);
             window.UpdateLayout();
-            if (rail.Orientation != Orientation.Vertical || rail.TranslatePoint(new Point(), window).X > 30)
-                throw new InvalidOperationException("The album must put its rail on the left instead of inheriting the editor's top strip.");
+            var albumDock = window.TestStripDock;
+            var albumPane = window.TestStrip!;
+            var albumChevron = Visuals(albumDock).OfType<Button>().Single(button =>
+                button.Parent is Grid parent && parent.Children.Contains(rail));
+            double paneRight = albumPane.TranslatePoint(new Point(albumPane.ActualWidth, 0), albumDock).X;
+            double railLeft = rail.TranslatePoint(new Point(), albumDock).X;
+            double railRight = rail.TranslatePoint(new Point(rail.ActualWidth, 0), albumDock).X;
+            double bodyLeft = contentPane.TranslatePoint(new Point(), albumDock).X;
+            if (albumDock.Side != DockSide.Left || albumDock.IsHorizontal || !albumDock.ShowPane || !albumPane.IsVisible
+                || rail.Orientation != Orientation.Vertical || !albumChevron.IsVisible
+                || railLeft < paneRight - 1 || railRight > bodyLeft + 1
+                || albumChevron.TranslatePoint(new Point(0, albumChevron.ActualHeight), albumDock).Y
+                    >= rail.TranslatePoint(new Point(), albumDock).Y)
+                throw new InvalidOperationException("The album must keep its visible pane on the left, its chevron above the icons, and its rail between pane and body.");
+            report.Add($"Album sidebar: left pane, visible chevron and vertical rail between pane/body ({paneRight:F1}, {railLeft:F1}, {railRight:F1}, {bodyLeft:F1}) PASS");
             Open();
             if (Item("copy").IsEnabled || Item("save").IsEnabled || Item("undo").IsEnabled)
                 throw new InvalidOperationException("Editor menu actions must be disabled without an image.");
@@ -319,16 +339,26 @@ internal static class SelfTestImageMenus
                 || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
                 throw new InvalidOperationException("The theme flyout is not anchored to its own rail button.");
             themeMenu.IsOpen = false;
-            FrameworkElement[] leadingRail = [themeButton, (Button)window.FindName("LangButton"), (Button)window.FindName("ShortcutsButton"), (Button)window.FindName("CaptureSettingsButton")];
-            if (!rail.Children.Cast<UIElement>().Take(4).SequenceEqual(leadingRail)) throw new InvalidOperationException("Rail order must start Theme, Locale, Help, Settings.");
-            var firstExtra = rail.Children[4];
+            Button RailView(string key) => rail.Children.OfType<Button>().Single(button =>
+                System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc(key));
+            FrameworkElement[] expectedRail = [dockButton, RailView("Str_Strip_ViewList"), RailView("Str_Strip_ViewRolodex"),
+                (Button)window.FindName("LibrarySearchButton"), (Button)window.FindName("NewCollectionButton"),
+                (Button)window.FindName("CaptureSettingsButton"), (Button)window.FindName("VideoSettingsButton"),
+                (Button)window.FindName("QrReadingButton"), (Button)window.FindName("ShortcutsButton"),
+                (Button)window.FindName("LangButton"), themeButton];
+            if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail))
+                throw new InvalidOperationException("Rail order must put app controls before Shortcuts, Language and Theme.");
             OpenRail();
             railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            if (!ReferenceEquals(firstExtra, rail.Children[rail.Children.Count - 1]) || !rail.Children.Cast<UIElement>().Take(4).SequenceEqual(leadingRail))
-                throw new InvalidOperationException("Reversing app controls must preserve Theme, Locale, Help, Settings in order.");
+            if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail.Reverse()))
+                throw new InvalidOperationException("Reverse order must reverse every rail control.");
             railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            window.UpdateLayout();
+            if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail)
+                || rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
+                throw new InvalidOperationException("Restoring rail order must retain every control at the fixed right end.");
             report.Add("Rail menu: fixed ends, reversible order and theme flyout anchored to its button PASS");
             var printPreview = new PrintPreviewWindow(window, doc.Render(), "Edited screenshot");
             printPreview.Show();

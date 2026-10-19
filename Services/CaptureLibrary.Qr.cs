@@ -6,17 +6,26 @@ namespace KillerShot.Services;
 
 internal static partial class CaptureLibrary
 {
-    private static bool _qrReadingEnabled = Settings.GetBool("QrReading", false);
     private static readonly SemaphoreSlim QrWorker = new(1, 1);
+    private static readonly Dictionary<string, bool> PendingQrChoices = new(StringComparer.OrdinalIgnoreCase);
     private static int _qrScheduled;
 
     public static bool QrReadingEnabled
     {
-        get => Volatile.Read(ref _qrReadingEnabled);
+        get
+        {
+            lock (_gate) return _db == null && PendingQrChoices.TryGetValue(FilePath, out bool pending)
+                ? pending : GetAlbumSetting("QrReading") == "1";
+        }
         set
         {
-            Volatile.Write(ref _qrReadingEnabled, value);
-            Settings.SetBool("QrReading", value);
+            lock (_gate)
+            {
+                // Reading a picture in the editor also works while its album is locked.
+                // Persist that album's choice once its connection becomes available.
+                if (_db == null) { PendingQrChoices[FilePath] = value; return; }
+                SetAlbumSetting("QrReading", value ? "1" : "0");
+            }
             if (value) StartQrReading();
         }
     }
@@ -78,6 +87,11 @@ internal static partial class CaptureLibrary
     }
 
     public static void StoreQr(long id, IReadOnlyList<QrResult> results) => StoreQr(id, results, null);
+
+    public static void StoreQr(CaptureItem item, IReadOnlyList<QrResult> results)
+    {
+        lock (_gate) if (IsCurrent(item)) StoreQr(item.Id, results, _db);
+    }
 
     private static void StoreQr(long id, IReadOnlyList<QrResult> results, SqliteConnection? expectedDatabase)
     {

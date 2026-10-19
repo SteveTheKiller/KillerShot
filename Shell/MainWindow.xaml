@@ -20,6 +20,69 @@
                             GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
 
+    <Window.Resources>
+        <icons:ScrollEdgeVisibilityConverter x:Key="OverlayScrollEdgeVisibility"/>
+        <Style x:Key="OverlayVerticalScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource {x:Type ScrollBar}}"/>
+        <Style x:Key="OverlayCloseClearScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource OverlayVerticalScrollBar}">
+            <!-- The fixed Close hit area ends 32px below the card's top edge. -->
+            <Setter Property="Margin" Value="0,32,0,0"/>
+        </Style>
+        <!-- KillerShell's vertical edge cues, with body spacing inside the viewport. -->
+        <Style x:Key="OverlayScrollViewer" TargetType="ScrollViewer">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Margin="{TemplateBinding Padding}"
+                                                    CanContentScroll="{TemplateBinding CanContentScroll}"/>
+                            <Border Grid.ColumnSpan="2" Height="24" VerticalAlignment="Top" IsHitTestVisible="False"
+                                    Opacity="{DynamicResource EdgeFadeOpacity}" BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="0,1,0,0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#50000000" Offset="0"/>
+                                        <GradientStop Color="#22000000" Offset="0.35"/>
+                                        <GradientStop Color="#00000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.Visibility>
+                                    <MultiBinding Converter="{StaticResource OverlayScrollEdgeVisibility}" ConverterParameter="Start">
+                                        <Binding Path="VerticalOffset" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ScrollableHeight" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.Visibility>
+                            </Border>
+                            <Border Grid.ColumnSpan="2" Height="28" VerticalAlignment="Bottom" IsHitTestVisible="False"
+                                    Opacity="{DynamicResource EdgeFadeOpacity}">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00000000" Offset="0"/>
+                                        <GradientStop Color="#22000000" Offset="0.65"/>
+                                        <GradientStop Color="#50000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.Visibility>
+                                    <MultiBinding Converter="{StaticResource OverlayScrollEdgeVisibility}" ConverterParameter="End">
+                                        <Binding Path="VerticalOffset" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ScrollableHeight" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.Visibility>
+                            </Border>
+                            <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Style="{DynamicResource OverlayVerticalScrollBar}"
+                                       Orientation="Vertical" Cursor="Arrow" Minimum="0" Maximum="{TemplateBinding ScrollableHeight}"
+                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                       Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid x:Name="FrameHost">
     <!-- Opacity 0: Chrome.cs FadeInContent brings RootGrid up on Loaded. -->
     <Grid x:Name="RootGrid" Opacity="0" Margin="{DynamicResource WindowFramePadding}">
@@ -268,6 +331,12 @@
                      toggles, then shortcuts, language and theme. -->
                 <kl:DockHost.Rail>
                 <StackPanel x:Name="RailStack">
+                    <Button x:Name="LibrarySearchButton" Style="{StaticResource RailButton}"
+                            Click="LibrarySearchButton_Click" Content="&#xE721;" Margin="0,0,0,6"
+                            ToolTip="{DynamicResource Str_Lib_Search}"/>
+                    <Button x:Name="NewCollectionButton" Style="{StaticResource RailButton}"
+                            Click="NewCollectionButton_Click" Content="&#xE8F4;" Margin="0,0,0,6"
+                            ToolTip="{DynamicResource Str_Lib_NewCollection}"/>
                     <Button x:Name="CaptureSettingsButton" Style="{StaticResource RailButton}"
                             Click="CaptureSettingsButton_Click" Content="&#xE713;" Margin="0,0,0,6"
                             ToolTip="{DynamicResource Str_TT_CaptureSettings}"/>
@@ -573,8 +642,11 @@
 
                         <!-- Two panels that wrap to one column on a narrow window; the scroller covers
                              a short one. -->
-                        <ScrollViewer x:Name="CaptureSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="CaptureSettingsScroll" Padding="{DynamicResource AboutBodyMargin}" Style="{StaticResource OverlayScrollViewer}" VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <ScrollViewer.Resources>
+                                <Style x:Key="OverlayVerticalScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource OverlayCloseClearScrollBar}"/>
+                            </ScrollViewer.Resources>
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
                                            FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
@@ -599,6 +671,10 @@
                                         <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
 
+                                        <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
                                     </StackPanel>
 
                                     <StackPanel Width="420">
@@ -649,10 +725,6 @@
                                         <CheckBox x:Name="SoundToggle" Content="{DynamicResource Str_CS_Sound}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="PickWindowToggle" Content="{DynamicResource Str_CS_PickWindow}" Style="{StaticResource CsCheck}"/>
 
-                                        <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
-                                        <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
-                                        <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
-                                        <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
                                     </StackPanel>
                                 </WrapPanel>
                             </StackPanel>
@@ -722,8 +794,11 @@
                             </Grid>
                         </Border>
 
-                        <ScrollViewer x:Name="VideoSettingsScroll" Margin="{DynamicResource AboutBodyMargin}" VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="VideoSettingsScroll" Padding="{DynamicResource AboutBodyMargin}" Style="{StaticResource OverlayScrollViewer}" VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <ScrollViewer.Resources>
+                                <Style x:Key="OverlayVerticalScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource OverlayCloseClearScrollBar}"/>
+                            </ScrollViewer.Resources>
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Str_VS_Title}" Foreground="{DynamicResource TextBrush}"
                                            FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
@@ -905,13 +980,13 @@
                             </Grid>
                         </Border>
 
-                        <Grid Margin="24,18,24,18">
+                        <Grid Margin="0,18,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid Grid.Row="0" Margin="24,0,24,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -930,19 +1005,19 @@
                                 </TextBlock>
                             </Grid>
 
-                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="24,0,24,12">
                                 <TextBlock Text="{DynamicResource Str_KS_Hint}" Foreground="{DynamicResource DimTextBrush}"
                                            FontSize="11" VerticalAlignment="Center" Margin="8,0,0,0"/>
                             </StackPanel>
 
                             <!-- LIST -->
-                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" Padding="24,0,24,18" Style="{StaticResource OverlayScrollViewer}" VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False">
                                 <StackPanel x:Name="KsListHost"/>
                             </ScrollViewer>
 
                             <!-- MAP -->
-                            <Grid x:Name="KsMapHost" Grid.Row="2" Visibility="Collapsed">
+                            <Grid x:Name="KsMapHost" Grid.Row="2" Margin="24,0,24,18" Visibility="Collapsed">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
@@ -1165,13 +1240,36 @@
         <Popup x:Name="LibrarySettingsPopup" PlacementTarget="{Binding ElementName=LibrarySettingsButton}"
                Placement="Bottom" AllowsTransparency="True" StaysOpen="False"
                HorizontalOffset="-16" VerticalOffset="-14" Closed="LibrarySettingsPopup_Closed">
-            <Border Style="{StaticResource FlyoutCard}" PreviewKeyDown="LibrarySettingsPopup_PreviewKeyDown">
+            <Border x:Name="LibrarySettingsCard" Width="460" Style="{StaticResource FlyoutCard}" PreviewKeyDown="LibrarySettingsPopup_PreviewKeyDown">
                 <Grid>
-                    <StackPanel x:Name="LibrarySettingsContent" Margin="14" Width="380"
+                    <ScrollViewer x:Name="LibrarySettingsScroll" Style="{StaticResource OverlayScrollViewer}"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="14">
+                    <StackPanel x:Name="LibrarySettingsContent"
                                 TextElement.FontFamily="{DynamicResource UiFont}" TextElement.Foreground="{DynamicResource TextBrush}"
                                 KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
-                        <TextBlock Text="{DynamicResource Str_CS_Library}" FontFamily="{DynamicResource HeadingFont}"
+                        <TextBlock Text="{DynamicResource Str_Album_Title}" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <WrapPanel Margin="0,0,0,10">
+                            <Button Content="{DynamicResource Str_Album_New}" Style="{StaticResource OutlineButton}"
+                                    Padding="10,4" Margin="0,0,6,4" Click="AlbumNew_Click"/>
+                            <Button Content="{DynamicResource Str_Album_OpenFile}" Style="{StaticResource OutlineButton}"
+                                    Padding="10,4" Margin="0,0,0,4" Click="AlbumImport_Click"/>
+                        </WrapPanel>
+                        <ListBox x:Name="AlbumList" MinHeight="80" Margin="0,0,0,10" BorderThickness="1"
+                                 Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource InputBorderBrush}"
+                                 HorizontalContentAlignment="Stretch" SelectionChanged="AlbumList_SelectionChanged"
+                                 MouseDoubleClick="AlbumList_DoubleClick" AutomationProperties.Name="{DynamicResource Str_Album_Title}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                        <WrapPanel Margin="0,0,0,8">
+                            <Button x:Name="AlbumOpenBtn" Content="{DynamicResource Str_Lib_Open}" Style="{StaticResource OutlineButton}"
+                                    Padding="10,4" Margin="0,0,6,4" Click="AlbumOpen_Click"/>
+                            <Button x:Name="AlbumRenameBtn" Content="{DynamicResource Str_Lib_Rename}" Style="{StaticResource OutlineButton}"
+                                    Padding="10,4" Margin="0,0,0,4" Click="AlbumRename_Click"/>
+                        </WrapPanel>
+                        <TextBlock Text="{DynamicResource Str_Album_CopyHint}" FontSize="11" Foreground="{DynamicResource DimTextBrush}"
+                                   TextWrapping="Wrap" Margin="0,0,0,14"/>
+                        <TextBlock x:Name="ActiveAlbumHeading" FontFamily="{DynamicResource HeadingFont}"
+                                   FontSize="13" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -1197,6 +1295,7 @@
                                     Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
                         </WrapPanel>
                     </StackPanel>
+                    </ScrollViewer>
                     <Border Style="{StaticResource FlyoutGrain}"/>
                 </Grid>
             </Border>

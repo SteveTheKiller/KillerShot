@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.IO;
 using KillerShot.Controls;
 using KillerShot.Services;
 
@@ -16,18 +17,30 @@ namespace KillerShot.Shell
 
         private void LibrarySettingsButton_Click(object sender, RoutedEventArgs e) => ShowLibrarySettings();
 
+        internal void TestPrepareAlbumManager(double height)
+        {
+            RefreshAlbumManager();
+            LibrarySettingsCard.Width = 460;
+            LibrarySettingsScroll.MaxHeight = height;
+        }
+
         private void ShowLibrarySettings()
         {
             if (LibrarySettingsPopup.IsOpen) { LibrarySettingsPopup.IsOpen = false; return; }
-            _syncingOptions = true;
-            try { SyncLibraryOptions(); }
-            finally { _syncingOptions = false; }
+            RefreshAlbumManager();
+            LibrarySettingsCard.Width = Math.Max(200, Math.Min(460, ContentPane.ActualWidth - 16));
+            LibrarySettingsScroll.MaxHeight = Math.Max(100, ContentPane.ActualHeight - 18);
+            FlyoutPlacement.AttachInsidePane(LibrarySettingsPopup, LibrarySettingsButton, alignRight: true);
             LibrarySettingsPopup.IsOpen = true;
-            Dispatcher.BeginInvoke(new Action(() => LibraryKeepCombo.Focus()));
+            Dispatcher.BeginInvoke(new Action(() => AlbumList.Focus()));
         }
 
         private void LibrarySettingsPopup_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N) { e.Handled = true; AlbumNew_Click(sender, e); return; }
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O) { e.Handled = true; AlbumImport_Click(sender, e); return; }
+            if (e.Key == Key.F2) { e.Handled = true; AlbumRename_Click(sender, e); return; }
+            if (e.Key == Key.Enter && AlbumList.IsKeyboardFocusWithin) { e.Handled = true; AlbumOpen_Click(sender, e); return; }
             if (e.Key != Key.Escape) return;
             LibrarySettingsPopup.IsOpen = false;
             e.Handled = true;
@@ -36,6 +49,140 @@ namespace KillerShot.Shell
         private void LibrarySettingsPopup_Closed(object sender, EventArgs e)
         {
             if (IsActive) LibrarySettingsButton.Focus();
+        }
+
+        private bool? ShowAlbumDialog(Window dialog)
+        {
+            try { return dialog.ShowDialog(); }
+            finally { LibrarySettingsPopup.IsOpen = true; }
+        }
+
+        private void RefreshAlbumManager(string? selectedPath = null)
+        {
+            _syncingOptions = true;
+            try
+            {
+                selectedPath ??= (AlbumList.SelectedItem as ListBoxItem)?.Tag is CaptureLibrary.AlbumInfo selected ? selected.Path : CaptureLibrary.FilePath;
+                AlbumList.Items.Clear();
+                foreach (var album in CaptureLibrary.Albums())
+                {
+                    var content = new StackPanel { Margin = new Thickness(8, 5, 8, 5) };
+                    var name = new TextBlock { Text = album.Name + (album.Active ? " (" + Loc("Str_Album_Active") + ")" : ""), FontWeight = album.Active ? FontWeights.SemiBold : FontWeights.Normal, TextTrimming = TextTrimming.CharacterEllipsis };
+                    name.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+                    content.Children.Add(name);
+                    var details = new TextBlock { Text = album.Modified.ToString("g") + "   " + (album.Bytes / 1024d).ToString("N0") + " KB", FontSize = 10, Margin = new Thickness(0, 3, 0, 0) };
+                    details.SetResourceReference(TextBlock.ForegroundProperty, "DimTextBrush");
+                    content.Children.Add(details);
+                    var row = new ListBoxItem { Content = content, Tag = album, ToolTip = album.Path };
+                    System.Windows.Automation.AutomationProperties.SetName(row, name.Text);
+                    AlbumList.Items.Add(row);
+                    if (string.Equals(album.Path, selectedPath, StringComparison.OrdinalIgnoreCase)) AlbumList.SelectedItem = row;
+                }
+                if (AlbumList.SelectedItem == null && AlbumList.Items.Count > 0) AlbumList.SelectedIndex = 0;
+                ActiveAlbumHeading.Text = Path.GetFileNameWithoutExtension(CaptureLibrary.FilePath);
+                SyncLibraryOptions();
+                TitleLibraryLabel.Text = ActiveAlbumHeading.Text;
+                TitleLibraryLabel.ToolTip = CaptureLibrary.FilePath;
+            }
+            finally { _syncingOptions = false; }
+            AlbumList_SelectionChanged(AlbumList, null!);
+        }
+
+        private void AlbumList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (AlbumOpenBtn == null || AlbumRenameBtn == null) return;
+            var album = (AlbumList.SelectedItem as ListBoxItem)?.Tag as CaptureLibrary.AlbumInfo;
+            AlbumOpenBtn.IsEnabled = album != null && (!album.Active || !CaptureLibrary.IsOpen);
+            AlbumRenameBtn.IsEnabled = album != null;
+        }
+
+        private void AlbumList_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject source && ItemsControl.ContainerFromElement(AlbumList, source) is ListBoxItem)
+                AlbumOpen_Click(sender, e);
+        }
+
+        private void AlbumOpen_Click(object sender, RoutedEventArgs e)
+        {
+            if ((AlbumList.SelectedItem as ListBoxItem)?.Tag is CaptureLibrary.AlbumInfo album) OpenAlbum(album.Path);
+        }
+
+        private void OpenAlbum(string path, string? password = null)
+        {
+            try
+            {
+                if (string.Equals(path, CaptureLibrary.FilePath, StringComparison.OrdinalIgnoreCase) && CaptureLibrary.IsOpen) return;
+                while (true)
+                {
+                    bool opened;
+                    bool needsPassword;
+                    using (new WaitCursorScope())
+                        opened = CaptureLibrary.TrySwitchAlbum(path, password, out needsPassword, App.Instance.ConfirmDocumentReplacement);
+                    if (opened)
+                    {
+                        App.Instance.CompleteAlbumSwitch();
+                        RefreshAlbumManager(path);
+                        Library.Reload();
+                        QrReadingButton.Tag = CaptureLibrary.QrReadingEnabled ? "on" : null;
+                        return;
+                    }
+                    if (!needsPassword) return;
+                    var dialog = new PromptDialog(string.Format(Loc("Str_Album_UnlockTitle"), Path.GetFileNameWithoutExtension(path)),
+                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
+                    if (ShowAlbumDialog(dialog) != true) return;
+                    password = dialog.Password;
+                }
+            }
+            catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
+            finally { LibrarySettingsPopup.IsOpen = true; }
+        }
+
+        private void AlbumNew_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new PromptDialog(Loc("Str_Album_NewTitle"), "", Loc("Str_Lib_Create")) { Owner = this };
+            if (ShowAlbumDialog(dialog) != true || string.IsNullOrWhiteSpace(dialog.Text)) return;
+            try
+            {
+                string path = CaptureLibrary.CreateAlbum(dialog.Text);
+                RefreshAlbumManager(path);
+                OpenAlbum(path);
+            }
+            catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
+        }
+
+        private void AlbumRename_Click(object sender, RoutedEventArgs e)
+        {
+            if ((AlbumList.SelectedItem as ListBoxItem)?.Tag is not CaptureLibrary.AlbumInfo album) return;
+            var dialog = new PromptDialog(Loc("Str_Album_RenameTitle"), "", Loc("Str_Lib_Rename"), album.Name) { Owner = this };
+            if (ShowAlbumDialog(dialog) != true || string.IsNullOrWhiteSpace(dialog.Text)) return;
+            try { RefreshAlbumManager(CaptureLibrary.RenameAlbum(album.Path, dialog.Text)); }
+            catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
+        }
+
+        private void AlbumImport_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new FileDialog(FileDialogMode.Open) { Title = Loc("Str_Album_OpenFile"), Filter = Loc("Str_Album_Filter"), DefaultExt = ".kshot" };
+            bool? chosen;
+            try { chosen = dialog.ShowDialog(this); }
+            finally { LibrarySettingsPopup.IsOpen = true; }
+            if (chosen != true) return;
+            string? password = null;
+            try
+            {
+                while (true)
+                {
+                    string? path;
+                    bool needsPassword;
+                    using (new WaitCursorScope()) path = CaptureLibrary.ImportAlbum(dialog.FileName, password, out needsPassword);
+                    if (path != null) { RefreshAlbumManager(path); OpenAlbum(path, password); return; }
+                    if (!needsPassword) return;
+                    var unlock = new PromptDialog(string.Format(Loc("Str_Album_UnlockTitle"), Path.GetFileNameWithoutExtension(dialog.FileName)),
+                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
+                    if (ShowAlbumDialog(unlock) != true) return;
+                    password = unlock.Password;
+                }
+            }
+            catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
         }
 
         private void SyncLibraryOptions()
@@ -70,6 +217,8 @@ namespace KillerShot.Shell
         private void RefreshLibraryStatus(string? error = null)
         {
             bool open = CaptureLibrary.IsOpen, pw = CaptureLibrary.HasPassword;
+            LibraryKeepCombo.IsEnabled = open;
+            if (!open) LibraryKeepSaveBtn.IsEnabled = false;
             LibraryStatusText.SetResourceReference(TextBlock.ForegroundProperty, error != null ? "DangerBrush" : "DimTextBrush");
             LibraryStatusText.Text = error
                 ?? (!open && CaptureLibrary.NeedsPassword ? Loc("Str_CS_LibraryLocked")
@@ -109,7 +258,7 @@ namespace KillerShot.Shell
         {
             if (!CaptureLibrary.HasPassword) return true;
             var dlg = new PromptDialog(Loc("Str_CS_CurrentPasswordTitle"), "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
-            if (dlg.ShowDialog() != true) return false;
+            if (ShowAlbumDialog(dlg) != true) return false;
             if (CaptureLibrary.CheckPassword(dlg.Password)) return true;
             RefreshLibraryStatus(Loc("Str_Lib_WrongPassword"));
             return false;
@@ -119,7 +268,7 @@ namespace KillerShot.Shell
         {
             if (!ConfirmCurrentLibraryPassword()) return;
             var dlg = new PromptDialog(Loc("Str_CS_SetPasswordTitle"), Loc("Str_CS_SetPasswordDetail"), Loc("Str_CS_SetPasswordOk"), kind: PromptKind.NewPassword) { Owner = this };
-            if (dlg.ShowDialog() != true) return;
+            if (ShowAlbumDialog(dlg) != true) return;
             ApplyLibraryPassword(dlg.Password);
         }
 
@@ -128,7 +277,7 @@ namespace KillerShot.Shell
             if (!ConfirmCurrentLibraryPassword()) return;
             var dlg = new ConfirmDialog(Loc("Str_CS_RemovePasswordTitle"), Loc("Str_CS_RemovePasswordDetail"),
                 Loc("Str_CS_RemovePassword"), Loc("Str_Btn_Cancel")) { Owner = this };
-            dlg.ShowDialog();
+            ShowAlbumDialog(dlg);
             if (dlg.Confirmed) ApplyLibraryPassword(null);
         }
 

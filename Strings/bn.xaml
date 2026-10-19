@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0}টি ক্যাপচার অ্যালবামে সংরক্ষিত হয়নি। এখন বের হলে সেগুলো হারিয়ে যাবে।</sys:String>
     <sys:String x:Key="Str_Lib_Retry">আবার চেষ্টা করুন</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">উইন্ডোর চিত্র পাওয়া যায়নি। এই ক্যাপচারে শুধু ডেস্কটপে যা দেখা যাচ্ছিল তা দেখানো হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Album_Title">অ্যালবাম</sys:String>
+    <sys:String x:Key="Str_Album_New">নতুন অ্যালবাম...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">ফাইল খুলুন...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">নতুন অ্যালবামের নাম দিন</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">অ্যালবামের নাম বদলান</sys:String>
+    <sys:String x:Key="Str_Album_Filter">ক্যাপচার অ্যালবাম|*.kshot|সব ফাইল|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">সক্রিয়</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} আনলক করুন</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">বাইরের অ্যালবাম খুললে এই অ্যালবাম ফোল্ডারে একটি কপি যোগ করা হয়।</sys:String>
+    <sys:String x:Key="Str_Album_Failed">অ্যালবাম পরিবর্তন করা হয়নি: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">এই অ্যালবাম বদলানো বা নাম পরিবর্তনের আগে অপেক্ষমাণ ক্যাপচারগুলো সংরক্ষণ করুন।</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">ফোল্ডার বা সংরক্ষিত অক্ষর ছাড়া একটি ফাইলের নাম লিখুন।</sys:String>
+    <sys:String x:Key="Str_Album_Missing">নির্বাচিত অ্যালবামটি পাওয়া যাচ্ছে না।</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">এই অ্যালবামের অ্যাকাউন্ট কী পড়া যায়নি। যে Windows অ্যাকাউন্ট দিয়ে এটি তৈরি করা হয়েছে তা দিয়ে খুলুন, অথবা পাসওয়ার্ড দিয়ে সুরক্ষিত একটি কপি ব্যবহার করুন।</sys:String>
+    <sys:String x:Key="Str_Album_Changed">সক্রিয় অ্যালবাম বদলে গেছে। ক্যাপচারটি আবার নির্বাচন করুন।</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">তথ্য কার্ড দেখান</sys:String>
+    <sys:String x:Key="Str_Album_Exists">এই নামে একটি অ্যালবাম ইতিমধ্যে আছে।</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">অ্যালবামের নাম পরিবর্তনের পুনরুদ্ধার রেকর্ড অসম্পূর্ণ।</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">অ্যালবামের নাম পরিবর্তনের পুনরুদ্ধার রেকর্ড অবৈধ।</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">অ্যালবামের নাম পরিবর্তনের পুনরুদ্ধার ফাইল পাওয়া যায়নি।</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">অ্যালবামের পুরোনো ও নতুন উভয় পথেই ফাইল আছে। পুনরুদ্ধার ফাইলগুলো সংরক্ষিত আছে।</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">অ্যালবামের ডেটাবেস কাঠামো অসম্পূর্ণ।</sys:String>
 </ResourceDictionary>

@@ -11,7 +11,7 @@ namespace KillerShot.Shell
     public partial class MainWindow
     {
         private CollectionStrip? _strip;
-        private DockSide? _editorStripSide;
+        private (DockSide Side, bool IsMinimized)? _editorStripLayout;
 
         private void CollectionPickerBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -36,8 +36,16 @@ namespace KillerShot.Shell
             SyncFooterCollection();
             StripDock.LayoutChanged += () =>
             {
-                Settings.Set("StripSide", StripDock.Side.ToString());
-                Settings.SetBool("StripMinimized", StripDock.IsMinimized);
+                if (_editorStripLayout != null)
+                {
+                    StripDock.Side = DockSide.Left;
+                    Settings.SetBool("AlbumStripMinimized", StripDock.IsMinimized);
+                }
+                else
+                {
+                    Settings.Set("StripSide", StripDock.Side.ToString());
+                    Settings.SetBool("StripMinimized", StripDock.IsMinimized);
+                }
                 Settings.Set("StripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
                 Settings.Set("StripHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
                 _strip.Relocalize();
@@ -62,13 +70,18 @@ namespace KillerShot.Shell
             if (_strip == null) return;
             if (library)
             {
-                _editorStripSide ??= StripDock.Side;
+                if (_editorStripLayout == null)
+                {
+                    _editorStripLayout = (StripDock.Side, StripDock.IsMinimized);
+                    StripDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
+                }
                 StripDock.Side = DockSide.Left;
             }
-            else if (_editorStripSide is { } side)
+            else if (_editorStripLayout is { } layout)
             {
-                _editorStripSide = null;
-                StripDock.Side = side;
+                _editorStripLayout = null;
+                StripDock.Side = layout.Side;
+                StripDock.IsMinimized = layout.IsMinimized;
             }
             SyncEditorPaneMargin();
         }

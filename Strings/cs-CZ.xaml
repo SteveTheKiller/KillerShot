@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Snímky dosud neuložené do alba: {0}. Pokud nyní aplikaci ukončíte, budou ztraceny.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Zkusit znovu</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Povrch okna nebyl dostupný. Tento snímek zachycuje pouze to, co bylo viditelné na ploše.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBA</sys:String>
+    <sys:String x:Key="Str_Album_New">Nové album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Otevřít soubor...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Pojmenovat nové album</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Přejmenovat album</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Alba snímků|*.kshot|Všechny soubory|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Aktivní</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Odemknout {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Otevřením externího alba se do této složky alb přidá jeho kopie.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Album nebylo změněno: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Před přepnutím nebo přejmenováním alba uložte čekající snímky.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Zadejte název souboru bez složek a vyhrazených znaků.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Vybrané album chybí.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Klíč účtu tohoto alba nelze přečíst. Otevřete je pod účtem Windows, který je vytvořil, nebo použijte kopii chráněnou heslem.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Aktivní album se změnilo. Vyberte snímek znovu.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Zobrazit informační karty</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Album s tímto názvem již existuje.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Záznam pro obnovu přejmenování alba je neúplný.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Záznam pro obnovu přejmenování alba je neplatný.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Chybí soubory pro obnovu přejmenování alba.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Existuje původní i nová cesta alba. Soubory pro obnovu byly zachovány.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Struktura databáze alba je neúplná.</sys:String>
 </ResourceDictionary>

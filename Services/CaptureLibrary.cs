@@ -9,7 +9,7 @@ namespace KillerShot.Services;
 
 /// <summary>One capture in the library, without its pixels.</summary>
 internal sealed record CaptureItem(long Id, DateTime Taken, int Width, int Height, string Mode,
-    string? Window, string? Process, long? CollectionId, string? Note, bool HasQr = false);
+    string? Window, string? Process, long? CollectionId, string? Note, bool HasQr = false, long Session = 0);
 
 /// <summary>A collection (a folder inside the library) and how many captures it holds.</summary>
 internal sealed record CaptureCollection(long Id, string Name, int Count);
@@ -50,19 +50,37 @@ internal static partial class CaptureLibrary
     private static readonly object _gate = new();
     private static SqliteConnection? _db;
     private static string _folder = DefaultFolder;
+    private static string? _activeFileName;
+    private static long _session = 1;
+    public static long Session { get { lock (_gate) return _session; } }
+    public static bool IsCurrent(CaptureItem item) => FolderCaptures.IsFolderId(item.Id) || item.Session == Session;
     private static bool _keyedByPassword;
 
     public static string DefaultFolder => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot");
 
-    public static string FilePath => Path.Combine(_folder, "Library.kshot");
-    private static string KeyPath => Path.Combine(_folder, "Library.key");
+    public static string FilePath
+    {
+        get
+        {
+            lock (_gate)
+            {
+                if (_activeFileName == null)
+                {
+                    try { _activeFileName = Path.GetFileName(AlbumPath(Settings.Get("ActiveAlbum") ?? "Library.kshot")); }
+                    catch (ArgumentException) { _activeFileName = "Library.kshot"; }
+                }
+                return Path.Combine(_folder, _activeFileName);
+            }
+        }
+    }
+    private static string KeyPath => Path.ChangeExtension(FilePath, ".key");
 
     /// <summary>Serializes album creation, opening, and key swaps across app and CLI processes.
     /// The file stays in the folder so waiters always lock the same file after a process exits.</summary>
-    private static FileStream AcquireTransitionLock()
+    private static FileStream AcquireTransitionLock(string? albumPath = null)
     {
-        string path = Path.Combine(_folder, "Library.open.lock");
+        string path = Path.ChangeExtension(albumPath ?? FilePath, ".open.lock");
         var wait = System.Diagnostics.Stopwatch.StartNew();
         while (true)
         {
@@ -81,9 +99,14 @@ internal static partial class CaptureLibrary
     /// the first open.</summary>
     internal static void UseFolder(string dir)
     {
-        Close();
-        _folder = dir;
-        _recentFolder = Path.Combine(dir, "Recent");
+        lock (_gate)
+        {
+            Close();
+            _session++;
+            _folder = dir;
+            _activeFileName = null;
+            _recentFolder = Path.Combine(dir, "Recent");
+        }
     }
 
     public static bool IsOpen => _db != null;
@@ -159,6 +182,8 @@ internal static partial class CaptureLibrary
             try
             {
                 Directory.CreateDirectory(_folder);
+                using var catalogLock = AcquireCatalogLock();
+                RecoverAlbumRenames();
                 using var transitionLock = AcquireTransitionLock();
                 if (!OpenAutoUnderTransitionLock()) return false;
             }
@@ -190,6 +215,7 @@ internal static partial class CaptureLibrary
 
     private static bool TryUseAlbumFromCli<T>(Func<T> operation, out T result)
     {
+        lock (PendingWriter)
         lock (_gate)
         {
             result = default!;
@@ -197,17 +223,22 @@ internal static partial class CaptureLibrary
             Close();
             LoadError = null;
             NeedsPassword = false;
+            FileStream? catalogLock = null;
             FileStream transitionLock;
             try
             {
                 Directory.CreateDirectory(_folder);
+                catalogLock = AcquireCatalogLock();
+                RecoverAlbumRenames();
                 transitionLock = AcquireTransitionLock();
             }
             catch (Exception ex)
             {
+                catalogLock?.Dispose();
                 LoadError = ex.Message;
                 return false;
             }
+            using (catalogLock)
             using (transitionLock)
             {
                 try
@@ -277,8 +308,10 @@ internal static partial class CaptureLibrary
         }
         else
         {
+            if (!string.Equals(Path.GetFileName(FilePath), "Library.kshot", StringComparison.OrdinalIgnoreCase))
+                throw new FileNotFoundException(Loc("Str_Album_Missing"), FilePath);
             if (File.Exists(KeyPath) || File.Exists(KeyPath + ".next") || File.Exists(FilePath + ".rekey"))
-                throw new IOException("The album file is missing while its key or recovery file remains.");
+                throw new IOException(Loc("Str_Album_Missing"));
             string key = File.Exists(creatingKey) ? ReadSealedKey(creatingKey) : NewRawKey();
             if (!File.Exists(creatingKey)) WriteSealedKey(key, creatingKey);
             OpenWith(key, byPassword: false, create: true);
@@ -331,9 +364,16 @@ internal static partial class CaptureLibrary
     /// reports a connection that failed to open or failed its key check.</summary>
     private static void OpenWith(string key, bool byPassword, bool create = false)
     {
-        if (!create && new FileInfo(FilePath).Length == 0)
+        _db = OpenAlbumConnection(FilePath, key, create);
+        _keyedByPassword = byPassword;
+        ObserveExternalChanges();
+    }
+
+    private static SqliteConnection OpenAlbumConnection(string path, string key, bool create = false)
+    {
+        if (!create && new FileInfo(path).Length == 0)
             throw new InvalidDataException("The existing album file is empty.");
-        var db = new SqliteConnection(Cs(FilePath, key, create));
+        var db = new SqliteConnection(Cs(path, key, create));
         try
         {
             db.Open();
@@ -345,6 +385,7 @@ internal static partial class CaptureLibrary
                 throw new InvalidDataException("The existing album schema is incomplete.");
             Exec(db, "PRAGMA foreign_keys = ON");
             EnsureSchema(db);
+            InitializeAlbumSettings(db, path);
         }
         catch
         {
@@ -352,9 +393,7 @@ internal static partial class CaptureLibrary
             SqliteConnection.ClearAllPools();
             throw;
         }
-        _db = db;
-        _keyedByPassword = byPassword;
-        ObserveExternalChanges();
+        return db;
     }
 
     /// <summary>The key rides in the connection string, which is part of the pool key, so a wrong
@@ -380,13 +419,22 @@ internal static partial class CaptureLibrary
     /// the OCR backlog.</summary>
     private static void AfterOpen()
     {
+        SqliteConnection? database;
+        string recent;
+        bool importLegacy;
+        lock (_gate)
+        {
+            database = _db;
+            recent = _recentFolder;
+            importLegacy = string.Equals(Path.GetFileName(FilePath), "Library.kshot", StringComparison.OrdinalIgnoreCase);
+        }
         RaiseChanged();
         if (!BackgroundWork) return;
         Task.Run(() =>
         {
             FlushPending();
-            ImportRecentFolder();
-            Prune();
+            if (importLegacy) ImportRecentFolder(database, recent);
+            Prune(database);
             StartOcr();
             StartQrReading();
         });
@@ -478,6 +526,7 @@ internal static partial class CaptureLibrary
     public static void Add(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
+        lock (_gate)
         lock (_pending) _pending.Add((bmp, taken, mode, window, process));
         RaiseChanged();
         _ = RetryPendingAsync();
@@ -487,6 +536,11 @@ internal static partial class CaptureLibrary
     /// not open. The command line uses this, because its process can end before a background
     /// write finishes.</summary>
     public static long AddNow(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
+    {
+        lock (PendingWriter) return AddNowCore(bmp, taken, mode, window, process);
+    }
+
+    private static long AddNowCore(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
         byte[] image = ImageOutput.EncodePng(bmp);
@@ -534,7 +588,7 @@ internal static partial class CaptureLibrary
         try
         {
             if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
-            Prune();
+            Prune(album);
             RaiseChanged();
             if (BackgroundWork)
             {
@@ -600,19 +654,23 @@ internal static partial class CaptureLibrary
 
     /// <summary>Moves the PNGs the old Recent history kept in plain files into the library, then
     /// removes them, so no capture stays readable outside it.</summary>
-    private static void ImportRecentFolder()
+    private static void ImportRecentFolder(SqliteConnection? database, string recent)
     {
         try
         {
-            var dir = new DirectoryInfo(_recentFolder);
+            var dir = new DirectoryInfo(recent);
             if (!dir.Exists) return;
             foreach (var file in dir.GetFiles("*.png").OrderBy(f => f.Name, StringComparer.Ordinal))
             {
                 try
                 {
-                    var bmp = ImageOutput.Load(file.FullName);
-                    AddNow(bmp, RecentCaptures.TakenFrom(file) ?? file.LastWriteTime, "", null, null);
-                    file.Delete();
+                    lock (PendingWriter)
+                    {
+                        lock (_gate) if (!ReferenceEquals(_db, database) || database == null) return;
+                        var bmp = ImageOutput.Load(file.FullName);
+                        AddNow(bmp, RecentCaptures.TakenFrom(file) ?? file.LastWriteTime, "", null, null);
+                        file.Delete();
+                    }
                 }
                 catch { /* a file that will not load or delete stays where it was */ }
             }
@@ -656,7 +714,7 @@ internal static partial class CaptureLibrary
                         r.IsDBNull(5) ? null : r.GetString(5),
                         r.IsDBNull(6) ? null : r.GetString(6),
                         r.IsDBNull(7) ? null : r.GetInt64(7),
-                        r.IsDBNull(8) ? null : r.GetString(8), r.GetBoolean(9)));
+                        r.IsDBNull(8) ? null : r.GetString(8), r.GetBoolean(9), _session));
                 }
             }
             catch (SqliteException) { return []; }   // a search FTS5 cannot parse matches nothing
@@ -708,6 +766,15 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>The full capture at its exact pixel size.</summary>
+    public static BitmapSource LoadImage(CaptureItem item)
+    {
+        lock (_gate)
+        {
+            if (!IsCurrent(item)) throw new InvalidOperationException(Loc("Str_Album_Changed"));
+            return LoadImage(item.Id);
+        }
+    }
+
     public static BitmapSource LoadImage(long id)
     {
         if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadImage(id);
@@ -723,6 +790,15 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>The PNG exactly as stored, for exporting without re-encoding.</summary>
+    public static byte[] LoadPng(CaptureItem item)
+    {
+        lock (_gate)
+        {
+            if (!IsCurrent(item)) throw new InvalidOperationException(Loc("Str_Album_Changed"));
+            return LoadPng(item.Id);
+        }
+    }
+
     public static byte[] LoadPng(long id)
     {
         if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadPng(id);
@@ -740,6 +816,11 @@ internal static partial class CaptureLibrary
     private const int ThumbCacheSize = 600;
 
     /// <summary>A capture's thumbnail, cached. Null when it no longer exists.</summary>
+    public static BitmapSource? LoadThumb(CaptureItem item)
+    {
+        lock (_gate) return IsCurrent(item) ? LoadThumb(item.Id) : null;
+    }
+
     public static BitmapSource? LoadThumb(long id)
     {
         if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadThumb(id);
@@ -953,8 +1034,13 @@ internal static partial class CaptureLibrary
     /// <summary>"all" (the default), "count:N" or "days:N", chosen in Capture settings.</summary>
     public static string Keep
     {
-        get => Settings.Get("LibraryKeep") is string k && ParseKeep(k).Kind != null ? k : "all";
-        set { Settings.Set("LibraryKeep", value); Task.Run(Prune); }
+        get => GetAlbumSetting("LibraryKeep") is string k && ParseKeep(k).Kind != null ? k : "all";
+        set
+        {
+            SqliteConnection database;
+            lock (_gate) { SetAlbumSetting("LibraryKeep", value); database = Db; }
+            Task.Run(() => Prune(database));
+        }
     }
 
     public static (string? Kind, int Amount) ParseKeep(string keep)
@@ -968,14 +1054,14 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>Removes the captures beyond the history limit, oldest first.</summary>
-    private static void Prune()
+    private static void Prune(SqliteConnection? expectedDatabase = null)
     {
-        var (kind, amount) = ParseKeep(Keep);
-        if (kind is not ("count" or "days")) return;
         int removed;
         lock (_gate)
         {
-            if (_db == null) return;
+            if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
+            var (kind, amount) = ParseKeep(Keep);
+            if (kind is not ("count" or "days")) return;
             using var cmd = _db.CreateCommand();
             if (kind == "count")
             {

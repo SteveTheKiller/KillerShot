@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0} yakalama albüme kaydedilmedi. Şimdi çıkarsanız kaybolacaklar.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Yeniden dene</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Pencerenin görüntü yüzeyi kullanılamıyordu. Bu yakalama yalnızca masaüstünde görünenleri gösterir.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBÜMLER</sys:String>
+    <sys:String x:Key="Str_Album_New">Yeni albüm...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Dosya aç...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Yeni albümü adlandır</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Albümü yeniden adlandır</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Yakalama albümleri|*.kshot|Tüm dosyalar|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Etkin</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} kilidini aç</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Harici bir albüm açıldığında bu albüm klasörüne bir kopyası eklenir.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Albüm değiştirilmedi: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Bu albümü değiştirmeden veya yeniden adlandırmadan önce bekleyen yakalamaları kaydedin.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Klasör veya ayrılmış karakter içermeyen bir dosya adı girin.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Seçili albüm bulunamadı.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Bu albümün hesap anahtarı okunamadı. Albümü oluşturan Windows hesabıyla açın veya parola korumalı bir kopya kullanın.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Etkin albüm değişti. Yakalamayı yeniden seçin.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Bilgi kartlarını göster</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Bu ada sahip bir albüm zaten var.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Albümün yeniden adlandırılmasına ilişkin kurtarma kaydı eksik.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Albümün yeniden adlandırılmasına ilişkin kurtarma kaydı geçersiz.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Albümün yeniden adlandırılmasına ilişkin kurtarma dosyaları eksik.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Albümün hem eski hem de yeni yolu mevcut. Kurtarma dosyaları korundu.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Albümün veritabanı yapısı eksik.</sys:String>
 </ResourceDictionary>

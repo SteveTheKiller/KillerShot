@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Знімки не збережено в альбомі: {0}. Якщо вийти зараз, їх буде втрачено.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Спробувати знову</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Зображення вікна було недоступне. Цей знімок показує лише те, що було видно на робочому столі.</sys:String>
+    <sys:String x:Key="Str_Album_Title">АЛЬБОМИ</sys:String>
+    <sys:String x:Key="Str_Album_New">Новий альбом...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Відкрити файл...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Назва нового альбому</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Перейменувати альбом</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Альбоми знімків|*.kshot|Усі файли|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Активний</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Розблокувати {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Під час відкриття зовнішнього альбому до цієї папки альбомів додається його копія.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Альбом не змінено: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Збережіть знімки, що очікують, перед перемиканням або перейменуванням цього альбому.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Введіть назву файлу без папок і зарезервованих символів.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Вибраний альбом не знайдено.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Не вдалося прочитати ключ облікового запису цього альбому. Відкрийте його в обліковому записі Windows, у якому його створено, або використайте копію, захищену паролем.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Активний альбом змінився. Виберіть знімок знову.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Показувати інформаційні картки</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Альбом із такою назвою вже існує.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Запис відновлення перейменування альбому неповний.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Запис відновлення перейменування альбому недійсний.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Файли відновлення перейменування альбому відсутні.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Існують і старий, і новий шляхи альбому. Файли відновлення збережено.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Структура бази даних альбому неповна.</sys:String>
 </ResourceDictionary>

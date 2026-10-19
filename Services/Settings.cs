@@ -68,35 +68,38 @@ namespace KillerShot
 
         internal static void Set(string key, string value)
         {
+            try { SetRequired(key, value); }
+            catch { lock (Gate) Load()[key] = value; }
+        }
+
+        /// <summary>Persists a setting before changing the cache. Lifecycle changes must fail
+        /// visibly when they cannot record the file to reopen next time.</summary>
+        internal static void SetRequired(string key, string value)
+        {
             lock (Gate)
             {
-                Load()[key] = value;
+                Directory.CreateDirectory(Dir);
+                using var writeLock = AcquireWriteLock();
+                // Re-read while locked so another process's settings survive this write.
+                var current = ReadCurrent();
+                if (current.TryGetValue(key, out var old) && old == value)
+                {
+                    _cache = current;
+                    return;
+                }
+                current[key] = value;
+                string temp = Path.Combine(Dir, $"settings.json.{Guid.NewGuid():N}.tmp");
                 try
                 {
-                    Directory.CreateDirectory(Dir);
-                    using var writeLock = AcquireWriteLock();
-                    // Re-read while locked so another process's settings survive this write.
-                    var current = ReadCurrent();
-                    if (current.TryGetValue(key, out var old) && old == value)
+                    using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                     {
-                        _cache = current;
-                        return;
+                        JsonSerializer.Serialize(stream, current, new JsonSerializerOptions { WriteIndented = true });
+                        stream.Flush(true);
                     }
-                    current[key] = value;
-                    string temp = Path.Combine(Dir, $"settings.json.{Guid.NewGuid():N}.tmp");
-                    try
-                    {
-                        using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                        {
-                            JsonSerializer.Serialize(stream, current, new JsonSerializerOptions { WriteIndented = true });
-                            stream.Flush(true);
-                        }
-                        File.Move(temp, FilePath, true);
-                        _cache = current;
-                    }
-                    finally { try { File.Delete(temp); } catch { } }
+                    File.Move(temp, FilePath, true);
+                    _cache = current;
                 }
-                catch { /* unwritable profile: the setting just does not persist */ }
+                finally { try { File.Delete(temp); } catch { } }
             }
         }
 

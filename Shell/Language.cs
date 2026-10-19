@@ -29,6 +29,7 @@ namespace KillerShot.Shell
             RefreshDocumentUi();
             if (CaptureSettingsOverlay.Visibility == Visibility.Visible) { SyncCaptureOptions(); BuildShortcutRows(); }
             if (VideoSettingsOverlay.Visibility == Visibility.Visible) { SyncVideoOptions(); BuildShortcutRows(); }
+            if (LibrarySettingsPopup.IsOpen) RefreshAlbumManager();
             StatusText.Text = Loc("Str_Status_Ready");
             App.Instance.Tray?.Relocalize();
         }

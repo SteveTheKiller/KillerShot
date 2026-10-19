@@ -43,13 +43,22 @@ internal sealed class CoverFlow : FrameworkElement
         set
         {
             _viewCenterY = value;
-            if (_viewport.Camera is PerspectiveCamera camera) camera.Position = new Point3D(0, value, CameraDistance);
+            UpdateCamera(RenderSize);
         }
     }
     private double _viewCenterY = 0.50;
     /// <summary>Model units visible top to bottom at the front picture. Smaller draws the
     /// pictures larger; the collection strip, which is short, uses a smaller value.</summary>
     public double ViewHeight { get; set; } = 1.60;
+    /// <summary>Enables Ctrl+wheel depth changes for album carousels.</summary>
+    public bool PerspectiveZoomEnabled { get; set; }
+    public bool ShowInfoCards
+    {
+        get => _showInfoCards;
+        set { if (_showInfoCards == value) return; _showInfoCards = value; RefreshCards(); }
+    }
+    private bool _showInfoCards = ViewInfoCards.Get(false);
+    private double _perspectiveZoom;
     private const double MinViewWidth = 4.6;      // model units always visible across at the front picture
 
     private readonly Viewport3D _viewport = new();
@@ -72,7 +81,7 @@ internal sealed class CoverFlow : FrameworkElement
     }
 
     /// <summary>Gives a capture's thumbnail; null draws a blank card.</summary>
-    public Func<long, BitmapSource?>? ThumbnailSource { get; set; }
+    public Func<CaptureItem, BitmapSource?>? ThumbnailSource { get; set; }
 
     /// <summary>The front picture was clicked or Enter was pressed.</summary>
     public event Action<CaptureItem>? ItemActivated;
@@ -146,9 +155,22 @@ internal sealed class CoverFlow : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
-        Loaded += (_, _) => ThemeManager.ThemeChanged += RefreshCards;
-        Unloaded += (_, _) => ThemeManager.ThemeChanged -= RefreshCards;
+        Loaded += (_, _) =>
+        {
+            ThemeManager.ThemeChanged += RefreshCards;
+            CardColors.Changed += RefreshCards;
+            ViewInfoCards.Changed += SyncInfoCards;
+            SyncInfoCards();
+        };
+        Unloaded += (_, _) =>
+        {
+            ThemeManager.ThemeChanged -= RefreshCards;
+            CardColors.Changed -= RefreshCards;
+            ViewInfoCards.Changed -= SyncInfoCards;
+        };
     }
+
+    private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get(false);
 
     private int IndexOf(long id)
     {
@@ -193,18 +215,26 @@ internal sealed class CoverFlow : FrameworkElement
     protected override Size ArrangeOverride(Size finalSize)
     {
         _viewport.Arrange(new Rect(finalSize));
+        UpdateCamera(finalSize);
+        return finalSize;
+    }
+
+    private void UpdateCamera(Size size)
+    {
         // WPF's field of view is horizontal, so it is worked out from the shape of the control:
         // in a wide, short control the front picture and its reflection fill the height and the
         // extra width shows more pictures to the sides; in a taller one the view widens until
         // the front picture and two side pictures each way fit across.
-        if (finalSize.Height > 0 && _viewport.Camera is PerspectiveCamera camera)
+        if (_viewport.Camera is not PerspectiveCamera camera) return;
+        double aim = _viewCenterY + (.5 - _viewCenterY) * Math.Clamp(_perspectiveZoom / 1.5, 0, 1);
+        camera.Position = new Point3D(0, aim, CameraDistance);
+        if (size.Width > 0 && size.Height > 0)
         {
-            double aspect = finalSize.Width / finalSize.Height;
-            double height = Math.Max(ViewHeight, MinViewWidth / aspect);
+            double aspect = size.Width / size.Height;
+            double height = Math.Max(ViewHeight, MinViewWidth / aspect) * (1 + .12 * _perspectiveZoom);
             double halfV = height / 2 / CameraDistance;
             camera.FieldOfView = Math.Min(150, 2 * Math.Atan(aspect * halfV) * 180 / Math.PI);
         }
-        return finalSize;
     }
 
     // ---- models ----
@@ -243,7 +273,7 @@ internal sealed class CoverFlow : FrameworkElement
     private Card CreateCard(int index)
     {
         var item = _items[index];
-        BitmapSource? thumb = ThumbnailSource?.Invoke(item.Id);
+        BitmapSource? thumb = ThumbnailSource?.Invoke(item);
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
         double w = Math.Min(MaxPictureWidth, MaxPictureHeight * aspect);
         double h = w / aspect;
@@ -252,6 +282,33 @@ internal sealed class CoverFlow : FrameworkElement
             ? new ImageBrush(thumb) { Stretch = Stretch.Fill }
             : new SolidColorBrush(Color.FromRgb(60, 60, 60));
         var cardDrawing = QrMark.Drawing(faceBrush, w, h, item.HasQr);
+        if (ShowInfoCards)
+        {
+            const double inset = .035, captionBand = .22;
+            w = Math.Max(.5, w);
+            h = Math.Min(MaxPictureHeight, h + captionBand + inset * 2);
+            var stock = CardColors.StripCard();
+            var drawing = new DrawingGroup();
+            double corner = ThemeManager.Current == Theme.SE98 ? 0 : .03;
+            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(stock), null,
+                new RectangleGeometry(new Rect(0, 0, w, h), corner, corner)));
+            if (CardColors.Collection(item.CollectionId) is Color accent)
+                drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null,
+                    new RectangleGeometry(new Rect(inset, 0, w - inset * 2, .016))));
+            double pictureWidth = Math.Min(w - inset * 2, (h - captionBand - inset) * aspect);
+            double pictureHeight = pictureWidth / aspect;
+            var picture = new Rect((w - pictureWidth) / 2, inset, pictureWidth, pictureHeight);
+            drawing.Children.Add(new GeometryDrawing(new DrawingBrush(cardDrawing), null, new RectangleGeometry(picture)));
+            var ink = CardColors.IsLight(stock) ? Brushes.Black : Brushes.White;
+            string caption = Describe?.Invoke(item) ?? item.Window ?? item.Mode;
+            var text = new FormattedText(caption, System.Globalization.CultureInfo.CurrentUICulture,
+                FlowDirection.LeftToRight, new Typeface("Segoe UI"), .060, ink, 1)
+            {
+                MaxTextWidth = w - inset * 2, MaxLineCount = 2, Trimming = TextTrimming.CharacterEllipsis,
+            };
+            drawing.Children.Add(new GeometryDrawing(ink, null, text.BuildGeometry(new Point(inset, h - captionBand + .025))));
+            cardDrawing = drawing;
+        }
         faceBrush = new DrawingBrush(cardDrawing) { Stretch = Stretch.Fill };
         faceBrush.Freeze();
         var face = new GeometryModel3D(Quad(w, 0, h, flipV: false), new DiffuseMaterial(faceBrush))
@@ -316,6 +373,9 @@ internal sealed class CoverFlow : FrameworkElement
             double t = Math.Min(1, ad);
             double x = sign * (t * CenterGap + Math.Max(0, ad - 1) * SideStep);
             double z = -t * SideDepth - Math.Max(0, ad - 1) * 0.02;
+            // Widen the lens while bringing the front forward and sending the sides back.
+            // The blend follows motion between cards and is exactly the original depth at zero.
+            z += _perspectiveZoom * (.9 * (1 - t) - 1.2 * t);
             card.Rotation.Angle = -sign * t * SideAngle;
             card.Translation.OffsetX = x;
             card.Translation.OffsetZ = z;
@@ -355,7 +415,9 @@ internal sealed class CoverFlow : FrameworkElement
     }
 
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e) { base.OnMouseLeftButtonDown(e); _motion.Press(e); }
-    protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); }
+    protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); _motion.Drag(e); UpdateHover(e.GetPosition(this)); }
+    public void UpdateHover(Point position) => Cursor = IndexAt(position).HasValue ? Cursors.Hand : Cursors.Arrow;
+    protected override void OnMouseLeave(MouseEventArgs e) { base.OnMouseLeave(e); Cursor = Cursors.Arrow; }
     protected override void OnLostMouseCapture(MouseEventArgs e) { base.OnLostMouseCapture(e); _motion.LostCapture(); }
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -383,10 +445,22 @@ internal sealed class CoverFlow : FrameworkElement
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
+        e.Handled = HandleWheel(e.Delta, Keyboard.Modifiers);
+    }
+
+    public bool HandleWheel(int delta, ModifierKeys modifiers)
+    {
+        if (_items.Count == 0) return false;
+        if (PerspectiveZoomEnabled && (modifiers & ModifierKeys.Control) != 0)
+        {
+            _perspectiveZoom = Math.Clamp(_perspectiveZoom + delta / 1200.0, -.5, 1.5);
+            UpdateCamera(RenderSize);
+            Place();
+            return true;
+        }
         _motion.Interrupt();
-        if (_items.Count == 0) return;
-        SelectedIndex += e.Delta > 0 ? -1 : 1;
-        e.Handled = true;
+        SelectedIndex += delta > 0 ? -1 : 1;
+        return true;
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

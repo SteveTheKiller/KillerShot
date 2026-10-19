@@ -28,6 +28,11 @@ internal static partial class CaptureLibrary
 
     public static void StoreOcr(long id, string text) => StoreOcr(id, text, null);
 
+    public static void StoreOcr(CaptureItem item, string text)
+    {
+        lock (_gate) if (IsCurrent(item)) StoreOcr(item.Id, text, _db);
+    }
+
     private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase)
     {
         lock (_gate)
@@ -60,6 +65,7 @@ internal static partial class CaptureLibrary
         if (Interlocked.CompareExchange(ref _ocrRunning, 1, 0) != 0) return;
         Task.Run(async () =>
         {
+            bool completed = true;
             try
             {
                 var engine = WinOcrEngine.TryCreateFromUserProfileLanguages();
@@ -88,8 +94,20 @@ internal static partial class CaptureLibrary
                     StoreOcr(id, text, database);
                 }
             }
-            catch { /* search still works on titles, programs, notes and collections */ }
-            finally { Interlocked.Exchange(ref _ocrRunning, 0); }
+            catch { completed = false; /* search still works on titles, programs, notes and collections */ }
+            finally
+            {
+                Interlocked.Exchange(ref _ocrRunning, 0);
+                lock (_gate)
+                {
+                    if (completed && BackgroundWork && _db != null)
+                    {
+                        using var remaining = _db.CreateCommand();
+                        remaining.CommandText = "SELECT EXISTS(SELECT 1 FROM captures WHERE ocr_text IS NULL)";
+                        if (Convert.ToInt64(remaining.ExecuteScalar()) != 0) StartOcr();
+                    }
+                }
+            }
         });
     }
 

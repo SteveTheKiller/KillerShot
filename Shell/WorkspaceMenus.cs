@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using KillerFamily.Layout;
+using KillerShot.Controls;
 using KillerShot.Services;
 
 namespace KillerShot.Shell;
@@ -58,16 +59,19 @@ public partial class MainWindow
             menu.Items.Add(item);
         }
         Add("Str_Btn_Library", ShowLibrarySettings);
-        if (_strip != null && _doc != null)
+        if (_strip != null)
         {
             var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
             var choices = _strip.SourceMenu(CollectionPickerBtn);
             while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
             menu.Items.Add(source);
-            foreach (var (side, key, _) in StripSides)
+            if (!Library.IsVisible)
             {
-                var target = side;
-                Add(key, () => StripDock.DockTo(target), StripDock.Side == side);
+                foreach (var (side, key, _) in StripSides)
+                {
+                    var target = side;
+                    Add(key, () => StripDock.DockTo(target), StripDock.Side == side);
+                }
             }
             Add("Str_Dock_Minimize", () => { if (StripDock.IsMinimized) StripDock.Restore(); else StripDock.Minimize(); }, StripDock.IsMinimized);
         }
@@ -78,6 +82,14 @@ public partial class MainWindow
         {
             string target = view;
             Add(key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view);
+        }
+        bool stripTarget = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock || !Library.IsVisible;
+        bool? rolodex = stripTarget ? StripDock.IsHorizontal ? false : _strip?.SideView == "rolodex" ? true : null
+            : Library.CurrentView is "shelves" or "flow" ? false : null;
+        if (rolodex is bool sideView)
+        {
+            menu.Items.Add(new Separator());
+            menu.Items.Add(ViewInfoCards.Menu(sideView));
         }
     }
 }

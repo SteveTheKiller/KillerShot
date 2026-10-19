@@ -71,7 +71,7 @@ namespace KillerShot.Shell
     {
         private const double GridTileWidth = 208, GridTileHeight = 128;
         private const double TimelineTileWidth = 168, TimelineTileHeight = 104;
-        private const double TimelineGutter = 92;
+        private const double TimelineGutter = 32;
         private const double TileGap = 12;
 
         /// <summary>A capture should open in the editor.</summary>
@@ -103,6 +103,7 @@ namespace KillerShot.Shell
         private bool _reloadQueued;
         private bool _dirty = true;
         private int _tilesPerRow;
+        private long _albumSession = -1;
 
         private static string Loc(string key) => LocaleManager.Loc(key);
 
@@ -169,6 +170,16 @@ namespace KillerShot.Shell
         /// <summary>Reads the library again and redraws the current view.</summary>
         public void Reload()
         {
+            long session = CaptureLibrary.Session;
+            if (_albumSession != session)
+            {
+                _albumSession = session;
+                _searchDelay.Stop();
+                SearchBox.Clear();
+                _source = "all";
+                _shelfFront.Clear();
+                BigFlow.Items = [];
+            }
             _dirty = false;
             int pending = CaptureLibrary.PendingCount;
             PendingBar.Visibility = pending > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -219,7 +230,6 @@ namespace KillerShot.Shell
             // The Screenshots folder shows as a collection, so only where collections do.
             bool folderShown = _group == "collection" && _view != "timeline" && _folderItems.Count > 0;
             bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0;
-            HeaderBar.Visibility = libraryEmpty ? Visibility.Collapsed : Visibility.Visible;
             if (_items.Count == 0 && !folderShown && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
             {
                 ShowEmpty(searching: search.Length > 0 && !libraryEmpty);
@@ -243,7 +253,7 @@ namespace KillerShot.Shell
 
         private void ShowLock()
         {
-            RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = HeaderBar.Visibility = Visibility.Collapsed;
+            RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = Visibility.Collapsed;
             LockPanel.Visibility = Visibility.Visible;
             bool locked = CaptureLibrary.NeedsPassword;
             UnlockBox.Visibility = UnlockBtn.Visibility = locked ? Visibility.Visible : Visibility.Collapsed;
@@ -470,6 +480,7 @@ namespace KillerShot.Shell
                 // out, so the shelves stack with no empty room above or below the pictures.
                 Height = 200,
                 ViewHeight = 1.52,
+                PerspectiveZoomEnabled = true,
                 ViewCenterY = 0.255,
                 ThumbnailSource = CaptureLibrary.LoadThumb,
                 Describe = item => row.Title + ", " + Describe(item),
@@ -503,7 +514,7 @@ namespace KillerShot.Shell
             {
                 var image = new Image { Width = w, Height = h, Stretch = Stretch.Uniform };
                 RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
-                LoadThumbAsync(image, item.Id);
+                LoadThumbAsync(image, item);
                 var caption = new TextBlock
                 {
                     Text = Title(item), FontSize = 12, Width = w, Margin = new Thickness(0, 6, 0, 0),
@@ -558,12 +569,12 @@ namespace KillerShot.Shell
         }
 
         /// <summary>Loads a thumbnail off the UI thread, so scrolling never waits on decoding.</summary>
-        private static void LoadThumbAsync(Image image, long id)
+        private static void LoadThumbAsync(Image image, CaptureItem item)
         {
-            image.Tag = id;
-            Task.Run(() => CaptureLibrary.LoadThumb(id)).ContinueWith(t =>
+            image.Tag = item;
+            Task.Run(() => CaptureLibrary.LoadThumb(item)).ContinueWith(t =>
             {
-                if (t.Status == TaskStatus.RanToCompletion && image.Tag is long current && current == id) image.Source = t.Result;
+                if (t.Status == TaskStatus.RanToCompletion && CaptureLibrary.IsCurrent(item) && image.Tag is CaptureItem current && current == item) image.Source = t.Result;
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
@@ -629,6 +640,7 @@ namespace KillerShot.Shell
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            if (SearchAnchor != null) SearchAnchor.Tag = SearchBox.Text.Length > 0 ? "on" : null;
             _searchDelay.Stop();
             _searchDelay.Start();
         }
@@ -646,16 +658,31 @@ namespace KillerShot.Shell
                 Reload();
                 e.Handled = true;
             }
+            else if (e.Key == Key.Escape)
+            {
+                SearchPopup.IsOpen = false;
+                e.Handled = true;
+            }
         }
+
+        internal FrameworkElement? SearchAnchor { get; set; }
 
         /// <summary>Puts the cursor in the search box (Ctrl+F on the library).</summary>
         public void FocusSearch()
+        {
+            if (SearchAnchor == null) return;
+            SearchAnchor.UpdateLayout();
+            FlyoutPlacement.AttachInsidePane(SearchPopup, SearchAnchor);
+            SearchPopup.IsOpen = true;
+        }
+
+        private void SearchPopup_Opened(object sender, EventArgs e)
         {
             SearchBox.Focus();
             SearchBox.SelectAll();
         }
 
-        private void NewCollection_Click(object sender, RoutedEventArgs e) => NewCollection(null);
+        internal void CreateCollection() => NewCollection(null);
 
         private void EmptyCapture_Click(object sender, RoutedEventArgs e) => CaptureRequested?.Invoke();
 
@@ -796,15 +823,17 @@ namespace KillerShot.Shell
             MenuItem Add(string key, Action action, string gesture = "")
             {
                 var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture };
-                mi.Click += (_, _) => action();
+                mi.Click += (_, _) => { if (CaptureLibrary.IsCurrent(item)) action(); };
                 menu.Items.Add(mi);
                 return mi;
             }
             Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
+            if (anchor is CoverFlow or Rolodex)
+                menu.Items.Add(ViewInfoCards.Menu(anchor is Rolodex));
             Add("Str_Lib_Copy", () => Copy(item));
             Add("Str_Btn_Print", () =>
             {
-                try { PrintOutput.Print(CaptureLibrary.LoadImage(item.Id), Title(item)); }
+                try { PrintOutput.Print(CaptureLibrary.LoadImage(item), Title(item)); }
                 catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
             });
             if (FolderCaptures.IsFolderId(item.Id))
@@ -929,7 +958,7 @@ namespace KillerShot.Shell
         {
             try
             {
-                StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadImage(item.Id), out var error)
+                StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadImage(item), out var error)
                     ? Loc("Str_Lib_Copied")
                     : string.Format(Loc("Str_Tray_ClipboardBusy"), error));
             }
@@ -953,11 +982,11 @@ namespace KillerShot.Shell
             {
                 if (Path.GetExtension(dlg.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    byte[] png = CaptureLibrary.LoadPng(item.Id);
+                    byte[] png = CaptureLibrary.LoadPng(item);
                     OutputFiles.WriteAtomic(dlg.FileName, true, stream => stream.Write(png));
                 }
                 else
-                    ImageOutput.Save(CaptureLibrary.LoadImage(item.Id), dlg.FileName, CaptureSettings.JpegQuality);
+                    ImageOutput.Save(CaptureLibrary.LoadImage(item), dlg.FileName, CaptureSettings.JpegQuality);
                 StatusMessage?.Invoke(dlg.FileName);
             }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }

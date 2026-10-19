@@ -46,8 +46,12 @@ public partial class MainWindow
 
     private void QrReadingButton_Click(object sender, RoutedEventArgs e)
     {
-        CaptureLibrary.QrReadingEnabled = !CaptureLibrary.QrReadingEnabled;
-        QrReadingButton.Tag = CaptureLibrary.QrReadingEnabled ? "on" : null;
-        RefreshDocumentQr();
+        try
+        {
+            CaptureLibrary.QrReadingEnabled = !CaptureLibrary.QrReadingEnabled;
+            QrReadingButton.Tag = CaptureLibrary.QrReadingEnabled ? "on" : null;
+            RefreshDocumentQr();
+        }
+        catch (Exception error) { StatusText.Text = error.Message; }
     }
 }

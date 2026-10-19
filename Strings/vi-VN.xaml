@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0} ảnh chụp chưa được lưu vào album. Nếu thoát ngay, các ảnh này sẽ bị mất.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Thử lại</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Không thể lấy hình ảnh cửa sổ. Ảnh chụp này chỉ chứa nội dung nhìn thấy trên màn hình nền lúc đó.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>
+    <sys:String x:Key="Str_Album_New">Album mới...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Mở tệp...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Đặt tên album mới</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Đổi tên album</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Album ảnh chụp|*.kshot|Tất cả tệp|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Đang dùng</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Mở khóa {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Khi mở album bên ngoài, một bản sao sẽ được thêm vào thư mục album này.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Album chưa được thay đổi: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Hãy lưu các ảnh chụp đang chờ trước khi chuyển hoặc đổi tên album này.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Nhập tên tệp không chứa thư mục hoặc ký tự dành riêng.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Không tìm thấy album đã chọn.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Không thể đọc khóa tài khoản của album này. Hãy mở album bằng tài khoản Windows đã tạo album hoặc dùng bản sao được bảo vệ bằng mật khẩu.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Album đang dùng đã thay đổi. Hãy chọn lại ảnh chụp.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Hiện thẻ thông tin</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Đã có album mang tên này.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Bản ghi khôi phục việc đổi tên album chưa đầy đủ.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Bản ghi khôi phục việc đổi tên album không hợp lệ.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Thiếu các tệp khôi phục việc đổi tên album.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Cả đường dẫn cũ và mới của album đều tồn tại. Các tệp khôi phục đã được giữ lại.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Cấu trúc cơ sở dữ liệu của album chưa đầy đủ.</sys:String>
 </ResourceDictionary>

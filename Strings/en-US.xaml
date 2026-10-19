@@ -446,4 +446,26 @@
     <sys:String x:Key="Str_Lib_Pending">Captures not yet saved to the album: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Captures not yet saved to the album: {0}. Exiting now will discard them.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Retry</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUMS</sys:String>
+    <sys:String x:Key="Str_Album_New">New album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Open file...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Name the new album</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Rename the album</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Capture albums|*.kshot|All files|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Active</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Unlock {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Opening an external album adds a copy to this album folder.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">The album was not changed: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Save the pending captures before switching or renaming this album.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Enter a file name without folders or reserved characters.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">The selected album is missing.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">This album's account key could not be read. Open it with the Windows account that created it, or use a password-protected copy.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">The active album changed. Select the capture again.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Show info cards</sys:String>
+    <sys:String x:Key="Str_Album_Exists">An album with that name already exists.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">The album rename recovery record is incomplete.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">The album rename recovery record is invalid.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">The album rename recovery files are missing.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Both album rename paths exist. Recovery files were preserved.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">The album schema is incomplete.</sys:String>
 </ResourceDictionary>

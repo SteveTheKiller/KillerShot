@@ -54,6 +54,12 @@ internal sealed class Rolodex : FrameworkElement
     public bool IsMoving => _motion.IsMoving;
     private Color _cardColor = Color.FromRgb(0x14, 0x14, 0x14);
     private double _zoom = 0.85;
+    private bool _showInfoCards = ViewInfoCards.Get(true);
+    public bool ShowInfoCards
+    {
+        get => _showInfoCards;
+        set { if (_showInfoCards == value) return; _showInfoCards = value; Refresh(); }
+    }
     private static ImageBrush? s_shadowModern, s_shadowSquare;
 
     private sealed class Card
@@ -66,7 +72,7 @@ internal sealed class Rolodex : FrameworkElement
     }
 
     /// <summary>Gives a capture's thumbnail; null draws an empty card.</summary>
-    public Func<long, BitmapSource?>? ThumbnailSource { get; set; }
+    public Func<CaptureItem, BitmapSource?>? ThumbnailSource { get; set; }
 
     /// <summary>The title printed at the foot of each card.</summary>
     public Func<CaptureItem, string>? Caption { get; set; }
@@ -167,9 +173,20 @@ internal sealed class Rolodex : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
-        Loaded += (_, _) => ThemeManager.ThemeChanged += Refresh;
-        Unloaded += (_, _) => ThemeManager.ThemeChanged -= Refresh;
+        Loaded += (_, _) =>
+        {
+            ThemeManager.ThemeChanged += Refresh;
+            ViewInfoCards.Changed += SyncInfoCards;
+            SyncInfoCards();
+        };
+        Unloaded += (_, _) =>
+        {
+            ThemeManager.ThemeChanged -= Refresh;
+            ViewInfoCards.Changed -= SyncInfoCards;
+        };
     }
+
+    private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get(true);
 
     private int IndexOf(long id)
     {
@@ -281,7 +298,7 @@ internal sealed class Rolodex : FrameworkElement
     private Card CreateCard(int index)
     {
         var item = _items[index];
-        BitmapSource? thumb = ThumbnailSource?.Invoke(item.Id);
+        BitmapSource? thumb = ThumbnailSource?.Invoke(item);
         var stock = new SolidColorBrush(_cardColor);
         var edge = new Pen(new SolidColorBrush(Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF)), 0.004);
 
@@ -289,17 +306,21 @@ internal sealed class Rolodex : FrameworkElement
         // at the foot. Drawn as vectors, so it stays sharp at any size.
         var drawing = new DrawingGroup();
         double corner = ThemeManager.Current == Theme.SE98 ? 0 : 0.03;
-        drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), corner, corner)));
-        if (Accent?.Invoke(item) is Color accent)
-            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, new RectangleGeometry(new Rect(0.03, 0, CardWidth - 0.06, 0.016))));
-        var frame = new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand);
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
+        double width = ShowInfoCards ? CardWidth : Math.Min(CardWidth, CardHeight * aspect);
+        double height = ShowInfoCards ? CardHeight : width / aspect;
+        if (ShowInfoCards)
+            drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), corner, corner)));
+        if (ShowInfoCards && Accent?.Invoke(item) is Color accent)
+            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, new RectangleGeometry(new Rect(0.03, 0, CardWidth - 0.06, 0.016))));
+        var frame = ShowInfoCards ? new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand)
+            : new Rect(0, 0, width, height);
         double w = Math.Min(frame.Width, frame.Height * aspect), h = w / aspect;
         var picture = new Rect(frame.X + (frame.Width - w) / 2, frame.Y + (frame.Height - h) / 2, w, h);
         if (thumb != null) drawing.Children.Add(new ImageDrawing(thumb, picture));
         else drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(Color.FromRgb(60, 60, 60)), null, new RectangleGeometry(picture)));
         string caption = Caption?.Invoke(item) ?? "";
-        if (caption.Length > 0)
+        if (ShowInfoCards && caption.Length > 0)
         {
             var text = new FormattedText(caption, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), CaptionBand * 0.46, CaptionBrush, 1.0)
@@ -312,12 +333,12 @@ internal sealed class Rolodex : FrameworkElement
             drawing.Children.Add(new GeometryDrawing(CaptionBrush, null, text.BuildGeometry(origin)));
         }
         // Keep the brush the card's full size even where the drawing leaves transparent corners.
-        var brush = new DrawingBrush(drawing) { Stretch = Stretch.Fill, Viewbox = new Rect(0, 0, CardWidth, CardHeight), ViewboxUnits = BrushMappingMode.Absolute };
+        var brush = new DrawingBrush(drawing) { Stretch = Stretch.Fill, Viewbox = new Rect(0, 0, width, height), ViewboxUnits = BrushMappingMode.Absolute };
         brush.Freeze();
 
-        var face = new GeometryModel3D(Quad(), new DiffuseMaterial(brush)) { BackMaterial = new DiffuseMaterial(brush) };
+        var face = new GeometryModel3D(Quad(width, height), new DiffuseMaterial(brush)) { BackMaterial = new DiffuseMaterial(brush) };
         // A soft drop shadow just behind the card and a little below it.
-        var shadow = new GeometryModel3D(ShadowQuad(), new DiffuseMaterial(ShadowBrush()));
+        var shadow = new GeometryModel3D(ShadowQuad(width, height), new DiffuseMaterial(ShadowBrush()));
         var rotation = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
         var translation = new TranslateTransform3D();
         var scale = new ScaleTransform3D();
@@ -337,9 +358,9 @@ internal sealed class Rolodex : FrameworkElement
 
     /// <summary>The shadow's quad: the card grown by the blur margin, dropped a little, and set a
     /// hair behind the card so the card always draws over it.</summary>
-    private static MeshGeometry3D ShadowQuad()
+    private static MeshGeometry3D ShadowQuad(double width, double height)
     {
-        double x = CardWidth / 2 + ShadowMargin, y = CardHeight / 2 + ShadowMargin, dy = -ShadowDrop, z = -0.006;
+        double x = width / 2 + ShadowMargin, y = height / 2 + ShadowMargin, dy = -ShadowDrop, z = -0.006;
         var mesh = new MeshGeometry3D
         {
             Positions = [new Point3D(-x, -y + dy, z), new Point3D(x, -y + dy, z), new Point3D(x, y + dy, z), new Point3D(-x, y + dy, z)],
@@ -380,9 +401,9 @@ internal sealed class Rolodex : FrameworkElement
     }
 
     /// <summary>A card-sized quad centered on the origin, texture upright.</summary>
-    private static MeshGeometry3D Quad()
+    private static MeshGeometry3D Quad(double width, double height)
     {
-        double x = CardWidth / 2, y = CardHeight / 2;
+        double x = width / 2, y = height / 2;
         var mesh = new MeshGeometry3D
         {
             Positions = [new Point3D(-x, -y, 0), new Point3D(x, -y, 0), new Point3D(x, y, 0), new Point3D(-x, y, 0)],

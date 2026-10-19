@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Zrzuty jeszcze niezapisane w albumie: {0}. Jeśli teraz zamkniesz aplikację, zostaną utracone.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Ponów próbę</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Powierzchnia okna była niedostępna. Ten zrzut pokazuje tylko to, co było widoczne na pulpicie.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUMY</sys:String>
+    <sys:String x:Key="Str_Album_New">Nowy album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Otwórz plik...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Nadaj nazwę nowemu albumowi</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Zmień nazwę albumu</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Albumy zrzutów|*.kshot|Wszystkie pliki|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Aktywny</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Odblokuj {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Otwarcie zewnętrznego albumu dodaje jego kopię do tego folderu albumów.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Album nie został zmieniony: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Zapisz oczekujące zrzuty przed przełączeniem albumu lub zmianą jego nazwy.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Wpisz nazwę pliku bez folderów i znaków zastrzeżonych.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Nie znaleziono wybranego albumu.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Nie można odczytać klucza konta tego albumu. Otwórz go na koncie Windows, na którym został utworzony, albo użyj kopii chronionej hasłem.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Aktywny album się zmienił. Wybierz zrzut ponownie.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Pokaż karty informacyjne</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Album o tej nazwie już istnieje.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Rekord odzyskiwania po zmianie nazwy albumu jest niekompletny.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Rekord odzyskiwania po zmianie nazwy albumu jest nieprawidłowy.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Brakuje plików odzyskiwania po zmianie nazwy albumu.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Istnieje zarówno stara, jak i nowa ścieżka albumu. Pliki odzyskiwania zostały zachowane.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Struktura bazy danych albumu jest niekompletna.</sys:String>
 </ResourceDictionary>

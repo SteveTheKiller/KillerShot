@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0} 张截图尚未保存到相册。现在退出将丢弃这些截图。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">重试</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">无法获取窗口画面。此截图仅显示当时桌面上可见的内容。</sys:String>
+    <sys:String x:Key="Str_Album_Title">相册</sys:String>
+    <sys:String x:Key="Str_Album_New">新建相册...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">打开文件...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">为新相册命名</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">重命名相册</sys:String>
+    <sys:String x:Key="Str_Album_Filter">截图相册|*.kshot|所有文件|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">当前使用</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">解锁 {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">打开外部相册时，会在此相册文件夹中添加一份副本。</sys:String>
+    <sys:String x:Key="Str_Album_Failed">相册未更改：{0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">切换或重命名此相册前，请保存待处理的截图。</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">请输入不含文件夹或保留字符的文件名。</sys:String>
+    <sys:String x:Key="Str_Album_Missing">找不到所选相册。</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">无法读取此相册的账户密钥。请使用创建该相册的 Windows 账户打开，或使用受密码保护的副本。</sys:String>
+    <sys:String x:Key="Str_Album_Changed">当前相册已更改。请重新选择截图。</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">显示信息卡片</sys:String>
+    <sys:String x:Key="Str_Album_Exists">已存在同名相册。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">相册重命名恢复记录不完整。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">相册重命名恢复记录无效。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">缺少相册重命名恢复文件。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">相册的旧路径和新路径都存在。恢复文件已保留。</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">相册数据库结构不完整。</sys:String>
 </ResourceDictionary>

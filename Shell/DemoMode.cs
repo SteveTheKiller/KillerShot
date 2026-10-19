@@ -32,6 +32,7 @@ internal static class DemoMode
         string library = Path.Combine(root, "Library");
         try { if (Directory.Exists(library)) Directory.Delete(library, true); } catch { /* a locked old copy is reused */ }
         Settings.UseFolder(Path.Combine(root, "Settings"));
+        Settings.Set("ActiveAlbum", "Library.kshot");
         CaptureLibrary.UseFolder(library);
         _source = SourceFolder();
         string shots = _source != null ? Path.Combine(_source, "Screenshots") : Path.Combine(root, "Screenshots");

@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Catture non ancora salvate nell'album: {0}. Uscendo ora andranno perse.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Riprova</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">La superficie della finestra non era disponibile. Questa cattura mostra solo ciò che era visibile sul desktop.</sys:String>
+    <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>
+    <sys:String x:Key="Str_Album_New">Nuovo album...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Apri file...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Nome del nuovo album</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Rinomina album</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Album di acquisizioni|*.kshot|Tutti i file|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Attivo</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">Sblocca {0}</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">L’apertura di un album esterno aggiunge una copia a questa cartella degli album.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">L’album non è stato modificato: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Salva le acquisizioni in attesa prima di cambiare album o rinominarlo.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Inserisci un nome di file senza cartelle o caratteri riservati.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">L’album selezionato non è disponibile.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Impossibile leggere la chiave dell’account di questo album. Aprilo con l’account Windows che lo ha creato oppure usa una copia protetta da password.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">L’album attivo è cambiato. Seleziona di nuovo l’acquisizione.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Mostra schede informative</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Esiste già un album con questo nome.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Il registro di ripristino della rinomina dell'album è incompleto.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Il registro di ripristino della rinomina dell'album non è valido.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Mancano i file di ripristino della rinomina dell'album.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Esistono sia il percorso precedente sia quello nuovo dell'album. I file di ripristino sono stati conservati.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">La struttura del database dell'album è incompleta.</sys:String>
 </ResourceDictionary>

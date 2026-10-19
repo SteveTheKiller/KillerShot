@@ -23,6 +23,8 @@ internal static class SelfTestLibrary
 
     public static bool TryRun(string[] args)
     {
+        if (SelfTestStorageSafety.TryRun(args)) return true;
+        if (SelfTestCliSafety.TryRun(args)) return true;
         if (args.Length == 3 && args[0].Equals("--selftest-library-native-probe", StringComparison.OrdinalIgnoreCase))
         {
             SetErrorMode(0x0001); // Keep a bad native test fixture from opening a Windows error dialog.
@@ -355,13 +357,14 @@ internal static class SelfTestLibrary
         var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
         pixel.Freeze();
         CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Swap lock", null);
+        string albumPath = CaptureLibrary.FilePath;
         bool blocked;
         Task swap;
         using (new FileStream(Path.Combine(library, "Library.open.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
         {
             swap = Task.Run(() => CaptureLibrary.SetPassword("swap pass"));
             await Task.Delay(350);
-            blocked = !swap.IsCompleted && !File.Exists(CaptureLibrary.FilePath + ".rekey") &&
+            blocked = !swap.IsCompleted && !File.Exists(albumPath + ".rekey") &&
                 !File.Exists(Path.Combine(library, "Library.key.next"));
         }
         await swap.WaitAsync(TimeSpan.FromSeconds(20));
@@ -411,7 +414,7 @@ internal static class SelfTestLibrary
             {
                 db.Open();
                 using var cmd = db.CreateCommand();
-                cmd.CommandText = "DROP VIEW meta";
+                cmd.CommandText = "DROP VIEW meta; CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT)";
                 cmd.ExecuteNonQuery();
             }
             SqliteConnection.ClearAllPools();
@@ -613,8 +616,9 @@ internal static class SelfTestLibrary
             await Shot("strip-folder");
             log.AppendLine($"strip folder_doc={App.Instance.Document?.FilePath != null} current={App.Instance.CurrentItem?.Id}");
             App.Instance.SetDocument(null);
-            log.AppendLine($"strip hidden_without_picture={!dock.ShowPane}");
-            if (dock.ShowPane) throw new InvalidOperationException("The collection strip stays without a picture.");
+            log.AppendLine($"strip available_in_album={dock.ShowPane} side={dock.Side}");
+            if (!dock.ShowPane || dock.Side != KillerFamily.Layout.DockSide.Left)
+                throw new InvalidOperationException("The album has no left collection sidebar.");
 
             // Password: set, lock, refuse a wrong one, unlock, change, remove.
             CaptureLibrary.SetPassword("first pass");

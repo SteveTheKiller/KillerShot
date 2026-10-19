@@ -38,7 +38,7 @@ namespace KillerShot.Shell
             if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
             SyncCaptureOptions();
             BuildShortcutRows();
-            CaptureSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110);
+            CaptureSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110) + CaptureSettingsScroll.Padding.Top + CaptureSettingsScroll.Padding.Bottom;
             FadeOverlayIn(CaptureSettingsOverlay);
         }
 

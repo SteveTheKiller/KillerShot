@@ -39,7 +39,7 @@ namespace KillerShot.Shell
         internal FrameworkElement TestCarousel => _flow;
 
         private readonly DockHost _host;
-        private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+        private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly DockPanel _root = new();
@@ -56,6 +56,7 @@ namespace KillerShot.Shell
         private bool _syncing;
         private volatile bool _disposed;
         private long? _current;
+        private long _albumSession = -1;
 
         public CollectionStrip(DockHost host, Style sliderStyle)
         {
@@ -196,7 +197,7 @@ namespace KillerShot.Shell
             var selected = _host.IsHorizontal ? _flow.SelectedItem
                 : _sideView == "rolodex" ? _rolodex.SelectedItem : _list.SelectedItem as CaptureItem;
             CancelPendingOpen();
-            if (item != null && source == _source && selected?.Id == item.Id) Open(item);
+            if (item != null && CaptureLibrary.IsCurrent(item) && source == _source && selected == item) Open(item);
         }
 
         /// <summary>Carousel across the top or bottom, a thumbnail column down the sides.</summary>
@@ -213,6 +214,7 @@ namespace KillerShot.Shell
                 Grid.SetRow(_slider, 1);
                 _body.Children.Add(_flow);
                 _body.Children.Add(_slider);
+                _body.Children.Add(_picker);
             }
             else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
 
@@ -271,6 +273,13 @@ namespace KillerShot.Shell
         {
             if (_disposed) return;
             CancelPendingOpen();
+            long session = CaptureLibrary.Session;
+            if (_albumSession != session)
+            {
+                _albumSession = session;
+                _current = null;
+                _source = "all";
+            }
             _syncing = true;
             try
             {
@@ -335,7 +344,7 @@ namespace KillerShot.Shell
         private void QueueOpen(CaptureItem? item)
         {
             CancelPendingOpen();
-            if (_disposed || item == null || item.Id == _current) return;
+            if (_disposed || item == null || !CaptureLibrary.IsCurrent(item) || item.Id == _current) return;
             _openDelay.Tag = item;
             _pendingSource = _source;
             _openDelay.Start();
@@ -370,7 +379,7 @@ namespace KillerShot.Shell
         private void Open(CaptureItem item)
         {
             CancelPendingOpen();
-            if (_disposed || item.Id == _current) return;
+            if (_disposed || !CaptureLibrary.IsCurrent(item) || item.Id == _current) return;
             OpenRequested?.Invoke(item);
         }
 
@@ -397,6 +406,7 @@ namespace KillerShot.Shell
 
         public StripThumb()
         {
+            Cursor = Cursors.Hand;
             Margin = new Thickness(0, 2, 0, 6);
             Padding = new Thickness(0);
             Style = (Style)System.Windows.Markup.XamlReader.Parse("""
@@ -451,10 +461,9 @@ namespace KillerShot.Shell
             _caption.Text = LibraryView.Title(item);
             AutomationProperties.SetName(this, LibraryView.Describe(item));
             ToolTip = LibraryView.Describe(item);
-            long id = item.Id;
-            Task.Run(() => CaptureLibrary.LoadThumb(id)).ContinueWith(t =>
+            Task.Run(() => CaptureLibrary.LoadThumb(item)).ContinueWith(t =>
             {
-                if (t.Status == TaskStatus.RanToCompletion && DataContext is CaptureItem now && now.Id == id) _image.Source = t.Result;
+                if (t.Status == TaskStatus.RanToCompletion && CaptureLibrary.IsCurrent(item) && DataContext is CaptureItem now && now == item) _image.Source = t.Result;
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
     }

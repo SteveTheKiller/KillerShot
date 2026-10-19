@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">{0} 件のキャプチャがアルバムに保存されていません。今終了すると失われます。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">再試行</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">ウィンドウの描画内容を取得できませんでした。このキャプチャには、デスクトップ上で見えていた内容だけが表示されています。</sys:String>
+    <sys:String x:Key="Str_Album_Title">アルバム</sys:String>
+    <sys:String x:Key="Str_Album_New">新しいアルバム...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">ファイルを開く...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">新しいアルバムの名前</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">アルバム名を変更</sys:String>
+    <sys:String x:Key="Str_Album_Filter">キャプチャアルバム|*.kshot|すべてのファイル|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">使用中</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} のロックを解除</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">外部アルバムを開くと、このアルバムフォルダーにコピーが追加されます。</sys:String>
+    <sys:String x:Key="Str_Album_Failed">アルバムは変更されませんでした: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">このアルバムを切り替えたり名前を変更したりする前に、保存待ちのキャプチャを保存してください。</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">フォルダーや使用できない文字を含まないファイル名を入力してください。</sys:String>
+    <sys:String x:Key="Str_Album_Missing">選択したアルバムが見つかりません。</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">このアルバムのアカウントキーを読み取れませんでした。作成時の Windows アカウントで開くか、パスワードで保護されたコピーを使用してください。</sys:String>
+    <sys:String x:Key="Str_Album_Changed">使用中のアルバムが変わりました。キャプチャを選択し直してください。</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">情報カードを表示</sys:String>
+    <sys:String x:Key="Str_Album_Exists">その名前のアルバムは既に存在します。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">アルバムの名前変更の復旧記録が不完全です。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">アルバムの名前変更の復旧記録が無効です。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">アルバムの名前変更の復旧ファイルが見つかりません。</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">アルバムの旧パスと新パスの両方が存在します。復旧ファイルは保持されています。</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">アルバムのデータベース構造が不完全です。</sys:String>
 </ResourceDictionary>

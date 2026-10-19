@@ -6,9 +6,9 @@ namespace KillerShot.Services
 {
     /// <summary>
     /// The color of the cards captures sit on (library tiles, the strip's list and rolodex) and an
-    /// optional color for each collection, which marks its cards and its heading. Both are choices,
-    /// not library data, so they live in settings.json: "CardColor" and "CollectionColor.(id)",
-    /// each a #RRGGBB hex, or empty for the default.
+    /// optional color for each collection, which marks its cards and its heading. The shared card
+    /// color lives in settings.json; collection colors stay in their album so equal collection
+    /// IDs in other albums do not share colors. Each is #RRGGBB hex, or empty for the default.
     ///
     /// The card colors reach XAML as application resources, CaptureCardBrush and the text brushes
     /// that read on it, so a change repaints every tile at once.
@@ -43,11 +43,11 @@ namespace KillerShot.Services
         }
 
         /// <summary>A collection's own color, or null when it has none.</summary>
-        public static Color? Collection(long? id) => id is long i && i > 0 ? Parse(Settings.Get("CollectionColor." + i.ToString(CultureInfo.InvariantCulture))) : null;
+        public static Color? Collection(long? id) => id is long i && i > 0 ? Parse(CaptureLibrary.GetAlbumSetting("CollectionColor." + i.ToString(CultureInfo.InvariantCulture))) : null;
 
         public static void SetCollection(long id, Color? color)
         {
-            Settings.Set("CollectionColor." + id.ToString(CultureInfo.InvariantCulture), color is Color c ? Hex(c) : "");
+            CaptureLibrary.SetAlbumSetting("CollectionColor." + id.ToString(CultureInfo.InvariantCulture), color is Color c ? Hex(c) : "");
             Changed?.Invoke();
         }
 

@@ -242,6 +242,7 @@ internal static class SelfTestUi
             LocaleManager.Apply(Locale.EnUS);
             w.TestRelocalize();
 
+            doc.MarkSaved();
             App.Instance.SetDocument(null);
             await Shot("empty");
             w.Close();

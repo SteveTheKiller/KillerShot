@@ -352,7 +352,10 @@ namespace KillerShot.Shell
         private void CaptureBtn_Click(object sender, RoutedEventArgs e)
         {
             BuildCaptureMenu();
-            OpenFlyout(CaptureMenu, CaptureBtn);
+            FlyoutPlacement.AttachInsidePane(CaptureMenu, CaptureBtn.IsVisible ? CaptureBtn
+                : _toolbarHidden ? ToolbarOverflowButton : MoreBtn);
+            CaptureMenu.IsOpen = true;
+            Anim.FadeIn(CaptureMenu);
         }
 
         // ---- library ----
@@ -363,6 +366,7 @@ namespace KillerShot.Shell
 
         private void InitLibrary()
         {
+            Library.SearchAnchor = LibrarySearchButton;
             // The library's file name, without its extension, as Killendar and KillerNotes name
             // their open database; the tooltip has the full path.
             TitleLibraryLabel.Text = System.IO.Path.GetFileNameWithoutExtension(CaptureLibrary.FilePath);
@@ -380,6 +384,14 @@ namespace KillerShot.Shell
             Library.StatusMessage += text => StatusText.Text = text;
             Library.LinkRequested += (payload, anchor) => ShowPayloadCard(payload, anchor, Loc("Str_Ocr_Links"));
         }
+
+        private void LibrarySearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_doc != null && !_libraryShown) ToggleLibrary();
+            Library.FocusSearch();
+        }
+
+        private void NewCollectionButton_Click(object sender, RoutedEventArgs e) => Library.CreateCollection();
 
 
         /// <summary>The library's title-bar name opens its database settings.</summary>
@@ -403,8 +415,7 @@ namespace KillerShot.Shell
         {
             bool library = _doc == null || _libraryShown;
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
-            // The strip goes with an open picture; the library is its own browser.
-            StripDock.ShowPane = !library;
+            StripDock.ShowPane = true;
             SyncStripPlacement(library);
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
             SyncContentPane();

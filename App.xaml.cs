@@ -54,6 +54,11 @@ public partial class App : Application
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestChromeInteraction.TryRun(e.Args)) return;
+        if (SelfTestReleaseSafety.TryRun(e.Args)) return;
+        if (SelfTestExternalAlbumChanges.TryRun(e.Args)) return;
+        if (SelfTestAccessiblePickers.TryRun(e.Args)) return;
+        if (SelfTestEditorSafety.TryRun(e.Args)) return;
+        if (SelfTestRecordingSafety.TryRun(e.Args)) return;
         if (SelfTestLibrary.TryRun(e.Args)) return;
         if (SelfTestQr.TryRun(e.Args)) return;
         if (SelfTestQrUi.TryRun(e.Args)) return;
@@ -200,7 +205,7 @@ public partial class App : Application
             try { OpenImage(path); } finally { _opening = null; }
             return;
         }
-        var bmp = CaptureLibrary.LoadImage(item.Id);
+        var bmp = CaptureLibrary.LoadImage(item);
         _opening = item;
         SetDocument(new EditorDocument(bmp, null, item.Taken));
     }
@@ -243,23 +248,32 @@ public partial class App : Application
     {
         var opening = _opening;
         _opening = null;
-        if (!ReferenceEquals(Document, doc))
-        {
-            _editor?.CommitPendingText();
-            if (Document?.Dirty == true)
-            {
-                ShowEditor();
-                var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
-                    LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Strip_Discard"),
-                    LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
-                dialog.ShowDialog();
-                if (!dialog.Confirmed) return false;
-            }
-        }
+        if (!ReferenceEquals(Document, doc) && !ConfirmDocumentReplacement()) return false;
         CurrentItem = doc != null ? opening : null;
         Document = doc;
         DocumentChanged?.Invoke();
         return true;
+    }
+
+    internal bool ConfirmDocumentReplacement()
+    {
+        _editor?.CommitPendingText();
+        if (Document?.Dirty != true) return true;
+        var expectedDocument = Document;
+        ShowEditor();
+        var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
+            LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Strip_Discard"),
+            LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
+        dialog.ShowDialog();
+        return dialog.Confirmed && ReferenceEquals(Document, expectedDocument);
+    }
+
+    internal void CompleteAlbumSwitch()
+    {
+        CurrentItem = null;
+        _opening = null;
+        Document = null;
+        DocumentChanged?.Invoke();
     }
 
     internal void ShowEditor()

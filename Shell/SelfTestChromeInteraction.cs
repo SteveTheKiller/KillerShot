@@ -2,6 +2,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -68,7 +69,43 @@ internal static class SelfTestChromeInteraction
                 report.Add($"{theme} footer button center hit={client}");
                 if (client != 1) failures.Add($"{theme}: footer button center must remain clickable.");
             }
+            window.Left = 100;
+            window.Top = 100;
+            window.Width = 1100;
+            window.Height = 700;
+            foreach (Theme theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 })
+            {
+                ThemeManager.Apply(theme);
+                await Task.Delay(100);
+                window.UpdateLayout();
+                var pane = (FrameworkElement)window.FindName("ContentPane");
+                ((Button)window.FindName("CaptureBtn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await Task.Delay(200);
+                var menu = (ContextMenu)window.FindName("CaptureMenu");
+                var face = (FrameworkElement)menu.Template.FindName("MenuRoot", menu);
+                CheckPaneInset(face, pane, false, theme + " capture menu");
+                menu.IsOpen = false;
+                ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await Task.Delay(200);
+                var popup = (Popup)window.FindName("LibrarySettingsPopup");
+                CheckPaneInset((FrameworkElement)popup.Child, pane, true, theme + " album manager");
+                popup.IsOpen = false;
+            }
             window.Close();
+
+            void CheckPaneInset(FrameworkElement face, FrameworkElement pane, bool right, string name)
+            {
+                Point start = face.PointToScreen(new Point());
+                Point paneStart = pane.PointToScreen(new Point());
+                Point paneEnd = pane.PointToScreen(new Point(pane.ActualWidth, 0));
+                Point end = face.PointToScreen(new Point(face.ActualWidth, 0));
+                var dpi = VisualTreeHelper.GetDpi(pane);
+                double horizontal = (right ? paneEnd.X - end.X : start.X - paneStart.X) / dpi.DpiScaleX;
+                double vertical = (start.Y - paneStart.Y) / dpi.DpiScaleY;
+                report.Add($"{name} visible inset={horizontal:F2},{vertical:F2}");
+                if (Math.Abs(horizontal - 8) > 1.1 || Math.Abs(vertical - 8) > 1.1)
+                    failures.Add(name + " must sit eight pixels inside the content pane.");
+            }
         }
         catch (Exception ex) { failures.Add(ex.ToString()); }
         report.AddRange(failures.Select(f => "FAIL " + f));

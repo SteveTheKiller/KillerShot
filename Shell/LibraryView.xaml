@@ -103,7 +103,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -114,27 +113,25 @@
                        TextWrapping="Wrap" VerticalAlignment="Center"/>
         </DockPanel>
 
-        <!-- The bar: search, a new collection, and the count. The views and grouping are in the
-             footer, as KillerPDF's view modes are (FooterView.cs). -->
-        <DockPanel x:Name="HeaderBar" Grid.Row="1" Margin="16,12,16,4" LastChildFill="False">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="CountText" Visibility="Collapsed" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
-                           VerticalAlignment="Center" Margin="0,0,12,4"/>
-                <Grid Width="240" Margin="0,0,8,4">
-                    <TextBox x:Name="SearchBox" Style="{StaticResource DarkTextBox}" FontSize="12" Padding="24,3,6,3"
-                             TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown"
-                             AutomationProperties.Name="{DynamicResource Str_Lib_Search}"/>
-                    <a11y:Glyph Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="11" IsHitTestVisible="False"
-                               Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBlock x:Name="SearchHint" Text="{DynamicResource Str_Lib_Search}" IsHitTestVisible="False"
-                               Foreground="{DynamicResource DimTextBrush}" FontSize="12" VerticalAlignment="Center" Margin="26,0,0,0"/>
+        <TextBlock x:Name="CountText" Visibility="Collapsed"/>
+        <Popup x:Name="SearchPopup" AllowsTransparency="True" StaysOpen="False" Opened="SearchPopup_Opened">
+            <Border Style="{StaticResource FlyoutCard}">
+                <Grid>
+                    <Grid Width="240" Margin="8">
+                        <TextBox x:Name="SearchBox" Style="{StaticResource DarkTextBox}" FontSize="12" Padding="24,3,6,3"
+                                 TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown"
+                                 AutomationProperties.Name="{DynamicResource Str_Lib_Search}"/>
+                        <a11y:Glyph Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="11" IsHitTestVisible="False"
+                                   Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <TextBlock x:Name="SearchHint" Text="{DynamicResource Str_Lib_Search}" IsHitTestVisible="False"
+                                   Foreground="{DynamicResource DimTextBrush}" FontSize="12" VerticalAlignment="Center" Margin="26,0,0,0"/>
+                    </Grid>
+                    <Border Style="{StaticResource FlyoutGrain}"/>
                 </Grid>
-                <Button x:Name="NewCollectionBtn" Style="{StaticResource SurfaceButton}" Height="26" Padding="10,0"
-                        Margin="0,0,0,4" Click="NewCollection_Click" Content="{DynamicResource Str_Lib_NewCollection}"/>
-            </StackPanel>
-        </DockPanel>
+            </Border>
+        </Popup>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <!-- Shelves, Grid and Timeline: virtualized rows built in code. -->
             <ItemsControl x:Name="RowsList" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True"
@@ -168,7 +165,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <kc:CoverFlow x:Name="BigFlow"/>
+                <kc:CoverFlow x:Name="BigFlow" PerspectiveZoomEnabled="True"/>
                 <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,4,0,8">
                     <TextBlock x:Name="BigFlowTitle" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource BrandSansFont}"
                                FontSize="17" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="700"/>

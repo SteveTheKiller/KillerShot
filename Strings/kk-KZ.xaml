@@ -443,4 +443,26 @@
     <sys:String x:Key="Str_Lib_PendingExit">Альбомға сақталмаған түсірілімдер: {0}. Қазір шықсаңыз, олар жоғалады.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Қайталау</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Терезенің кескінін алу мүмкін болмады. Бұл түсірілімде тек жұмыс үстелінде көрінген мазмұн көрсетілген.</sys:String>
+    <sys:String x:Key="Str_Album_Title">АЛЬБОМДАР</sys:String>
+    <sys:String x:Key="Str_Album_New">Жаңа альбом...</sys:String>
+    <sys:String x:Key="Str_Album_OpenFile">Файлды ашу...</sys:String>
+    <sys:String x:Key="Str_Album_NewTitle">Жаңа альбомға атау беру</sys:String>
+    <sys:String x:Key="Str_Album_RenameTitle">Альбомның атауын өзгерту</sys:String>
+    <sys:String x:Key="Str_Album_Filter">Түсірілім альбомдары|*.kshot|Барлық файлдар|*.*</sys:String>
+    <sys:String x:Key="Str_Album_Active">Белсенді</sys:String>
+    <sys:String x:Key="Str_Album_UnlockTitle">{0} құлпын ашу</sys:String>
+    <sys:String x:Key="Str_Album_CopyHint">Сыртқы альбомды ашқанда, осы альбомдар қалтасына оның көшірмесі қосылады.</sys:String>
+    <sys:String x:Key="Str_Album_Failed">Альбом өзгертілмеді: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Pending">Альбомды ауыстырмас немесе атауын өзгертпес бұрын, күтіп тұрған түсірілімдерді сақтаңыз.</sys:String>
+    <sys:String x:Key="Str_Album_InvalidName">Қалталар мен сақталған таңбаларсыз файл атауын енгізіңіз.</sys:String>
+    <sys:String x:Key="Str_Album_Missing">Таңдалған альбом табылмады.</sys:String>
+    <sys:String x:Key="Str_Album_KeyUnavailable">Бұл альбомның тіркелгі кілтін оқу мүмкін болмады. Оны жасаған Windows тіркелгісімен ашыңыз немесе құпиясөзбен қорғалған көшірмені пайдаланыңыз.</sys:String>
+    <sys:String x:Key="Str_Album_Changed">Белсенді альбом өзгерді. Түсірілімді қайта таңдаңыз.</sys:String>
+    <sys:String x:Key="Str_View_ShowInfoCards">Ақпарат карталарын көрсету</sys:String>
+    <sys:String x:Key="Str_Album_Exists">Осы атаумен альбом бұрыннан бар.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryIncomplete">Альбом атауын өзгертуді қалпына келтіру жазбасы толық емес.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryInvalid">Альбом атауын өзгертуді қалпына келтіру жазбасы жарамсыз.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryMissing">Альбом атауын өзгертуді қалпына келтіру файлдары жоқ.</sys:String>
+    <sys:String x:Key="Str_Album_RecoveryConflict">Альбомның ескі және жаңа жолдары бар. Қалпына келтіру файлдары сақталды.</sys:String>
+    <sys:String x:Key="Str_Album_SchemaIncomplete">Альбомның дерекқор құрылымы толық емес.</sys:String>
 </ResourceDictionary>
