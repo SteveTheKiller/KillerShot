@@ -4,7 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -47,7 +49,7 @@ namespace KillerShot.Controls
         private TextBox _rBox = null!, _gBox = null!, _bBox = null!, _hexBox = null!;
         private Border _newSwatch = null!;
         private WrapPanel _savedRow = null!;
-        private Border _replaceBtn = null!;
+        private ToggleButton _replaceBtn = null!;
         private bool _replaceArmed;            // when on, the next swatch click is overwritten, not selected
 
         private const int SvW = 220, SvH = 170, HueW = 18;
@@ -216,12 +218,13 @@ namespace KillerShot.Controls
 
             // Swatch header: Replace (assign current color to a slot) left, Reset far right.
             var swHeader = new Grid { Margin = new Thickness(0, 12, 0, 5), Width = SwatchCols * SwatchCell };
-            _replaceBtn = Chip(L("Str_Btn_Replace", "Replace"), L("Str_TT_ReplaceSwatch", "Click, then click a swatch to set it to the current color"));
+            _replaceBtn = Chip<ToggleButton>(L("Str_Btn_Replace", "Replace"), L("Str_TT_ReplaceSwatch", "Click, then click a swatch to set it to the current color"));
             _replaceBtn.HorizontalAlignment = HorizontalAlignment.Left;
-            _replaceBtn.MouseLeftButtonUp += (_, _) => { _replaceArmed = !_replaceArmed; UpdateReplaceChip(); RebuildSavedRow(); };
-            var resetBtn = Chip(L("Str_Btn_Reset", "Reset"), L("Str_TT_ResetSwatches", "Reset swatches to defaults"));
+            _replaceBtn.Checked += (_, _) => SetReplaceArmed(true);
+            _replaceBtn.Unchecked += (_, _) => SetReplaceArmed(false);
+            var resetBtn = Chip<Button>(L("Str_Btn_Reset", "Reset"), L("Str_TT_ResetSwatches", "Reset swatches to defaults"));
             resetBtn.HorizontalAlignment = HorizontalAlignment.Right;
-            resetBtn.MouseLeftButtonUp += (_, _) => { StoreSaved([.. DefaultSwatches]); _replaceArmed = false; UpdateReplaceChip(); RebuildSavedRow(); };
+            resetBtn.Click += (_, _) => { StoreSaved([.. DefaultSwatches]); _replaceArmed = false; UpdateReplaceChip(); RebuildSavedRow(); };
             swHeader.Children.Add(_replaceBtn);
             swHeader.Children.Add(resetBtn);
             panel.Children.Add(swHeader);
@@ -270,6 +273,7 @@ namespace KillerShot.Controls
             _rBox.Text = c.R.ToString(); _gBox.Text = c.G.ToString(); _bBox.Text = c.B.ToString();
             _hexBox.Text = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
             _newSwatch.Background = new SolidColorBrush(c);
+            foreach (var swatch in _savedRow.Children.OfType<RadioButton>()) swatch.IsChecked = Equals(swatch.Tag, c);
             _updating = false;
             ColorChanged?.Invoke(c);
         }
@@ -326,27 +330,39 @@ namespace KillerShot.Controls
         private void UpdateReplaceChip()
         {
             if (_replaceBtn is null) return;
+            _replaceBtn.IsChecked = _replaceArmed;
             _replaceBtn.Background = _replaceArmed ? R("RowSelectedBrush") : R("PaneBrush");
-            _replaceBtn.SetResourceReference(Border.BorderBrushProperty, _replaceArmed ? "PrimaryBrush" : "InputBorderBrush");
+            _replaceBtn.SetResourceReference(Control.BorderBrushProperty, _replaceArmed ? "PrimaryBrush" : "InputBorderBrush");
+        }
+
+        private void SetReplaceArmed(bool armed)
+        {
+            if (_replaceArmed == armed) return;
+            _replaceArmed = armed;
+            UpdateReplaceChip();
+            RebuildSavedRow();
         }
 
         private void RebuildSavedRow()
         {
+            int focused = _savedRow.Children.IndexOf(Keyboard.FocusedElement as UIElement);
             _savedRow.Children.Clear();
             var saved = LoadSaved().Take(SwatchMax).ToList();
             for (int i = 0; i < saved.Count; i++)
             {
                 var c = saved[i];
                 int idx = i;
-                var sw = new Border { Width = 20, Height = 20, Margin = new Thickness(0, 0, 4, 4),
+                var sw = new RadioButton { Width = 20, Height = 20, Margin = new Thickness(0, 0, 4, 4),
                     Background = new SolidColorBrush(c), BorderThickness = new Thickness(_replaceArmed ? 2 : 1), Cursor = Cursors.Hand,
+                    Tag = c, GroupName = "SavedColors", IsChecked = c == HsvToRgb(_h, _s, _v), Template = MakeChoiceTemplate(typeof(RadioButton)),
                     ToolTip = _replaceArmed
                         ? L("Str_TT_SwatchReplace", "Click to set this swatch to the current color")
                         : L("Str_TT_SwatchUse", "Click to use this color") };
-                sw.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
-                if (_replaceArmed) sw.SetResourceReference(Border.BorderBrushProperty, "PrimaryBrush"); else sw.BorderBrush = R("InputBorderBrush");
-                sw.MouseLeftButtonUp += (_, _) =>
+                AutomationProperties.SetName(sw, L("Str_Color_Name", "Color") + $" #{c.R:X2}{c.G:X2}{c.B:X2}");
+                if (_replaceArmed) sw.SetResourceReference(Control.BorderBrushProperty, "PrimaryBrush"); else sw.BorderBrush = R("InputBorderBrush");
+                void Choose()
                 {
+                    if (_updating) return;
                     if (_replaceArmed)
                     {
                         var list = LoadSaved();
@@ -354,9 +370,12 @@ namespace KillerShot.Controls
                         _replaceArmed = false; UpdateReplaceChip(); RebuildSavedRow();
                     }
                     else SetFromColor(c);
-                };
+                }
+                sw.Checked += (_, _) => Choose();
+                sw.Click += (_, _) => { if (_replaceArmed) Choose(); };
                 _savedRow.Children.Add(sw);
             }
+            if (focused >= 0 && focused < _savedRow.Children.Count) _savedRow.Children[focused].Focus();
         }
 
         // ---- Small themed control builders ----
@@ -404,18 +423,37 @@ namespace KillerShot.Controls
             return g;
         }
 
-        private Border Chip(string text, string tip)
+        private T Chip<T>(string text, string tip) where T : ButtonBase, new()
         {
-            var b = new Border { Height = 20, MinWidth = 22, Cursor = Cursors.Hand,
+            var b = new T { Height = 20, MinWidth = 22, Cursor = Cursors.Hand,
                 BorderBrush = R("InputBorderBrush"), BorderThickness = new Thickness(1), Background = R("PaneBrush"),
                 Padding = new Thickness(6, 0, 6, 0), ToolTip = tip,
-                Child = new TextBlock { Text = text, Foreground = R("TextBrush"), FontSize = 11,
+                Template = MakeChoiceTemplate(typeof(T)),
+                Content = new TextBlock { Text = text, Foreground = R("TextBrush"), FontSize = 11,
                     HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
-            b.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
+            AutomationProperties.SetName(b, text);
             // Unified hover, respecting Replace's armed highlight.
             b.MouseEnter += (_, _) => { if (b != _replaceBtn || !_replaceArmed) b.Background = R("InputBorderBrush"); };
             b.MouseLeave += (_, _) => { b.Background = (b == _replaceBtn && _replaceArmed) ? R("RowSelectedBrush") : R("PaneBrush"); };
             return b;
+        }
+
+        private static ControlTemplate MakeChoiceTemplate(Type targetType)
+        {
+            var border = new FrameworkElementFactory(typeof(Border)) { Name = "face" };
+            foreach (var pair in new[] { (Border.BackgroundProperty, "Background"), (Border.BorderBrushProperty, "BorderBrush"),
+                (Border.BorderThicknessProperty, "BorderThickness"), (Border.PaddingProperty, "Padding") })
+                border.SetBinding(pair.Item1, new Binding(pair.Item2) { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            border.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
+            var content = new FrameworkElementFactory(typeof(ContentPresenter));
+            content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(content);
+            var template = new ControlTemplate(targetType) { VisualTree = border };
+            var focus = new Trigger { Property = UIElement.IsKeyboardFocusWithinProperty, Value = true };
+            focus.Setters.Add(new Setter(Border.BorderBrushProperty, new DynamicResourceExtension("TextBrush"), "face"));
+            template.Triggers.Add(focus);
+            return template;
         }
 
         private static ControlTemplate MakeTextBoxTemplate()
