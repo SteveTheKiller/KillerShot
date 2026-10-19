@@ -46,6 +46,12 @@ namespace KillerShot.Shell
             // After RestoreWindowPlacement (constructor) and before the first show: a default or
             // saved size larger than this monitor's work area is shrunk and moved onto it.
             KillerFamily.Windowing.WorkAreaFit.Fit(this);
+            Services.ThemeManager.ThemeChanged += ApplyWindowFrameTheme;
+            ApplyWindowFrameTheme();
+        }
+
+        private void ApplyWindowFrameTheme()
+        {
             DwmChrome.SetRoundedCorners(this, rounded: Services.ThemeManager.Current != Services.Theme.SE98
                                                        && WindowState == WindowState.Normal);
             DwmChrome.SetThemeBorder(this);
@@ -61,6 +67,7 @@ namespace KillerShot.Shell
 
         protected override void OnClosed(EventArgs e)
         {
+            Services.ThemeManager.ThemeChanged -= ApplyWindowFrameTheme;
             StopRecording(apply: null);
             DetachDocument();
             _strip?.Dispose();

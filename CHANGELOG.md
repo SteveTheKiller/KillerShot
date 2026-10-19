@@ -62,7 +62,7 @@
 - Expanded rails keep equal spacing beside the splitter line and content pane.
 - The capture bar stays centered when moving between monitors with different scaling.
 - Album help points to the current settings location, and capture fallback warnings cover all 19 languages.
-- 98SE controls use square corners.
+- 98SE controls and native window corners stay square, including after theme changes.
 - Restored film grain on the file picker sidebar.
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.

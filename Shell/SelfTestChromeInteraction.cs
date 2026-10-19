@@ -19,6 +19,8 @@ internal static class SelfTestChromeInteraction
     private static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int size);
 
     internal static bool TryRun(string[] args)
     {
@@ -47,12 +49,24 @@ internal static class SelfTestChromeInteraction
             window.Show();
             window.Left = -20000;
             window.Top = -20000;
-            foreach (Theme theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 })
+            foreach (Theme theme in new[] { Theme.Dark, Theme.Light, Theme.SE98, Theme.Dark })
             {
                 ThemeManager.Apply(theme);
                 window.UpdateLayout();
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 var hwnd = new WindowInteropHelper(window).Handle;
+                int expectedCorner = theme == Theme.SE98 ? 1 : 2;
+                CheckCorner(expectedCorner, theme + " normal");
+                window.WindowState = WindowState.Maximized;
+                CheckCorner(1, theme + " maximized");
+                window.WindowState = WindowState.Normal;
+                CheckCorner(expectedCorner, theme + " restored");
+                void CheckCorner(int expected, string state)
+                {
+                    int result = DwmGetWindowAttribute(hwnd, 33, out int actual, sizeof(int));
+                    report.Add($"{state} native_corner_preference={actual} expected={expected} result={result}");
+                    if (result != 0 || actual != expected) failures.Add(state + ": native corner preference does not match the theme and window state.");
+                }
                 if (!GetWindowRect(hwnd, out var bounds)) throw new InvalidOperationException("No native window bounds.");
                 double scale = VisualTreeHelper.GetDpi(window).DpiScaleY;
                 foreach (int inset in new[] { 1, 3, 6 })
