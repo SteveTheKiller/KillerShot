@@ -197,6 +197,8 @@ internal static partial class CaptureLibrary
             using var probe = db.CreateCommand();
             probe.CommandText = "SELECT count(*) FROM sqlite_master";
             probe.ExecuteScalar();
+            Exec(db, "PRAGMA foreign_keys = ON");
+            EnsureSchema(db);
         }
         catch
         {
@@ -206,8 +208,6 @@ internal static partial class CaptureLibrary
         }
         _db = db;
         _keyedByPassword = byPassword;
-        Exec("PRAGMA foreign_keys = ON");
-        EnsureSchema();
     }
 
     /// <summary>The key rides in the connection string, which is part of the pool key, so a wrong
@@ -262,9 +262,9 @@ internal static partial class CaptureLibrary
     // Schema
     // ============================================================
 
-    private static void EnsureSchema()
+    private static void EnsureSchema(SqliteConnection db)
     {
-        Exec("""
+        Exec(db, """
             CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT);
             CREATE TABLE IF NOT EXISTS collections(
                 id INTEGER PRIMARY KEY,
@@ -292,15 +292,17 @@ internal static partial class CaptureLibrary
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
             """);
-        using var cmd = _db!.CreateCommand();
+        using var cmd = db.CreateCommand();
         cmd.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('schema', $v)";
         cmd.Parameters.AddWithValue("$v", SchemaVersion);
         cmd.ExecuteNonQuery();
     }
 
-    private static void Exec(string sql)
+    private static void Exec(string sql) => Exec(Db, sql);
+
+    private static void Exec(SqliteConnection db, string sql)
     {
-        using var cmd = _db!.CreateCommand();
+        using var cmd = db.CreateCommand();
         cmd.CommandText = sql;
         cmd.ExecuteNonQuery();
     }

@@ -1,9 +1,11 @@
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerShot.Services;
+using Microsoft.Data.Sqlite;
 
 namespace KillerShot.Shell;
 
@@ -53,6 +55,42 @@ internal static class SelfTestLibrary
             ThemeManager.Apply(Theme.Dark);
             ThemeManager.ApplyAccent(Theme.Dark, Accent.Teal);
             LocaleManager.Apply(Locale.EnUS);
+
+            // A valid keyed file with an invalid schema must not become the open album.
+            string schemaDir = Path.Combine(dir, "schema-failure");
+            CaptureLibrary.UseFolder(schemaDir);
+            CaptureLibrary.BackgroundWork = false;
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Schema fixture did not open.");
+            CaptureLibrary.Close();
+            byte[] entropy = "KillerShot.Library.v1"u8.ToArray();
+            string schemaKey = Encoding.UTF8.GetString(ProtectedData.Unprotect(
+                File.ReadAllBytes(Path.Combine(schemaDir, "Library.key")), entropy, DataProtectionScope.CurrentUser));
+            var schemaCs = new SqliteConnectionStringBuilder
+            {
+                DataSource = Path.Combine(schemaDir, "Library.kshot"), Password = schemaKey
+            }.ConnectionString;
+            using (var db = new SqliteConnection(schemaCs))
+            {
+                db.Open();
+                using var cmd = db.CreateCommand();
+                cmd.CommandText = "DROP TABLE meta; CREATE VIEW meta AS SELECT 'schema' AS key, 'broken' AS value";
+                cmd.ExecuteNonQuery();
+            }
+            SqliteConnection.ClearAllPools();
+            bool schemaRejected = !CaptureLibrary.OpenAuto() && !CaptureLibrary.IsOpen && CaptureLibrary.LoadError != null;
+            log.AppendLine($"schema_rejected={schemaRejected}");
+            if (!schemaRejected) throw new InvalidOperationException("A failed schema left the album open.");
+            using (var db = new SqliteConnection(schemaCs))
+            {
+                db.Open();
+                using var cmd = db.CreateCommand();
+                cmd.CommandText = "DROP VIEW meta";
+                cmd.ExecuteNonQuery();
+            }
+            SqliteConnection.ClearAllPools();
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The album did not retry after schema repair.");
+            CaptureLibrary.UseFolder(lib);
+            CaptureLibrary.BackgroundWork = true;
 
             // The old plain-PNG history, in the test folder's own Recent folder: the first open
             // imports it and removes the files.
