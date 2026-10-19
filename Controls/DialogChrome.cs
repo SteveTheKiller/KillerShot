@@ -200,10 +200,8 @@ namespace KillerShot.Controls
         /// window floating over the app. On a flat-caption theme (98SE) the same style draws the
         /// Win98 caption X on its beveled face, from the AboutClose* tokens ThemeManager derives.
         ///
-        /// PreviewMouseLeftButtonDown, NOT Click: the caption band under this handles ButtonDown to
-        /// drag the window, DragMove() runs a modal loop, and the matching ButtonUp - and therefore
-        /// Click - never arrives, which is how a close X ends up doing nothing. Tunnelling gets it
-        /// first, and marking it handled stops a drag starting on a click aimed at the X.
+        /// Handle pointer presses before the caption can begin dragging. Keep Click as the
+        /// keyboard and automation activation path; the handled pointer press does not raise it.
         /// </summary>
         public static FrameworkElement CloseGlyph(string tooltip, Action onClose)
         {
@@ -221,6 +219,7 @@ namespace KillerShot.Controls
             glyph.SetResourceReference(FrameworkElement.WidthProperty, "AboutCloseWidth");
             glyph.SetResourceReference(FrameworkElement.HeightProperty, "AboutCloseHeight");
             glyph.PreviewMouseLeftButtonDown += (_, e) => { e.Handled = true; onClose(); };
+            glyph.Click += (_, _) => onClose();
             return glyph;
         }
     }
