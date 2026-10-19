@@ -364,8 +364,6 @@ namespace KillerShot.Shell
                 try
                 {
                     App.Instance.OpenLibraryCapture(item);
-                    _libraryShown = false;
-                    SyncLibraryVisibility();
                 }
                 catch (Exception ex) { StatusText.Text = ex.Message; }
             };
@@ -481,8 +479,6 @@ namespace KillerShot.Shell
                     try
                     {
                         App.Instance.OpenLibraryCapture(capture);
-                        _libraryShown = false;
-                        SyncLibraryVisibility();
                     }
                     catch (Exception ex) { StatusText.Text = ex.Message; }
                 };
@@ -554,13 +550,15 @@ namespace KillerShot.Shell
             if (dlg.ShowDialog(this) == true) OpenPath(dlg.FileName);
         }
 
+        internal void CommitPendingText() => Editor.CommitText();
+
         private void OpenPath(string path)
         {
             try
             {
                 var bmp = ImageOutput.Load(path);
-                App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path)));
-                StatusText.Text = Loc("Str_Status_Ready");
+                if (App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path))))
+                    StatusText.Text = Loc("Str_Status_Ready");
             }
             catch (Exception ex)
             {

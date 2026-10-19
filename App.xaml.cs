@@ -238,12 +238,27 @@ public partial class App : Application
         if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }
 
-    internal void SetDocument(EditorDocument? doc)
+    internal bool SetDocument(EditorDocument? doc)
     {
-        CurrentItem = doc != null ? _opening : null;
+        var opening = _opening;
         _opening = null;
+        if (!ReferenceEquals(Document, doc))
+        {
+            _editor?.CommitPendingText();
+            if (Document?.Dirty == true)
+            {
+                ShowEditor();
+                var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
+                    LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Strip_Discard"),
+                    LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
+                dialog.ShowDialog();
+                if (!dialog.Confirmed) return false;
+            }
+        }
+        CurrentItem = doc != null ? opening : null;
         Document = doc;
         DocumentChanged?.Invoke();
+        return true;
     }
 
     internal void ShowEditor()

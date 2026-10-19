@@ -88,18 +88,9 @@ namespace KillerShot.Shell
         /// added and not saved are asked about first, since the library keeps the original.</summary>
         private void OpenFromStrip(CaptureItem item)
         {
-            if (_doc?.CanUndo == true)
-            {
-                var dlg = new ConfirmDialog(Loc("Str_Strip_DiscardTitle"), Loc("Str_Strip_DiscardDetail"), Loc("Str_Strip_Discard"), Loc("Str_Btn_Cancel")) { Owner = this };
-                dlg.ShowDialog();
-                if (!dlg.Confirmed)
-                {
-                    _strip?.Follow(App.Instance.CurrentItem, _doc.FilePath);
-                    return;
-                }
-            }
             try { App.Instance.OpenLibraryCapture(item); }
             catch (Exception ex) { StatusText.Text = ex.Message; }
+            finally { _strip?.Follow(App.Instance.CurrentItem, _doc?.FilePath); }
         }
 
         internal CollectionStrip? TestStrip => _strip;
