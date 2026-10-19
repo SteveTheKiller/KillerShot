@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">Captures non encore enregistrées dans l’album : {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Captures non encore enregistrées dans l’album : {0}. Elles seront perdues si vous quittez maintenant.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Réessayer</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">La surface de la fenêtre n’était pas disponible. Cette capture montre uniquement ce qui était visible sur le bureau.</sys:String>
 </ResourceDictionary>

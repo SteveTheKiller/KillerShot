@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">Знімки не збережено в альбомі: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Знімки не збережено в альбомі: {0}. Якщо вийти зараз, їх буде втрачено.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Спробувати знову</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">Зображення вікна було недоступне. Цей знімок показує лише те, що було видно на робочому столі.</sys:String>
 </ResourceDictionary>

@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">{0} 張擷取畫面尚未儲存至相簿。</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} 張擷取畫面尚未儲存至相簿。現在結束將捨棄這些畫面。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">重試</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">無法取得視窗畫面。此擷取畫面只顯示當時桌面上可見的內容。</sys:String>
 </ResourceDictionary>

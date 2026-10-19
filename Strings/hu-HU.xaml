@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">{0} felvétel nincs elmentve az albumba.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} felvétel nincs elmentve az albumba. Ha most kilép, ezek elvesznek.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Újra</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">Az ablak felülete nem volt elérhető. Ez a felvétel csak az asztalon látható tartalmat mutatja.</sys:String>
 </ResourceDictionary>

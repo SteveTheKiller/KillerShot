@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">Альбомға сақталмаған түсірілімдер: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Альбомға сақталмаған түсірілімдер: {0}. Қазір шықсаңыз, олар жоғалады.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Қайталау</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">Терезенің кескінін алу мүмкін болмады. Бұл түсірілімде тек жұмыс үстелінде көрінген мазмұн көрсетілген.</sys:String>
 </ResourceDictionary>

@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">{0} yakalama albüme kaydedilmedi.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} yakalama albüme kaydedilmedi. Şimdi çıkarsanız kaybolacaklar.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Yeniden dene</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">Pencerenin görüntü yüzeyi kullanılamıyordu. Bu yakalama yalnızca masaüstünde görünenleri gösterir.</sys:String>
 </ResourceDictionary>

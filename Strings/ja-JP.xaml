@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">{0} 件のキャプチャがアルバムに保存されていません。</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} 件のキャプチャがアルバムに保存されていません。今終了すると失われます。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">再試行</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">ウィンドウの描画内容を取得できませんでした。このキャプチャには、デスクトップ上で見えていた内容だけが表示されています。</sys:String>
 </ResourceDictionary>

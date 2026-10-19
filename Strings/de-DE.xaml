@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">Noch nicht im Album gespeicherte Aufnahmen: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Noch nicht im Album gespeicherte Aufnahmen: {0}. Beim Beenden werden sie verworfen.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Erneut versuchen</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">Die Fensteroberfläche war nicht verfügbar. Diese Aufnahme zeigt nur, was auf dem Desktop sichtbar war.</sys:String>
 </ResourceDictionary>

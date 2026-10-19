@@ -442,4 +442,5 @@
     <sys:String x:Key="Str_Lib_Pending">Catture non ancora salvate nell'album: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Catture non ancora salvate nell'album: {0}. Uscendo ora andranno perse.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Riprova</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">La superficie della finestra non era disponibile. Questa cattura mostra solo ciò che era visibile sul desktop.</sys:String>
 </ResourceDictionary>
