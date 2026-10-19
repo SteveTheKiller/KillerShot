@@ -217,6 +217,7 @@
     <sys:String x:Key="Str_Tray_ShortcutTakenTitle">Shortcut not available</sys:String>
     <sys:String x:Key="Str_Tray_ShortcutsReady">Print Screen now captures with KillerShot.</sys:String>
     <sys:String x:Key="Str_Tray_ShortcutsReadyTitle">Shortcuts ready</sys:String>
+    <sys:String x:Key="Str_Tray_WindowFallback">The window surface was unavailable. This capture shows only what was visible on the desktop.</sys:String>
     <sys:String x:Key="Str_Btn_Print">Print</sys:String>
     <sys:String x:Key="Str_CS_AfterCapture">AFTER CAPTURE</sys:String>
     <sys:String x:Key="Str_CS_AskToSave">Ask where to save each capture</sys:String>

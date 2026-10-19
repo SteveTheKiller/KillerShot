@@ -1,8 +1,11 @@
 using System.IO;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Automation;
@@ -15,6 +18,9 @@ namespace KillerShot.Shell;
 
 internal static class SelfTestCaptureMenus
 {
+    [DllImport("user32.dll")]
+    private static extern bool SetCursorPos(int x, int y);
+
     internal static bool TryRun(string[] args)
     {
         if (args.Length < 2 || args[0] != "--selftest-capture-menus") return false;
@@ -25,6 +31,7 @@ internal static class SelfTestCaptureMenus
     private static async Task RunAsync(string folder, bool show)
     {
         Window? fixture = null;
+        Process? windowFixture = null;
         RegionSelector? selector = null;
         int exit = 1;
         var report = new List<string>();
@@ -129,6 +136,83 @@ internal static class SelfTestCaptureMenus
             if (rectangle is not { } bounds || bounds.Width != desktop.Bounds.Width || bounds.Height != desktop.Bounds.Height)
                 throw new InvalidOperationException("The capture bar must capture the chosen all-monitors area.");
             report.Add("Capture bar: primary-monitor position, Photo/Video, mode switching and Capture PASS");
+
+            // Pick an exposed part of a window while another window covers its center.
+            menu.IsOpen = false;
+            string fixtureScript = Path.Combine(folder, "window-fixture.ps1");
+            File.WriteAllText(fixtureScript, """
+                Add-Type -AssemblyName System.Windows.Forms
+                $form = New-Object System.Windows.Forms.Form
+                $form.Text = 'KillerShot window fixture'
+                $form.BackColor = [System.Drawing.Color]::Lime
+                $form.StartPosition = 'Manual'
+                $form.Location = New-Object System.Drawing.Point(100, 100)
+                $form.Size = New-Object System.Drawing.Size(600, 400)
+                [System.Windows.Forms.Application]::Run($form)
+                """);
+            var fixtureStart = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+            fixtureStart.ArgumentList.Add("-NoProfile");
+            fixtureStart.ArgumentList.Add("-STA");
+            fixtureStart.ArgumentList.Add("-File");
+            fixtureStart.ArgumentList.Add(fixtureScript);
+            windowFixture = Process.Start(fixtureStart)
+                ?? throw new InvalidOperationException("The external window fixture did not start.");
+            for (int i = 0; i < 40 && windowFixture.MainWindowHandle == IntPtr.Zero; i++)
+            {
+                await Task.Delay(100);
+                windowFixture.Refresh();
+            }
+            IntPtr pickedHandle = windowFixture.MainWindowHandle;
+            if (pickedHandle == IntPtr.Zero) throw new InvalidOperationException("The external fixture did not show a window for capture.");
+            Win32.SetWindowPos(pickedHandle, IntPtr.Zero, primary.Left + 150, primary.Top + 100, 600, 400, 0);
+            Win32.SetWindowPos(new WindowInteropHelper(fixture).Handle, Win32.HWND_TOPMOST,
+                primary.Left + 300, primary.Top + 220, 300, 180, 0);
+            await Task.Delay(350);
+            var pickedBounds = WindowCapture.FrameBounds(pickedHandle)
+                ?? throw new InvalidOperationException("The external fixture has no capture bounds.");
+            int pickX = pickedBounds.Left + 35, pickY = pickedBounds.Top + 18;
+            if (!SetCursorPos(pickX, pickY)) throw new InvalidOperationException("Could not point to the exposed window.");
+            var coveredDesktop = FrozenDesktop.Capture();
+            var (expectedWindow, usedGraphicsCapture) = await WindowCapture.CaptureAsync(pickedHandle, coveredDesktop);
+            if (!usedGraphicsCapture || expectedWindow == null)
+                throw new InvalidOperationException("Windows Graphics Capture is needed for the covered-window check.");
+            int px = expectedWindow.PixelWidth / 2, py = expectedWindow.PixelHeight / 2;
+            var visibleCrop = coveredDesktop.Crop(pickedBounds)
+                ?? throw new InvalidOperationException("The covered window is outside the desktop.");
+            byte[] expectedPixel = Pixel(expectedWindow, px, py);
+            byte[] coveredPixel = Pixel(visibleCrop, Math.Min(px, visibleCrop.PixelWidth - 1), Math.Min(py, visibleCrop.PixelHeight - 1));
+            if (Enumerable.Range(0, 3).All(i => Math.Abs(expectedPixel[i] - coveredPixel[i]) < 40))
+                throw new InvalidOperationException("The fixture must visibly cover the selected window.");
+
+            controller.HideEditor = null;
+            var pickedCapture = controller.Start(CaptureMode.Window);
+            await Task.Delay(200);
+            var pickedOverlay = Application.Current.Windows.OfType<RegionOverlay>()
+                .First(o => o.Monitor.Contains(new Win32.POINT { X = pickX, Y = pickY }));
+            pickedOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
+            pickedOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
+            await pickedCapture;
+            var pickedImage = controller.Last ?? throw new InvalidOperationException("The window picker produced no image.");
+            byte[] pickedPixel = Pixel(pickedImage, pickedImage.PixelWidth / 2, pickedImage.PixelHeight / 2);
+            if (Enumerable.Range(0, 3).Any(i => Math.Abs(pickedPixel[i] - expectedPixel[i]) > 25))
+                throw new InvalidOperationException("The picker captured covered desktop pixels instead of the selected window surface.");
+            report.Add("Window picker: the covered part comes from the selected window PASS");
+            var regionCapture = controller.Start(CaptureMode.Region);
+            await Task.Delay(200);
+            var regionOverlay = Application.Current.Windows.OfType<RegionOverlay>()
+                .First(o => o.Monitor.Contains(new Win32.POINT { X = pickX, Y = pickY }));
+            regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
+            regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
+            await regionCapture;
+            var regionImage = controller.Last ?? throw new InvalidOperationException("The region picker produced no image.");
+            byte[] regionPixel = Pixel(regionImage, regionImage.PixelWidth / 2, regionImage.PixelHeight / 2);
+            if (Enumerable.Range(0, 3).Any(i => Math.Abs(regionPixel[i] - coveredPixel[i]) > 25))
+                throw new InvalidOperationException("Region mode did not retain the visible desktop overlap.");
+            report.Add("Region picker: the visible desktop overlap remains in the capture PASS");
             if (show)
             {
                 selector = new RegionSelector(FrozenDesktop.Capture(), showBar: true);
@@ -146,6 +230,8 @@ internal static class SelfTestCaptureMenus
         {
             selector?.Cancel();
             fixture?.Close();
+            if (windowFixture is { HasExited: false }) windowFixture.Kill();
+            windowFixture?.Dispose();
             if (Directory.Exists(folder)) File.WriteAllLines(Path.Combine(folder, "capture-menu-report.txt"), report);
             App.Instance.Shutdown(exit);
         }
@@ -156,5 +242,13 @@ internal static class SelfTestCaptureMenus
         yield return root;
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
             foreach (var child in Visuals(VisualTreeHelper.GetChild(root, i))) yield return child;
+    }
+
+    private static byte[] Pixel(BitmapSource bitmap, int x, int y)
+    {
+        var converted = new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0);
+        var pixel = new byte[4];
+        converted.CopyPixels(new Int32Rect(x, y, 1, 1), pixel, 4, 0);
+        return pixel;
     }
 }

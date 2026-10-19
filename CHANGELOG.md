@@ -14,6 +14,7 @@
 - Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
 - Print Screen preserves open menus in the captured desktop and immediately shows the active border and a movable capture bar near the top of the main monitor, with Photo, Video, capture mode, output folder, Capture and Cancel. Region photos capture on release; Escape or a right-click cancels without output.
 - Added window capture through Windows Graphics Capture, including covered windows, with rounded corners filled from the desktop behind them.
+- Picking a window captures its covered areas and warns if only visible desktop pixels are available. (#5)
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
 - Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.

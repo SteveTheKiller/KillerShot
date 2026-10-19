@@ -85,10 +85,20 @@ internal sealed class CaptureController
                     if (App.Instance.Video is { } recorder) await recorder.StartAsync(picked.Value);
                     return;
                 }
-                // The frozen pixels retain menus even after the selector takes focus.
-                result = frozen.Crop(picked.Value);
                 source = picker.PickedWindow != IntPtr.Zero ? picker.PickedWindow
                     : frozen.WindowAt(Center(picked.Value))?.Handle ?? IntPtr.Zero;
+                if (mode == CaptureMode.Window && WindowCapture.CapturableRoot(picker.PickedWindow) is var window && window != IntPtr.Zero)
+                {
+                    var capture = await WindowCapture.CaptureAsync(window, frozen);
+                    result = capture.Bitmap;
+                    if (!capture.UsedGraphicsCapture && result != null) WarnWindowFallback();
+                    source = window;
+                }
+                else
+                {
+                    // A region keeps the visible desktop, including menus and overlaps.
+                    result = frozen.Crop(picked.Value);
+                }
             }
             else switch (mode)
             {
@@ -102,7 +112,9 @@ internal sealed class CaptureController
                     }
                     else
                     {
-                        result = (await WindowCapture.CaptureAsync(target, frozen)).Bitmap;
+                        var capture = await WindowCapture.CaptureAsync(target, frozen);
+                        result = capture.Bitmap;
+                        if (!capture.UsedGraphicsCapture && result != null) WarnWindowFallback();
                         source = target;
                     }
                     break;
@@ -178,6 +190,8 @@ internal sealed class CaptureController
     }
 
     private static Win32.POINT Center(Win32.RECT r) => new() { X = r.Left + r.Width / 2, Y = r.Top + r.Height / 2 };
+
+    private void WarnWindowFallback() => _tray.ShowWarning(Loc("Str_Mode_Window"), Loc("Str_Tray_WindowFallback"));
 
     /// <summary>The mode as the library and the command line name it.</summary>
     internal static string ModeKey(CaptureMode mode) => mode switch
