@@ -103,6 +103,8 @@ public partial class App : Application
         else CaptureLibrary.BeginOpen();
 
         Tray = new TrayHost();
+        CaptureLibrary.WriteFailed += error => Dispatcher.BeginInvoke(new Action(() =>
+            Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_SaveFailedTitle"), error)));
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
         Capture.Captured += OnCaptured;
         Video = new VideoController(Tray);

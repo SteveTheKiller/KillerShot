@@ -324,14 +324,41 @@ internal static class SelfTestLibrary
             CaptureLibrary.SetPassword("third pass");
             CaptureLibrary.Close();
             CaptureLibrary.OpenAuto();
+            string blockedCs = new SqliteConnectionStringBuilder
+            {
+                DataSource = CaptureLibrary.FilePath, Password = "third pass"
+            }.ConnectionString;
+            using (var db = new SqliteConnection(blockedCs))
+            {
+                db.Open();
+                using var cmd = db.CreateCommand();
+                cmd.CommandText = "CREATE TRIGGER block_capture BEFORE INSERT ON captures BEGIN SELECT RAISE(ABORT, 'write blocked'); END";
+                cmd.ExecuteNonQuery();
+            }
+            SqliteConnection.ClearAllPools();
             CaptureLibrary.Add(Picture(99, "While locked", "Pending capture", Colors.SlateGray), DateTime.Now, "region", "While locked", "notepad");
             await Task.Delay(500);
             int pending = CaptureLibrary.PendingCount;
             CaptureLibrary.Unlock("third pass");
+            await Task.Delay(1500);
+            bool writeRetained = CaptureLibrary.PendingCount == 1 && CaptureLibrary.Items("while locked").Count == 0;
+            log.AppendLine($"pending_write_retained={writeRetained}");
+            if (!writeRetained) throw new InvalidOperationException("A failed album write lost its pending capture.");
+            using (var db = new SqliteConnection(blockedCs))
+            {
+                db.Open();
+                using var cmd = db.CreateCommand();
+                cmd.CommandText = "DROP TRIGGER block_capture";
+                cmd.ExecuteNonQuery();
+            }
+            SqliteConnection.ClearAllPools();
+            CaptureLibrary.Close();
+            CaptureLibrary.OpenAuto();
+            CaptureLibrary.Unlock("third pass");
             int stored = 0;
             for (int t = 0; t < 40 && stored == 0; t++) { await Task.Delay(250); stored = CaptureLibrary.Items("while locked").Count; }
-            log.AppendLine($"pending={pending} stored_after_unlock={stored}");
-            if (pending != 1 || stored != 1) throw new InvalidOperationException("A capture taken while locked was lost.");
+            log.AppendLine($"pending={pending} stored_after_retry={stored} remaining={CaptureLibrary.PendingCount}");
+            if (pending != 1 || stored != 1 || CaptureLibrary.PendingCount != 0) throw new InvalidOperationException("A capture was lost or duplicated on retry.");
             CaptureLibrary.SetPassword(null);
 
             // History limit: the newest 30 stay.

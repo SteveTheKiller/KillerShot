@@ -90,6 +90,9 @@ internal static partial class CaptureLibrary
     /// <summary>Raised after captures or collections change, on the thread that changed them.</summary>
     public static event Action? Changed;
 
+    /// <summary>Raised when a capture could not be stored and remains in memory.</summary>
+    public static event Action<string>? WriteFailed;
+
     private static void RaiseChanged() => Changed?.Invoke();
 
     // ============================================================
@@ -354,7 +357,11 @@ internal static partial class CaptureLibrary
                 }
                 AddNow(bmp, taken, mode, window, process);
             }
-            catch { /* the library is a convenience; the clipboard and any saved file already have the capture */ }
+            catch (Exception ex)
+            {
+                lock (_pending) _pending.Add((bmp, taken, mode, window, process));
+                WriteFailed?.Invoke(ex.Message);
+            }
         });
     }
 
@@ -371,7 +378,9 @@ internal static partial class CaptureLibrary
         lock (_gate)
         {
             album = Db;
+            using var transaction = album.BeginTransaction();
             using var cmd = Db.CreateCommand();
+            cmd.Transaction = transaction;
             cmd.CommandText = """
                 INSERT INTO captures(taken_utc, width, height, mode, window_title, process_name, thumb, image)
                 VALUES ($t, $w, $h, $m, $win, $proc, $thumb, $image);
@@ -386,34 +395,49 @@ internal static partial class CaptureLibrary
             cmd.Parameters.AddWithValue("$thumb", thumb);
             cmd.Parameters.AddWithValue("$image", image);
             id = (long)cmd.ExecuteScalar()!;
-            IndexText(id);
+            IndexText(id, transaction);
+            transaction.Commit();
         }
-        if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
-        Prune();
-        RaiseChanged();
-        if (BackgroundWork)
+        // The capture is committed. Later indexing, pruning or listeners cannot turn it back
+        // into a pending capture and create a duplicate on retry.
+        try
         {
-            StartOcr();
-            StartQrReading();
+            if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
+            Prune();
+            RaiseChanged();
+            if (BackgroundWork)
+            {
+                StartOcr();
+                StartQrReading();
+            }
         }
+        catch (Exception ex) { WriteFailed?.Invoke(ex.Message); }
         return id;
     }
 
     private static string? Trimmed(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
+    private static int _flushingPending;
+
     private static void FlushPending()
     {
-        List<(BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process)> items;
-        lock (_pending)
+        if (Interlocked.Exchange(ref _flushingPending, 1) != 0) return;
+        try
         {
-            items = [.. _pending];
-            _pending.Clear();
+            while (true)
+            {
+                (BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process) item;
+                lock (_pending)
+                {
+                    if (_pending.Count == 0) return;
+                    item = _pending[0];
+                }
+                try { AddNow(item.Bmp, item.Taken, item.Mode, item.Window, item.Process); }
+                catch (Exception ex) { WriteFailed?.Invoke(ex.Message); return; }
+                lock (_pending) _pending.RemoveAt(0);
+            }
         }
-        foreach (var p in items)
-        {
-            try { AddNow(p.Bmp, p.Taken, p.Mode, p.Window, p.Process); }
-            catch { /* best effort, as for any capture */ }
-        }
+        finally { Volatile.Write(ref _flushingPending, 0); }
     }
 
     /// <summary>Captures waiting for the library to be unlocked.</summary>
