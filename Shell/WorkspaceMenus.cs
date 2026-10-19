@@ -33,15 +33,9 @@ public partial class MainWindow
     private void ApplyRailPreferences()
     {
         bool reversed = Settings.GetBool("RailReversed", false);
-        FrameworkElement[] leading = [ThemeButton, LangButton, ShortcutsButton, CaptureSettingsButton];
-        var remaining = _railOrder.Except(leading);
-        var order = leading.Concat(reversed ? remaining.Reverse() : remaining);
+        var order = reversed ? _railOrder.Reverse() : _railOrder.AsEnumerable();
         RailStack.Children.Clear();
-        foreach (var button in order)
-        {
-            button.Margin = StripDock.IsHorizontal ? new Thickness(0, 0, 6, 0) : new Thickness(0, 0, 0, 6);
-            RailStack.Children.Add(button);
-        }
+        foreach (var button in order) RailStack.Children.Add(button);
         PlaceRailButtons();
     }
 
@@ -49,8 +43,8 @@ public partial class MainWindow
     {
         if (StripDock.IsHorizontal)
         {
-            Grid.SetColumn(RailStack, Settings.GetBool("RailAtRight", false) ? 2 : 1);
-            RailStack.HorizontalAlignment = Settings.GetBool("RailAtRight", false) ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            Grid.SetColumn(RailStack, Settings.GetBool("RailAtRight", true) ? 2 : 1);
+            RailStack.HorizontalAlignment = Settings.GetBool("RailAtRight", true) ? HorizontalAlignment.Right : HorizontalAlignment.Left;
         }
     }
 
@@ -85,7 +79,7 @@ public partial class MainWindow
                 Settings.SetBool("LibraryRailAtRight", !Settings.GetBool("LibraryRailAtRight", false));
                 SyncStripPlacement(library: true);
             }
-            else if (StripDock.IsHorizontal) Settings.SetBool("RailAtRight", !Settings.GetBool("RailAtRight", false));
+            else if (StripDock.IsHorizontal) Settings.SetBool("RailAtRight", !Settings.GetBool("RailAtRight", true));
             else StripDock.DockTo(StripDock.Side == DockSide.Left ? DockSide.Right : DockSide.Left);
             ApplyRailPreferences();
         });
