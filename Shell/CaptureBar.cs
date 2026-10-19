@@ -81,7 +81,7 @@ internal sealed class CaptureBar : Window
         layers.Children.Add(row);
         layers.Children.Add(new Border { Style = (Style)FindResource("FlyoutGrain") });
         Content = new PickerBorder { Style = (Style)FindResource("FlyoutCard"), Child = layers };
-        Loaded += (_, _) =>
+        void Place()
         {
             var dpi = VisualTreeHelper.GetDpi(this);
             int width = (int)Math.Ceiling(ActualWidth * dpi.DpiScaleX), height = (int)Math.Ceiling(ActualHeight * dpi.DpiScaleY);
@@ -96,6 +96,15 @@ internal sealed class CaptureBar : Window
                 }
             }
             Win32.SetWindowPos(new WindowInteropHelper(this).Handle, Win32.HWND_TOPMOST, x, y, width, height, Win32.SWP_NOACTIVATE);
+        }
+        Loaded += (_, _) =>
+        {
+            Place();
+            // Moving from the owner's monitor can change DPI and the measured window size.
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+            {
+                if (IsVisible) Place();
+            }));
         };
         KeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; _selector.Cancel(); } };
         Closed += (_, _) => _selector.Cancel();

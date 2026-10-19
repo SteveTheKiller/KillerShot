@@ -144,6 +144,10 @@ internal static class SelfTestCaptureMenus
             if (hidden || !menu.IsOpen) throw new InvalidOperationException("An instant shortcut must leave the open context menu in place.");
             report.Add("Shortcut capture: open context menu remains visible in the pixels and on screen PASS");
             var desktop = FrozenDesktop.Capture();
+            var primary = desktop.Monitors.Single(m => m.Primary).Bounds;
+            var initialMonitor = desktop.Monitors.FirstOrDefault(m => !m.Primary) ?? desktop.Monitors[0];
+            SetCursorPos(initialMonitor.Bounds.Left + initialMonitor.Bounds.Width / 2,
+                initialMonitor.Bounds.Top + initialMonitor.Bounds.Height / 2);
             selector = new RegionSelector(desktop, showBar: true);
             var selection = selector.RunAsync();
             await Task.Delay(250);
@@ -153,9 +157,9 @@ internal static class SelfTestCaptureMenus
                 .First(b => b.BorderThickness == new Thickness(3));
             if (frame.BorderBrush is not SolidColorBrush accent || accent.Color != Color.FromRgb(0xEA, 0x52, 0x4C))
                 throw new InvalidOperationException("The capture frame must use the deeper Dark Red accent.");
-            var primary = desktop.Monitors.Single(m => m.Primary).Bounds;
             var barPosition = bar.PointToScreen(new Point());
             var dpi = VisualTreeHelper.GetDpi(bar);
+            report.Add($"Capture bar physical position={barPosition.X},{barPosition.Y}; logical size={bar.ActualWidth}x{bar.ActualHeight}; DPI={dpi.DpiScaleX},{dpi.DpiScaleY}; primary={primary.Left},{primary.Top},{primary.Right},{primary.Bottom}.");
             if (Math.Abs(barPosition.X + bar.ActualWidth * dpi.DpiScaleX / 2 - (primary.Left + primary.Width / 2.0)) > 3
                 || Math.Abs(barPosition.Y - primary.Top - 12) > 3)
                 throw new InvalidOperationException("The capture bar must default near the top center of the primary monitor.");
@@ -233,7 +237,7 @@ internal static class SelfTestCaptureMenus
             }
             IntPtr pickedHandle = windowFixture.MainWindowHandle;
             if (pickedHandle == IntPtr.Zero) throw new InvalidOperationException("The external fixture did not show a window for capture.");
-            Win32.SetWindowPos(pickedHandle, IntPtr.Zero, primary.Left + 150, primary.Top + 100, 600, 400, 0);
+            Win32.SetWindowPos(pickedHandle, Win32.HWND_TOPMOST, primary.Left + 150, primary.Top + 100, 600, 400, 0);
             Win32.SetWindowPos(new WindowInteropHelper(fixture).Handle, Win32.HWND_TOPMOST,
                 primary.Left + 300, primary.Top + 220, 300, 180, 0);
             await Task.Delay(350);
@@ -242,6 +246,8 @@ internal static class SelfTestCaptureMenus
             int pickX = pickedBounds.Left + 35, pickY = pickedBounds.Top + 18;
             if (!SetCursorPos(pickX, pickY)) throw new InvalidOperationException("Could not point to the exposed window.");
             var coveredDesktop = FrozenDesktop.Capture();
+            if (coveredDesktop.WindowAt(new Win32.POINT { X = pickX, Y = pickY })?.Handle != pickedHandle)
+                throw new InvalidOperationException("The external fixture must be the topmost capturable window at the pick point.");
             var (expectedWindow, usedGraphicsCapture) = await WindowCapture.CaptureAsync(pickedHandle, coveredDesktop);
             if (!usedGraphicsCapture || expectedWindow == null)
                 throw new InvalidOperationException("Windows Graphics Capture is needed for the covered-window check.");
@@ -250,6 +256,7 @@ internal static class SelfTestCaptureMenus
                 ?? throw new InvalidOperationException("The covered window is outside the desktop.");
             byte[] expectedPixel = Pixel(expectedWindow, px, py);
             byte[] coveredPixel = Pixel(visibleCrop, Math.Min(px, visibleCrop.PixelWidth - 1), Math.Min(py, visibleCrop.PixelHeight - 1));
+            report.Add($"Expected HWND={pickedHandle.ToInt64():X}; bounds={pickedBounds.Left},{pickedBounds.Top},{pickedBounds.Right},{pickedBounds.Bottom}; pick={pickX},{pickY}; WGC={usedGraphicsCapture}; image={expectedWindow.PixelWidth}x{expectedWindow.PixelHeight}; center={px},{py}; expected BGRA={string.Join(',', expectedPixel)}; covered BGRA={string.Join(',', coveredPixel)}.");
             if (Enumerable.Range(0, 3).All(i => Math.Abs(expectedPixel[i] - coveredPixel[i]) < 40))
                 throw new InvalidOperationException("The fixture must visibly cover the selected window.");
 
@@ -258,13 +265,16 @@ internal static class SelfTestCaptureMenus
             await Task.Delay(200);
             var pickedOverlay = Application.Current.Windows.OfType<RegionOverlay>()
                 .First(o => o.Monitor.Contains(new Win32.POINT { X = pickX, Y = pickY }));
+            if (!SetCursorPos(pickX, pickY)) throw new InvalidOperationException("Could not point to the exposed window.");
+            pickedOverlay.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice, Environment.TickCount) { RoutedEvent = Mouse.MouseMoveEvent });
             pickedOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
                 { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
             pickedOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
                 { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
-            await pickedCapture;
+            await pickedCapture.WaitAsync(TimeSpan.FromSeconds(5));
             var pickedImage = controller.Last ?? throw new InvalidOperationException("The window picker produced no image.");
             byte[] pickedPixel = Pixel(pickedImage, pickedImage.PixelWidth / 2, pickedImage.PixelHeight / 2);
+            report.Add($"Picked image={pickedImage.PixelWidth}x{pickedImage.PixelHeight}; center={pickedImage.PixelWidth / 2},{pickedImage.PixelHeight / 2}; BGRA={string.Join(',', pickedPixel)}.");
             if (Enumerable.Range(0, 3).Any(i => Math.Abs(pickedPixel[i] - expectedPixel[i]) > 25))
                 throw new InvalidOperationException("The picker captured covered desktop pixels instead of the selected window surface.");
             report.Add("Window picker: the covered part comes from the selected window PASS");
@@ -276,11 +286,14 @@ internal static class SelfTestCaptureMenus
                 .Single(r => r.StrokeThickness == 1);
             if (regionOutline.Visibility != Visibility.Collapsed)
                 throw new InvalidOperationException("Region mode must not highlight a window before a rectangle drag.");
+            if (!SetCursorPos(pickedBounds.Left, pickedBounds.Top)) throw new InvalidOperationException("Could not point to the region start.");
             regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
                 { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
+            if (!SetCursorPos(pickedBounds.Right - 1, pickedBounds.Bottom - 1)) throw new InvalidOperationException("Could not point to the region end.");
+            regionOverlay.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice, Environment.TickCount) { RoutedEvent = Mouse.MouseMoveEvent });
             regionOverlay.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
                 { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
-            await regionCapture;
+            await regionCapture.WaitAsync(TimeSpan.FromSeconds(5));
             var regionImage = controller.Last ?? throw new InvalidOperationException("The region picker produced no image.");
             byte[] regionPixel = Pixel(regionImage, regionImage.PixelWidth / 2, regionImage.PixelHeight / 2);
             if (Enumerable.Range(0, 3).Any(i => Math.Abs(regionPixel[i] - coveredPixel[i]) > 25))
