@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_Properties">Propiedades de la impresora...</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Foto</sys:String>
     <sys:String x:Key="Str_Capture_Video">Vídeo</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">Capturas aún no guardadas en el álbum: {0}.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">Capturas aún no guardadas en el álbum: {0}. Si sale ahora, se perderán.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Reintentar</sys:String>
 </ResourceDictionary>

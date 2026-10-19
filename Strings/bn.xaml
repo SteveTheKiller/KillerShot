@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_Properties">প্রিন্টারের বৈশিষ্ট্য...</sys:String>
     <sys:String x:Key="Str_Capture_Photo">ছবি</sys:String>
     <sys:String x:Key="Str_Capture_Video">ভিডিও</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">{0}টি ক্যাপচার অ্যালবামে সংরক্ষিত হয়নি।</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">{0}টি ক্যাপচার অ্যালবামে সংরক্ষিত হয়নি। এখন বের হলে সেগুলো হারিয়ে যাবে।</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">আবার চেষ্টা করুন</sys:String>
 </ResourceDictionary>

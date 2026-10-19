@@ -107,7 +107,23 @@ internal static partial class CaptureLibrary
     /// <summary>Raised when a capture could not be stored and remains in memory.</summary>
     public static event Action<string>? WriteFailed;
 
-    private static void RaiseChanged() => Changed?.Invoke();
+    private static void RaiseChanged()
+    {
+        var listeners = Changed;
+        if (listeners == null) return;
+        foreach (Action listener in listeners.GetInvocationList())
+            try { listener(); }
+            catch (Exception error) { System.Diagnostics.Trace.TraceWarning("Album notification failed: {0}", error.Message); }
+    }
+
+    private static void ReportWriteFailure(Exception error)
+    {
+        var listeners = WriteFailed;
+        if (listeners == null) return;
+        foreach (Action<string> listener in listeners.GetInvocationList())
+            try { listener(error.Message); }
+            catch (Exception notificationError) { System.Diagnostics.Trace.TraceWarning("Album error notification failed: {0}", notificationError.Message); }
+    }
 
     // ============================================================
     // Open, unlock, close
@@ -457,33 +473,14 @@ internal static partial class CaptureLibrary
 
     private static readonly List<(BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process)> _pending = [];
 
-    /// <summary>Stores a capture in the background. While the library is locked the capture
-    /// waits in memory and is stored when it is unlocked.</summary>
+    /// <summary>Queues a capture immediately, then stores it in the background. A locked album
+    /// or failed write keeps it in memory until a later retry succeeds.</summary>
     public static void Add(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
-        Task.Run(() =>
-        {
-            try
-            {
-                // Checked under the gate, so an open finishing at the same moment cannot flush the
-                // pending list before this capture is on it.
-                lock (_gate)
-                {
-                    if (_db == null)
-                    {
-                        lock (_pending) _pending.Add((bmp, taken, mode, window, process));
-                        return;
-                    }
-                }
-                AddNow(bmp, taken, mode, window, process);
-            }
-            catch (Exception ex)
-            {
-                lock (_pending) _pending.Add((bmp, taken, mode, window, process));
-                WriteFailed?.Invoke(ex.Message);
-            }
-        });
+        lock (_pending) _pending.Add((bmp, taken, mode, window, process));
+        RaiseChanged();
+        _ = RetryPendingAsync();
     }
 
     /// <summary>Stores a capture before returning and gives its id. Throws when the library is
@@ -545,36 +542,47 @@ internal static partial class CaptureLibrary
                 StartQrReading();
             }
         }
-        catch (Exception ex) { WriteFailed?.Invoke(ex.Message); }
+        catch (Exception ex) { ReportWriteFailure(ex); }
+        if (!_flushingPendingOnThisThread && PendingCount > 0) _ = RetryPendingAsync();
         return id;
     }
 
     private static string? Trimmed(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
-    private static int _flushingPending;
+    private static readonly object PendingWriter = new();
+    [ThreadStatic] private static bool _flushingPendingOnThisThread;
+
+    /// <summary>Retries retained captures and completes after this attempt finishes. A failed
+    /// capture stays queued, so callers can check PendingCount before allowing the app to quit.</summary>
+    public static Task RetryPendingAsync() => Task.Run(FlushPending);
 
     private static void FlushPending()
     {
-        if (Interlocked.Exchange(ref _flushingPending, 1) != 0) return;
-        try
+        lock (PendingWriter)
         {
-            while (true)
+            _flushingPendingOnThisThread = true;
+            try
             {
-                (BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process) item;
-                lock (_pending)
+                while (true)
                 {
-                    if (_pending.Count == 0) return;
-                    item = _pending[0];
+                    lock (_gate) if (_db == null) return;
+                    (BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process) item;
+                    lock (_pending)
+                    {
+                        if (_pending.Count == 0) return;
+                        item = _pending[0];
+                    }
+                    try { AddNow(item.Bmp, item.Taken, item.Mode, item.Window, item.Process); }
+                    catch (Exception ex) { ReportWriteFailure(ex); return; }
+                    lock (_pending) _pending.RemoveAt(0);
+                    RaiseChanged();
                 }
-                try { AddNow(item.Bmp, item.Taken, item.Mode, item.Window, item.Process); }
-                catch (Exception ex) { WriteFailed?.Invoke(ex.Message); return; }
-                lock (_pending) _pending.RemoveAt(0);
             }
+            finally { _flushingPendingOnThisThread = false; }
         }
-        finally { Volatile.Write(ref _flushingPending, 0); }
     }
 
-    /// <summary>Captures waiting for the library to be unlocked.</summary>
+    /// <summary>Captures still waiting for a successful album write.</summary>
     public static int PendingCount { get { lock (_pending) return _pending.Count; } }
 
     /// <summary>A JPEG of at most 512 pixels on its long side. Thumbnails are what the library

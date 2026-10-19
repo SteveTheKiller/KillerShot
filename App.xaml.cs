@@ -256,7 +256,7 @@ public partial class App : Application
                 _editor = null;
                 // With Close to system tray off, closing the window quits. Queued, so an Exit from
                 // the tray menu, which closes the window on its way out, is not shut down twice.
-                if (!CloseToTray) Dispatcher.BeginInvoke(new Action(() => Shutdown()));
+                if (!CloseToTray && !IsExiting) Dispatcher.BeginInvoke(new Action(RequestExit));
             };
             _editor.Show();
         }
@@ -303,5 +303,34 @@ public partial class App : Application
             _instance.Dispose();
         }
         base.OnExit(e);
+    }
+
+    private bool _exitRequested;
+    internal bool IsExiting { get; private set; }
+
+    internal async Task<bool> CanExitAsync()
+    {
+        await CaptureLibrary.RetryPendingAsync();
+        int pending = CaptureLibrary.PendingCount;
+        if (pending == 0) return true;
+        ShowEditor();
+        var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Tray_SaveFailedTitle"),
+            string.Format(LocaleManager.Loc("Str_Lib_PendingExit"), pending),
+            LocaleManager.Loc("Str_Tray_Exit"), LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
+        dialog.ShowDialog();
+        return dialog.Confirmed;
+    }
+
+    internal async void RequestExit()
+    {
+        if (_exitRequested || IsExiting) return;
+        _exitRequested = true;
+        try
+        {
+            if (!await CanExitAsync()) return;
+            IsExiting = true;
+            Shutdown();
+        }
+        finally { _exitRequested = false; }
     }
 }

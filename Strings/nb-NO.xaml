@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_BW">Svart-hvitt</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Foto</sys:String>
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">Skjermbilder som ennå ikke er lagret i albumet: {0}.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">Skjermbilder som ennå ikke er lagret i albumet: {0}. Hvis du avslutter nå, går de tapt.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Prøv igjen</sys:String>
 </ResourceDictionary>

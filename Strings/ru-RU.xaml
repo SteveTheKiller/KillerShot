@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_BW">Черный &amp; белый</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Фото</sys:String>
     <sys:String x:Key="Str_Capture_Video">Видео</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">Снимки не сохранены в альбоме: {0}.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">Снимки не сохранены в альбоме: {0}. При выходе они будут потеряны.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Повторить</sys:String>
 </ResourceDictionary>

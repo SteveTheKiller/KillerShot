@@ -443,4 +443,7 @@
     <sys:String x:Key="Str_Print_BW">Black &amp; white</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Photo</sys:String>
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">Captures not yet saved to the album: {0}.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">Captures not yet saved to the album: {0}. Exiting now will discard them.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Retry</sys:String>
 </ResourceDictionary>

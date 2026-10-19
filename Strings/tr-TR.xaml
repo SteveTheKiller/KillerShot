@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_Properties">Yazıcı özellikleri...</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Fotoğraf</sys:String>
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">{0} yakalama albüme kaydedilmedi.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">{0} yakalama albüme kaydedilmedi. Şimdi çıkarsanız kaybolacaklar.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Yeniden dene</sys:String>
 </ResourceDictionary>

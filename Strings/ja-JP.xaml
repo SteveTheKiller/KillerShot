@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_BW">白黒</sys:String>
     <sys:String x:Key="Str_Capture_Photo">写真</sys:String>
     <sys:String x:Key="Str_Capture_Video">動画</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">{0} 件のキャプチャがアルバムに保存されていません。</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">{0} 件のキャプチャがアルバムに保存されていません。今終了すると失われます。</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">再試行</sys:String>
 </ResourceDictionary>

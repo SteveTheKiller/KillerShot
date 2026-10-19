@@ -170,6 +170,10 @@ namespace KillerShot.Shell
         public void Reload()
         {
             _dirty = false;
+            int pending = CaptureLibrary.PendingCount;
+            PendingBar.Visibility = pending > 0 ? Visibility.Visible : Visibility.Collapsed;
+            PendingText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_Pending"), pending);
+            RetryPendingBtn.IsEnabled = CaptureLibrary.IsOpen;
             if (!CaptureLibrary.IsOpen && !CaptureLibrary.Opening.IsCompleted)
             {
                 // Still opening at startup: the loading screen, then this again.
@@ -766,6 +770,14 @@ namespace KillerShot.Shell
         // ============================================================
 
         private Window? OwnerWindow => Window.GetWindow(this);
+
+        private async void RetryPending_Click(object sender, RoutedEventArgs e)
+        {
+            RetryPendingBtn.IsEnabled = false;
+            try { await CaptureLibrary.RetryPendingAsync(); }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+            finally { Reload(); }
+        }
 
         private bool TryChangeAlbum(Action change)
         {

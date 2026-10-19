@@ -226,7 +226,7 @@ internal sealed class TrayHost : IDisposable
             });
             menu.Items.Add(new Separator());
         }
-        Item(Loc("Str_Tray_Exit"), "", () => Application.Current.Shutdown());
+        Item(Loc("Str_Tray_Exit"), "", () => App.Instance.RequestExit());
 
         // The menu closes on an outside click only when this process owns the foreground.
         Win32.SetForegroundWindow(Handle);

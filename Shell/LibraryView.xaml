@@ -103,12 +103,20 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <DockPanel x:Name="PendingBar" Margin="16,12,16,0" Visibility="Collapsed">
+            <Button x:Name="RetryPendingBtn" DockPanel.Dock="Right" Content="{DynamicResource Str_Lib_Retry}"
+                    Style="{StaticResource OutlineButton}" Padding="10,3" Margin="8,0,0,0" Click="RetryPending_Click"/>
+            <TextBlock x:Name="PendingText" Foreground="{DynamicResource TextBrush}" FontSize="12"
+                       TextWrapping="Wrap" VerticalAlignment="Center"/>
+        </DockPanel>
+
         <!-- The bar: search, a new collection, and the count. The views and grouping are in the
              footer, as KillerPDF's view modes are (FooterView.cs). -->
-        <DockPanel x:Name="HeaderBar" Margin="16,12,16,4" LastChildFill="False">
+        <DockPanel x:Name="HeaderBar" Grid.Row="1" Margin="16,12,16,4" LastChildFill="False">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="CountText" Visibility="Collapsed" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
                            VerticalAlignment="Center" Margin="0,0,12,4"/>
@@ -126,7 +134,7 @@
             </StackPanel>
         </DockPanel>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <!-- Shelves, Grid and Timeline: virtualized rows built in code. -->
             <ItemsControl x:Name="RowsList" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True"

@@ -68,6 +68,12 @@ namespace KillerShot.Shell
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            if (!App.CloseToTray && !App.Instance.IsExiting && Services.CaptureLibrary.PendingCount > 0)
+            {
+                e.Cancel = true;
+                Dispatcher.BeginInvoke(new Action(App.Instance.RequestExit));
+                return;
+            }
             if (Anim.FadeOutAndClose(this, ref _closeFaded))
             {
                 e.Cancel = true;

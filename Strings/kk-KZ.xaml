@@ -439,4 +439,7 @@
     <sys:String x:Key="Str_Print_BW">Ақ-қара</sys:String>
     <sys:String x:Key="Str_Capture_Photo">Фотосурет</sys:String>
     <sys:String x:Key="Str_Capture_Video">Бейне</sys:String>
+    <sys:String x:Key="Str_Lib_Pending">Альбомға сақталмаған түсірілімдер: {0}.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingExit">Альбомға сақталмаған түсірілімдер: {0}. Қазір шықсаңыз, олар жоғалады.</sys:String>
+    <sys:String x:Key="Str_Lib_Retry">Қайталау</sys:String>
 </ResourceDictionary>
