@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Số bản in</sys:String>
     <sys:String x:Key="Str_Print_Color">Màu</sys:String>
     <sys:String x:Key="Str_Print_BW">Đen trắng</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Ảnh</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Video</sys:String>
 </ResourceDictionary>

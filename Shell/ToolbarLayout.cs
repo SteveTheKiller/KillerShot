@@ -33,7 +33,7 @@ namespace KillerShot.Shell
 
         // File and capture operations on the left, annotation tools on the right.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
-            ["capture", "record", "library", "recent", "collection", "-", "open", "save", "saveas", "copy", "print", "fit", "actualsize"],
+            ["capture", "record", "open", "save", "copy", "print"],
             ["undo", "redo", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop", "color", "width"],
             []);
 
@@ -42,12 +42,7 @@ namespace KillerShot.Shell
         private static readonly string[][] ToolbarShedOrder =
         [
             ["print"],
-            ["saveas"],
-            ["recent"],
-            ["collection"],
             ["open"],
-            ["library"],
-            ["fit", "actualsize"],
             ["undo", "redo"],
             ["ellipse"],
             ["highlighter"],
@@ -68,7 +63,6 @@ namespace KillerShot.Shell
         private ToolbarLayout _toolbarLayout = DefaultToolbarLayout;
         private readonly HashSet<string> _toolbarShed = [];
         private bool _toolbarReflowQueued;
-        private int _toolbarRows = 2;
 
         /// <summary>Registers every toolbar button once and arranges the bar from the saved
         /// layout. Call before InitToolbarStyle.</summary>
@@ -78,7 +72,6 @@ namespace KillerShot.Shell
             foreach (var (id, btn, glyph, key) in ToolbarItems())
                 _toolbarUnits.Add(new ToolbarUnit(id, btn, glyph, key));
             _toolbarLayout = NormalizeToolbarLayout(ParseToolbarLayout(Settings.Get(ToolbarLayoutSetting)));
-            _toolbarRows = Settings.Get("ToolbarRows") == "1" ? 1 : 2;
             ApplyToolbarLayout();
             // The bar's own size stops changing once it is clipped, so the window's is watched too.
             ToolbarGrid.SizeChanged += (_, _) => QueueToolbarReflow();
@@ -145,7 +138,6 @@ namespace KillerShot.Shell
         /// the active-tool highlight keep working.</summary>
         private void ApplyToolbarLayout()
         {
-            LeftBar.Rows = RightBar.Rows = _toolbarRows;
             var byId = _toolbarUnits.ToDictionary(unit => unit.Id);
             foreach (ToolbarUnit unit in _toolbarUnits)
                 (unit.Main.Parent as Panel)?.Children.Remove(unit.Main);

@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Copies</sys:String>
     <sys:String x:Key="Str_Print_Color">Couleur</sys:String>
     <sys:String x:Key="Str_Print_BW">Noir et blanc</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Photo</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Vidéo</sys:String>
 </ResourceDictionary>

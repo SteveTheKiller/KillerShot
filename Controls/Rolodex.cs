@@ -152,7 +152,7 @@ internal sealed class Rolodex : FrameworkElement
     {
         _motion = new CarouselMotion(this, Rebuild, true,
             () => ActualWidth * _zoom * Reveal / ViewWidth, () => Math.Max(0, _items.Count - 1),
-            index => SetCurrentValue(SelectedIndexProperty, index));
+            index => SetCurrentValue(SelectedIndexProperty, index), cyclic: true);
         Focusable = true;
         FocusVisualStyle = null;
         ClipToBounds = true;
@@ -178,7 +178,8 @@ internal sealed class Rolodex : FrameworkElement
     private static object CoerceSelectedIndex(DependencyObject d, object value)
     {
         var r = (Rolodex)d;
-        return Math.Clamp((int)value, 0, Math.Max(0, r._items.Count - 1));
+        int count = r._items.Count;
+        return count == 0 ? 0 : ((int)value % count + count) % count;
     }
 
     private static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -193,6 +194,7 @@ internal sealed class Rolodex : FrameworkElement
 
     protected override int VisualChildrenCount => 1;
     protected override Visual GetVisualChild(int index) => _viewport;
+    protected override HitTestResult HitTestCore(PointHitTestParameters parameters) => new PointHitTestResult(this, parameters.HitPoint);
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -246,21 +248,31 @@ internal sealed class Rolodex : FrameworkElement
         _hits.Clear();
     }
 
-    private bool Visible(int index) => Math.Abs((index - _position) * _step) <= MaxAngle;
+    private double Distance(int index)
+    {
+        if (_items.Count == 0) return 0;
+        double distance = (index - _position) % _items.Count;
+        if (distance > _items.Count / 2.0) distance -= _items.Count;
+        if (distance < -_items.Count / 2.0) distance += _items.Count;
+        return distance;
+    }
+
+    private bool Visible(int index) => Math.Abs(Distance(index) * _step) <= MaxAngle;
 
     private void Rebuild()
     {
         int center = (int)Math.Round(_position);
-        int first = Math.Max(0, center - Window), last = Math.Min(_items.Count - 1, center + Window);
-        foreach (int stale in _cards.Keys.Where(k => k < first || k > last || !Visible(k)).ToList())
+        var wanted = _items.Count == 0 ? [] : Enumerable.Range(center - Window, Window * 2 + 1)
+            .Select(i => (i % _items.Count + _items.Count) % _items.Count).Where(Visible).ToHashSet();
+        foreach (int stale in _cards.Keys.Where(k => !wanted.Contains(k)).ToList())
         {
             _orderBucket = int.MinValue;
             _scene.Children.Remove(_cards[stale].Group);
             _hits.Remove(_cards[stale].Face);
             _cards.Remove(stale);
         }
-        for (int i = first; i <= last; i++)
-            if (!_cards.ContainsKey(i) && Visible(i)) { _cards[i] = CreateCard(i); _orderBucket = int.MinValue; }
+        foreach (int i in wanted)
+            if (!_cards.ContainsKey(i)) { _cards[i] = CreateCard(i); _orderBucket = int.MinValue; }
         Place();
     }
 
@@ -382,7 +394,7 @@ internal sealed class Rolodex : FrameworkElement
     {
         foreach (var (index, card) in _cards)
         {
-            double d = index - _position;
+            double d = Distance(index);
             double front = 1 - Math.Min(1, Math.Abs(d));   // 1 at the front, 0 a card away
             double theta = -d * _step * Math.PI / 180;
             card.Translation.OffsetY = _radius * Math.Sin(theta);
@@ -395,7 +407,7 @@ internal sealed class Rolodex : FrameworkElement
         int bucket = (int)Math.Floor(_position * 2);
         if (_orderBucket == bucket) return;
         _orderBucket = bucket;
-        var order = _cards.OrderByDescending(kv => Math.Abs(kv.Key - _position)).Select(kv => kv.Value.Group).ToList();
+        var order = _cards.OrderByDescending(kv => Math.Abs(Distance(kv.Key))).Select(kv => kv.Value.Group).ToList();
         for (int i = 0; i < order.Count; i++)
         {
             int at = _scene.Children.IndexOf(order[i]);

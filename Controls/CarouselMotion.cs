@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace KillerShot.Controls;
 
-/// <summary>Continuous, bounded motion shared by the horizontal carousel and vertical drum.</summary>
+/// <summary>Continuous motion with bounded horizontal navigation and an optional looping drum.</summary>
 internal sealed class CarouselMotion
 {
     private readonly FrameworkElement _owner;
@@ -14,10 +14,11 @@ internal sealed class CarouselMotion
     private readonly Func<int> _maximum;
     private readonly Func<double> _itemPixels;
     private readonly bool _vertical;
+    private readonly bool _cyclic;
     private TimeSpan? _lastFrame;
     private double _target, _velocity;
     private bool _listening;
-    private bool _pressed, _dragging, _coasting, _selecting, _dirty;
+    private bool _pressed, _dragging, _coasting, _selecting, _dirty, _stoppedThrow;
     private double _pressCoordinate, _pressPosition, _lastPosition;
     private long _lastPointer;
 
@@ -25,11 +26,12 @@ internal sealed class CarouselMotion
     public bool IsMoving => _listening || _pressed;
 
     public CarouselMotion(FrameworkElement owner, Action changed, bool vertical,
-        Func<double> itemPixels, Func<int> maximum, Action<int> select)
+        Func<double> itemPixels, Func<int> maximum, Action<int> select, bool cyclic = false)
     {
         _owner = owner;
         _changed = changed;
         _vertical = vertical;
+        _cyclic = cyclic;
         _itemPixels = itemPixels;
         _maximum = maximum;
         _select = select;
@@ -51,7 +53,8 @@ internal sealed class CarouselMotion
         if (_selecting) return;
         _pressed = _dragging = _coasting = false;
         if (_owner.IsMouseCaptured) _owner.ReleaseMouseCapture();
-        _target = index;
+        int count = _maximum() + 1;
+        _target = _cyclic ? index + Math.Round((Position - index) / count) * count : index;
         if (!_owner.IsLoaded) { Reset(index); _changed(); return; }
         Start();
     }
@@ -61,6 +64,7 @@ internal sealed class CarouselMotion
         if (_maximum() < 1) return;
         _owner.Focus();
         Stop();
+        _stoppedThrow = _coasting;
         _pressed = true;
         _dragging = _coasting = false;
         _velocity = 0;
@@ -70,22 +74,25 @@ internal sealed class CarouselMotion
         _pressCoordinate = Coordinate(e.GetPosition(_owner));
         _lastPointer = Stopwatch.GetTimestamp();
         if (!_owner.CaptureMouse()) { _pressed = false; Start(); }
+        else Start();
         e.Handled = true;
     }
 
     public void Drag(MouseEventArgs e)
     {
         if (!_pressed) return;
+        if (e.LeftButton == MouseButtonState.Released) { LostCapture(); return; }
         double distance = Coordinate(e.GetPosition(_owner)) - _pressCoordinate;
         double threshold = _vertical ? SystemParameters.MinimumVerticalDragDistance : SystemParameters.MinimumHorizontalDragDistance;
         if (!_dragging && Math.Abs(distance) < threshold) return;
         _dragging = true;
-        Position = Math.Clamp(_pressPosition - distance / Math.Max(24, _itemPixels()), 0, _maximum());
+        Position = Bound(_pressPosition - distance / Math.Max(24, _itemPixels()));
         long now = Stopwatch.GetTimestamp();
         double elapsed = Stopwatch.GetElapsedTime(_lastPointer, now).TotalSeconds;
         if (elapsed > .001)
         {
-            double sample = Math.Clamp((Position - _lastPosition) / elapsed, -24, 24);
+            double speed = _cyclic ? 60 : 24;
+            double sample = Math.Clamp((Position - _lastPosition) / elapsed, -speed, speed);
             double blend = 1 - Math.Exp(-elapsed * 25);
             _velocity += (sample - _velocity) * blend;
         }
@@ -98,7 +105,12 @@ internal sealed class CarouselMotion
 
     public bool Release(MouseButtonEventArgs e)
     {
-        if (!_pressed) return false;
+        if (!_pressed)
+        {
+            bool stopped = _stoppedThrow;
+            _stoppedThrow = false;
+            return stopped;
+        }
         bool dragged = _dragging;
         // A held pointer has no throw, even if its last movement was fast.
         if (Stopwatch.GetElapsedTime(_lastPointer).TotalMilliseconds > 100) _velocity = 0;
@@ -107,13 +119,17 @@ internal sealed class CarouselMotion
         _coasting = dragged && Math.Abs(_velocity) > .5;
         _target = Math.Round(Position);
         Start();
-        return dragged;
+        bool consumed = dragged || _stoppedThrow;
+        _stoppedThrow = false;
+        return consumed;
     }
 
     public void LostCapture()
     {
         if (!_pressed) return;
         _pressed = _dragging = _coasting = false;
+        _stoppedThrow = true;
+        if (_owner.IsMouseCaptured) _owner.ReleaseMouseCapture();
         _velocity = 0;
         _target = Math.Round(Position);
         Start();
@@ -131,11 +147,17 @@ internal sealed class CarouselMotion
     }
 
     private double Coordinate(Point point) => _vertical ? point.Y : point.X;
+    private double Bound(double position) => _cyclic ? position : Math.Clamp(position, 0, _maximum());
 
     private void PublishSelection()
     {
         _selecting = true;
-        try { _select((int)Math.Round(Position)); }
+        try
+        {
+            int count = _maximum() + 1;
+            int index = (int)Math.Round(Position);
+            _select(_cyclic ? (index % count + count) % count : index);
+        }
         finally { _selecting = false; }
     }
 
@@ -161,6 +183,7 @@ internal sealed class CarouselMotion
         // A missed frame should delay the trip, rather than skip a stack of pictures.
         double dt = _lastFrame is { } last ? Math.Clamp((now - last).TotalSeconds, 0, 1.0 / 30) : 1.0 / 60;
         _lastFrame = now;
+        if (_pressed && Mouse.LeftButton == MouseButtonState.Released) LostCapture();
         if (_pressed)
         {
             if (_dirty) { _dirty = false; _changed(); }
@@ -168,9 +191,10 @@ internal sealed class CarouselMotion
         }
         if (_coasting)
         {
-            double friction = Math.Exp(-4.5 * dt);
-            double nextPosition = Position + _velocity * (1 - friction) / 4.5;
-            Position = Math.Clamp(nextPosition, 0, _maximum());
+            double drag = _cyclic ? 1.25 : 4.5;
+            double friction = Math.Exp(-drag * dt);
+            double nextPosition = Position + _velocity * (1 - friction) / drag;
+            Position = Bound(nextPosition);
             _velocity *= friction;
             if (nextPosition != Position || Math.Abs(_velocity) < .5)
             {
@@ -187,10 +211,15 @@ internal sealed class CarouselMotion
         double decay = Math.Exp(-frequency * dt);
         double next = _target + (offset + c * dt) * decay;
         _velocity = Math.Clamp((_velocity - frequency * c * dt) * decay, -maxSpeed, maxSpeed);
-        Position = Math.Clamp(Position + Math.Clamp(next - Position, -maxSpeed * dt, maxSpeed * dt), 0, _maximum());
+        Position = Bound(Position + Math.Clamp(next - Position, -maxSpeed * dt, maxSpeed * dt));
         if (Math.Abs(Position - _target) < .001 && Math.Abs(_velocity) < .03)
         {
             Position = _target;
+            if (_cyclic)
+            {
+                int count = _maximum() + 1;
+                Position = _target = (Position % count + count) % count;
+            }
             _velocity = 0;
             Stop();
             PublishSelection();

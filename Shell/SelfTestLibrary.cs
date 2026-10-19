@@ -207,11 +207,10 @@ internal static class SelfTestLibrary
                 await Shot("strip-" + side.ToString().ToLowerInvariant());
                 if (dock.IsHorizontal && w.TestStrip is { } strip)
                 {
-                    var caption = strip.TestCaption.TransformToAncestor(strip).TransformBounds(new Rect(strip.TestCaption.RenderSize));
                     var flow = strip.TestCarousel.TransformToAncestor(strip).TransformBounds(new Rect(strip.TestCarousel.RenderSize));
-                    log.AppendLine($"strip {side} caption={caption} carousel={flow}");
-                    if (caption.Bottom > flow.Top + 1 || flow.Width < strip.ActualWidth - 24)
-                        throw new InvalidOperationException($"The {side} carousel must use the full strip width below its caption.");
+                    log.AppendLine($"strip {side} carousel={flow}");
+                    if (flow.Top > 8 || flow.Width < strip.ActualWidth - 24)
+                        throw new InvalidOperationException($"The {side} carousel must use the strip without a caption row.");
                 }
             }
             dock.Minimize();

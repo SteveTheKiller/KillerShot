@@ -30,34 +30,25 @@ internal sealed class VideoController
     /// <summary>Raised when recording starts or stops, for the tray and the editor.</summary>
     public event Action? StateChanged;
 
-    /// <summary>Hides the editor before the region is chosen; returns how to bring it back.</summary>
-    public Func<Task<Action?>>? HideEditor { get; set; }
-
     private static string Loc(string key) => LocaleManager.Loc(key);
 
     public VideoController(TrayHost tray) => _tray = tray;
 
     /// <summary>The video shortcut: start when idle, stop when recording.</summary>
-    public void Toggle()
+    public void Toggle(bool fromShortcut = false)
     {
         if (_recorder != null) _ = StopAsync(discard: false);
         else if (_starting) _countdownSkip?.TrySetResult();   // pressing again during the countdown starts at once
-        else _ = StartAsync();
+        else if (App.Instance.Capture is { } capture) _ = capture.StartVideo(fromShortcut);
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(Win32.RECT rect)
     {
         if (IsRecording) return;
         _starting = true;
         StateChanged?.Invoke();
-        Action? restore = null;
         try
         {
-            if (HideEditor != null) restore = await HideEditor();
-            var frozen = FrozenDesktop.Capture();
-            var picked = await new RegionSelector(frozen).RunAsync();
-            if (picked is not { } rect) return;
-
             bool gif = VideoSettings.Format == "gif";
             if (!gif)
             {
@@ -107,7 +98,6 @@ internal sealed class VideoController
         finally
         {
             _starting = false;
-            restore?.Invoke();
             StateChanged?.Invoke();
         }
     }

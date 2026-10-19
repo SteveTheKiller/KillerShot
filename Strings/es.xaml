@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_BW">Blanco y negro</sys:String>
     <sys:String x:Key="Str_Print_Paper">Tamaño de papel</sys:String>
     <sys:String x:Key="Str_Print_Properties">Propiedades de la impresora...</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Foto</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Vídeo</sys:String>
 </ResourceDictionary>

@@ -45,6 +45,11 @@ namespace KillerShot.Shell
         {
             InitEditorContextMenu();
             if (int.TryParse(Settings.Get("ColorIndex"), out int ci) && ci >= 0 && ci < Palette.Length) Editor.Color = Palette[ci].Color;
+            if (Settings.Get("AnnotationColor") is { } savedColor)
+            {
+                try { Editor.Color = (Color)ColorConverter.ConvertFromString(savedColor); }
+                catch (FormatException) { }
+            }
             if (double.TryParse(Settings.Get("StrokeWidth"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sw)) Editor.StrokeWidth = sw;
             if (double.TryParse(Settings.Get("TextSize"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ts)) Editor.TextSize = ts;
             if (Enum.TryParse<ToolKind>(Settings.Get("Tool"), out var tool) && tool != ToolKind.Crop) Editor.SetTool(tool);
@@ -97,7 +102,7 @@ namespace KillerShot.Shell
         {
             bool has = _doc != null;
             SyncLibraryVisibility();
-            foreach (var b in new[] { CollectionPickerBtn, SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
             UndoBtn.IsEnabled = _doc?.CanUndo == true;
@@ -156,7 +161,7 @@ namespace KillerShot.Shell
             foreach (ToolKind t in Enum.GetValues<ToolKind>())
             {
                 var b = ToolButton(t);
-                if (t == Editor.Tool && _doc != null) b.SetResourceReference(ForegroundProperty, "PrimaryBrush");
+                if (t == Editor.Tool && _doc != null) b.SetResourceReference(ForegroundProperty, "SelectionAccent");
                 else b.ClearValue(ForegroundProperty);
             }
             // The width button shows the text size while the text tool is active.
@@ -170,7 +175,7 @@ namespace KillerShot.Shell
         {
             bool on = App.Instance.Video?.IsRecording == true;
             RecordBtn.Content = BuildToolbarContent(_iconSize, _labelMode, on ? 0xE71A : 0xE7C8, Loc(on ? "Str_Rec_Stop" : "Str_Btn_Record"));
-            if (on) RecordBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush"); else RecordBtn.ClearValue(ForegroundProperty);
+            if (on) RecordBtn.SetResourceReference(ForegroundProperty, "SelectionAccent"); else RecordBtn.ClearValue(ForegroundProperty);
             QueueToolbarReflow();
         }
 
@@ -187,7 +192,6 @@ namespace KillerShot.Shell
         private string? ShortcutFor(Button b)
         {
             if (b == CaptureBtn) return "Ctrl+N";
-            if (b == LibraryBtn) return "Ctrl+L";
             if (b == RecordBtn) return "Ctrl+R";
             if (b == OpenBtn) return "Ctrl+O";
             if (b == SaveBtn) return "Ctrl+S";
@@ -246,37 +250,15 @@ namespace KillerShot.Shell
 
         private void ColorBtn_Click(object sender, RoutedEventArgs e)
         {
-            ColorMenu.Items.Clear();
-            var wrap = new WrapPanel { Width = 3 * 34, Margin = new Thickness(8) };
-            for (int i = 0; i < Palette.Length; i++)
-            {
-                int index = i;
-                var (key, color) = Palette[i];
-                var swatch = new Button
-                {
-                    Width = 28, Height = 28, Margin = new Thickness(3),
-                    ToolTip = Loc(key),
-                    Style = (Style)FindResource("ToolbarButton"),
-                    Content = new Border
-                    {
-                        Width = 20, Height = 20, CornerRadius = new CornerRadius(3),
-                        Background = new SolidColorBrush(color),
-                        BorderBrush = (Brush)FindResource(color == Editor.Color ? "PrimaryBrush" : "CardBorderBrush"),
-                        BorderThickness = new Thickness(color == Editor.Color ? 2 : 1),
-                    },
-                };
-                swatch.Click += (_, _) =>
-                {
-                    Editor.Color = color;
-                    Settings.Set("ColorIndex", index.ToString(System.Globalization.CultureInfo.InvariantCulture));
-                    ApplyToolbarStyle();
-                    ColorMenu.IsOpen = false;
-                    RecolorSelection(color);
-                };
-                wrap.Children.Add(swatch);
-            }
-            ColorMenu.Items.Add(new MenuItem { Header = wrap, StaysOpenOnClick = true, Style = (Style)FindResource("PanelMenuItem") });
-            OpenFlyout(ColorMenu, ColorBtn);
+            var original = Editor.Color;
+            var picker = new ColorPickerDialog(this, original);
+            picker.ColorChanged += color => { Editor.Color = color; ApplyToolbarStyle(); };
+            picker.ShowDialog();
+            Editor.Color = picker.Accepted ? picker.SelectedColor : original;
+            ApplyToolbarStyle();
+            if (!picker.Accepted) return;
+            Settings.Set("AnnotationColor", Editor.Color.ToString());
+            RecolorSelection(Editor.Color);
         }
 
         /// <summary>Picking a color with a mark selected recolors that mark, as one undo step.</summary>
@@ -388,7 +370,6 @@ namespace KillerShot.Shell
             Library.LinkRequested += (payload, anchor) => ShowPayloadCard(payload, anchor, Loc("Str_Ocr_Links"));
         }
 
-        private void LibraryBtn_Click(object sender, RoutedEventArgs e) => ToggleLibrary();
 
         /// <summary>The library's title-bar name opens its database settings.</summary>
         private void TitleLibraryLabel_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -413,10 +394,8 @@ namespace KillerShot.Shell
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
             // The strip goes with an open picture; the library is its own browser.
             StripDock.ShowPane = !library;
+            SyncStripPlacement(library);
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
-            // The Library button carries the accent while it covers an image, like a tool.
-            if (_libraryShown) LibraryBtn.SetResourceReference(ForegroundProperty, "PrimaryBrush");
-            else LibraryBtn.ClearValue(ForegroundProperty);
             SyncContentPane();
             SyncFooterView();
         }
@@ -465,12 +444,18 @@ namespace KillerShot.Shell
 
         private void RecentBtn_Click(object sender, RoutedEventArgs e)
         {
-            RecentMenu.Items.Clear();
+            FillRecentMenu(RecentMenu);
+            OpenFlyout(RecentMenu, _toolbarHidden ? ToolbarOverflowButton : OpenBtn.IsVisible ? OpenBtn : MoreBtn);
+        }
+
+        private void FillRecentMenu(ItemsControl menu)
+        {
+            menu.Items.Clear();
             var items = CaptureLibrary.Items().Take(12).ToList();
             if (!CaptureLibrary.IsOpen)
-                RecentMenu.Items.Add(new MenuItem { Header = Loc("Str_Lib_LockedTitle"), IsEnabled = false });
+                menu.Items.Add(new MenuItem { Header = Loc("Str_Lib_LockedTitle"), IsEnabled = false });
             else if (items.Count == 0)
-                RecentMenu.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
+                menu.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
             foreach (var item in items)
             {
                 var capture = item;
@@ -496,19 +481,40 @@ namespace KillerShot.Shell
                     }
                     catch (Exception ex) { StatusText.Text = ex.Message; }
                 };
-                RecentMenu.Items.Add(mi);
+                menu.Items.Add(mi);
             }
-            RecentMenu.Items.Add(new Separator());
+            menu.Items.Add(new Separator());
             var library = new MenuItem { Header = Loc("Str_Recent_ShowLibrary"), InputGestureText = "Ctrl+L" };
             library.Click += (_, _) => { if (_doc != null) { _libraryShown = true; SyncLibraryVisibility(); } };
-            RecentMenu.Items.Add(library);
-            OpenFlyout(RecentMenu, RecentBtn);
+            menu.Items.Add(library);
         }
 
         // ---- file ----
 
-        private void OpenBtn_Click(object sender, RoutedEventArgs e) => OpenFile();
-        private void SaveBtn_Click(object sender, RoutedEventArgs e) => Save();
+        private void OpenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var menu = new ContextMenu();
+            var open = new MenuItem { Header = Loc("Str_Btn_Open"), InputGestureText = "Ctrl+O", Icon = ToolbarUnitIcon("open") };
+            open.Click += (_, _) => OpenFile();
+            menu.Items.Add(open);
+            var recent = new MenuItem { Header = Loc("Str_Btn_Recent"), Icon = ToolbarUnitIcon("recent") };
+            FillRecentMenu(recent);
+            menu.Items.Add(recent);
+            OpenFlyout(menu, _toolbarHidden ? ToolbarOverflowButton : OpenBtn.IsVisible ? OpenBtn : MoreBtn);
+        }
+
+        private void SaveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var menu = new ContextMenu();
+            foreach (var (id, key, shortcut, action) in new (string, string, string, Action)[]
+                { ("save", "Str_Btn_Save", "Ctrl+S", Save), ("saveas", "Str_Btn_SaveAs", "Ctrl+Shift+S", SaveAs) })
+            {
+                var item = new MenuItem { Header = Loc(key), InputGestureText = shortcut, Icon = ToolbarUnitIcon(id), IsEnabled = _doc != null };
+                item.Click += (_, _) => action();
+                menu.Items.Add(item);
+            }
+            OpenFlyout(menu, _toolbarHidden ? ToolbarOverflowButton : SaveBtn.IsVisible ? SaveBtn : MoreBtn);
+        }
         private void SaveAsBtn_Click(object sender, RoutedEventArgs e) => SaveAs();
         private void CopyBtn_Click(object sender, RoutedEventArgs e) => CopyResult();
         private void PrintBtn_Click(object sender, RoutedEventArgs e) => PrintResult();

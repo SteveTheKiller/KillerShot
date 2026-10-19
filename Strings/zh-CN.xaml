@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_BW">黑白</sys:String>
     <sys:String x:Key="Str_Print_Paper">纸张大小</sys:String>
     <sys:String x:Key="Str_Print_Properties">打印机属性...</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">照片</sys:String>
+    <sys:String x:Key="Str_Capture_Video">视频</sys:String>
 </ResourceDictionary>

@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_BW">Siyah beyaz</sys:String>
     <sys:String x:Key="Str_Print_Paper">Kağıt boyutu</sys:String>
     <sys:String x:Key="Str_Print_Properties">Yazıcı özellikleri...</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Fotoğraf</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Video</sys:String>
 </ResourceDictionary>

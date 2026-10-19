@@ -28,20 +28,21 @@ namespace KillerShot.Shell
 
         /// <summary>The side view changed between the thumbnail list and the rolodex.</summary>
         public event Action? SideViewChanged;
+        public event Action? SourceChanged;
+        public string Source => _source;
+        public string SourceCaption => _caption.Text;
+        public string CountCaption => _count.Text;
 
         /// <summary>How a left or right strip shows its captures: "list" or "rolodex".</summary>
         public string SideView => _sideView;
 
-        internal FrameworkElement TestCaption => _caption;
         internal FrameworkElement TestCarousel => _flow;
 
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _count = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis };
-        // A single caption row leaves the strip's width to its pictures.
         private readonly DockPanel _root = new();
-        private readonly DockPanel _header = new() { LastChildFill = true };
         private readonly Grid _body = new();
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
@@ -61,9 +62,8 @@ namespace KillerShot.Shell
             // KillerPDF's sidebar does, so its cards are the only surface in it.
             Background = Brushes.Transparent;
             Padding = new Thickness(8, 6, 8, 6);
-            SetResourceReference(MarginProperty, "ContentPaneMargin");
             Focusable = false;
-            Panel.SetZIndex(this, 1);   // above the splitter, so the slider's overhang stays clickable
+            Panel.SetZIndex(this, 1);
 
             _count.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
             _caption.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
@@ -85,7 +85,7 @@ namespace KillerShot.Shell
 
             _list = new ListBox
             {
-                BorderThickness = new Thickness(0), Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0), Padding = new Thickness(0), Background = Brushes.Transparent,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 ItemTemplate = (DataTemplate)System.Windows.Markup.XamlReader.Parse(
                     "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" " +
@@ -95,7 +95,16 @@ namespace KillerShot.Shell
             VirtualizingPanel.SetIsVirtualizing(_list, true);
             VirtualizingPanel.SetVirtualizationMode(_list, VirtualizationMode.Recycling);
             _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
-            _list.SetResourceReference(ItemsControl.ItemContainerStyleProperty, "PickerRow");
+            // Cards already supply their own padding. File-picker row insets would double it.
+            _list.ItemContainerStyle = (Style)System.Windows.Markup.XamlReader.Parse("""
+                <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="row" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}"><ContentPresenter/></Border>
+                    </ControlTemplate></Setter.Value></Setter>
+                </Style>
+                """);
             _list.MouseRightButtonUp += (_, e) =>
             {
                 if (e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(_list, source) is not ListBoxItem { DataContext: CaptureItem item } row) return;
@@ -138,8 +147,8 @@ namespace KillerShot.Shell
             Child = _root;
 
             _host.SideChanged += Relayout;
-            CaptureLibrary.Changed += () => Dispatcher.BeginInvoke(new Action(() => { if (IsVisible) Load(keepCurrent: true); }));
-            FolderCaptures.Changed += () => Dispatcher.BeginInvoke(new Action(() => { if (IsVisible && _source == "folder") Load(keepCurrent: true); }));
+            CaptureLibrary.Changed += () => Dispatcher.BeginInvoke(new Action(() => Load(keepCurrent: true)));
+            FolderCaptures.Changed += () => Dispatcher.BeginInvoke(new Action(() => { if (_source == "folder") Load(keepCurrent: true); }));
             IsVisibleChanged += (_, _) => { if (IsVisible) Load(keepCurrent: true); };
             Relayout();
             Relocalize();
@@ -161,14 +170,6 @@ namespace KillerShot.Shell
             else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
 
             _root.Children.Clear();
-            _header.Children.Clear();
-            _header.Margin = new Thickness(0, 0, 0, 4);
-            _count.Margin = new Thickness(12, 0, 0, 0);
-            DockPanel.SetDock(_count, Dock.Right);
-            _header.Children.Add(_count);
-            _header.Children.Add(_caption);
-            DockPanel.SetDock(_header, Dock.Top);
-            _root.Children.Add(_header);
             _root.Children.Add(_body);
             Sync();
         }
@@ -181,7 +182,7 @@ namespace KillerShot.Shell
             _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.ResizeText = Loc("Str_Dock_Resize");
-            if (IsVisible) Load(keepCurrent: true);
+            Load(keepCurrent: true);
         }
 
         private static string Arrow(DockSide side) => side switch
@@ -212,7 +213,7 @@ namespace KillerShot.Shell
                     : item.CollectionId is long cid ? "c" + cid.ToString(CultureInfo.InvariantCulture) : "c0";
                 _source = want;
             }
-            if (IsVisible) Load(keepCurrent: true);
+            Load(keepCurrent: true);
         }
 
         private static bool IsInFolder(string path) =>
@@ -251,6 +252,7 @@ namespace KillerShot.Shell
                 Sync();
             }
             finally { _syncing = false; }
+            SourceChanged?.Invoke();
         }
 
         /// <summary>Selects the picture in the editor without opening it again.</summary>
@@ -297,7 +299,7 @@ namespace KillerShot.Shell
 
         public ContextMenu SourceMenu(FrameworkElement anchor)
         {
-            var menu = new ContextMenu { PlacementTarget = anchor, Placement = PlacementMode.Bottom };
+            var menu = new ContextMenu { PlacementTarget = anchor, Placement = PlacementMode.Top };
             foreach (var choice in _picker.Items.OfType<ComboBoxItem>())
             {
                 string tag = (string)choice.Tag;
@@ -340,6 +342,24 @@ namespace KillerShot.Shell
         {
             Margin = new Thickness(0, 2, 0, 6);
             Padding = new Thickness(6, 6, 6, 5);
+            Style = (Style)System.Windows.Markup.XamlReader.Parse("""
+                <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0,3,0,0"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
+                            <Setter Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
+                            <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
+                        </Trigger>
+                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
+                            <Setter Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
+                            <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                """);
             // The theme's pane gray until a card color is picked: the strip has the window's dark
             // background behind it, so gray cards stand out there.
             bool own = !CardColors.CardIsDefault;
@@ -358,12 +378,11 @@ namespace KillerShot.Shell
         {
             _image.Source = null;
             if (DataContext is not CaptureItem item) return;
-            if (CardColors.Collection(item.CollectionId) is Color own)
+            if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
             {
                 BorderBrush = new SolidColorBrush(own);
-                BorderThickness = new Thickness(0, 3, 0, 0);
             }
-            else BorderThickness = new Thickness(0);
+            else ClearValue(BorderBrushProperty);
             _caption.Text = LibraryView.Title(item);
             AutomationProperties.SetName(this, LibraryView.Describe(item));
             ToolTip = LibraryView.Describe(item);

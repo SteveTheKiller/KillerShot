@@ -15,7 +15,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Border x:Name="pill" Width="34" Height="8" CornerRadius="4" Background="{DynamicResource PrimaryBrush}"/>
+                        <Border x:Name="pill" Width="34" Height="8" CornerRadius="4" Background="{DynamicResource SelectionAccent}"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="pill" Property="Height" Value="10"/>
@@ -63,12 +63,11 @@
             </Setter>
         </Style>
 
-        <!-- One thumbnail in the grid and the timeline, on the card color (CardColors). A capture
-             in a collection with its own color gets a border in that color, set in code. -->
+        <!-- Grid and timeline cards use the collection color along their top edge. -->
         <Style x:Key="LibTile" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource CaptureCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,3,0,0"/>
             <Setter Property="Foreground" Value="{DynamicResource CaptureCardTextBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,12,12"/>
@@ -77,17 +76,18 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}" Padding="5">
-                            <Border.Effect>
-                                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Direction="270" Opacity="{DynamicResource FlyoutShadowOpacity}"/>
-                            </Border.Effect>
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
+                                <Setter TargetName="tile" Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
+                                <Setter TargetName="tile" Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
+                                <Setter TargetName="tile" Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
+                                <Setter TargetName="tile" Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -106,7 +106,7 @@
              footer, as KillerPDF's view modes are (FooterView.cs). -->
         <DockPanel x:Name="HeaderBar" Margin="16,12,16,4" LastChildFill="False">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="CountText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
+                <TextBlock x:Name="CountText" Visibility="Collapsed" Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
                            VerticalAlignment="Center" Margin="0,0,12,4"/>
                 <Grid Width="240" Margin="0,0,8,4">
                     <TextBox x:Name="SearchBox" Style="{StaticResource DarkTextBox}" FontSize="12" Padding="24,3,6,3"

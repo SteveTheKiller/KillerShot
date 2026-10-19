@@ -82,6 +82,15 @@ namespace KillerShot.Shell
 
         /// <summary>A line for the status bar.</summary>
         public event Action<string>? StatusMessage;
+        public event Action<string>? CountChanged;
+        private string _source = "all";
+
+        public void SetSource(string source)
+        {
+            if (_source == source) return;
+            _source = source;
+            if (IsLoaded) Reload(); else _dirty = true;
+        }
         public event Action<string, FrameworkElement>? LinkRequested;
 
         private string _view = "shelves";
@@ -179,12 +188,29 @@ namespace KillerShot.Shell
             _items = CaptureLibrary.Items(search.Length > 0 ? search : null);
             _collections = CaptureLibrary.Collections();
             _folderItems = FolderCaptures.Items(search.Length > 0 ? search : null);
-            int total = search.Length > 0 ? CaptureLibrary.Count : _items.Count;
+            bool Matches(CaptureItem item) => _source == "all" || (_source == "c0"
+                ? item.CollectionId == null || !_collections.Any(c => c.Id == item.CollectionId)
+                : "c" + item.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source);
+            int total;
+            if (_source == "folder")
+            {
+                _items = _folderItems;
+                total = search.Length > 0 ? FolderCaptures.Items().Count : _items.Count;
+                _collections = [];
+            }
+            else
+            {
+                _items = _items.Where(Matches).ToList();
+                total = search.Length > 0 ? CaptureLibrary.Items().Count(Matches) : _items.Count;
+                if (_source != "all") _collections = _collections.Where(c => "c" + c.Id.ToString(CultureInfo.InvariantCulture) == _source).ToList();
+            }
+            if (_source != "all") _folderItems = [];
 
             SyncHeader();
             CountText.Text = search.Length > 0
                 ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_CountMatches"), _items.Count, total)
                 : string.Format(CultureInfo.CurrentCulture, Loc(total == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), total);
+            CountChanged?.Invoke(CountText.Text);
 
             // The Screenshots folder shows as a collection, so only where collections do.
             bool folderShown = _group == "collection" && _view != "timeline" && _folderItems.Count > 0;
@@ -358,7 +384,7 @@ namespace KillerShot.Shell
                 // A folder on disk, not a collection in the library: a folder mark, and its menu
                 // opens it in File Explorer.
                 var mark = new TextBlock { Text = "\uF12B", FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 15, Margin = new Thickness(0, 0, 8, 2), VerticalAlignment = VerticalAlignment.Bottom };
-                mark.SetResourceReference(TextBlock.ForegroundProperty, "PrimaryBrush");
+                mark.SetResourceReference(TextBlock.ForegroundProperty, "SelectionAccent");
                 line.Children.Add(mark);
                 line.Background = Brushes.Transparent;
                 var open = new MenuItem { Header = Loc("Str_Lib_OpenFolder") };
@@ -392,7 +418,7 @@ namespace KillerShot.Shell
             grid.Children.Add(TimelineLine());
             var dot = new Ellipse { Width = 12, Height = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 11), StrokeThickness = 2 };
             dot.SetResourceReference(Shape.FillProperty, "ContentPaneBrush");
-            dot.SetResourceReference(Shape.StrokeProperty, "PrimaryBrush");
+            dot.SetResourceReference(Shape.StrokeProperty, "SelectionAccent");
             grid.Children.Add(dot);
             Grid.SetColumn(line, 1);
             grid.Children.Add(line);
@@ -472,10 +498,9 @@ namespace KillerShot.Shell
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
                 tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "ContentPaneBrush");
-                if (CardColors.Collection(item.CollectionId) is Color own)
+                if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
                 {
                     tile.BorderBrush = new SolidColorBrush(own);
-                    tile.BorderThickness = new Thickness(2);
                 }
                 AutomationProperties.SetName(tile, Describe(item));
                 tile.ToolTip = Describe(item);

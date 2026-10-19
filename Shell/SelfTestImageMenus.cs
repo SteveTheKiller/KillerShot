@@ -68,6 +68,26 @@ internal static class SelfTestImageMenus
             if (Math.Abs(leftGutter - 8) > .01)
                 throw new InvalidOperationException("Top-docked editor left gutter must be 8px; actual=" + leftGutter);
             report.Add("Top-docked editor: 8px outer left gutter PASS");
+            foreach (var side in new[] { DockSide.Top, DockSide.Left, DockSide.Right, DockSide.Bottom })
+            {
+                window.TestStripDock.DockTo(side);
+                window.UpdateLayout();
+                var handle = Visuals(window.TestStripDock).OfType<GridSplitter>().Single();
+                var center = handle.TranslatePoint(new Point(handle.ActualWidth / 2, handle.ActualHeight / 2), window);
+                var hit = window.InputHitTest(center) as DependencyObject;
+                while (hit != null && hit is not GridSplitter) hit = VisualTreeHelper.GetParent(hit);
+                if (!ReferenceEquals(hit, handle)) throw new InvalidOperationException(side + " resize handle is covered by " + window.InputHitTest(center)?.GetType().Name
+                    + "; hit=" + (window.InputHitTest(center) as FrameworkElement)?.Name + "; bounds=" + center + " " + handle.RenderSize + "; enabled=" + handle.IsEnabled + "; visible=" + handle.IsVisible + ".");
+                double before = window.TestStripDock.IsHorizontal ? window.TestStrip!.ActualHeight : window.TestStrip!.ActualWidth;
+                handle.Focus();
+                handle.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(handle), 0,
+                    window.TestStripDock.IsHorizontal ? Key.Down : Key.Right) { RoutedEvent = Keyboard.KeyDownEvent });
+                window.UpdateLayout();
+                double after = window.TestStripDock.IsHorizontal ? window.TestStrip!.ActualHeight : window.TestStrip!.ActualWidth;
+                if (Math.Abs(after - before) < 1) throw new InvalidOperationException(side + " resize handle cannot resize its pane.");
+            }
+            window.TestStripDock.DockTo(DockSide.Top);
+            report.Add("Resize handles: hit target and working pane resize on all four edges PASS");
             var rail = (StackPanel)window.FindName("RailStack");
             var dockButton = rail.Children.OfType<Button>().SingleOrDefault(button =>
                 System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc("Str_Dock_Menu"));
@@ -80,9 +100,17 @@ internal static class SelfTestImageMenus
             report.Add("Footer: displayed collection-strip view is marked PASS");
             var leftBar = (Panel)window.FindName("LeftBar");
             var rightBar = (Panel)window.FindName("RightBar");
-            if (leftBar.ActualHeight < 70 || rightBar.Children.Count == 0)
-                throw new InvalidOperationException("The default toolbar must have two rows with annotations on the right.");
-            report.Add("Toolbar: two rows with file actions left and annotations right PASS");
+            if (leftBar.ActualHeight > 50 || rightBar.Children.Count == 0)
+                throw new InvalidOperationException("The toolbar must have one row with annotations on the right.");
+            report.Add("Toolbar: one row with file actions left and annotations right PASS");
+            if (leftBar.Children.OfType<Button>().Any(b => b.IsVisible && b.Name is "RecentBtn" or "SaveAsBtn" or "FitBtn" or "ActualSizeBtn" or "CollectionPickerBtn"))
+                throw new InvalidOperationException("The compact toolbar must group file actions and leave collection and zoom in the footer.");
+            var collectionPicker = (Button)window.FindName("CollectionPickerBtn");
+            if (!collectionPicker.IsVisible || collectionPicker.TranslatePoint(new Point(), window).Y < window.ActualHeight - 45)
+                throw new InvalidOperationException("The collection picker must be in the footer.");
+            if (window.TestStrip!.TestCarousel.TranslatePoint(new Point(), window.TestStrip).Y > 8)
+                throw new InvalidOperationException("The carousel must start immediately below its top padding, without a caption row.");
+            report.Add("Compact toolbar: grouped file actions, footer collection picker and no carousel header PASS");
             var librarySettings = window.FindName("LibrarySettingsButton") as Button;
             if (librarySettings == null || !librarySettings.IsVisible)
                 throw new InvalidOperationException("Library settings must be available in the title bar.");
@@ -106,6 +134,11 @@ internal static class SelfTestImageMenus
             void Open() => menu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
             MenuItem Item(string id) => Descendants(menu).OfType<MenuItem>().Single(m => Equals(m.Tag, id));
             Open();
+            menu.IsOpen = true;
+            await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+            if (Descendants(menu).OfType<MenuItem>().Any(i => i.Icon == null))
+                throw new InvalidOperationException("Missing menu icons: " + string.Join(", ", Descendants(menu).OfType<MenuItem>().Where(i => i.Icon == null).Select(i => i.Header)));
+            menu.IsOpen = false;
             if (Item("copy").InputGestureText != "Ctrl+C" || Item("saveas").InputGestureText != "Ctrl+Shift+S"
                 || !Item("copy").IsEnabled || Item("undo").IsEnabled || Item("redo").IsEnabled)
                 throw new InvalidOperationException("The menu's actions, shortcuts or initial edit states are wrong.");
@@ -149,7 +182,26 @@ internal static class SelfTestImageMenus
                 await Task.Delay(150);
                 FrameworkElement browser = Visuals(window.TestStrip!).OfType<FrameworkElement>().First(e => e.IsVisible &&
                     (view == "flow" ? e is CoverFlow : view == "list" ? e is ListBox : e is Rolodex));
-                if (browser is ListBox list) list.SelectedIndex = 0;
+                if (browser is ListBox list)
+                {
+                    list.SelectedIndex = 0;
+                    window.UpdateLayout();
+                    var thumb = Visuals(list).OfType<StripThumb>().First(t => t.IsVisible);
+                    var splitter = Visuals(window.TestStripDock).OfType<GridSplitter>().Single();
+                    double gap = splitter.TranslatePoint(new Point(), window.TestStripDock).X
+                        - thumb.TranslatePoint(new Point(thumb.ActualWidth, 0), window.TestStripDock).X;
+                    if (gap > 26) throw new InvalidOperationException("Sidebar card-to-splitter gap exceeds the padding and scrollbar: " + gap);
+                    report.Add("Sidebar card-to-splitter gap: " + gap + "px PASS");
+                    var row = (ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(0);
+                    var rowBitmap = new RenderTargetBitmap((int)Math.Ceiling(row.ActualWidth), (int)Math.Ceiling(row.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                    rowBitmap.Render(row);
+                    var bottom = new byte[4];
+                    rowBitmap.CopyPixels(new Int32Rect(rowBitmap.PixelWidth / 2, rowBitmap.PixelHeight - 1, 1, 1), bottom, 4, 0);
+                    if (bottom[1] > bottom[2] + 20) throw new InvalidOperationException("A selected sidebar card must not paint an accent stripe underneath the photo.");
+                    if (thumb.Effect is not System.Windows.Media.Effects.DropShadowEffect)
+                        throw new InvalidOperationException("The active sidebar card must rise with a drop shadow.");
+                    report.Add("Sidebar card: top color only, with an active drop shadow PASS");
+                }
                 browser.Focus();
                 browser.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(browser), 0, Key.Apps) { RoutedEvent = Keyboard.KeyDownEvent });
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
@@ -164,11 +216,40 @@ internal static class SelfTestImageMenus
             }
             window.TestStripDock.DockTo(DockSide.Top);
             App.Instance.SetDocument(null);
+            window.UpdateLayout();
+            if (rail.Orientation != Orientation.Vertical || rail.TranslatePoint(new Point(), window).X > 30)
+                throw new InvalidOperationException("The album must put its rail on the left instead of inheriting the editor's top strip.");
             Open();
             if (Item("copy").IsEnabled || Item("save").IsEnabled || Item("undo").IsEnabled)
                 throw new InvalidOperationException("Editor menu actions must be disabled without an image.");
+            long collection = CaptureLibrary.CreateCollection("Resize checks");
+            CaptureLibrary.Move(CaptureLibrary.Items().Take(3).Select(i => i.Id), collection);
+            CardColors.SetCollection(collection, Colors.LimeGreen);
+            await Task.Delay(100);
+            collectionPicker.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+            ContextMenu OpenMenu() => PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
+                .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().Single(m => m.IsOpen);
+            var sourceMenu = OpenMenu();
+            sourceMenu.Items.OfType<MenuItem>().Single(i => Equals(i.Header, "Resize checks")).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            sourceMenu.IsOpen = false;
+            window.TestLibrary.TestSet("grid", "collection", "");
+            await Task.Delay(150);
+            window.UpdateLayout();
+            var tileButtons = Visuals(window.TestLibrary).OfType<Button>().Where(b => b.IsVisible && b.Style == window.TestLibrary.FindResource("LibTile")).ToList();
+            if (tileButtons.Count != 3 || ((TextBlock)window.FindName("CollectionCountText")).Text != "3 captures")
+                throw new InvalidOperationException("The footer collection choice must filter the album and update its count.");
+            if (tileButtons.Any(b => b.BorderThickness.Left != 0 || b.BorderThickness.Right != 0 || b.BorderThickness.Bottom != 0 || b.BorderThickness.Top != 3))
+                throw new InvalidOperationException("Album cards must have a 3px top stripe without colored side or bottom borders.");
+            report.Add("Album: footer collection filter, matching count and top-only card color PASS");
+            collectionPicker.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+            sourceMenu = OpenMenu();
+            sourceMenu.Items.OfType<MenuItem>().Single(i => Equals(i.Header, LocaleManager.Loc("Str_Strip_All"))).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            sourceMenu.IsOpen = false;
             App.Instance.SetDocument(doc);
             await Task.Delay(100);
+            if (window.TestStripDock.Side != DockSide.Top) throw new InvalidOperationException("Returning to the editor must preserve its saved top strip.");
             if (rail.TranslatePoint(new Point(), window).X > window.ActualWidth / 2)
                 throw new InvalidOperationException("The horizontal rail must default to the left after the editor reopens.");
             var toolbarMenu = (ContextMenu)window.FindName("ToolbarMenu");
@@ -180,7 +261,7 @@ internal static class SelfTestImageMenus
                 throw new InvalidOperationException("A hidden toolbar must have a visible title-bar overflow.");
             overflow.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var more = (ContextMenu)window.FindName("MoreMenu");
-            foreach (string key in new[] { "Str_Btn_Capture", "Str_Btn_Print", "Str_Tool_Pen", "Str_Btn_Color", "Str_Btn_Width", "Str_Strip_Collection" })
+            foreach (string key in new[] { "Str_Btn_Capture", "Str_Btn_Print", "Str_Tool_Pen", "Str_Btn_Color", "Str_Btn_Width" })
                 if (!more.Items.OfType<MenuItem>().Any(m => Equals(m.Header, LocaleManager.Loc(key))))
                     throw new InvalidOperationException("The hidden toolbar lost " + key);
             more.IsOpen = false;
@@ -201,12 +282,14 @@ internal static class SelfTestImageMenus
                 || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
                 throw new InvalidOperationException("The theme flyout is not anchored to its own right-side button.");
             themeMenu.IsOpen = false;
-            var firstRail = rail.Children[0];
+            FrameworkElement[] leadingRail = [themeButton, (Button)window.FindName("LangButton"), (Button)window.FindName("ShortcutsButton"), (Button)window.FindName("CaptureSettingsButton")];
+            if (!rail.Children.Cast<UIElement>().Take(4).SequenceEqual(leadingRail)) throw new InvalidOperationException("Rail order must start Theme, Locale, Help, Settings.");
+            var firstExtra = rail.Children[4];
             OpenRail();
             railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            if (!ReferenceEquals(firstRail, rail.Children[rail.Children.Count - 1]))
-                throw new InvalidOperationException("The rail menu did not reverse the icon order.");
+            if (!ReferenceEquals(firstExtra, rail.Children[rail.Children.Count - 1]) || !rail.Children.Cast<UIElement>().Take(4).SequenceEqual(leadingRail))
+                throw new InvalidOperationException("Reversing app controls must preserve Theme, Locale, Help, Settings in order.");
             railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             flipRail.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
@@ -226,6 +309,33 @@ internal static class SelfTestImageMenus
             printPreview.Close();
             if (printPreview.Printed) throw new InvalidOperationException("Closing print preview sent a job.");
             report.Add("Print preview: edited image and red annotation visible; closing does not print PASS");
+            ColorPickerDialog? colorPicker = null;
+            var originalColor = editor.Color;
+            _ = window.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+            {
+                await Task.Delay(200);
+                colorPicker = Application.Current.Windows.OfType<ColorPickerDialog>().SingleOrDefault();
+                colorPicker?.Close();
+            }));
+            ((Button)window.FindName("ColorBtn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Task.Delay(350);
+            if (colorPicker == null || editor.Color != originalColor)
+                throw new InvalidOperationException("Annotation color must open the full family picker and preserve the color when canceled.");
+            if (leftBar.Children.OfType<Button>().Concat(rightBar.Children.OfType<Button>()).Any(b => b.Name == "LibraryBtn" && b.IsVisible))
+                throw new InvalidOperationException("Library views belong in the footer, without a duplicate toolbar button.");
+            report.Add("Annotation color: full family picker and unchanged color after Cancel PASS");
+            ThemeManager.Apply(Theme.Dark);
+            ThemeManager.ApplyAccent(Theme.Dark, Accent.Red);
+            window.UpdateLayout();
+            if (((Button)window.FindName("ToolPenBtn")).Foreground is not SolidColorBrush activeInk || activeInk.Color != Color.FromRgb(0xEA, 0x52, 0x4C))
+                throw new InvalidOperationException("Dark Red active tool icons must use the deeper red accent.");
+            var sliderPill = Visuals(window.TestStrip!).OfType<Border>().Single(b => b.Name == "pill");
+            if (sliderPill.Background is not SolidColorBrush sliderInk || sliderInk.Color != Color.FromRgb(0xEA, 0x52, 0x4C))
+                throw new InvalidOperationException("The Dark Red carousel slider must use the deeper red accent.");
+            var finalShot = new RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth), (int)Math.Ceiling(window.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            finalShot.Render((Visual)window.Content);
+            ImageOutput.SavePng(finalShot, Path.Combine(folder, "compact-editor-red.png"));
+            report.Add("Dark Red active tool: deeper red accent PASS");
             File.WriteAllLines(reportPath, report);
             if (show)
             {

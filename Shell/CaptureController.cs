@@ -31,8 +31,9 @@ internal sealed class CaptureController
         _tray = tray;
         _tray.CaptureRequested += (action, mode, fg) =>
         {
-            if (action == ShortcutAction.Video) App.Instance.Video?.Toggle();
-            else _ = RunAsync(action, mode, fg);
+            if (action == ShortcutAction.Video) App.Instance.Video?.Toggle(fromShortcut: true);
+            else if (action is { } shortcut) _ = StartFromShortcut(shortcut, fg);
+            else _ = RunAsync(null, mode, fg);
         };
         _tray.SaveLastRequested += SaveLast;
         _tray.PrintLastRequested += PrintLast;
@@ -42,6 +43,10 @@ internal sealed class CaptureController
     /// <summary>Starts a capture from the editor or the tray menu.</summary>
     public Task Start(CaptureMode mode) => RunAsync(null, mode, IntPtr.Zero);
 
+    public Task StartFromShortcut(ShortcutAction action, IntPtr foreground) => RunAsync(action, null, foreground);
+
+    public Task StartVideo(bool fromShortcut) => RunAsync(fromShortcut ? ShortcutAction.Video : null, CaptureMode.Region, IntPtr.Zero, video: true);
+
     private static CaptureMode Resolve(ShortcutAction? action, CaptureMode? mode) => mode ?? action switch
     {
         ShortcutAction.Window => CaptureMode.Window,
@@ -50,7 +55,7 @@ internal sealed class CaptureController
         _ => CaptureSettings.LastMode,
     };
 
-    private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground)
+    private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false)
     {
         if (_busy || App.Instance.Video?.IsRecording == true) return;
         _busy = true;
@@ -58,35 +63,35 @@ internal sealed class CaptureController
         try
         {
             var mode = Resolve(action, requested);
-            // Our own editor never belongs in the picture.
-            if (HideEditor != null) restore = await HideEditor();
+            // A global shortcut preserves the desktop, including the editor's open menus.
+            // Commands started inside the editor hide it before capturing other applications.
+            if (action == null && HideEditor != null) restore = await HideEditor();
             int delay = CaptureSettings.DelaySeconds;
             if (delay > 0) await Task.Delay(delay * 1000);
             var frozen = FrozenDesktop.Capture(CaptureSettings.IncludeCursor);
-            if (CaptureSettings.PlaySound) ShutterSound.Play();
             BitmapSource? result;
             // The window the picture came from, for the library's search: the picked or active
             // window, or the topmost window under the middle of a region or under the pointer.
             IntPtr source = IntPtr.Zero;
-            switch (mode)
+            if (video || action == ShortcutAction.LastMode || mode is CaptureMode.Region or CaptureMode.Qr
+                || mode == CaptureMode.Window && (CaptureSettings.PickWindow || foreground == IntPtr.Zero))
             {
-                case CaptureMode.Region:
-                case CaptureMode.Qr:
-                    var rect = await new RegionSelector(frozen).RunAsync();
-                    result = rect is { } r ? frozen.Crop(r) : null;
-                    if (rect is { } at) source = frozen.WindowAt(Center(at))?.Handle ?? IntPtr.Zero;
-                    break;
-                case CaptureMode.Window when CaptureSettings.PickWindow || foreground == IntPtr.Zero:
-                    // Pick by clicking. Started from a menu there is no meaningful active window.
-                    var picker = new RegionSelector(frozen, windowOnly: true);
-                    var picked = await picker.RunAsync();
-                    if (picked == null) { result = null; break; }
-                    result = picker.PickedWindow != IntPtr.Zero
-                        ? (await WindowCapture.CaptureAsync(picker.PickedWindow, frozen)).Bitmap
-                        : frozen.Crop(picked.Value);
-                    source = picker.PickedWindow != IntPtr.Zero ? picker.PickedWindow
-                        : frozen.WindowAt(Center(picked.Value))?.Handle ?? IntPtr.Zero;
-                    break;
+                var picker = new RegionSelector(frozen, showBar: true, mode: mode, video: video);
+                var picked = await picker.RunAsync();
+                if (picked == null) return;
+                mode = picker.Mode;
+                if (picker.IsVideo)
+                {
+                    if (App.Instance.Video is { } recorder) await recorder.StartAsync(picked.Value);
+                    return;
+                }
+                // The frozen pixels retain menus even after the selector takes focus.
+                result = frozen.Crop(picked.Value);
+                source = picker.PickedWindow != IntPtr.Zero ? picker.PickedWindow
+                    : frozen.WindowAt(Center(picked.Value))?.Handle ?? IntPtr.Zero;
+            }
+            else switch (mode)
+            {
                 case CaptureMode.Window:
                     var target = WindowCapture.CapturableRoot(foreground);
                     if (target == IntPtr.Zero)
@@ -113,6 +118,7 @@ internal sealed class CaptureController
             }
 
             if (result == null) return;   // cancelled: no output, last mode unchanged
+            if (CaptureSettings.PlaySound) ShutterSound.Play();
             CaptureSettings.LastMode = mode;
             Last = result;
             var taken = DateTime.Now;

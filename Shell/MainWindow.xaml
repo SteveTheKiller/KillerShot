@@ -149,15 +149,13 @@
                         <ColumnDefinition Width="Auto"/>   <!-- right side -->
                         <ColumnDefinition Width="Auto"/>   <!-- More menu -->
                     </Grid.ColumnDefinitions>
-                    <icons:ToolbarRowsPanel x:Name="LeftBar" VerticalAlignment="Center">
-                        <Button x:Name="CollectionPickerBtn" Style="{StaticResource ToolbarButton}" Click="CollectionPickerBtn_Click"/>
+                    <StackPanel x:Name="LeftBar" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button x:Name="CaptureBtn" Style="{StaticResource ToolbarButton}" Click="CaptureBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="CaptureMenu"/>
                             </Button.ContextMenu>
                         </Button>
                         <Button x:Name="RecordBtn" Style="{StaticResource ToolbarButton}" Click="RecordBtn_Click"/>
-                        <Button x:Name="LibraryBtn" Style="{StaticResource ToolbarButton}" Click="LibraryBtn_Click"/>
                         <Button x:Name="RecentBtn" Style="{StaticResource ToolbarButton}" Click="RecentBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="RecentMenu"/>
@@ -179,11 +177,7 @@
                         <Button x:Name="ToolTextBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Text"/>
                         <Button x:Name="ToolRedactBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Redact"/>
                         <Button x:Name="ToolCropBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Crop"/>
-                        <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click">
-                            <Button.ContextMenu>
-                                <ContextMenu x:Name="ColorMenu"/>
-                            </Button.ContextMenu>
-                        </Button>
+                        <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click"/>
                         <Button x:Name="WidthBtn" Style="{StaticResource ToolbarButton}" Click="WidthBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="WidthMenu"/>
@@ -191,8 +185,8 @@
                         </Button>
                         <Button x:Name="FitBtn" Style="{StaticResource ToolbarButton}" Click="FitBtn_Click"/>
                         <Button x:Name="ActualSizeBtn" Style="{StaticResource ToolbarButton}" Click="ActualSizeBtn_Click"/>
-                    </icons:ToolbarRowsPanel>
-                    <icons:ToolbarRowsPanel x:Name="RightBar" Grid.Column="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel x:Name="RightBar" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"/>
                     <!-- The More menu: buttons the user put there, and those the window is too narrow
                          for. Shown only when it has something in it. -->
                     <Button x:Name="MoreBtn" Grid.Column="3" Style="{StaticResource ToolbarButton}" Visibility="Collapsed"
@@ -391,8 +385,8 @@
                                         <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                                     </Trigger>
                                     <Trigger Property="IsChecked" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SelectionAccent}"/>
+                                        <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
                                     </Trigger>
                                     <Trigger Property="IsEnabled" Value="False">
                                         <Setter Property="Opacity" Value="0.4"/>
@@ -418,11 +412,23 @@
                 </Border>
 
                 <Grid Grid.Column="0" Margin="{DynamicResource FooterCellMargin}">
-                    <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}"
+                    <DockPanel LastChildFill="True">
+                    <Button x:Name="CollectionPickerBtn" DockPanel.Dock="Left" Style="{StaticResource FooterNavButton}"
+                            Width="Auto" MaxWidth="180" Padding="4,0" Margin="4,0,8,0" FontFamily="{DynamicResource UiFont}" FontSize="11"
+                            ToolTip="{DynamicResource Str_Strip_Collection}" Click="CollectionPickerBtn_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="CollectionNameText" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                            <TextBlock Text="&#xE70D;" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock x:Name="CollectionCountText" DockPanel.Dock="Left" Foreground="{DynamicResource TextFooter}"
+                               FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}" TextTrimming="CharacterEllipsis"
                                Foreground="{DynamicResource TextFooter}"
                                FontFamily="{DynamicResource BrandSansFont}"
                                FontSize="16" TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center"
                                Margin="4,0,0,0" Padding="{DynamicResource FooterCellPadding}"/>
+                    </DockPanel>
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelDarkBrush}"
                             BorderThickness="{DynamicResource FooterCellLightThickness}"/>
                     <Border IsHitTestVisible="False" BorderBrush="{DynamicResource FooterBevelLightBrush}"

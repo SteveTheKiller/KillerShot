@@ -9,18 +9,18 @@
 - Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
 - Printing from the editor, album or tray opens a themed preview of the edited screenshot, with printer, paper, orientation, scale, color and copies controls.
 - Added a tray app that captures with Print Screen. Plain Print Screen repeats the last mode used, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
-- Added region capture over a frozen copy of the desktop on every monitor, so menus and tooltips stay in the picture. Escape or a right-click cancels with nothing copied.
+- Print Screen preserves open menus in the captured desktop and immediately shows the active border and a movable capture bar near the top of the main monitor, with Photo, Video, capture mode, output folder, Capture and Cancel. Region photos capture on release; Escape or a right-click cancels without output.
 - Added window capture through Windows Graphics Capture, including covered windows, with rounded corners filled from the desktop behind them.
 - Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
 - Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
 - Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Hovering in region mode highlights a window and a single click takes it.
 - Added a command line (killershot followed by a command, with --cli and KillerShot.Cli.exe still supported) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP. killershot --help lists the commands; portable copies run from their folder or full path.
-- Added Open, Save, Save as and Copy, and a Recent menu of the latest captures.
+- The compact single-row toolbar groups Open with recent captures and Save with Save as, alongside Capture, Record, Copy, Print and the annotation tools. Zoom choices stay in the footer. Icon size, label placement, order and overflow remain customizable; Alt+M replaces the toolbar with a title-bar menu.
 - KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.
 - The library shows Windows' Screenshots folder as a collection read live from its files, with Open, Copy, Show in File Explorer and Add to the library. The title bar's library settings can turn it off.
-- Added the collection strip: a carousel above or below an open picture, or thumbnails at either side, with a compact collection caption and count. The collection picker lives in the main toolbar. Alt+Shift+arrow docks or minimizes the strip, and the rail holds its position and side-view controls. The editor keeps an 8px gutter at each exposed side.
+- The collection picker and count live in the footer and filter both the album and the collection strip. The strip shows a carousel above or below an open picture, or thumbnails at either side, without a header row. Its resize handle stays clickable; Alt+Shift+arrow docks or minimizes it. The editor keeps an 8px gutter at each exposed side.
 - Added a rolodex view for a strip docked at the side: the captures are cards on a turning drum, the current one rising out in front at full size and the others leaning back above and below it, each with a drop shadow. Ctrl+wheel draws the cards larger and fewer or smaller and more, as an alternative to the thumbnail list.
-- Carousels and the Rolodex follow dragging, coast after release and settle on a picture. Navigation moves smoothly through long jumps, and the collection strip waits for motion to finish before opening the selected capture.
+- Drag images to throw the carousels and Rolodex, coast and settle on a picture. The Rolodex wraps continuously; a new click stops it and a missed mouse release no longer traps the pointer. Long jumps animate smoothly, and the strip opens the selected image after motion settles.
 - Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
 - The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
@@ -28,18 +28,18 @@
 - Windows contrast themes now use system colors for text, icons, panels, the outer window border and selections, without decorative grain or shadows.
 - The main window opens inside the work area of the monitor it starts on, so a small or high-scaling display, or a size saved on a bigger monitor, shows all of it, and changing the app size keeps it on its own monitor.
 - Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
-- The toolbar defaults to two rows with file actions on the left and annotation tools on the right. Choose one or two rows, icon size and label placement, or customize the order and overflow. Alt+M replaces the toolbar with one title-bar menu containing its actions and settings.
 - Footer controls stay clickable at the resize edge and mark the displayed album or strip view. Collection grouping uses a folder icon, distinct from the title-bar database settings.
-- Rail icons start on the left; their context menu can flip sides and reverse their order. Theme and language flyouts follow their own buttons.
+- Album mode uses a left sidebar rail. Theme, Language, Help and Settings lead its icons in that order; the context menu flips sides and reverses the remaining controls. The editor keeps its own dock position, and flyouts follow their buttons.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
 - The library's shelves, grid and timeline and the collection strip sit on the window's own background instead of a pane, with each capture on a card in the pane gray; the big carousel keeps its pane. Card color in a capture's menu picks the card color with the family color picker, and Collection color in a collection's menu gives a collection a color that marks its heading and its cards.
+- Photo cards carry color only along their top edge and rise with a shadow when hovered or active. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
 - The title bar shows the library's name on the right, where Killendar and KillerNotes show their open database, centered on the caption buttons, and an open file's name after the wordmark, as KillerPDF shows it. Clicking the library name or its Library button opens retention, folder and password settings.
 - Primary headings use Lacquer in settings, shortcuts, dialogs and the library, with script fallbacks and the family 98SE font.
 - The maximize button opens the Windows 11 snap layouts menu.
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
-- Menu separators draw their divider line instead of leaving an empty gap.
+- Menus show action icons and visible separator lines.
 - Restored film grain on the file picker sidebar.
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.

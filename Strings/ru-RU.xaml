@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Копии</sys:String>
     <sys:String x:Key="Str_Print_Color">Цвет</sys:String>
     <sys:String x:Key="Str_Print_BW">Черный &amp; белый</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Фото</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Видео</sys:String>
 </ResourceDictionary>

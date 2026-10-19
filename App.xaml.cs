@@ -58,6 +58,7 @@ public partial class App : Application
         if (SelfTestQrUi.TryRun(e.Args)) return;
         if (SelfTestCarousel.TryRun(e.Args)) return;
         if (SelfTestImageMenus.TryRun(e.Args)) return;
+        if (SelfTestCaptureMenus.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
         bool demo = DemoMode.TryEnter(e.Args);
@@ -104,7 +105,7 @@ public partial class App : Application
         Tray = new TrayHost();
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
         Capture.Captured += OnCaptured;
-        Video = new VideoController(Tray) { HideEditor = HideEditorForCapture };
+        Video = new VideoController(Tray);
         Tray.RecordRequested += () => Video.Toggle();
         Tray.OpenEditorRequested += ShowEditor;
         Tray.BalloonClicked += ShowEditor;
@@ -223,6 +224,7 @@ public partial class App : Application
         LocaleManager.GetSetting = Settings.Get;
         LocaleManager.SetSetting = Settings.Set;
         LocaleManager.Initialize();
+        Controls.MenuIcons.Install();
     }
 
     private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath, bool readQr)

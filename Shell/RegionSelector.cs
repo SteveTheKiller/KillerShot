@@ -8,6 +8,7 @@ using System.Windows.Shapes;
 using KillerShot.Capture;
 using KillerShot.Native;
 using Path = System.Windows.Shapes.Path;
+using CaptureMode = KillerShot.Capture.CaptureMode;
 
 namespace KillerShot.Shell;
 
@@ -26,15 +27,20 @@ internal sealed class RegionSelector
     private WindowBounds? _hover;
     private bool _dragged;
     private bool _finished;
-    private readonly bool _windowOnly;
+    private readonly bool _showBar;
+    private CaptureBar? _bar;
+    public CaptureMode Mode { get; private set; }
+    public bool IsVideo { get; private set; }
 
     /// <summary>The window chosen by a click, or zero when the result is a dragged region.</summary>
     public IntPtr PickedWindow { get; private set; }
 
-    public RegionSelector(FrozenDesktop frozen, bool windowOnly = false)
+    public RegionSelector(FrozenDesktop frozen, bool windowOnly = false, bool showBar = false, CaptureMode? mode = null, bool video = false)
     {
         _frozen = frozen;
-        _windowOnly = windowOnly;
+        Mode = mode ?? (windowOnly ? CaptureMode.Window : CaptureMode.Region);
+        IsVideo = video;
+        _showBar = showBar;
     }
 
     public Task<Win32.RECT?> RunAsync()
@@ -60,6 +66,11 @@ internal sealed class RegionSelector
             home.Activate();
             home.Focus();
             Keyboard.Focus(home);
+            if (_showBar)
+            {
+                _bar = new CaptureBar(this, _frozen.Monitors.FirstOrDefault(m => m.Primary) ?? _frozen.Monitors[0]) { Owner = home };
+                _bar.Show();
+            }
             Move();   // highlight the window already under the pointer
         }
         catch
@@ -81,16 +92,21 @@ internal sealed class RegionSelector
     public void Move()
     {
         Win32.GetCursorPos(out var p);
-        if (_start is { } s && !_windowOnly)
+        if (_start is { } s && Mode is CaptureMode.Region or CaptureMode.Qr)
         {
             if (!_dragged && Math.Abs(p.X - s.X) < 4 && Math.Abs(p.Y - s.Y) < 4) return;
             _dragged = true;
             _selection = new Win32.RECT(Math.Min(s.X, p.X), Math.Min(s.Y, p.Y), Math.Max(s.X, p.X) + 1, Math.Max(s.Y, p.Y) + 1);
         }
-        else if (_start == null || _windowOnly)
+        else
         {
             // Over the bare desktop the whole monitor is the target.
-            var hover = _frozen.WindowAt(p) ?? new WindowBounds(IntPtr.Zero, _frozen.MonitorAt(p).Bounds);
+            var hover = Mode switch
+            {
+                CaptureMode.Monitor => new WindowBounds(IntPtr.Zero, _frozen.MonitorAt(p).Bounds),
+                CaptureMode.AllMonitors => new WindowBounds(IntPtr.Zero, _frozen.Bounds),
+                _ => _frozen.WindowAt(p) ?? new WindowBounds(IntPtr.Zero, _frozen.MonitorAt(p).Bounds)
+            };
             if (hover == _hover && _selection != null) return;
             _hover = hover;
             _selection = hover?.Bounds;
@@ -117,6 +133,27 @@ internal sealed class RegionSelector
 
     public void Cancel() => Finish(null);
 
+    public void SetMode(CaptureMode mode)
+    {
+        Mode = IsVideo && mode == CaptureMode.Qr ? CaptureMode.Region : mode;
+        _start = null; _selection = null; _hover = null;
+        Move();
+        _bar?.Sync();
+    }
+
+    public void SetVideo(bool video)
+    {
+        IsVideo = video;
+        if (video && Mode == CaptureMode.Qr) SetMode(CaptureMode.Region);
+    }
+
+    public void CaptureSelection()
+    {
+        if (_selection is not { IsEmpty: false } selection) return;
+        if (Mode == CaptureMode.Window) PickedWindow = _hover?.Handle ?? IntPtr.Zero;
+        Finish(selection);
+    }
+
     private void RedrawAll()
     {
         foreach (var o in _overlays) o.Redraw(_selection);
@@ -126,6 +163,7 @@ internal sealed class RegionSelector
     {
         if (_finished) return;
         _finished = true;
+        _bar?.Close();
         foreach (var o in _overlays)
         {
             try { o.Close(); } catch { }
@@ -138,7 +176,7 @@ internal sealed class RegionSelector
 internal sealed class RegionOverlay : Window
 {
     private static readonly Brush Shade = Freeze(new SolidColorBrush(Color.FromArgb(0x88, 0, 0, 0)));
-    private static readonly Brush Accent = Freeze(new SolidColorBrush(Color.FromRgb(0x2E, 0xC4, 0xB6)));
+    private static Brush Accent => Application.Current.TryFindResource("SelectionAccent") as Brush ?? SystemColors.HighlightBrush;
     private static readonly Brush LabelBack = Freeze(new SolidColorBrush(Color.FromArgb(0xCC, 0, 0, 0)));
 
     private readonly RegionSelector _owner;
@@ -182,6 +220,7 @@ internal sealed class RegionOverlay : Window
         var root = new Grid { Background = Brushes.Transparent };
         root.Children.Add(image);
         root.Children.Add(canvas);
+        root.Children.Add(new Border { BorderBrush = Accent, BorderThickness = new Thickness(3), IsHitTestVisible = false });
         Content = root;
 
         SourceInitialized += (_, _) => PlaceOnMonitor();

@@ -102,6 +102,27 @@ namespace KillerFamily.Layout
         public DockHost()
         {
             _splitter = new GridSplitter { Background = Brushes.Transparent, Focusable = true, ResizeBehavior = GridResizeBehavior.PreviousAndNext };
+            SetZIndex(_splitter, 2);
+            _splitter.Template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse("""
+                <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="GridSplitter">
+                    <Border Background="Transparent">
+                        <Rectangle x:Name="line" Width="1" HorizontalAlignment="Center" Fill="{DynamicResource PaneBorderBrush}" Opacity="0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ResizeDirection" Value="Rows">
+                            <Setter TargetName="line" Property="Width" Value="Auto"/>
+                            <Setter TargetName="line" Property="Height" Value="1"/>
+                            <Setter TargetName="line" Property="HorizontalAlignment" Value="Stretch"/>
+                            <Setter TargetName="line" Property="VerticalAlignment" Value="Center"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="line" Property="Opacity" Value="1"/></Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="line" Property="Opacity" Value="1"/>
+                            <Setter TargetName="line" Property="Fill" Value="{DynamicResource SelectionAccent}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+                """);
             _splitter.DragCompleted += (_, _) => { RememberSize(); LayoutChanged?.Invoke(); };
             _splitter.KeyUp += (_, e) => { if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down) { RememberSize(); LayoutChanged?.Invoke(); } };
 

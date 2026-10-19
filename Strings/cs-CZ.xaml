@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_BW">Černobíle</sys:String>
     <sys:String x:Key="Str_Print_Paper">Formát papíru</sys:String>
     <sys:String x:Key="Str_Print_Properties">Vlastnosti tiskárny...</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Fotografie</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Video</sys:String>
 </ResourceDictionary>

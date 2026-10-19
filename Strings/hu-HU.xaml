@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Példányszám</sys:String>
     <sys:String x:Key="Str_Print_Color">Színes</sys:String>
     <sys:String x:Key="Str_Print_BW">Fekete-fehér</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Fénykép</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Videó</sys:String>
 </ResourceDictionary>

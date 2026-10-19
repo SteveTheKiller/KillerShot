@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Копії</sys:String>
     <sys:String x:Key="Str_Print_Color">Кольоровий</sys:String>
     <sys:String x:Key="Str_Print_BW">Чорно-біле</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Фото</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Відео</sys:String>
 </ResourceDictionary>

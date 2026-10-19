@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -42,7 +43,7 @@ internal static class SelfTestCarousel
                 await Task.Delay(150);
                 var viewport = (Viewport3D)VisualTreeHelper.GetChild(control, 0);
                 var scene = (Model3DGroup)((ModelVisual3D)viewport.Children[0]).Content;
-                var firstCard = scene.Children.OfType<Model3DGroup>().First();
+                var firstCard = scene.Children.OfType<Model3DGroup>().Single(c => Math.Abs(c.Transform.Value.OffsetX) < .001 && Math.Abs(c.Transform.Value.OffsetY) < .001);
                 if (flow != null) flow.SelectedIndex = 40; else drum!.SelectedIndex = 40;
                 await Task.Delay(100);
                 if (!scene.Children.Contains(firstCard)) throw new InvalidOperationException($"{control.GetType().Name} skipped past its initial card window within 100ms.");
@@ -50,6 +51,21 @@ internal static class SelfTestCarousel
                 var front = scene.Children.OfType<Model3DGroup>().Select(c => c.Transform.Value).Any(m => Math.Abs(m.OffsetX) < .001 && Math.Abs(m.OffsetY) < .001);
                 if (!front) throw new InvalidOperationException("Navigation did not settle on a card.");
                 report.Add(control.GetType().Name + ": continuous start and settled destination PASS");
+                if (Mouse.LeftButton != MouseButtonState.Released) throw new InvalidOperationException("Release the mouse before the carousel input check.");
+                control.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left) { RoutedEvent = Mouse.MouseDownEvent });
+                // Windows can omit button-up when focus or a popup changes during the gesture.
+                control.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice, 0) { RoutedEvent = Mouse.MouseMoveEvent });
+                if (control.IsMouseCaptured) throw new InvalidOperationException(control.GetType().Name + " stays attached to the pointer after its left button is released.");
+                report.Add(control.GetType().Name + ": a missed button-up cannot leave the carousel stuck to the mouse PASS");
+                if (drum != null)
+                {
+                    drum.SelectedIndex = items.Length - 1;
+                    drum.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(drum), 0, Key.Down) { RoutedEvent = Keyboard.KeyDownEvent });
+                    if (drum.SelectedIndex != 0) throw new InvalidOperationException("The Rolodex must wrap from the last card to the first.");
+                    drum.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(drum), 0, Key.Up) { RoutedEvent = Keyboard.KeyDownEvent });
+                    if (drum.SelectedIndex != items.Length - 1) throw new InvalidOperationException("The Rolodex must wrap backward to the last card.");
+                    report.Add("Rolodex: forward and backward continuous wheel PASS");
+                }
                 window.Close(); window = null;
             }
             code = 0;

@@ -440,4 +440,6 @@
     <sys:String x:Key="Str_Print_Copies">Copies</sys:String>
     <sys:String x:Key="Str_Print_Color">Color</sys:String>
     <sys:String x:Key="Str_Print_BW">Black &amp; white</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Photo</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Video</sys:String>
 </ResourceDictionary>

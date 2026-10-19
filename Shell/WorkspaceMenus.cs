@@ -33,9 +33,15 @@ public partial class MainWindow
     private void ApplyRailPreferences()
     {
         bool reversed = Settings.GetBool("RailReversed", false);
-        var order = reversed ? _railOrder.Reverse() : _railOrder.AsEnumerable();
+        FrameworkElement[] leading = [ThemeButton, LangButton, ShortcutsButton, CaptureSettingsButton];
+        var remaining = _railOrder.Except(leading);
+        var order = leading.Concat(reversed ? remaining.Reverse() : remaining);
         RailStack.Children.Clear();
-        foreach (var button in order) RailStack.Children.Add(button);
+        foreach (var button in order)
+        {
+            button.Margin = StripDock.IsHorizontal ? new Thickness(0, 0, 6, 0) : new Thickness(0, 0, 0, 6);
+            RailStack.Children.Add(button);
+        }
         PlaceRailButtons();
     }
 
@@ -74,7 +80,12 @@ public partial class MainWindow
         menu.Items.Add(new Separator());
         Add("Str_Rail_Flip", () =>
         {
-            if (StripDock.IsHorizontal) Settings.SetBool("RailAtRight", !Settings.GetBool("RailAtRight", false));
+            if (Library.IsVisible)
+            {
+                Settings.SetBool("LibraryRailAtRight", !Settings.GetBool("LibraryRailAtRight", false));
+                SyncStripPlacement(library: true);
+            }
+            else if (StripDock.IsHorizontal) Settings.SetBool("RailAtRight", !Settings.GetBool("RailAtRight", false));
             else StripDock.DockTo(StripDock.Side == DockSide.Left ? DockSide.Right : DockSide.Left);
             ApplyRailPreferences();
         });

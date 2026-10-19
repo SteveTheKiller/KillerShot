@@ -99,7 +99,7 @@ namespace KillerShot.Shell
             style.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("TextBrush")));
             foreach (var state in new[] { new Trigger { Property = IsMouseOverProperty, Value = true }, new Trigger { Property = TagProperty, Value = "on" } })
             {
-                state.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("PrimaryBrush")));
+                state.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("SelectionAccent")));
                 style.Triggers.Add(state);
             }
             var button = new Button { Content = icon, Style = style,

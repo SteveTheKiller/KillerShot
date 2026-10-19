@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Көшірме</sys:String>
     <sys:String x:Key="Str_Print_Color">Түсті</sys:String>
     <sys:String x:Key="Str_Print_BW">Ақ-қара</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Фотосурет</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Бейне</sys:String>
 </ResourceDictionary>

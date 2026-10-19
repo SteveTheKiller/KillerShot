@@ -153,7 +153,9 @@ internal static class SelfTestQrUi
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The preview album did not open.");
             long capture = CaptureLibrary.AddNow(App.Instance.Document.Image, DateTime.Now, "qr", "QR fixture", "qr-check");
             CaptureLibrary.StoreQr(capture, [actual]);
-            ((Button)window.FindName("LibraryBtn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            ((StackPanel)window.FindName("FooterLibraryViews")).Children.OfType<RadioButton>()
+                .Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Lib_ViewGrid"))
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(350);
             window.UpdateLayout();
             await Task.Delay(350);

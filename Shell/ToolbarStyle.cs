@@ -34,9 +34,7 @@ namespace KillerShot.Shell
         {
             yield return ("capture",    CaptureBtn,         0xE722, "Str_Btn_Capture");     // Camera
             yield return ("record",     RecordBtn,          0xE7C8, "Str_Btn_Record");      // Record
-            yield return ("library",    LibraryBtn,         0xE8F1, "Str_Btn_Library");     // Library
             yield return ("recent",     RecentBtn,          0xE81C, "Str_Btn_Recent");      // History
-            yield return ("collection", CollectionPickerBtn, 0xE8B7, "Str_Strip_Collection");
             yield return ("open",       OpenBtn,            0xE8E5, "Str_Btn_Open");        // OpenFile
             yield return ("save",       SaveBtn,            0xE74E, "Str_Btn_Save");        // Save
             yield return ("saveas",     SaveAsBtn,          0xE792, "Str_Btn_SaveAs");      // SaveAs
@@ -271,20 +269,6 @@ namespace KillerShot.Shell
                 ToolbarMenu.Items.Add(mi);
             }
 
-            ToolbarMenu.Items.Add(new Separator());
-            foreach (int rows in new[] { 1, 2 })
-            {
-                var choice = new MenuItem { Header = Loc(rows == 1 ? "Str_Toolbar_OneRow" : "Str_Toolbar_TwoRows"),
-                    IsCheckable = true, IsChecked = rows == _toolbarRows };
-                choice.Click += (_, _) =>
-                {
-                    _toolbarRows = rows;
-                    Settings.Set("ToolbarRows", rows.ToString());
-                    ApplyToolbarLayout();
-                    BuildToolbarMenu();
-                };
-                ToolbarMenu.Items.Add(choice);
-            }
             ToolbarMenu.Items.Add(new Separator());
             var customize = new MenuItem { Header = Loc("Str_Toolbar_Customize") };
             customize.Click += (_, __) => OpenCustomizeToolbar();

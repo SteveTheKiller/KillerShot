@@ -27,7 +27,9 @@ public partial class MainWindow
                 InputGestureText = ShortcutFor(unit.Main) ?? "", IsEnabled = unit.Main.IsEnabled };
             item.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
-                if (unit.Main.IsEnabled) unit.Main.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, unit.Main));
+                if (!unit.Main.IsEnabled) return;
+                if (id == "save") Save();
+                else unit.Main.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, unit.Main));
             }));
             return item;
         }

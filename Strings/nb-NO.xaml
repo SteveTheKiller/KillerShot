@@ -437,4 +437,6 @@
     <sys:String x:Key="Str_Print_Copies">Antall kopier</sys:String>
     <sys:String x:Key="Str_Print_Color">Farge</sys:String>
     <sys:String x:Key="Str_Print_BW">Svart-hvitt</sys:String>
+    <sys:String x:Key="Str_Capture_Photo">Foto</sys:String>
+    <sys:String x:Key="Str_Capture_Video">Video</sys:String>
 </ResourceDictionary>

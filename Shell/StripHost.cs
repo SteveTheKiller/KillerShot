@@ -11,6 +11,7 @@ namespace KillerShot.Shell
     public partial class MainWindow
     {
         private CollectionStrip? _strip;
+        private DockSide? _editorStripSide;
 
         private void CollectionPickerBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -27,9 +28,12 @@ namespace KillerShot.Shell
             if (double.TryParse(Settings.Get("StripWidth"), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) StripDock.PaneWidth = w;
             StripDock.PaneHeight = double.TryParse(Settings.Get("StripHeight"), NumberStyles.Float, CultureInfo.InvariantCulture, out double h) ? h : 230;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));
+            _strip.SourceChanged += SyncFooterCollection;
+            Library.CountChanged += caption => { if (Library.IsVisible) CollectionCountText.Text = caption; };
             _strip.OpenRequested += OpenFromStrip;
             _strip.ItemMenuRequested += (item, anchor) => Library.ShowItemMenu(item, anchor, OpenFromStrip, "");
             StripDock.Pane = _strip;
+            SyncFooterCollection();
             StripDock.LayoutChanged += () =>
             {
                 Settings.Set("StripSide", StripDock.Side.ToString());
@@ -41,6 +45,31 @@ namespace KillerShot.Shell
             };
             ThemeManager.ThemeChanged += SyncEditorPaneMargin;
             Closed += (_, _) => ThemeManager.ThemeChanged -= SyncEditorPaneMargin;
+            SyncLibraryVisibility();
+            SyncEditorPaneMargin();
+        }
+
+        private void SyncFooterCollection()
+        {
+            if (_strip == null) return;
+            CollectionNameText.Text = _strip.SourceCaption;
+            CollectionCountText.Text = _strip.CountCaption;
+            Library.SetSource(_strip.Source);
+        }
+
+        private void SyncStripPlacement(bool library)
+        {
+            if (_strip == null) return;
+            if (library)
+            {
+                _editorStripSide ??= StripDock.Side;
+                StripDock.Side = Settings.GetBool("LibraryRailAtRight", false) ? DockSide.Right : DockSide.Left;
+            }
+            else if (_editorStripSide is { } side)
+            {
+                _editorStripSide = null;
+                StripDock.Side = side;
+            }
             SyncEditorPaneMargin();
         }
 
