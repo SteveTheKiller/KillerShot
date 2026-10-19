@@ -53,6 +53,11 @@ internal static partial class CaptureLibrary
             Exec("SELECT sqlcipher_export('rekeyed')");
             Exec("DETACH DATABASE rekeyed");
 
+            // Seal the account key before changing the active database file. Startup can use
+            // this staged key if the process stops after the swap.
+            string stagedKey = KeyPath + ".next";
+            if (newPassword == null) WriteSealedKey(newKey, stagedKey);
+
             string oldPassword = new SqliteConnectionStringBuilder(oldKey).Password;
             _db.Dispose();
             _db = null;
@@ -75,19 +80,25 @@ internal static partial class CaptureLibrary
                 // The original is untouched; reopen it with the old key so the app is never
                 // left without its library, and let the caller report the failure.
                 try { File.Delete(tmp); } catch { }
+                if (newPassword == null) try { File.Delete(stagedKey); } catch { }
                 OpenWith(oldPassword, oldByPassword);
                 throw;
             }
 
-            // The key file follows the file it opens: written for the account key, removed for
-            // a password. A crash between the swap and this point leaves a key file that no
-            // longer opens the library, which OpenAuto reads as "needs the password".
-            if (newPassword == null) WriteSealedKey(newKey);
-            else if (File.Exists(KeyPath)) File.Delete(KeyPath);
-
-            OpenWith(newKey, newPassword != null);
-            NeedsPassword = false;
-            File.Delete(bak);
+            try
+            {
+                OpenWith(newKey, newPassword != null);
+                if (newPassword == null) File.Move(stagedKey, KeyPath, true);
+                else if (File.Exists(KeyPath)) File.Delete(KeyPath);
+                NeedsPassword = false;
+                try { File.Delete(bak); } catch (IOException) { }
+            }
+            catch
+            {
+                Close();
+                // Keep the staged key and backup for recovery on the next open.
+                throw;
+            }
         }
         RaiseChanged();
     }

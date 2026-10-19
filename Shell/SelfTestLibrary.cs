@@ -277,6 +277,17 @@ internal static class SelfTestLibrary
             CaptureLibrary.Close();
             bool oldRefused = !CaptureLibrary.Unlock("first pass");
             bool newWorks = CaptureLibrary.Unlock("second pass");
+
+            // A staged key from a stop before the swap must not replace the old password.
+            string stagedKey = Path.Combine(lib, "Library.key.next");
+            string unusedKey = "x'" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)) + "'";
+            File.WriteAllBytes(stagedKey, ProtectedData.Protect(Encoding.UTF8.GetBytes(unusedKey), entropy, DataProtectionScope.CurrentUser));
+            CaptureLibrary.Close();
+            bool beforeSwapNeedsPassword = !CaptureLibrary.OpenAuto() && CaptureLibrary.NeedsPassword;
+            bool beforeSwapRecovered = CaptureLibrary.Unlock("second pass") && CaptureLibrary.Count == 38
+                && SamePixels(CaptureLibrary.LoadImage(ids[0]), original) && !File.Exists(stagedKey);
+            log.AppendLine($"password_before_swap={beforeSwapNeedsPassword && beforeSwapRecovered}");
+            if (!(beforeSwapNeedsPassword && beforeSwapRecovered)) throw new InvalidOperationException("The old password album did not survive the staged key.");
             w.TestShowCaptureSettings();
             await Shot("capture-settings-password");
             w.TestCloseOverlays();
@@ -286,6 +297,25 @@ internal static class SelfTestLibrary
             log.AppendLine($"password key_removed={keyGone} auto_refused={autoRefused} wrong_refused={wrongRefused} unlocked={unlocked} check={check} count={afterUnlock} old_refused={oldRefused} new_works={newWorks} removed_auto_opens={autoAgain}");
             if (!(keyGone && autoRefused && wrongRefused && unlocked && check && afterUnlock == 38 && oldRefused && newWorks && autoAgain))
                 throw new InvalidOperationException("Password check failed.");
+
+            // Simulate a stop after the new album replaces the old one but before its key moves.
+            string activeKey = Path.Combine(lib, "Library.key");
+            CaptureLibrary.Close();
+            File.Move(activeKey, stagedKey);
+            bool recoveredSwap = CaptureLibrary.OpenAuto() && CaptureLibrary.IsOpen
+                && CaptureLibrary.Count == 38 && SamePixels(CaptureLibrary.LoadImage(ids[0]), original)
+                && File.Exists(activeKey) && !File.Exists(stagedKey);
+            log.AppendLine($"password_recovered_swap={recoveredSwap}");
+            if (!recoveredSwap) throw new InvalidOperationException("The album could not recover its staged key.");
+
+            // A backup from a stop after key promotion is cleared only after the album opens.
+            CaptureLibrary.Close();
+            string backup = CaptureLibrary.FilePath + ".bak";
+            File.Copy(CaptureLibrary.FilePath, backup, true);
+            bool recoveredPromotion = CaptureLibrary.OpenAuto() && CaptureLibrary.Count == 38
+                && SamePixels(CaptureLibrary.LoadImage(ids[0]), original) && !File.Exists(backup);
+            log.AppendLine($"password_recovered_promotion={recoveredPromotion}");
+            if (!recoveredPromotion) throw new InvalidOperationException("The album did not validate after key promotion.");
             w.TestShowCaptureSettings();
             await Shot("capture-settings-account");
             w.TestCloseOverlays();

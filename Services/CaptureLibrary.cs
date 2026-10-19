@@ -128,15 +128,24 @@ internal static partial class CaptureLibrary
                 Directory.CreateDirectory(_folder);
                 if (File.Exists(FilePath))
                 {
-                    if (!File.Exists(KeyPath)) { NeedsPassword = true; return false; }
-                    try { OpenWith(ReadSealedKey(), byPassword: false); }
-                    catch (SqliteException ex) when (IsKeyFailure(ex))
+                    string stagedKey = KeyPath + ".next";
+                    bool opened = false;
+                    if (File.Exists(KeyPath))
                     {
-                        // A key file that no longer opens the library means a password was set
-                        // and the old key file outlived the swap. The password is what opens it.
-                        NeedsPassword = true;
-                        return false;
+                        try { OpenWith(ReadSealedKey(), byPassword: false); opened = true; }
+                        catch (SqliteException ex) when (IsKeyFailure(ex)) { }
                     }
+                    if (!opened && File.Exists(stagedKey))
+                    {
+                        try { OpenWith(ReadSealedKey(stagedKey), byPassword: false); opened = true; }
+                        catch (SqliteException ex) when (IsKeyFailure(ex)) { }
+                        if (opened) File.Move(stagedKey, KeyPath, true);
+                    }
+                    if (!opened) { NeedsPassword = true; return false; }
+                    // A verified active file makes interrupted swap artifacts unnecessary.
+                    if (File.Exists(stagedKey)) File.Delete(stagedKey);
+                    string backup = FilePath + ".bak";
+                    if (File.Exists(backup)) File.Delete(backup);
                 }
                 else
                 {
@@ -147,6 +156,7 @@ internal static partial class CaptureLibrary
             }
             catch (Exception ex)
             {
+                Close();
                 LoadError = ex.Message;
                 return false;
             }
@@ -166,7 +176,12 @@ internal static partial class CaptureLibrary
             NeedsPassword = false;
             // The swap that set the password may have been interrupted before it removed the
             // old key file. The password opened it, so the stale key goes.
-            try { if (File.Exists(KeyPath)) File.Delete(KeyPath); } catch (IOException) { }
+            try
+            {
+                if (File.Exists(KeyPath)) File.Delete(KeyPath);
+                if (File.Exists(KeyPath + ".next")) File.Delete(KeyPath + ".next");
+            }
+            catch (IOException) { }
         }
         AfterOpen();
         return true;
@@ -247,16 +262,17 @@ internal static partial class CaptureLibrary
     /// key derivation because the key is already full strength.</summary>
     private static string NewRawKey() => "x'" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)) + "'";
 
-    private static void WriteSealedKey(string key)
+    private static void WriteSealedKey(string key, string? path = null)
     {
         byte[] sealedKey = ProtectedData.Protect(System.Text.Encoding.UTF8.GetBytes(key), KeyEntropy, DataProtectionScope.CurrentUser);
-        string tmp = KeyPath + ".tmp";
+        path ??= KeyPath;
+        string tmp = path + ".tmp";
         File.WriteAllBytes(tmp, sealedKey);
-        File.Move(tmp, KeyPath, true);
+        File.Move(tmp, path, true);
     }
 
-    private static string ReadSealedKey() =>
-        System.Text.Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(KeyPath), KeyEntropy, DataProtectionScope.CurrentUser));
+    private static string ReadSealedKey(string? path = null) =>
+        System.Text.Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(path ?? KeyPath), KeyEntropy, DataProtectionScope.CurrentUser));
 
     // ============================================================
     // Schema
