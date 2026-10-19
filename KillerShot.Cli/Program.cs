@@ -175,6 +175,7 @@ public static class Program
         int quality = o.Int("quality", 10, 100) ?? CaptureSettings.JpegQuality;
         bool recent = !o.Has("no-recent");
         bool editor = o.Has("editor");
+        if (!save && !copy && !recent) throw new CliException("capture needs at least one output: a saved file, the clipboard, or the library.");
         if (editor && !save && !recent) throw new CliException("--editor needs a saved file or the library; drop --no-save or --no-recent.");
 
         // Everything that can be checked before the capture is checked first, so a typo costs
@@ -185,6 +186,8 @@ public static class Program
         IntPtr window = mode == CaptureMode.Window && o.Value("window") is { } w ? ResolveWindow(w) : IntPtr.Zero;
         var monitor = mode == CaptureMode.Monitor ? ResolveMonitor(o.Value("monitor")) : null;
         bool pick = o.Has("pick");
+        if (recent && !save && !copy && !CaptureLibrary.TryReadForCli(() => { }))
+            throw new CliException(LibraryClosedReason(), ExitFailed);
         if ((mode == CaptureMode.Region && rect == null) || pick) App.InitializeKit();
 
         if (delay > 0) await Task.Delay(delay * 1000);
@@ -315,7 +318,7 @@ public static class Program
             Err.WriteLine("The clipboard is busy: " + OneLine(copyError ?? "another app is holding it"));
             return ExitFailed;
         }
-        return ExitOk;
+        return libraryId != null || saved != null || copied ? ExitOk : ExitFailed;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -627,7 +630,7 @@ public static class Program
     private static string LibraryRef(long id) => "library:" + id.ToString(CultureInfo.InvariantCulture);
 
     private static string LibraryClosedReason() => CaptureLibrary.NeedsPassword
-        ? "The library is locked with a password. Unlock it in KillerShot first."
+        ? "The command line cannot open password-protected libraries."
         : "The library could not be opened: " + OneLine(CaptureLibrary.LoadError ?? "unknown error");
 
     private static CaptureMode ModeFromKey(string key) => key switch
