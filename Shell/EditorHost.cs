@@ -97,6 +97,14 @@ namespace KillerShot.Shell
             if (changed) _strip?.Follow(App.Instance.CurrentItem, doc?.FilePath);
         }
 
+        private void DetachDocument()
+        {
+            Editor.CommitText();
+            if (_doc != null) _doc.Changed -= RefreshDocumentUi;
+            _doc = null;
+            Editor.Document = null;
+        }
+
         /// <summary>Title, enabled states, empty state and footer after any document change.</summary>
         private void RefreshDocumentUi()
         {

@@ -20,7 +20,7 @@ namespace KillerShot.Shell
     /// it is a carousel; on the left or right it is a column of thumbnails. It lives in a
     /// DockHost, which moves it between the sides and folds it away behind the rail's chevron.
     /// </summary>
-    internal sealed class CollectionStrip : Border
+    internal sealed class CollectionStrip : Border, IDisposable
     {
         /// <summary>A picture was chosen in the strip and should open in the editor.</summary>
         public event Action<CaptureItem>? OpenRequested;
@@ -50,9 +50,11 @@ namespace KillerShot.Shell
         private readonly Rolodex _rolodex;
         private string _sideView = Settings.Get("StripView") == "rolodex" ? "rolodex" : "list";
         private readonly DispatcherTimer _openDelay = new() { Interval = TimeSpan.FromMilliseconds(180) };
+        private string? _pendingSource;
         private IReadOnlyList<CaptureItem> _items = [];
         private string _source = "all";          // all, c<id>, c0 (not in a collection), folder
         private bool _syncing;
+        private volatile bool _disposed;
         private long? _current;
 
         public CollectionStrip(DockHost host, Style sliderStyle)
@@ -125,38 +127,83 @@ namespace KillerShot.Shell
                 ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe,
                 CardColor = CardColors.StripCard(), Accent = item => CardColors.Collection(item.CollectionId),
             };
-            CardColors.Changed += () =>
-            {
-                _rolodex.CardColor = CardColors.StripCard();
-                _rolodex.Refresh();
-                _list.Items.Refresh();
-            };
+            CardColors.Changed += OnCardColorsChanged;
             if (double.TryParse(Settings.Get("RolodexZoom"), NumberStyles.Float, CultureInfo.InvariantCulture, out double zoom)) _rolodex.Zoom = zoom;
             _rolodex.ZoomChanged += () => Settings.Set("RolodexZoom", _rolodex.Zoom.ToString("0.###", CultureInfo.InvariantCulture));
             _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
             _rolodex.ItemActivated += item => Open(item);
             _rolodex.ItemMenuRequested += ShowItemMenu;
 
-            _openDelay.Tick += (_, _) =>
-            {
-                if (_host.IsHorizontal ? _flow.IsMoving : _sideView == "rolodex" && _rolodex.IsMoving) return;
-                _openDelay.Stop();
-                if (_openDelay.Tag is CaptureItem item) Open(item);
-            };
+            _openDelay.Tick += OpenDelayElapsed;
 
             Child = _root;
 
             _host.SideChanged += Relayout;
-            CaptureLibrary.Changed += () => Dispatcher.BeginInvoke(new Action(() => Load(keepCurrent: true)));
-            FolderCaptures.Changed += () => Dispatcher.BeginInvoke(new Action(() => { if (_source == "folder") Load(keepCurrent: true); }));
-            IsVisibleChanged += (_, _) => { if (IsVisible) Load(keepCurrent: true); };
+            CaptureLibrary.Changed += OnLibraryChanged;
+            FolderCaptures.Changed += OnFolderChanged;
+            IsVisibleChanged += OnIsVisibleChanged;
             Relayout();
             Relocalize();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            CancelPendingOpen();
+            _openDelay.Tick -= OpenDelayElapsed;
+            _host.SideChanged -= Relayout;
+            CaptureLibrary.Changed -= OnLibraryChanged;
+            FolderCaptures.Changed -= OnFolderChanged;
+            CardColors.Changed -= OnCardColorsChanged;
+            IsVisibleChanged -= OnIsVisibleChanged;
+            OpenRequested = null;
+            ItemMenuRequested = null;
+            SideViewChanged = null;
+            SourceChanged = null;
+        }
+
+        private void OnCardColorsChanged()
+        {
+            if (_disposed) return;
+            _rolodex.CardColor = CardColors.StripCard();
+            _rolodex.Refresh();
+            _list.Items.Refresh();
+        }
+
+        private void OnLibraryChanged()
+        {
+            if (_disposed || Dispatcher.HasShutdownStarted) return;
+            Dispatcher.BeginInvoke(new Action(() => Load(keepCurrent: true)));
+        }
+
+        private void OnFolderChanged()
+        {
+            if (_disposed || Dispatcher.HasShutdownStarted) return;
+            Dispatcher.BeginInvoke(new Action(() => { if (_source == "folder") Load(keepCurrent: true); }));
+        }
+
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible) Load(keepCurrent: true);
+        }
+
+        private void OpenDelayElapsed(object? sender, EventArgs e)
+        {
+            if (_host.IsHorizontal ? _flow.IsMoving : _sideView == "rolodex" && _rolodex.IsMoving) return;
+            var item = _openDelay.Tag as CaptureItem;
+            string? source = _pendingSource;
+            var selected = _host.IsHorizontal ? _flow.SelectedItem
+                : _sideView == "rolodex" ? _rolodex.SelectedItem : _list.SelectedItem as CaptureItem;
+            CancelPendingOpen();
+            if (item != null && source == _source && selected?.Id == item.Id) Open(item);
         }
 
         /// <summary>Carousel across the top or bottom, a thumbnail column down the sides.</summary>
         private void Relayout()
         {
+            if (_disposed) return;
+            CancelPendingOpen();
             _body.Children.Clear();
             _body.RowDefinitions.Clear();
             if (_host.IsHorizontal)
@@ -222,6 +269,8 @@ namespace KillerShot.Shell
         /// <summary>Fills the picker and the strip for the chosen source.</summary>
         private void Load(bool keepCurrent)
         {
+            if (_disposed) return;
+            CancelPendingOpen();
             _syncing = true;
             try
             {
@@ -285,15 +334,23 @@ namespace KillerShot.Shell
         /// once the selection rests for a moment.</summary>
         private void QueueOpen(CaptureItem? item)
         {
-            if (item == null || item.Id == _current) return;
-            _openDelay.Stop();
+            CancelPendingOpen();
+            if (_disposed || item == null || item.Id == _current) return;
             _openDelay.Tag = item;
+            _pendingSource = _source;
             _openDelay.Start();
+        }
+
+        private void CancelPendingOpen()
+        {
+            _openDelay.Stop();
+            _openDelay.Tag = null;
+            _pendingSource = null;
         }
 
         private void ShowItemMenu(CaptureItem item, FrameworkElement anchor)
         {
-            _openDelay.Stop();
+            CancelPendingOpen();
             ItemMenuRequested?.Invoke(item, anchor);
         }
 
@@ -312,8 +369,8 @@ namespace KillerShot.Shell
 
         private void Open(CaptureItem item)
         {
-            _openDelay.Stop();
-            if (item.Id == _current) return;
+            CancelPendingOpen();
+            if (_disposed || item.Id == _current) return;
             OpenRequested?.Invoke(item);
         }
 

@@ -62,6 +62,8 @@ namespace KillerShot.Shell
         protected override void OnClosed(EventArgs e)
         {
             StopRecording(apply: null);
+            DetachDocument();
+            _strip?.Dispose();
             WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
             base.OnClosed(e);
         }
