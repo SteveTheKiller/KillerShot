@@ -38,6 +38,7 @@ internal static partial class CaptureLibrary
             using var transitionLock = AcquireTransitionLock();
 
             string oldKey = _db.ConnectionString;   // reopen fallback, key included
+            string oldPassword = new SqliteConnectionStringBuilder(oldKey).Password;
             bool oldByPassword = _keyedByPassword;
             string newKey = newPassword ?? NewRawKey();
             string path = FilePath;
@@ -47,22 +48,41 @@ internal static partial class CaptureLibrary
             // an existing target file, even though SQLCipher initializes its contents.
             File.Create(tmp).Dispose();
 
-            using (var cmd = _db.CreateCommand())
+            try
             {
-                cmd.CommandText = "ATTACH DATABASE $file AS rekeyed KEY $key";
-                cmd.Parameters.AddWithValue("$file", tmp);
-                cmd.Parameters.AddWithValue("$key", newKey);
-                cmd.ExecuteNonQuery();
+                using (var cmd = _db.CreateCommand())
+                {
+                    cmd.CommandText = "ATTACH DATABASE $file AS rekeyed KEY $key";
+                    cmd.Parameters.AddWithValue("$file", tmp);
+                    cmd.Parameters.AddWithValue("$key", newKey);
+                    cmd.ExecuteNonQuery();
+                }
+                Exec("SELECT sqlcipher_export('rekeyed')");
+                Exec("DETACH DATABASE rekeyed");
             }
-            Exec("SELECT sqlcipher_export('rekeyed')");
-            Exec("DETACH DATABASE rekeyed");
+            catch (Exception exportError)
+            {
+                // Export can fail after ATTACH has opened the target. Closing and clearing
+                // the pool releases both files and the alias before another attempt.
+                Close();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                SqliteConnection.ClearAllPools();
+                try { OpenWith(oldPassword, oldByPassword); }
+                catch (Exception recoveryError)
+                {
+                    throw new IOException("The album could not reopen after the password export failed. Recovery files were kept.",
+                        new AggregateException(exportError, recoveryError));
+                }
+                try { File.Delete(tmp); } catch (IOException) { }
+                throw;
+            }
 
             // Seal the account key before changing the active database file. Startup can use
             // this staged key if the process stops after the swap.
             string stagedKey = KeyPath + ".next";
             if (newPassword == null) WriteSealedKey(newKey, stagedKey);
 
-            string oldPassword = new SqliteConnectionStringBuilder(oldKey).Password;
             _db.Dispose();
             _db = null;
             ClearThumbCache();
