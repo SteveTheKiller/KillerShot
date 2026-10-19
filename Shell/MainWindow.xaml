@@ -1180,8 +1180,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="LibraryKeepLabel" Text="{DynamicResource Str_CS_Keep}" FontSize="12"
                                        VerticalAlignment="Center" Margin="0,0,12,0"/>
-                            <ComboBox x:Name="LibraryKeepCombo" Grid.Column="1" SelectionChanged="LibraryKeepCombo_Changed"
-                                      AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
+                            <DockPanel Grid.Column="1">
+                                <Button x:Name="LibraryKeepSaveBtn" DockPanel.Dock="Right" Content="{DynamicResource Str_Lib_Save}"
+                                        Style="{StaticResource OutlineButton}" Padding="10,3" Margin="6,0,0,0"
+                                        IsEnabled="False" Click="LibraryKeepSave_Click"/>
+                                <ComboBox x:Name="LibraryKeepCombo" SelectionChanged="LibraryKeepCombo_Changed"
+                                          AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
+                            </DockPanel>
                         </Grid>
                         <CheckBox x:Name="LibraryFolderToggle" FontSize="11" Margin="0,0,0,8"
                                   Checked="LibraryFolderToggle_Changed" Unchecked="LibraryFolderToggle_Changed"/>

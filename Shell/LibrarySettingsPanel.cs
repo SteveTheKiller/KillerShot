@@ -60,6 +60,7 @@ namespace KillerShot.Shell
                 i = LibraryKeepCombo.Items.Count - 1;
             }
             LibraryKeepCombo.SelectedIndex = i;
+            LibraryKeepSaveBtn.IsEnabled = false;
             LibraryFolderToggle.Content = string.Format(Loc("Str_CS_ShowFolder"), FolderCaptures.Name);
             LibraryFolderToggle.ToolTip = FolderCaptures.Folder;
             LibraryFolderToggle.IsChecked = FolderCaptures.Enabled;
@@ -89,7 +90,18 @@ namespace KillerShot.Shell
         private void LibraryKeepCombo_Changed(object sender, SelectionChangedEventArgs e)
         {
             if (_syncingOptions || LibraryKeepCombo.SelectedItem is not ComboBoxItem { Tag: string keep }) return;
-            if (keep != CaptureLibrary.Keep) CaptureLibrary.Keep = keep;
+            LibraryKeepSaveBtn.IsEnabled = keep != CaptureLibrary.Keep;
+        }
+
+        private void LibraryKeepSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (LibraryKeepCombo.SelectedItem is not ComboBoxItem { Tag: string keep }) return;
+            try
+            {
+                if (keep != CaptureLibrary.Keep) CaptureLibrary.Keep = keep;
+                LibraryKeepSaveBtn.IsEnabled = false;
+            }
+            catch (Exception ex) { RefreshLibraryStatus(ex.Message); }
         }
 
         /// <summary>A password already set must be typed again before it changes or goes.</summary>
