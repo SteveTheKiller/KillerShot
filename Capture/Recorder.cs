@@ -24,19 +24,24 @@ internal sealed class Recorder
     private Thread? _captureThread, _encodeThread;
     private Exception? _error;
     private readonly SoundSource _sound;
+    private readonly IEnumerable<IAudioCaptureSource>? _audioSources;
     private AudioCapture? _audio;
     private IFrameGrabber? _grabber;
 
     public int Frames { get; private set; }
     public int Dropped { get; private set; }
     public bool IsPaused => _paused;
+    /// <summary>The encoder completed the file, even if a capture source reported an error.</summary>
+    public bool IsFinalized { get; private set; }
 
     /// <summary>Whether frames come from Windows Graphics Capture rather than the GDI fallback.</summary>
     public bool UsesGraphicsCapture { get; private set; }
 
-    public Recorder(Win32.RECT rect, IVideoSink sink, int fps, bool includeCursor, SoundSource sound = SoundSource.None)
+    public Recorder(Win32.RECT rect, IVideoSink sink, int fps, bool includeCursor, SoundSource sound = SoundSource.None,
+        IEnumerable<IAudioCaptureSource>? audioSources = null)
     {
         _sound = sound;
+        _audioSources = audioSources;
         _rect = rect;
         _sink = sink;
         _fps = Math.Clamp(fps, 1, 60);
@@ -44,7 +49,10 @@ internal sealed class Recorder
     }
 
     /// <summary>Recording time with pauses removed.</summary>
-    public TimeSpan Elapsed => (_paused ? _pausedAt : _clock.Elapsed) - _pausedTotal;
+    public TimeSpan Elapsed
+    {
+        get { lock (_clock) return (_paused ? _pausedAt : _clock.Elapsed) - _pausedTotal; }
+    }
 
     public async Task StartAsync()
     {
@@ -54,9 +62,11 @@ internal sealed class Recorder
             // Created off the UI thread, before the clock starts, so the first frame is ready on time.
             _grabber = await Task.Run(() => (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
             UsesGraphicsCapture = _grabber is MonitorGrabber;
-            if (_sound != SoundSource.None)
+            if (_sound != SoundSource.None || _audioSources != null)
             {
-                _audio = new AudioCapture(_sound, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at));
+                _audio = _audioSources == null
+                    ? new AudioCapture(_sound, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at))
+                    : new AudioCapture(_audioSources, () => Elapsed, () => _paused, (pcm, at) => _sink.AddAudio(pcm, at));
                 await Task.Run(_audio.Start);
             }
             _audio?.DiscardBuffered();
@@ -82,28 +92,52 @@ internal sealed class Recorder
 
     public void Pause()
     {
-        if (_paused) return;
-        _pausedAt = _clock.Elapsed;
-        _paused = true;
+        lock (_clock)
+        {
+            if (_paused) return;
+            _pausedAt = _clock.Elapsed;
+            _paused = true;
+        }
     }
 
     public void Resume()
     {
-        if (!_paused) return;
-        _pausedTotal += _clock.Elapsed - _pausedAt;
-        _paused = false;
+        lock (_clock)
+        {
+            if (!_paused) return;
+            _pausedTotal += _clock.Elapsed - _pausedAt;
+            _paused = false;
+        }
     }
 
     /// <summary>Stops capturing, lets the encoder drain, and closes the file.</summary>
     public async Task StopAsync()
     {
-        var duration = Elapsed;
+        TimeSpan duration;
+        lock (_clock)
+        {
+            _clock.Stop();
+            duration = Elapsed;
+        }
         _stop = true;
         Exception? failure = null;
-        try { await Task.Run(() => { _captureThread?.Join(); _encodeThread?.Join(); _audio?.Stop(); }); }
-        catch (Exception ex) { failure = ex; }
+        try
+        {
+            await Task.Run(() =>
+            {
+                try { _audio?.Stop(); }
+                catch (Exception ex) { failure = ex; }
+                _captureThread?.Join();
+                _encodeThread?.Join();
+            });
+        }
+        catch (Exception ex) { failure ??= ex; }
         failure ??= _error ?? _audio?.Error;
-        try { await _sink.FinishAsync(duration); }
+        try
+        {
+            await _sink.FinishAsync(duration);
+            IsFinalized = true;
+        }
         catch (Exception ex) { failure ??= ex; }
         try { _audio?.Dispose(); }
         catch (Exception ex) { failure ??= ex; }

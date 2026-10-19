@@ -18,6 +18,7 @@ namespace KillerShot.Shell;
 internal sealed class VideoController
 {
     private readonly TrayHost _tray;
+    private readonly IEnumerable<IAudioCaptureSource>? _audioSources;
     private Recorder? _recorder;
     private RecordingChrome? _chrome;
     private DispatcherTimer? _tick;
@@ -33,7 +34,11 @@ internal sealed class VideoController
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
-    public VideoController(TrayHost tray) => _tray = tray;
+    public VideoController(TrayHost tray, IEnumerable<IAudioCaptureSource>? audioSources = null)
+    {
+        _tray = tray;
+        _audioSources = audioSources;
+    }
 
     /// <summary>The video shortcut: start when idle, stop when recording.</summary>
     public void Toggle(bool fromShortcut = false)
@@ -94,7 +99,8 @@ internal sealed class VideoController
             sink = gif
                 ? new GifEncoder(_path, VideoSettings.GifColors >= 256 ? 255 : VideoSettings.GifColors, VideoSettings.GifSize / 100.0, VideoSettings.GifLoop)
                 : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
-            _recorder = new Recorder(rect, sink, fps, VideoSettings.IncludeCursor, gif ? SoundSource.None : VideoSettings.Sound);
+            _recorder = new Recorder(rect, sink, fps, VideoSettings.IncludeCursor, gif ? SoundSource.None : VideoSettings.Sound,
+                gif ? null : _audioSources);
             await _recorder.StartAsync();
             recorderStarted = true;
             if (_stopRequested) return;
@@ -162,7 +168,9 @@ internal sealed class VideoController
         bool retainFinalizedStage = false;
         try
         {
-            await recorder.StopAsync();
+            Exception? captureWarning = null;
+            try { await recorder.StopAsync(); }
+            catch (Exception ex) when (recorder.IsFinalized) { captureWarning = ex; }
             if (_discard) return;
             string published;
             try { published = OutputFiles.PublishUnique(_path!, _outputFolder!, _outputName!); }
@@ -175,7 +183,9 @@ internal sealed class VideoController
             }
             LastVideoPath = published;
             if (VideoSettings.CopyFile) CopyFileToClipboard(published);
-            if (VideoSettings.Notify)
+            if (captureWarning != null)
+                _tray.ShowWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
+            else if (VideoSettings.Notify)
                 _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published), () => ShowInFolder(published));
         }
         catch (Exception ex)
