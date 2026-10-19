@@ -828,26 +828,43 @@ internal static partial class CaptureLibrary
     {
         lock (_gate)
         {
+            using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
+            cmd.Transaction = tx;
             cmd.CommandText = "UPDATE captures SET note = $n WHERE id = $id";
             cmd.Parameters.AddWithValue("$n", (object?)Trimmed(note) ?? DBNull.Value);
             cmd.Parameters.AddWithValue("$id", id);
             cmd.ExecuteNonQuery();
-            IndexText(id);
+            IndexText(id, tx);
+            tx.Commit();
         }
         RaiseChanged();
     }
 
-    public static long CreateCollection(string name)
+    public static long CreateCollection(string name, IEnumerable<long>? moveIn = null)
     {
         long id;
         lock (_gate)
         {
+            using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
+            cmd.Transaction = tx;
             cmd.CommandText = "INSERT INTO collections(name, created_utc) VALUES ($n, $t); SELECT last_insert_rowid();";
             cmd.Parameters.AddWithValue("$n", name.Trim());
             cmd.Parameters.AddWithValue("$t", DateTime.UtcNow.Ticks);
             id = (long)cmd.ExecuteScalar()!;
+            if (moveIn != null)
+                foreach (long capture in moveIn)
+                {
+                    using var move = Db.CreateCommand();
+                    move.Transaction = tx;
+                    move.CommandText = "UPDATE captures SET collection_id = $collection WHERE id = $capture";
+                    move.Parameters.AddWithValue("$collection", id);
+                    move.Parameters.AddWithValue("$capture", capture);
+                    move.ExecuteNonQuery();
+                    IndexText(capture, tx);
+                }
+            tx.Commit();
         }
         RaiseChanged();
         return id;
@@ -857,12 +874,15 @@ internal static partial class CaptureLibrary
     {
         lock (_gate)
         {
+            using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
+            cmd.Transaction = tx;
             cmd.CommandText = "UPDATE collections SET name = $n WHERE id = $id";
             cmd.Parameters.AddWithValue("$n", name.Trim());
             cmd.Parameters.AddWithValue("$id", id);
             cmd.ExecuteNonQuery();
-            ReindexCollection(id);
+            ReindexCollection(id, tx);
+            tx.Commit();
         }
         RaiseChanged();
     }
@@ -872,19 +892,23 @@ internal static partial class CaptureLibrary
     {
         lock (_gate)
         {
-            var members = MembersOf(id);
+            using var tx = Db.BeginTransaction();
+            var members = MembersOf(id, tx);
             using var cmd = Db.CreateCommand();
+            cmd.Transaction = tx;
             cmd.CommandText = "UPDATE captures SET collection_id = NULL WHERE collection_id = $id; DELETE FROM collections WHERE id = $id;";
             cmd.Parameters.AddWithValue("$id", id);
             cmd.ExecuteNonQuery();
-            foreach (long m in members) IndexText(m);
+            foreach (long m in members) IndexText(m, tx);
+            tx.Commit();
         }
         RaiseChanged();
     }
 
-    private static List<long> MembersOf(long collectionId)
+    private static List<long> MembersOf(long collectionId, SqliteTransaction? tx = null)
     {
         using var cmd = Db.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = "SELECT id FROM captures WHERE collection_id = $id";
         cmd.Parameters.AddWithValue("$id", collectionId);
         var ids = new List<long>();
@@ -893,9 +917,9 @@ internal static partial class CaptureLibrary
         return ids;
     }
 
-    private static void ReindexCollection(long collectionId)
+    private static void ReindexCollection(long collectionId, SqliteTransaction tx)
     {
-        foreach (long m in MembersOf(collectionId)) IndexText(m);
+        foreach (long m in MembersOf(collectionId, tx)) IndexText(m, tx);
     }
 
     /// <summary>Rewrites one capture's row in the search index from its current values.</summary>

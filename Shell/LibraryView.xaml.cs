@@ -767,6 +767,12 @@ namespace KillerShot.Shell
 
         private Window? OwnerWindow => Window.GetWindow(this);
 
+        private bool TryChangeAlbum(Action change)
+        {
+            try { change(); return true; }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); return false; }
+        }
+
         private void ShowItemMenu(CaptureItem item, FrameworkElement anchor)
             => ShowItemMenu(item, anchor, OpenRequested, "Del");
 
@@ -805,13 +811,13 @@ namespace KillerShot.Shell
 
             var move = new MenuItem { Header = Loc("Str_Lib_MoveTo") };
             var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
-            none.Click += (_, _) => CaptureLibrary.Move([item.Id], null);
+            none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null));
             move.Items.Add(none);
             foreach (var c in CaptureLibrary.Collections())
             {
                 var target = c;
                 var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
-                mi.Click += (_, _) => CaptureLibrary.Move([item.Id], target.Id);
+                mi.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], target.Id));
                 move.Items.Add(mi);
             }
             move.Items.Add(new Separator());
@@ -849,7 +855,8 @@ namespace KillerShot.Shell
             rename.Click += (_, _) =>
             {
                 var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
-                if (dlg.ShowDialog() == true && dlg.Text.Trim().Length > 0) CaptureLibrary.RenameCollection(id, dlg.Text);
+                if (dlg.ShowDialog() == true && dlg.Text.Trim().Length > 0)
+                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text));
             };
             menu.Items.Add(rename);
             var color = new MenuItem { Header = Loc("Str_Lib_CollectionColor") };
@@ -873,7 +880,7 @@ namespace KillerShot.Shell
                 var dlg = new ConfirmDialog(string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_DeleteCollectionTitle"), name),
                     Loc("Str_Lib_DeleteCollectionDetail"), Loc("Str_Lib_DeleteCollection"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
                 dlg.ShowDialog();
-                if (dlg.Confirmed) CaptureLibrary.DeleteCollection(id);
+                if (dlg.Confirmed) TryChangeAlbum(() => CaptureLibrary.DeleteCollection(id));
             };
             menu.Items.Add(delete);
         }
@@ -890,8 +897,7 @@ namespace KillerShot.Shell
         {
             var dlg = new PromptDialog(Loc("Str_Lib_NewCollectionTitle"), "", Loc("Str_Lib_Create")) { Owner = OwnerWindow };
             if (dlg.ShowDialog() != true || dlg.Text.Trim().Length == 0) return;
-            long id = CaptureLibrary.CreateCollection(dlg.Text);
-            if (moveIn != null) CaptureLibrary.Move([moveIn.Id], id);
+            if (!TryChangeAlbum(() => CaptureLibrary.CreateCollection(dlg.Text, moveIn != null ? [moveIn.Id] : null))) return;
             if (_group != "collection" && _view != "timeline")
             {
                 _group = "collection";
@@ -904,7 +910,7 @@ namespace KillerShot.Shell
         private void EditNote(CaptureItem item)
         {
             var dlg = new PromptDialog(Loc("Str_Lib_NoteTitle"), Loc("Str_Lib_NoteDetail"), Loc("Str_Lib_Save"), initialText: item.Note ?? "") { Owner = OwnerWindow };
-            if (dlg.ShowDialog() == true) CaptureLibrary.SetNote(item.Id, dlg.Text);
+            if (dlg.ShowDialog() == true) TryChangeAlbum(() => CaptureLibrary.SetNote(item.Id, dlg.Text));
         }
 
         private void Copy(CaptureItem item)
@@ -974,7 +980,7 @@ namespace KillerShot.Shell
             if (FolderCaptures.IsFolderId(item.Id)) return;   // the folder's files are left alone
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
             dlg.ShowDialog();
-            if (dlg.Confirmed) CaptureLibrary.Delete([item.Id]);
+            if (dlg.Confirmed) TryChangeAlbum(() => CaptureLibrary.Delete([item.Id]));
         }
     }
 }
