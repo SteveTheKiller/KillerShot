@@ -52,9 +52,9 @@ public partial class MainWindow
     private void FillWorkspaceMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        void Add(string key, Action action, bool? selected = null)
+        void Add(string key, Action action, bool? selected = null, string gesture = "")
         {
-            var item = new MenuItem { Header = Loc(key), IsCheckable = selected.HasValue, IsChecked = selected == true };
+            var item = new MenuItem { Header = Loc(key), IsCheckable = selected.HasValue, IsChecked = selected == true, InputGestureText = gesture };
             item.Click += (_, _) => action();
             menu.Items.Add(item);
         }
@@ -65,6 +65,7 @@ public partial class MainWindow
             var choices = _strip.SourceMenu(CollectionPickerBtn);
             while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
             menu.Items.Add(source);
+            if (Library.IsVisible) menu.Items.Add(_strip.PreviewMenu());
             if (!Library.IsVisible)
             {
                 foreach (var (side, key, _) in StripSides)
@@ -81,7 +82,8 @@ public partial class MainWindow
         foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline") })
         {
             string target = view;
-            Add(key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view);
+            Add(key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,
+                view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", _ => "F8" });
         }
         bool stripTarget = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock || !Library.IsVisible;
         bool? rolodex = stripTarget ? StripDock.IsHorizontal ? false : _strip?.SideView == "rolodex" ? true : null

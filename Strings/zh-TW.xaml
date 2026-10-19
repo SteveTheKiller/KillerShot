@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">密碼</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">再次輸入密碼</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">兩次輸入的密碼不一致。</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">書架</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">輪播</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">多個輪播</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">單個輪播</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">收藏集預覽</sys:String>
+    <sys:String x:Key="Str_Preview_stack">堆疊</sys:String>
+    <sys:String x:Key="Str_Preview_grid">小網格</sys:String>
+    <sys:String x:Key="Str_Preview_mini">迷你輪播</sys:String>
+    <sys:String x:Key="Str_Preview_pile">散落相片</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">上一張預覽相片</sys:String>
+    <sys:String x:Key="Str_PreviewNext">下一張預覽相片</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">格狀</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">時間軸</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">依日期</sys:String>

@@ -52,6 +52,9 @@ internal sealed class CoverFlow : FrameworkElement
     public double ViewHeight { get; set; } = 1.60;
     /// <summary>Enables Ctrl+wheel depth changes for album carousels.</summary>
     public bool PerspectiveZoomEnabled { get; set; }
+    /// <summary>Responsive framing for the album's primary photo, independent of compact strips.</summary>
+    public bool MainView { get; set; }
+    private double _visibleWidth = MinViewWidth;
     public bool ShowInfoCards
     {
         get => _showInfoCards;
@@ -82,6 +85,11 @@ internal sealed class CoverFlow : FrameworkElement
 
     /// <summary>Gives a capture's thumbnail; null draws a blank card.</summary>
     public Func<CaptureItem, BitmapSource?>? ThumbnailSource { get; set; }
+    public Func<CaptureItem, BitmapSource?>? SelectedPreviewSource { get; set; }
+    private readonly SemaphoreSlim _previewSlot = new(1);
+    private CancellationTokenSource? _previewRequest;
+    private CaptureItem? _previewItem;
+    private BitmapSource? _previewBitmap;
 
     /// <summary>The front picture was clicked or Enter was pressed.</summary>
     public event Action<CaptureItem>? ItemActivated;
@@ -130,6 +138,7 @@ internal sealed class CoverFlow : FrameworkElement
             SetCurrentValue(SelectedIndexProperty, Math.Max(0, index));
             _motion.Reset(SelectedIndex);
             Rebuild();
+            QueueSelectedPreview();
             SelectionChanged?.Invoke();
             UpdateName();
         }
@@ -138,7 +147,7 @@ internal sealed class CoverFlow : FrameworkElement
     public CoverFlow()
     {
         _motion = new CarouselMotion(this, Rebuild, false,
-            () => ActualWidth * SideStep / Math.Max(MinViewWidth, ViewHeight * ActualWidth / Math.Max(1, ActualHeight)),
+            () => ActualWidth * SideStep / Math.Max(.1, _visibleWidth),
             () => Math.Max(0, _items.Count - 1), index => SetCurrentValue(SelectedIndexProperty, index));
         Focusable = true;
         FocusVisualStyle = null;
@@ -155,18 +164,24 @@ internal sealed class CoverFlow : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
+        IsVisibleChanged += (_, _) => QueueSelectedPreview();
         Loaded += (_, _) =>
         {
             ThemeManager.ThemeChanged += RefreshCards;
             CardColors.Changed += RefreshCards;
             ViewInfoCards.Changed += SyncInfoCards;
             SyncInfoCards();
+            QueueSelectedPreview();
         };
         Unloaded += (_, _) =>
         {
             ThemeManager.ThemeChanged -= RefreshCards;
             CardColors.Changed -= RefreshCards;
             ViewInfoCards.Changed -= SyncInfoCards;
+            _previewRequest?.Cancel();
+            _previewRequest = null;
+            _previewItem = null;
+            _previewBitmap = null;
         };
     }
 
@@ -196,6 +211,7 @@ internal sealed class CoverFlow : FrameworkElement
     {
         var flow = (CoverFlow)d;
         flow._motion.MoveTo(flow.SelectedIndex);
+        flow.QueueSelectedPreview();
         flow.SelectionChanged?.Invoke();
         flow.UpdateName();
     }
@@ -226,12 +242,21 @@ internal sealed class CoverFlow : FrameworkElement
         // extra width shows more pictures to the sides; in a taller one the view widens until
         // the front picture and two side pictures each way fit across.
         if (_viewport.Camera is not PerspectiveCamera camera) return;
-        double aim = _viewCenterY + (.5 - _viewCenterY) * Math.Clamp(_perspectiveZoom / 1.5, 0, 1);
+        var (width, pictureHeight) = PictureSize(SelectedItem);
+        double center = MainView ? pictureHeight * .43 : _viewCenterY;
+        double aim = center + ((MainView ? pictureHeight * .5 : .5) - center) * Math.Clamp(_perspectiveZoom / 1.5, 0, 1);
         camera.Position = new Point3D(0, aim, CameraDistance);
         if (size.Width > 0 && size.Height > 0)
         {
             double aspect = size.Width / size.Height;
             double height = Math.Max(ViewHeight, MinViewWidth / aspect) * (1 + .12 * _perspectiveZoom);
+            if (MainView)
+            {
+                double projection = CameraDistance / (CameraDistance - .9 * _perspectiveZoom);
+                height = Math.Max(pictureHeight * 1.28, width / .62 / aspect) * (1 + .12 * _perspectiveZoom);
+                height = Math.Max(height, Math.Max(pictureHeight * 1.15, width / .90 / aspect) * projection);
+            }
+            _visibleWidth = height * aspect;
             double halfV = height / 2 / CameraDistance;
             camera.FieldOfView = Math.Min(150, 2 * Math.Atan(aspect * halfV) * 180 / Math.PI);
         }
@@ -245,6 +270,41 @@ internal sealed class CoverFlow : FrameworkElement
         Rebuild();
     }
 
+    private async void QueueSelectedPreview()
+    {
+        _previewRequest?.Cancel();
+        _previewRequest = null;
+        if (!MainView || !IsVisible || SelectedPreviewSource is not { } load || SelectedItem is not { } item)
+        {
+            _previewItem = null;
+            _previewBitmap = null;
+            return;
+        }
+        if (_previewItem == item && _previewBitmap != null) return;
+        _previewItem = null;
+        _previewBitmap = null;
+        using var request = new CancellationTokenSource();
+        _previewRequest = request;
+        try
+        {
+            await Task.Delay(150, request.Token);
+            await _previewSlot.WaitAsync(request.Token);
+            try
+            {
+                request.Token.ThrowIfCancellationRequested();
+                var bitmap = await Task.Run(() => load(item));
+                if (request.IsCancellationRequested || !IsLoaded || SelectedItem != item || !CaptureLibrary.IsCurrent(item)) return;
+                _previewItem = item;
+                _previewBitmap = bitmap;
+                RefreshCards();
+            }
+            finally { _previewSlot.Release(); }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception) { /* The thumbnail remains available when the larger preview cannot load. */ }
+        finally { if (ReferenceEquals(_previewRequest, request)) _previewRequest = null; }
+    }
+
     private void ClearCards()
     {
         _orderBucket = int.MinValue;
@@ -256,6 +316,7 @@ internal sealed class CoverFlow : FrameworkElement
     /// <summary>Creates the models near the position, drops the rest, and places them all.</summary>
     private void Rebuild()
     {
+        UpdateCamera(RenderSize);
         int center = (int)Math.Round(_position);
         int first = Math.Max(0, center - Window), last = Math.Min(_items.Count - 1, center + Window);
         foreach (int stale in _cards.Keys.Where(k => k < first || k > last).ToList())
@@ -273,7 +334,7 @@ internal sealed class CoverFlow : FrameworkElement
     private Card CreateCard(int index)
     {
         var item = _items[index];
-        BitmapSource? thumb = ThumbnailSource?.Invoke(item);
+        BitmapSource? thumb = _previewItem == item && _previewBitmap != null ? _previewBitmap : ThumbnailSource?.Invoke(item);
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
         double w = Math.Min(MaxPictureWidth, MaxPictureHeight * aspect);
         double h = w / aspect;
@@ -292,9 +353,6 @@ internal sealed class CoverFlow : FrameworkElement
             double corner = ThemeManager.Current == Theme.SE98 ? 0 : .03;
             drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(stock), null,
                 new RectangleGeometry(new Rect(0, 0, w, h), corner, corner)));
-            if (CardColors.Collection(item.CollectionId) is Color accent)
-                drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null,
-                    new RectangleGeometry(new Rect(inset, 0, w - inset * 2, .016))));
             double pictureWidth = Math.Min(w - inset * 2, (h - captionBand - inset) * aspect);
             double pictureHeight = pictureWidth / aspect;
             var picture = new Rect((w - pictureWidth) / 2, inset, pictureWidth, pictureHeight);
@@ -307,6 +365,11 @@ internal sealed class CoverFlow : FrameworkElement
                 MaxTextWidth = w - inset * 2, MaxLineCount = 2, Trimming = TextTrimming.CharacterEllipsis,
             };
             drawing.Children.Add(new GeometryDrawing(ink, null, text.BuildGeometry(new Point(inset, h - captionBand + .025))));
+            if (CardColors.Collection(item.CollectionId) is Color accent)
+            {
+                double border = ActualWidth > 0 ? 2 * _visibleWidth / ActualWidth * (CameraDistance - .9 * _perspectiveZoom) / CameraDistance : .012;
+                PhotoCardBorder.DrawFrame(drawing, new Rect(0, 0, w, h), corner, accent, border);
+            }
             cardDrawing = drawing;
         }
         faceBrush = new DrawingBrush(cardDrawing) { Stretch = Stretch.Fill };
@@ -344,6 +407,14 @@ internal sealed class CoverFlow : FrameworkElement
         _scene.Children.Add(group);
         _hits[face] = index;
         return new Card { Group = group, Face = face, Rotation = rotation, Translation = translation };
+    }
+
+    private (double Width, double Height) PictureSize(CaptureItem? item)
+    {
+        double aspect = item is { Width: > 0, Height: > 0 } ? (double)item.Width / item.Height : 1.6;
+        double width = Math.Min(MaxPictureWidth, MaxPictureHeight * aspect);
+        double height = width / aspect;
+        return ShowInfoCards ? (Math.Max(.5, width), Math.Min(MaxPictureHeight, height + .29)) : (width, height);
     }
 
     /// <summary>A quad from y0 to y1, centered on x. The reflection's texture runs upward from

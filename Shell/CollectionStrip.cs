@@ -30,6 +30,7 @@ namespace KillerShot.Shell
         public event Action? SideViewChanged;
         public event Action? SourceChanged;
         public string Source => _source;
+        public bool AlbumMode => _albumMode;
         public string SourceCaption => _caption.Text;
         public string CountCaption => _count.Text;
 
@@ -44,6 +45,9 @@ namespace KillerShot.Shell
         private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis };
         private readonly DockPanel _root = new();
         private readonly Grid _body = new();
+        private readonly CollectionBrowser _browser = new();
+        private bool _albumMode;
+        private string _albumSource = "all";
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
         private readonly ListBox _list;
@@ -70,6 +74,12 @@ namespace KillerShot.Shell
 
             _count.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
             _caption.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+            _browser.SelectionChanged += (_, _) =>
+            {
+                if (_syncing || _browser.SelectedItem is not CollectionChoice choice) return;
+                _source = choice.Source;
+                Load(keepCurrent: true);
+            };
             _picker.SelectionChanged += (_, _) =>
             {
                 if (_syncing || _picker.SelectedItem is not ComboBoxItem { Tag: string tag }) return;
@@ -181,7 +191,7 @@ namespace KillerShot.Shell
         private void OnFolderChanged()
         {
             if (_disposed || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(() => { if (_source == "folder") Load(keepCurrent: true); }));
+            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || _source == "folder") Load(keepCurrent: true); }));
         }
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -207,7 +217,8 @@ namespace KillerShot.Shell
             CancelPendingOpen();
             _body.Children.Clear();
             _body.RowDefinitions.Clear();
-            if (_host.IsHorizontal)
+            if (_albumMode) _body.Children.Add(_browser);
+            else if (_host.IsHorizontal)
             {
                 _body.RowDefinitions.Add(new RowDefinition());
                 _body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -223,9 +234,21 @@ namespace KillerShot.Shell
             Sync();
         }
 
+        public void SetAlbumMode(bool album)
+        {
+            if (_albumMode == album) return;
+            if (_albumMode) _albumSource = _source;
+            _albumMode = album;
+            if (album) _source = _albumSource;
+            Padding = album ? new Thickness(0, 6, 0, 6) : new Thickness(8, 6, 8, 6);
+            Relayout();
+            Load(keepCurrent: true);
+        }
+
         public void Relocalize()
         {
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
+            AutomationProperties.SetName(_browser, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_list, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_rolodex, Loc("Str_Strip_Collection"));
             _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
@@ -279,6 +302,7 @@ namespace KillerShot.Shell
                 _albumSession = session;
                 _current = null;
                 _source = "all";
+                _albumSource = "all";
             }
             _syncing = true;
             try
@@ -295,6 +319,23 @@ namespace KillerShot.Shell
                 _picker.SelectedItem = chosen;
                 _caption.Text = chosen.Content?.ToString() ?? "";
 
+                if (_albumMode)
+                {
+                    var all = CaptureLibrary.Items();
+                    var known = collections.Select(c => c.Id).ToHashSet();
+                    var membersByCollection = all.ToLookup(i => i.CollectionId);
+                    var choices = new List<CollectionChoice>();
+                    void Choice(string source, string name, IReadOnlyList<CaptureItem> members) =>
+                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 8 : 4).ToArray(), members.Count, PreviewStyle));
+                    Choice("all", Loc("Str_Strip_All"), all);
+                    if (FolderCaptures.Enabled) Choice("folder", FolderCaptures.Name, FolderCaptures.Items());
+                    foreach (var c in collections)
+                        Choice("c" + c.Id.ToString(CultureInfo.InvariantCulture), c.Name, membersByCollection[c.Id].ToArray());
+                    Choice("c0", Loc("Str_Lib_Unfiled"), all.Where(i => i.CollectionId is not long id || !known.Contains(id)).ToArray());
+                    _browser.ItemsSource = choices;
+                    _browser.SelectedItem = choices.FirstOrDefault(c => c.Source == _source);
+                }
+
                 _items = _source switch
                 {
                     "folder" => FolderCaptures.Items(),
@@ -303,11 +344,14 @@ namespace KillerShot.Shell
                     _ => CaptureLibrary.Items().Where(i => "c" + i.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source).ToList(),
                 };
                 _count.Text = string.Format(CultureInfo.CurrentCulture, Loc(_items.Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), _items.Count);
-                _flow.Items = _items;
-                _list.ItemsSource = _items;
-                _rolodex.CardColor = CardColors.StripCard();   // follows a theme change too
-                _rolodex.Items = _items;
-                Sync();
+                if (!_albumMode)
+                {
+                    _flow.Items = _items;
+                    _list.ItemsSource = _items;
+                    _rolodex.CardColor = CardColors.StripCard();
+                    _rolodex.Items = _items;
+                    Sync();
+                }
             }
             finally { _syncing = false; }
             SourceChanged?.Invoke();
@@ -344,7 +388,7 @@ namespace KillerShot.Shell
         private void QueueOpen(CaptureItem? item)
         {
             CancelPendingOpen();
-            if (_disposed || item == null || !CaptureLibrary.IsCurrent(item) || item.Id == _current) return;
+            if (_albumMode || _disposed || item == null || !CaptureLibrary.IsCurrent(item) || item.Id == _current) return;
             _openDelay.Tag = item;
             _pendingSource = _source;
             _openDelay.Start();
@@ -376,6 +420,21 @@ namespace KillerShot.Shell
             return menu;
         }
 
+        public string PreviewStyle => Settings.Get("CollectionPreview") is "grid" or "mini" or "pile"
+            ? Settings.Get("CollectionPreview")! : "stack";
+
+        public MenuItem PreviewMenu()
+        {
+            var menu = new MenuItem { Header = Loc("Str_CollectionPreview") };
+            foreach (string style in new[] { "stack", "grid", "mini", "pile" })
+            {
+                var item = new MenuItem { Header = Loc("Str_Preview_" + style), Tag = style, IsCheckable = true, IsChecked = PreviewStyle == style };
+                item.Click += (_, _) => { Settings.Set("CollectionPreview", style); Load(keepCurrent: true); };
+                menu.Items.Add(item);
+            }
+            return menu;
+        }
+
         private void Open(CaptureItem item)
         {
             CancelPendingOpen();
@@ -397,9 +456,9 @@ namespace KillerShot.Shell
     }
 
     /// <summary>One thumbnail in the strip's column, on a card in the card color with its
-    /// collection's color along the top, loaded off the interface thread when the virtualized list
+    /// collection's color around the frame, loaded off the interface thread when the virtualized list
     /// shows it.</summary>
-    public sealed class StripThumb : Border
+    public sealed class StripThumb : PhotoCardBorder
     {
         private readonly Image _image = new() { Stretch = Stretch.Uniform, Height = 110, HorizontalAlignment = HorizontalAlignment.Stretch };
         private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 5, 0, 0) };
@@ -412,7 +471,7 @@ namespace KillerShot.Shell
             Style = (Style)System.Windows.Markup.XamlReader.Parse("""
                 <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
                     <Setter Property="BorderBrush" Value="Transparent"/>
-                    <Setter Property="BorderThickness" Value="0,3,0,0"/>
+                    <Setter Property="BorderThickness" Value="2"/>
                     <Style.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>

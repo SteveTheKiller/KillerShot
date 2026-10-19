@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Passord</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Skriv passordet på nytt</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">De to passordene er ikke like.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Hyller</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Karusell</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Flere karuseller</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Enkel karusell</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Forhåndsvisninger av samlinger</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Stabel</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Lite rutenett</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Minikarusell</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Spredte bilder</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Forrige forhåndsvisningsbilde</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Neste forhåndsvisningsbilde</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Rutenett</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Tidslinje</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Etter dato</sys:String>

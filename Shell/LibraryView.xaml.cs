@@ -114,6 +114,7 @@ namespace KillerShot.Shell
             _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
 
             BigFlow.ThumbnailSource = CaptureLibrary.LoadThumb;
+            BigFlow.SelectedPreviewSource = CaptureLibrary.LoadPreview;
             BigFlow.Describe = Describe;
             BigFlow.ItemActivated += item => OpenRequested?.Invoke(item);
             BigFlow.ItemMenuRequested += ShowItemMenu;
@@ -335,7 +336,7 @@ namespace KillerShot.Shell
 
         private int TilesPerRow()
         {
-            double tile = (_view == "timeline" ? TimelineTileWidth : GridTileWidth) + 10 + TileGap;
+            double tile = (_view == "timeline" ? TimelineTileWidth : GridTileWidth) + 14 + TileGap;
             double room = ActualWidth - 16 - 8 - 18 - (_view == "timeline" ? TimelineGutter : 0);
             return Math.Max(1, (int)(room / tile));
         }
@@ -478,7 +479,7 @@ namespace KillerShot.Shell
             {
                 // A band from just over the tallest picture down to where the reflections fade
                 // out, so the shelves stack with no empty room above or below the pictures.
-                Height = 200,
+                Height = 240,
                 ViewHeight = 1.52,
                 PerspectiveZoomEnabled = true,
                 ViewCenterY = 0.255,

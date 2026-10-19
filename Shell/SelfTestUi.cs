@@ -42,6 +42,10 @@ internal static class SelfTestUi
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-ui");
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(dir, "native"));
+        CaptureLibrary.UseFolder(Path.Combine(dir, "library"));
+        FolderCaptures.UseFolder(Path.Combine(dir, "Screenshots"));
+        FolderCaptures.Enabled = false;
         App.InitializeKit();
         _ = RunAsync(dir);
         return true;

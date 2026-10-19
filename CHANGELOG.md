@@ -4,6 +4,7 @@
 - Unsaved edits require confirmation before another image opens. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
+- Browse collections in the album sidebar with Stack, Tiny grid, Mini carousel or Scattered pile previews. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and album/editor sidebars keep separate sizes with tighter resizing gaps.
 - Recording audio stops when Stop is pressed, completed videos survive capture-device errors, and failed graphics initialization releases its resources. Fixed folder cache pruning and capture outline redraws.
 - Command-line captures refresh the open album and search, report when nothing was saved, and explain the password-protected album limit.
 - Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.
@@ -49,7 +50,7 @@
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
 - The library's shelves, grid and timeline and the collection strip sit on the window's own background instead of a pane, with each capture on a card in the pane gray; the big carousel keeps its pane. Card color in a capture's menu picks the card color with the family color picker, and Collection color in a collection's menu gives a collection a color that marks its heading and its cards.
-- Photo cards carry color only along their top edge and rise with a shadow when hovered or active. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
+- Photo cards use a full 2px frame with accent and darker edges, and rise with a shadow when hovered or active. Rolodex cards fit closely around the photo while preserving the caption and drop shadow. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
 - The title bar shows the active album name on the right and an open image's name after the wordmark. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
 - Primary headings use Lacquer in settings, shortcuts, dialogs and the library, with script fallbacks and the family 98SE font.
 - The maximize button opens the Windows 11 snap layouts menu.

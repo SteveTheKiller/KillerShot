@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">パスワード</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">パスワードをもう一度入力</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">2 つのパスワードが一致しません。</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">棚</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">カルーセル</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">複数のカルーセル</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">単一のカルーセル</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">コレクションのプレビュー</sys:String>
+    <sys:String x:Key="Str_Preview_stack">重ねた写真</sys:String>
+    <sys:String x:Key="Str_Preview_grid">小さなグリッド</sys:String>
+    <sys:String x:Key="Str_Preview_mini">ミニカルーセル</sys:String>
+    <sys:String x:Key="Str_Preview_pile">散らばった写真</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">前のプレビュー写真</sys:String>
+    <sys:String x:Key="Str_PreviewNext">次のプレビュー写真</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">グリッド</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">タイムライン</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">日付順</sys:String>

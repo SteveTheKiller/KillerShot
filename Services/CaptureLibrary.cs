@@ -815,6 +815,28 @@ internal static partial class CaptureLibrary
     private static readonly LinkedList<long> _thumbOrder = new();
     private const int ThumbCacheSize = 600;
 
+    /// <summary>A larger, bounded decode for the album's selected photo. The view owns its single cached result.</summary>
+    public static BitmapSource LoadPreview(CaptureItem item)
+    {
+        byte[] png = LoadPng(item);
+        using var stream = new MemoryStream(png);
+        var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.DelayCreation | BitmapCreateOptions.IgnoreColorProfile,
+            BitmapCacheOption.None);
+        var frame = decoder.Frames[0];
+        int width = frame.PixelWidth, height = frame.PixelHeight;
+        stream.Position = 0;
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.CreateOptions = BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.PreservePixelFormat;
+        if (width >= height) image.DecodePixelWidth = Math.Min(2048, width);
+        else image.DecodePixelHeight = Math.Min(2048, height);
+        image.StreamSource = stream;
+        image.EndInit();
+        image.Freeze();
+        return image;
+    }
+
     /// <summary>A capture's thumbnail, cached. Null when it no longer exists.</summary>
     public static BitmapSource? LoadThumb(CaptureItem item)
     {

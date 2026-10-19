@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Құпиясөз</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Құпиясөзді қайта енгізіңіз</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">Екі құпиясөз сәйкес емес.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Сөрелер</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Карусель</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Бірнеше карусель</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Бір карусель</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Жинақтарды алдын ала қарау</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Десте</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Шағын тор</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Шағын карусель</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Шашылған фотосуреттер</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Алдыңғы алдын ала қарау фотосуреті</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Келесі алдын ала қарау фотосуреті</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Тор</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Уақыт сызығы</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Күні бойынша</sys:String>

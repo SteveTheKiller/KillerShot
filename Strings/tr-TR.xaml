@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Parola</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Parolayı yeniden yazın</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">İki parola aynı değil.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Raflar</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Atlıkarınca</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Birden çok karusel</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Tek karusel</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Koleksiyon önizlemeleri</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Yığın</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Küçük ızgara</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Mini karusel</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Dağınık fotoğraflar</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Önceki önizleme fotoğrafı</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Sonraki önizleme fotoğrafı</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Izgara</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Zaman çizelgesi</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Tarihe göre</sys:String>

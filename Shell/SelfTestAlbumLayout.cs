@@ -46,12 +46,15 @@ internal static class SelfTestAlbumLayout
             App.InitializeKit();
             App.CloseToTray = true;
             Settings.Set("StripSide", "Right");
+            Settings.Set("StripWidth", "340");
+            Settings.Set("AlbumStripWidth", "180");
             Settings.SetBool("StripMinimized", false);
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("Synthetic album did not open.");
             var image = BitmapSource.Create(168, 104, 96, 96, PixelFormats.Bgra32, null,
                 Enumerable.Repeat((byte)255, 168 * 104 * 4).ToArray(), 168 * 4);
             image.Freeze();
             CaptureLibrary.AddNow(image, DateTime.Today, "region", "Layout sample", null);
+            CaptureLibrary.AddNow(image, DateTime.Today, "region", "Second layout sample", null);
             long collectionId = CaptureLibrary.CreateCollection("Layout collection", CaptureLibrary.Items().Select(item => item.Id));
             var workArea = SystemParameters.WorkArea;
             window = new MainWindow
@@ -101,6 +104,89 @@ internal static class SelfTestAlbumLayout
 
             var dock = (DockHost)window.FindName("StripDock");
             var pane = (FrameworkElement)dock.Pane!;
+            Check(dock.ColumnDefinitions.Count == 3 && dock.ColumnDefinitions[1].ActualWidth == 0,
+                "The resize target must overlap the pane boundary without reserving a blank column.");
+            Check(Math.Abs(pane.ActualWidth - 180) < 1, "Album navigation must restore its own saved width.");
+            var browser = Visuals(pane).OfType<ListBox>().Single();
+            Check(browser.Items.Count == 3, "Album navigation must list All captures, the named collection, and Not in a collection.");
+            browser.SelectedIndex = 1;
+            Layout(root);
+            await Task.Delay(250);
+            Check(window.TestStrip!.Source == "c" + collectionId && App.Instance.Document == null,
+                "Selecting a collection must filter the album without opening a photo.");
+            library.SetView("flow");
+            var mainFlow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
+            mainFlow.SelectedIndex = 1;
+            long? selectedPhoto = mainFlow.SelectedItem?.Id;
+            App.Instance.SetDocument(new EditorDocument(image));
+            window.TestStrip.TestShow("c0");
+            App.Instance.SetDocument(null);
+            Layout(root);
+            Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
+                && mainFlow.Items.Count == 2 && mainFlow.SelectedItem?.Id == selectedPhoto,
+                "Editor navigation must not replace the album's collection, view, or photo selection.");
+            var workspaceMenu = pane.ContextMenu;
+            workspaceMenu.PlacementTarget = pane;
+            workspaceMenu.IsOpen = true;
+            var previews = workspaceMenu.Items.OfType<MenuItem>().SingleOrDefault(item =>
+                Equals(item.Header, LocaleManager.Loc("Str_CollectionPreview")));
+            Check(previews != null && previews.Items.Count == 4, "All four collection preview styles must be available from the sidebar menu.");
+            workspaceMenu.IsOpen = false;
+            foreach (var choice in previews!.Items.OfType<MenuItem>())
+            {
+                choice.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                Layout(root);
+                await Task.Delay(180);
+                Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
+                    && mainFlow.SelectedItem?.Id == selectedPhoto, "Changing collection previews lost the browsing context.");
+                if (Equals(choice.Tag, "mini"))
+                {
+                    var row = (ListBoxItem)browser.ItemContainerGenerator.ContainerFromItem(browser.SelectedItem);
+                    var previewImage = Visuals(row).OfType<Image>().Single(image => image.Width == 108);
+                    var previousPreview = previewImage.Source;
+                    Visuals(row).OfType<Button>().Last().RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Check(!ReferenceEquals(previousPreview, previewImage.Source)
+                        && window.TestStrip.Source == "c" + collectionId && ReferenceEquals(App.Instance.Document, null),
+                        "Mini-carousel arrows must browse previews without opening a photo or changing collections.");
+                    Check(System.Windows.Automation.AutomationProperties.GetName(row).Contains("Layout collection"),
+                        "Collection rows must announce their name and count.");
+                }
+                if (Equals(choice.Tag, "pile"))
+                {
+                    var row = (ListBoxItem)browser.ItemContainerGenerator.ContainerFromItem(browser.SelectedItem);
+                    var centers = Visuals(row).OfType<Image>().Where(image => image.Source != null)
+                        .Select(image => image.TransformToAncestor(row).Transform(new Point(image.ActualWidth / 2, image.ActualHeight / 2))).ToArray();
+                    Check(centers.Max(p => p.X) - centers.Min(p => p.X) > 30
+                        && centers.Max(p => p.Y) - centers.Min(p => p.Y) > 24,
+                        "Scattered photos must spread across both dimensions instead of forming an offset stack.");
+                }
+                Render(root, Path.Combine(folder, "collection-preview-" + choice.Tag + ".png"));
+            }
+            foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 }.Concat(Enum.GetValues<Theme>()).Distinct())
+            {
+                ThemeManager.Apply(theme);
+                library.SetView("flow");
+                Layout(root);
+                await Task.Delay(180);
+                Render(root, Path.Combine(folder, "browser-theme-" + theme + ".png"));
+                Check(mainFlow.ActualWidth > 0 && mainFlow.ActualHeight > 0 && browser.IsVisible,
+                    "The collection browser and main photo must remain available in " + theme);
+            }
+            ThemeManager.Apply(Theme.Dark);
+            LocaleManager.Apply(Locale.De);
+            CaptureLibrary.RenameCollection(collectionId, "A long collection name that must remain inside the narrow navigation row without covering its count or the rail");
+            window.Width = 700;
+            Layout(root);
+            await Task.Delay(180);
+            Render(root, Path.Combine(folder, "browser-narrow-German.png"));
+            window.Width = Math.Min(1000, workArea.Width - 40);
+            CaptureLibrary.RenameCollection(collectionId, "Layout collection");
+            LocaleManager.Apply(Locale.EnUS);
+            Layout(root);
+            report.Add("all_themes_main_photo_and_narrow_localized_browser_rendered=True");
+            browser.SelectedIndex = 0;
+            Layout(root);
+            report.Add("album_collection_selection_filters_without_opening=True");
             var chevron = Visuals(dock).OfType<Button>().Single(button => button.Content is string text && text is "\uE76B" or "\uE76C");
             foreach (string view in new[] { "shelves", "flow", "grid", "timeline" })
             {
@@ -120,6 +206,7 @@ internal static class SelfTestAlbumLayout
             App.Instance.SetDocument(new EditorDocument(image));
             Layout(root);
             Check(dock.Side == DockSide.Right && !dock.IsMinimized, "Returning to the editor must restore its right, expanded strip.");
+            Check(Math.Abs(pane.ActualWidth - 340) < 1, "Returning to the editor must restore its independent strip width.");
             dock.DockTo(DockSide.Bottom);
             dock.Minimize();
             App.Instance.SetDocument(null);
@@ -196,6 +283,61 @@ internal static class SelfTestAlbumLayout
             Check(CaptureLibrary.Collections().Any(collection => collection.Name == "From rail"),
                 "The separate New collection rail button did not create the requested collection.");
             report.Add("rail_new_collection_uses_existing_prompt=True");
+            await Task.Delay(200);
+            var emptyCollection = CaptureLibrary.Collections().Single(c => c.Name == "From rail");
+            var previousDocument = App.Instance.Document;
+            browser.SelectedItem = browser.Items.Cast<CollectionChoice>().Single(c => c.Source == "c" + emptyCollection.Id);
+            Layout(root);
+            Check(window.TestStrip.Source == "c" + emptyCollection.Id && ReferenceEquals(App.Instance.Document, previousDocument)
+                && ((FrameworkElement)library.FindName("EmptyPanel")).IsVisible,
+                "An empty collection must remain selectable without opening a photo.");
+            FolderCaptures.Enabled = true;
+            await Task.Delay(200);
+            Layout(root);
+            Check(browser.Items.Cast<CollectionChoice>().Any(c => c.Source == "folder"), "The enabled Screenshots source is missing.");
+            string originalAlbum = CaptureLibrary.FilePath;
+            string otherAlbum = CaptureLibrary.CreateAlbum("Navigation fixture");
+            Check(CaptureLibrary.TrySwitchAlbum(otherAlbum, null, out _), "The second test album did not open.");
+            await Task.Delay(250);
+            Layout(root);
+            Check(window.TestStrip.Source == "all" && browser.Items.Count == 3
+                && browser.Items.Cast<CollectionChoice>().All(c => c.Preview.Count == 0),
+                "Switching to an empty album must clear collection previews and selection from the previous album.");
+            CaptureLibrary.SetPassword("navigation fixture password");
+            CaptureLibrary.Close();
+            await Task.Delay(200);
+            Layout(root);
+            Check(((FrameworkElement)library.FindName("LockPanel")).IsVisible && browser.IsVisible,
+                "The locked album must retain usable navigation and its unlock surface.");
+            Check(CaptureLibrary.TrySwitchAlbum(originalAlbum, null, out _), "The original test album did not reopen.");
+            await Task.Delay(250);
+            Layout(root);
+            Check(browser.Items.Cast<CollectionChoice>().Any(c => c.Name == "Layout collection"),
+                "Returning to the original album did not restore its own collection names.");
+            report.Add("empty_collections_folder_source_album_switch_and_locked_album_navigation=True");
+            App.Instance.SetDocument(new EditorDocument(image));
+            dock.DockTo(DockSide.Left);
+            Layout(root);
+            App.Instance.SetDocument(null);
+            Layout(root);
+            Check(Math.Abs(pane.ActualWidth - 180) < 1, "Album width must restore when both modes dock at the left edge.");
+            App.Instance.SetDocument(new EditorDocument(image));
+            Layout(root);
+            Check(Math.Abs(pane.ActualWidth - 340) < 1, "Editor width must restore when both modes dock at the left edge.");
+            App.Instance.SetDocument(null);
+            for (int i = 0; i < 120; i++) CaptureLibrary.CreateCollection("Navigation collection " + i);
+            await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            Layout(root);
+            Check(browser.Items.Count == 125 && Visuals(browser).OfType<CollectionPreview>().Count() < 50,
+                "A large collection list must realize only the visible and nearby preview rows.");
+            browser.SelectedIndex = browser.Items.Count - 2;
+            browser.ScrollIntoView(browser.SelectedItem);
+            Layout(root);
+            await Task.Delay(180);
+            Check(window.TestStrip.Source != "all" && ReferenceEquals(App.Instance.Document, null),
+                "Selecting a distant collection must filter the album without opening a photo.");
+            Render(root, Path.Combine(folder, "browser-large-collection-list.png"));
+            report.Add("same_edge_width_restoration_and_125_virtualized_collection_rows=True");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

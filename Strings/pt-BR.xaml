@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Senha</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Digite a senha novamente</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">As duas senhas não são iguais.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Prateleiras</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Carrossel</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Vários carrosséis</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Carrossel único</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Prévias das coleções</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Pilha</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Grade pequena</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Minicarrossel</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Fotos espalhadas</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Foto anterior da prévia</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Próxima foto da prévia</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Grade</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Linha do tempo</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Por data</sys:String>

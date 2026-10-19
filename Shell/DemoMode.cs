@@ -28,7 +28,8 @@ internal static class DemoMode
         if (!args.Any(a => a.Equals("--demo", StringComparison.OrdinalIgnoreCase) || a.Equals("/demo", StringComparison.OrdinalIgnoreCase)))
             return false;
         IsDemo = true;
-        string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", folder);
+        string root = Path.IsPathFullyQualified(folder) ? Path.GetFullPath(folder)
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", folder);
         string library = Path.Combine(root, "Library");
         try { if (Directory.Exists(library)) Directory.Delete(library, true); } catch { /* a locked old copy is reused */ }
         Settings.UseFolder(Path.Combine(root, "Settings"));
@@ -39,7 +40,7 @@ internal static class DemoMode
         Directory.CreateDirectory(shots);
         FolderCaptures.UseFolder(shots);
         // A capture taken in the demo saves into the demo's Screenshots folder, not the real one.
-        if (string.IsNullOrEmpty(Settings.Get("OutputFolder"))) Settings.Set("OutputFolder", shots);
+        Settings.Set("OutputFolder", Path.Combine(root, "Output"));
         return true;
     }
 
@@ -100,7 +101,8 @@ internal static class SelfTestDemo
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-demo");
         Directory.CreateDirectory(dir);
-        DemoMode.TryEnter(["--demo"], "DemoSelfTest");
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(dir, "native"));
+        DemoMode.TryEnter(["--demo"], Path.Combine(Path.GetFullPath(dir), "state"));
         App.InitializeKit();
         _ = RunAsync(dir);
         return true;
@@ -139,6 +141,12 @@ internal static class SelfTestDemo
             {
                 view.TestSet(v, g, "");
                 await Shot($"demo-{v}-{g}");
+            }
+            view.TestSet("flow", "date", "");
+            foreach (var choice in w.TestStrip!.PreviewMenu().Items.OfType<System.Windows.Controls.MenuItem>())
+            {
+                choice.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+                await Shot("demo-collection-" + choice.Tag);
             }
             view.TestSet("grid", "date", "theme");
             await Shot("demo-search");

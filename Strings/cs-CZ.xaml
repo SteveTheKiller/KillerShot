@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Heslo</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Zadejte heslo znovu</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">Hesla se neshodují.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Police</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Karusel</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Více karuselů</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Jeden karusel</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Náhledy kolekcí</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Stoh</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Malá mřížka</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Malý karusel</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Rozházené fotografie</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Předchozí fotografie náhledu</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Další fotografie náhledu</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Mřížka</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Časová osa</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Podle data</sys:String>

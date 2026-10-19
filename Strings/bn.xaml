@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">পাসওয়ার্ড</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">পাসওয়ার্ডটি আবার লিখুন</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">দুটি পাসওয়ার্ড এক নয়।</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">তাক</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">ক্যারোসেল</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">একাধিক ক্যারোসেল</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">একক ক্যারোসেল</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">সংগ্রহের প্রিভিউ</sys:String>
+    <sys:String x:Key="Str_Preview_stack">স্তূপ</sys:String>
+    <sys:String x:Key="Str_Preview_grid">ছোট গ্রিড</sys:String>
+    <sys:String x:Key="Str_Preview_mini">ছোট ক্যারোসেল</sys:String>
+    <sys:String x:Key="Str_Preview_pile">ছড়ানো ছবি</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">আগের প্রিভিউ ছবি</sys:String>
+    <sys:String x:Key="Str_PreviewNext">পরের প্রিভিউ ছবি</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">গ্রিড</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">টাইমলাইন</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">তারিখ অনুযায়ী</sys:String>

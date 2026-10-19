@@ -32,7 +32,7 @@ internal sealed class Rolodex : FrameworkElement
     private const double CardWidth = 1.0;       // model units
     private const double CardHeight = 0.74;
     private const double CaptionBand = 0.13;    // the strip at the foot of a card that holds its title
-    private const double Inset = 0.035;         // the card stock around the picture
+    private const double Inset = 0.012;         // a few pixels of card stock around the picture
     private const double ViewWidth = 1.24;      // model units visible across at Zoom 1: the risen front card, a little inset
     private const double CameraDistance = 3.2;
     private const double Reveal = 0.40;         // how much of the next card shows past the front one
@@ -80,7 +80,7 @@ internal sealed class Rolodex : FrameworkElement
     /// <summary>Formats a capture for screen readers.</summary>
     public Func<CaptureItem, string>? Describe { get; set; }
 
-    /// <summary>A color for a card's top edge, such as its collection's; null leaves it plain.</summary>
+    /// <summary>A color for a card's frame, such as its collection's; null leaves it plain.</summary>
     public Func<CaptureItem, Color?>? Accent { get; set; }
 
     /// <summary>Draws every card again, after the card or collection colors change.</summary>
@@ -309,11 +309,16 @@ internal sealed class Rolodex : FrameworkElement
         double aspect = item.Height > 0 ? (double)item.Width / item.Height : 1.6;
         double width = ShowInfoCards ? CardWidth : Math.Min(CardWidth, CardHeight * aspect);
         double height = ShowInfoCards ? CardHeight : width / aspect;
+        double photoWidth = Math.Min(CardWidth - 2 * Inset, (CardHeight - Inset - CaptionBand) * aspect);
+        double photoHeight = photoWidth / aspect;
         if (ShowInfoCards)
-            drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, CardWidth, CardHeight), corner, corner)));
-        if (ShowInfoCards && Accent?.Invoke(item) is Color accent)
-            drawing.Children.Add(new GeometryDrawing(new SolidColorBrush(accent), null, new RectangleGeometry(new Rect(0.03, 0, CardWidth - 0.06, 0.016))));
-        var frame = ShowInfoCards ? new Rect(Inset, Inset, CardWidth - 2 * Inset, CardHeight - Inset - CaptionBand)
+        {
+            width = photoWidth + 2 * Inset;
+            height = photoHeight + Inset + CaptionBand;
+        }
+        if (ShowInfoCards)
+            drawing.Children.Add(new GeometryDrawing(stock, edge, new RectangleGeometry(new Rect(0, 0, width, height), corner, corner)));
+        var frame = ShowInfoCards ? new Rect(Inset, Inset, photoWidth, photoHeight)
             : new Rect(0, 0, width, height);
         double w = Math.Min(frame.Width, frame.Height * aspect), h = w / aspect;
         var picture = new Rect(frame.X + (frame.Width - w) / 2, frame.Y + (frame.Height - h) / 2, w, h);
@@ -325,13 +330,15 @@ internal sealed class Rolodex : FrameworkElement
             var text = new FormattedText(caption, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), CaptionBand * 0.46, CaptionBrush, 1.0)
             {
-                MaxTextWidth = CardWidth - 2 * Inset,
+                MaxTextWidth = width - 2 * Inset,
                 MaxLineCount = 1,
                 Trimming = TextTrimming.CharacterEllipsis,
             };
-            var origin = new Point(Inset, CardHeight - CaptionBand + (CaptionBand - text.Height) / 2);
+            var origin = new Point(Inset, height - CaptionBand + (CaptionBand - text.Height) / 2);
             drawing.Children.Add(new GeometryDrawing(CaptionBrush, null, text.BuildGeometry(origin)));
         }
+        if (ShowInfoCards && Accent?.Invoke(item) is Color accent)
+            PhotoCardBorder.DrawFrame(drawing, new Rect(0, 0, width, height), corner, accent, .012);
         // Keep the brush the card's full size even where the drawing leaves transparent corners.
         var brush = new DrawingBrush(drawing) { Stretch = Stretch.Fill, Viewbox = new Rect(0, 0, width, height), ViewboxUnits = BrushMappingMode.Absolute };
         brush.Freeze();

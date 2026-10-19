@@ -238,12 +238,11 @@ internal static class SelfTestImageMenus
                     var row = (ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(0);
                     var rowBitmap = new RenderTargetBitmap((int)Math.Ceiling(row.ActualWidth), (int)Math.Ceiling(row.ActualHeight), 96, 96, PixelFormats.Pbgra32);
                     rowBitmap.Render(row);
-                    var bottom = new byte[4];
-                    rowBitmap.CopyPixels(new Int32Rect(rowBitmap.PixelWidth / 2, rowBitmap.PixelHeight - 1, 1, 1), bottom, 4, 0);
-                    if (bottom[1] > bottom[2] + 20) throw new InvalidOperationException("A selected sidebar card must not paint an accent stripe underneath the photo.");
+                    if (thumb.BorderThickness != new Thickness(2)) throw new InvalidOperationException("Sidebar cards need a full 2px frame.");
+                    ImageOutput.SavePng(rowBitmap, Path.Combine(folder, "sidebar-card-frame.png"));
                     if (thumb.Effect is not System.Windows.Media.Effects.DropShadowEffect)
                         throw new InvalidOperationException("The active sidebar card must rise with a drop shadow.");
-                    report.Add("Sidebar card: top color only, with an active drop shadow PASS");
+                    report.Add("Sidebar card: full frame with an active drop shadow PASS");
                 }
                 browser.Focus();
                 browser.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(browser), 0, Key.Apps) { RoutedEvent = Keyboard.KeyDownEvent });
@@ -296,9 +295,29 @@ internal static class SelfTestImageMenus
             var tileButtons = Visuals(window.TestLibrary).OfType<Button>().Where(b => b.IsVisible && b.Style == window.TestLibrary.FindResource("LibTile")).ToList();
             if (tileButtons.Count != 3 || ((TextBlock)window.FindName("CollectionCountText")).Text != "3 captures")
                 throw new InvalidOperationException("The footer collection choice must filter the album and update its count.");
-            if (tileButtons.Any(b => b.BorderThickness.Left != 0 || b.BorderThickness.Right != 0 || b.BorderThickness.Bottom != 0 || b.BorderThickness.Top != 3))
-                throw new InvalidOperationException("Album cards must have a 3px top stripe without colored side or bottom borders.");
-            report.Add("Album: footer collection filter, matching count and top-only card color PASS");
+            if (tileButtons.Any(b => b.BorderThickness != new Thickness(2)))
+                throw new InvalidOperationException("Album cards must have a 2px border around every edge.");
+            var cardFrame = Visuals(tileButtons[0]).OfType<PhotoCardBorder>().Single();
+            var frameBitmap = new RenderTargetBitmap((int)Math.Ceiling(cardFrame.ActualWidth), (int)Math.Ceiling(cardFrame.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            frameBitmap.Render(cardFrame);
+            ImageOutput.SavePng(frameBitmap, Path.Combine(folder, "card-two-tone-frame.png"));
+            foreach (var (outer, inner) in new[]
+            {
+                (new Int32Rect(0, frameBitmap.PixelHeight / 2, 1, 1), new Int32Rect(1, frameBitmap.PixelHeight / 2, 1, 1)),
+                (new Int32Rect(frameBitmap.PixelWidth - 1, frameBitmap.PixelHeight / 2, 1, 1), new Int32Rect(frameBitmap.PixelWidth - 2, frameBitmap.PixelHeight / 2, 1, 1)),
+                (new Int32Rect(frameBitmap.PixelWidth / 2, 0, 1, 1), new Int32Rect(frameBitmap.PixelWidth / 2, 1, 1, 1)),
+                (new Int32Rect(frameBitmap.PixelWidth / 2, frameBitmap.PixelHeight - 1, 1, 1), new Int32Rect(frameBitmap.PixelWidth / 2, frameBitmap.PixelHeight - 2, 1, 1)),
+            })
+            {
+                byte[] outerPixel = new byte[4], innerPixel = new byte[4];
+                frameBitmap.CopyPixels(outer, outerPixel, 4, 0);
+                frameBitmap.CopyPixels(inner, innerPixel, 4, 0);
+                double outerGreen = outerPixel[3] == 0 ? 0 : outerPixel[1] * 255d / outerPixel[3];
+                double innerGreen = innerPixel[3] == 0 ? 0 : innerPixel[1] * 255d / innerPixel[3];
+                if (outerGreen < innerGreen + 20)
+                    throw new InvalidOperationException($"Every card edge needs an accent outer pixel and a darker inner pixel: {outer}, outer={string.Join(',', outerPixel)}, inner={string.Join(',', innerPixel)}.");
+            }
+            report.Add("Album: footer collection filter, matching count and full 2px card border PASS");
             collectionPicker.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             sourceMenu = OpenMenu();

@@ -11,7 +11,7 @@ namespace KillerShot.Shell
     public partial class MainWindow
     {
         private CollectionStrip? _strip;
-        private (DockSide Side, bool IsMinimized)? _editorStripLayout;
+        private (DockSide Side, bool IsMinimized, double Width, double Height)? _editorStripLayout;
 
         private void CollectionPickerBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -40,14 +40,15 @@ namespace KillerShot.Shell
                 {
                     StripDock.Side = DockSide.Left;
                     Settings.SetBool("AlbumStripMinimized", StripDock.IsMinimized);
+                    Settings.Set("AlbumStripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
                 }
                 else
                 {
                     Settings.Set("StripSide", StripDock.Side.ToString());
                     Settings.SetBool("StripMinimized", StripDock.IsMinimized);
+                    Settings.Set("StripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
+                    Settings.Set("StripHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
                 }
-                Settings.Set("StripWidth", StripDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
-                Settings.Set("StripHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
                 _strip.Relocalize();
                 SyncEditorPaneMargin();
             };
@@ -62,17 +63,21 @@ namespace KillerShot.Shell
             if (_strip == null) return;
             CollectionNameText.Text = _strip.SourceCaption;
             CollectionCountText.Text = _strip.CountCaption;
-            Library.SetSource(_strip.Source);
+            if (Library.IsVisible && _strip.AlbumMode) Library.SetSource(_strip.Source);
         }
 
         private void SyncStripPlacement(bool library)
         {
             if (_strip == null) return;
+            bool modeChanged = _strip.AlbumMode != library;
+            _strip.SetAlbumMode(library);
             if (library)
             {
                 if (_editorStripLayout == null)
                 {
-                    _editorStripLayout = (StripDock.Side, StripDock.IsMinimized);
+                    _editorStripLayout = (StripDock.Side, StripDock.IsMinimized, StripDock.PaneWidth, StripDock.PaneHeight);
+                    StripDock.PaneWidth = double.TryParse(Settings.Get("AlbumStripWidth"), NumberStyles.Float,
+                        CultureInfo.InvariantCulture, out double width) && double.IsFinite(width) ? Math.Clamp(width, 110, 600) : 220;
                     StripDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
                 }
                 StripDock.Side = DockSide.Left;
@@ -80,9 +85,12 @@ namespace KillerShot.Shell
             else if (_editorStripLayout is { } layout)
             {
                 _editorStripLayout = null;
+                StripDock.PaneWidth = layout.Width;
+                StripDock.PaneHeight = layout.Height;
                 StripDock.Side = layout.Side;
                 StripDock.IsMinimized = layout.IsMinimized;
             }
+            if (modeChanged) StripDock.RefreshLayout();
             SyncEditorPaneMargin();
         }
 

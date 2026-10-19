@@ -63,25 +63,25 @@
             </Setter>
         </Style>
 
-        <!-- Grid and timeline cards use the collection color along their top edge. -->
+        <!-- Grid and timeline cards use a two-tone frame around every edge. -->
         <Style x:Key="LibTile" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource CaptureCardBrush}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0,3,0,0"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Foreground" Value="{DynamicResource CaptureCardTextBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,12,12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                        <kc:PhotoCardBorder x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
                             <Grid>
                                 <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"
                                         CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False"/>
                                 <ContentPresenter Margin="5"/>
                             </Grid>
-                        </Border>
+                        </kc:PhotoCardBorder>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="tile" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
@@ -159,20 +159,20 @@
             </ItemsControl>
 
             <!-- Cover Flow: one big flow across everything shown. -->
-            <Grid x:Name="FlowHost" Visibility="Collapsed" Margin="16,4,16,12">
+            <Grid x:Name="FlowHost" Visibility="Collapsed" Margin="0,4,0,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <kc:CoverFlow x:Name="BigFlow" PerspectiveZoomEnabled="True"/>
+                <kc:CoverFlow x:Name="BigFlow" PerspectiveZoomEnabled="True" MainView="True"/>
                 <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,4,0,8">
                     <TextBlock x:Name="BigFlowTitle" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource BrandSansFont}"
                                FontSize="17" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="700"/>
                     <TextBlock x:Name="BigFlowDetail" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
                                HorizontalAlignment="Center" Margin="0,2,0,0"/>
                 </StackPanel>
-                <Slider x:Name="BigFlowSlider" Grid.Row="2" Style="{StaticResource LibSlider}" Minimum="0" MaxWidth="720"
+                <Slider x:Name="BigFlowSlider" Grid.Row="2" Style="{StaticResource LibSlider}" Minimum="0"
                         Maximum="{Binding MaximumIndex, ElementName=BigFlow}"
                         Value="{Binding SelectedIndex, ElementName=BigFlow, Mode=TwoWay}"
                         Focusable="False" IsTabStop="False"/>

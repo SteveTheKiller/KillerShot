@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Пароль</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Введіть пароль ще раз</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">Паролі не збігаються.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Полиці</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Карусель</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Кілька каруселей</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Одна карусель</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Попередній перегляд колекцій</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Стос</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Дрібна сітка</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Мінікарусель</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Розкидані фотографії</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Попереднє фото перегляду</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Наступне фото перегляду</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Сітка</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Хронологія</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">За датою</sys:String>

@@ -38,6 +38,41 @@ internal static class SelfTestCarouselPerspective
             Check(strip.SelectedIndex == selected - 1, "The collection strip's existing wheel behavior changed.");
             report.Add("Collection-strip wheel behavior unchanged PASS");
             CheckAlbumHosts(report);
+            var main = (CoverFlow)new LibraryView().FindName("BigFlow");
+            main.ThumbnailSource = item => Thumbnail((int)item.Id);
+            main.Items = Enumerable.Range(0, 9).Select(i => new CaptureItem(i, DateTime.Today, 180, 120,
+                "region", "Large photo " + i, null, null, null)).ToArray();
+            main.SelectedIndex = 4;
+            main.Items = main.Items;
+            main.Measure(new Size(1000, 700));
+            main.Arrange(new Rect(0, 0, 1000, 700));
+            var large = Bounds(main).Center;
+            Check(large.Width >= 550 && large.Width <= 700,
+                "The main carousel's landscape photo must occupy 55 to 70 percent of the pane when height permits.");
+            Render(main, Path.Combine(folder, "main-large-photo.png"));
+            for (int i = 0; i < 100; i++) main.HandleWheel(120, ModifierKeys.Control);
+            large = Bounds(main).Center;
+            Check(large.Left >= 0 && large.Right <= main.ActualWidth && large.Top >= 0 && large.Bottom <= main.ActualHeight,
+                "Main carousel perspective must keep the selected photo within the pane.");
+            report.Add("Main carousel dominates the pane and remains contained at maximum perspective PASS");
+            foreach (bool cards in new[] { false, true })
+            foreach (var shape in new[] { (180, 120), (80, 240), (2000, 100), (160, 160), (10, 500) })
+            foreach (var size in new[] { new Size(1000, 700), new Size(1400, 240), new Size(360, 600), new Size(2200, 180) })
+            {
+                main.ShowInfoCards = cards;
+                main.Items = Enumerable.Range(0, 9).Select(i => new CaptureItem(i, DateTime.Today, shape.Item1, shape.Item2,
+                    "region", "Shape " + i, null, null, null)).ToArray();
+                main.Measure(size);
+                main.Arrange(new Rect(size));
+                for (int zoom = 0; zoom < 3; zoom++)
+                {
+                    for (int i = 0; i < 100; i++) main.HandleWheel(zoom == 0 ? -120 : 120, ModifierKeys.Control);
+                    var face = Bounds(main).Center;
+                    Check(face.Left >= -.1 && face.Right <= size.Width + .1 && face.Top >= -.1 && face.Bottom <= size.Height + .1,
+                        $"Selected photo clipped: {shape}, {size}, cards={cards}, zoom={zoom}, bounds={face}");
+                }
+            }
+            report.Add("Portrait, panorama, square and narrow photos fit with both card states at narrow, short and wide sizes PASS");
             code = 0;
         }
         catch (Exception ex) { report.Add(ex.ToString()); }

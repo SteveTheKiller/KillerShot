@@ -310,8 +310,15 @@
     <sys:String x:Key="Str_Lib_Password">Jelszó</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Írja be újra a jelszót</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">A két jelszó nem egyezik.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Polcok</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Körhinta</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Több körhinta</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Egyetlen körhinta</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Gyűjtemények előnézete</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Köteg</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Apró rács</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Mini körhinta</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Szétszórt fényképek</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Előző előnézeti kép</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Következő előnézeti kép</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Rács</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Idővonal</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">Dátum szerint</sys:String>

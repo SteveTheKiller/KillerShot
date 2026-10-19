@@ -314,8 +314,15 @@
     <sys:String x:Key="Str_Lib_Password">Password</sys:String>
     <sys:String x:Key="Str_Lib_ConfirmPassword">Type the password again</sys:String>
     <sys:String x:Key="Str_Lib_PasswordsDiffer">The two passwords are not the same.</sys:String>
-    <sys:String x:Key="Str_Lib_ViewShelves">Shelves</sys:String>
-    <sys:String x:Key="Str_Lib_ViewFlow">Carousel</sys:String>
+    <sys:String x:Key="Str_Lib_ViewShelves">Multiple carousels</sys:String>
+    <sys:String x:Key="Str_Lib_ViewFlow">Single carousel</sys:String>
+    <sys:String x:Key="Str_CollectionPreview">Collection previews</sys:String>
+    <sys:String x:Key="Str_Preview_stack">Stack</sys:String>
+    <sys:String x:Key="Str_Preview_grid">Tiny grid</sys:String>
+    <sys:String x:Key="Str_Preview_mini">Mini carousel</sys:String>
+    <sys:String x:Key="Str_Preview_pile">Scattered pile</sys:String>
+    <sys:String x:Key="Str_PreviewPrevious">Previous preview photo</sys:String>
+    <sys:String x:Key="Str_PreviewNext">Next preview photo</sys:String>
     <sys:String x:Key="Str_Lib_ViewGrid">Grid</sys:String>
     <sys:String x:Key="Str_Lib_ViewTimeline">Timeline</sys:String>
     <sys:String x:Key="Str_Lib_ByDate">By date</sys:String>

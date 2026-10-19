@@ -87,6 +87,8 @@ internal static class SelfTestViewCards
             long? rolodexSelected = rolodex.SelectedItem?.Id;
             int rolodexStock = RenderStock(rolodex, Path.Combine(folder, "rolodex-cards.png"));
             Check(rolodexStock > 100, "Rolodex defaults must retain its info cards.");
+            CheckRolodexFrame(rolodex);
+            report.Add("rolodex_photo_insets_at_most_four_pixels_caption_and_drop_shadow_preserved=True");
             await ToggleMenu(strip, expected: true);
             Check(RenderStock(rolodex, Path.Combine(folder, "rolodex-plain.png")) == 0,
                 "Turning Rolodex info cards off did not remove card stock.");
@@ -185,6 +187,36 @@ internal static class SelfTestViewCards
         for (int i = 0; i < data.Length; i += 4)
             if (data[i] > 170 && data[i + 1] < 70 && data[i + 2] > 170 && data[i + 3] > 200) stock++;
         return stock;
+    }
+
+    private static void CheckRolodexFrame(FrameworkElement element)
+    {
+        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth), (int)Math.Ceiling(element.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(element);
+        byte[] pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
+        bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
+        var photo = Rect.Empty;
+        var card = Rect.Empty;
+        for (int y = 0; y < bitmap.PixelHeight; y++)
+        for (int x = 0; x < bitmap.PixelWidth; x++)
+        {
+            int at = (y * bitmap.PixelWidth + x) * 4;
+            bool image = pixels[at] > 170 && pixels[at + 1] > 170 && pixels[at + 2] < 70 && pixels[at + 3] > 200;
+            bool stock = pixels[at] > 170 && pixels[at + 1] < 70 && pixels[at + 2] > 170 && pixels[at + 3] > 200;
+            if (image) photo.Union(new Point(x, y));
+            if (image || stock) card.Union(new Point(x, y));
+        }
+        Check(!photo.IsEmpty && photo.Left - card.Left <= 4 && card.Right - photo.Right <= 4 && photo.Top - card.Top <= 4,
+            "Rolodex photos must have only a few pixels of stock at the top and sides.");
+        Check(card.Bottom - photo.Bottom >= 10, "The Rolodex caption area must remain below the photo.");
+        int shadow = 0;
+        for (int y = Math.Max(0, (int)card.Bottom + 1); y < Math.Min(bitmap.PixelHeight, card.Bottom + 12); y++)
+        for (int x = Math.Max(0, (int)card.Left); x < Math.Min(bitmap.PixelWidth, card.Right); x++)
+        {
+            int at = (y * bitmap.PixelWidth + x) * 4;
+            if (pixels[at] < 30 && pixels[at + 1] < 30 && pixels[at + 2] < 30 && pixels[at + 3] > 5) shadow++;
+        }
+        Check(shadow > 10, "The Rolodex card must retain its visible drop shadow.");
     }
 
     private static IEnumerable<DependencyObject> Visuals(DependencyObject root)

@@ -186,6 +186,8 @@ namespace KillerFamily.Layout
             SideChanged?.Invoke();
         }
 
+        public void RefreshLayout() => Relayout();
+
         private void RememberSize()
         {
             if (IsMinimized || _pane is not FrameworkElement pane || !pane.IsVisible) return;
@@ -237,7 +239,7 @@ namespace KillerFamily.Layout
             var tracks = new List<(GridLength Size, UIElement Element, double Min)>
             {
                 (new GridLength(Math.Max(MinPaneSize, horizontal ? PaneHeight : PaneWidth)), _pane!, MinPaneSize),
-                (new GridLength(SplitterSize), _splitter, 0),
+                (new GridLength(0), _splitter, 0),
                 (new GridLength(1, GridUnitType.Star), _inner, MinPaneSize),
             };
             if (!atStart) tracks.Reverse();
@@ -253,10 +255,15 @@ namespace KillerFamily.Layout
             }
 
             _splitter.ResizeDirection = horizontal ? GridResizeDirection.Rows : GridResizeDirection.Columns;
-            // Keep the line beside the rail while the full splitter track remains draggable.
+            // The resize target occupies the pane's last pixels, leaving the rail unobstructed.
             _splitter.Tag = Side.ToString();
-            _splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
-            _splitter.VerticalAlignment = VerticalAlignment.Stretch;
+            _splitter.Width = horizontal ? double.NaN : SplitterSize;
+            _splitter.Height = horizontal ? SplitterSize : double.NaN;
+            _splitter.HorizontalAlignment = horizontal ? HorizontalAlignment.Stretch : HorizontalAlignment.Left;
+            _splitter.VerticalAlignment = horizontal ? VerticalAlignment.Top : VerticalAlignment.Stretch;
+            _splitter.Margin = horizontal
+                ? new Thickness(0, atStart ? -SplitterSize : 0, 0, atStart ? 0 : -SplitterSize)
+                : new Thickness(atStart ? -SplitterSize : 0, 0, atStart ? 0 : -SplitterSize, 0);
             _splitter.Cursor = horizontal ? Cursors.SizeNS : Cursors.SizeWE;
             AutomationProperties.SetName(_splitter, ResizeText);
         }
