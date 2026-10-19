@@ -76,7 +76,7 @@ internal static class ImageOutput
         var img = new BitmapImage();
         img.BeginInit();
         img.CacheOption = BitmapCacheOption.OnLoad;
-        img.CreateOptions = BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.PreservePixelFormat;
+        img.CreateOptions = BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.PreservePixelFormat;
         img.UriSource = new Uri(path);
         img.EndInit();
         BitmapSource src = img.Format == System.Windows.Media.PixelFormats.Bgra32
