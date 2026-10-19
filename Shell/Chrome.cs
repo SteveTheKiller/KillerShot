@@ -61,6 +61,7 @@ namespace KillerShot.Shell
 
         protected override void OnClosed(EventArgs e)
         {
+            StopRecording(apply: null);
             WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
             base.OnClosed(e);
         }

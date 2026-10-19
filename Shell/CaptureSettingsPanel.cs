@@ -177,7 +177,7 @@ namespace KillerShot.Shell
         {
             grid.Children.Clear();
             grid.RowDefinitions.Clear();
-            var tray = App.Instance.Tray;
+            var tray = _shortcutHost;
             int row = 0;
             foreach (var (action, labelKey) in actions)
             {
@@ -221,7 +221,7 @@ namespace KillerShot.Shell
 
         private void RefreshConflictText()
         {
-            var tray = App.Instance.Tray;
+            var tray = _shortcutHost;
             bool any = tray != null && tray.FailedShortcuts.Count > 0;
             ShortcutConflictText.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
             if (any) ShortcutConflictRun.Text = string.Format(Loc("Str_Tray_ShortcutTaken"), string.Join(", ", tray!.FailedShortcuts));
@@ -231,7 +231,7 @@ namespace KillerShot.Shell
         {
             StopRecording(apply: null);
             _recording = b;
-            App.Instance.Tray?.Suspend();
+            _shortcutHost?.Suspend();
             b.Content = new TextBlock { Text = Loc("Str_CS_Listening"), FontSize = 12 };
             b.SetResourceReference(ForegroundProperty, "PrimaryBrush");
             b.Focus();
@@ -247,7 +247,7 @@ namespace KillerShot.Shell
             var action = (ShortcutAction)b.Tag;
             if (apply != null) CaptureSettings.SetShortcutText(action, apply);
             b.ClearValue(ForegroundProperty);
-            App.Instance.Tray?.Resume();
+            _shortcutHost?.Resume();
             BuildShortcutRows();
             BuildCaptureMenu();
             RefreshDocumentUi();

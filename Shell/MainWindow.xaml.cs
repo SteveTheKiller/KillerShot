@@ -10,8 +10,13 @@ namespace KillerShot.Shell
 {
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly TrayHost? _shortcutHost;
+
+        public MainWindow() : this(App.Instance.Tray) { }
+
+        internal MainWindow(TrayHost? shortcutHost)
         {
+            _shortcutHost = shortcutHost;
             InitializeComponent();
             new KillerFamily.Accessibility.OverlayFocus(this)
                 .Track(ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay);
