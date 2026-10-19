@@ -56,6 +56,7 @@
 - Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
 - Menus show action icons and visible separator lines.
 - Removed the option to move rail icons to the opposite end. Horizontal rails keep icons on the right and vertical rails keep them at the bottom.
+- Expanded rails keep equal spacing beside the splitter line and content pane.
 - The capture bar stays centered when moving between monitors with different scaling.
 - Album help points to the current settings location, and capture fallback warnings cover all 19 languages.
 - 98SE controls use square corners.

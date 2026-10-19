@@ -1,0 +1,72 @@
+using System.IO;
+using Path = System.IO.Path;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using KillerFamily.Layout;
+
+internal static class DockSpacing
+{
+    [STAThread] static int Main(string[] args)
+    {
+        string output = args[0];
+        Directory.CreateDirectory(output);
+        var app = new Application();
+        app.Resources["PaneBorderBrush"] = Brushes.Red;
+        app.Resources["SelectionAccent"] = Brushes.Red;
+        var records = new List<object>();
+        int failures = 0;
+        foreach (DockSide side in Enum.GetValues<DockSide>())
+        foreach (bool collapsed in new[] { false, true })
+        {
+            var marker = new Rectangle { Width = 8, Height = 8, Fill = Brushes.Black };
+            var rail = new Grid { Width = 8, Height = 8 }; rail.Children.Add(marker);
+            var body = new Border { Background = Brushes.LightGray };
+            var host = new DockHost { Width = 360, Height = 300, Side = side,
+                Pane = new Border { Background = Brushes.White }, Body = body, Rail = rail,
+                PaneWidth = 110, PaneHeight = 110, IsMinimized = collapsed,
+                UseLayoutRounding = true, SnapsToDevicePixels = true };
+            host.Measure(new Size(360,300)); host.Arrange(new Rect(0,0,360,300)); host.UpdateLayout();
+            var splitter = Descendants<GridSplitter>(host).SingleOrDefault();
+            Rectangle? line = null;
+            if (splitter != null)
+            {
+                splitter.ApplyTemplate();
+                line = (Rectangle)splitter.Template.FindName("line",splitter);
+                line.Opacity = 1; host.UpdateLayout();
+            }
+            Rect Bounds(FrameworkElement e) => e.TransformToAncestor(host).TransformBounds(new Rect(e.RenderSize));
+            Rect ink = Bounds(marker), content = Bounds(body);
+            bool horizontal = side is DockSide.Top or DockSide.Bottom;
+            bool start = side is DockSide.Left or DockSide.Top;
+            double before = horizontal ? ink.Top : ink.Left;
+            double after = horizontal ? ink.Bottom : ink.Right;
+            double contentEdge = horizontal ? (start ? content.Top : content.Bottom) : (start ? content.Left : content.Right);
+            double outerEdge = collapsed ? (start ? 0 : horizontal ? 300 : 360)
+                : horizontal ? (start ? Bounds(line!).Bottom : Bounds(line!).Top) : (start ? Bounds(line!).Right : Bounds(line!).Left);
+            double paneGap = start ? before - outerEdge : outerEdge - after;
+            double bodyGap = start ? contentEdge - after : before - contentEdge;
+            bool pass = Math.Abs(paneGap - bodyGap) <= 1.0
+                && (splitter == null || Math.Abs((horizontal ? splitter.ActualHeight : splitter.ActualWidth) - 6) < .01);
+            if (!pass) failures++;
+            records.Add(new { side = side.ToString(), collapsed, paneGap, bodyGap, pass,
+                hitTarget = splitter == null ? 0 : horizontal ? splitter.ActualHeight : splitter.ActualWidth });
+            var bitmap = new RenderTargetBitmap(360,300,96,96,PixelFormats.Pbgra32); bitmap.Render(host);
+            var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
+            using var stream = File.Create(Path.Combine(output,$"{side}-{collapsed}.png")); png.Save(stream);
+        }
+        string json = JsonSerializer.Serialize(records,new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(Path.Combine(output,"metrics.json"),json); Console.WriteLine(json);
+        app.Shutdown(); return failures == 0 ? 0 : 1;
+    }
+    static IEnumerable<T> Descendants<T>(DependencyObject root) where T:DependencyObject
+    {
+        for(int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
+        { var child=VisualTreeHelper.GetChild(root,i); if(child is T found) yield return found;
+          foreach(var nested in Descendants<T>(child)) yield return nested; }
+    }
+}

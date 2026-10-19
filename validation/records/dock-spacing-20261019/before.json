@@ -1,0 +1,66 @@
+[
+  {
+    "side": "Left",
+    "collapsed": false,
+    "paneGap": 11,
+    "bodyGap": 8,
+    "pass": false,
+    "hitTarget": 6
+  },
+  {
+    "side": "Left",
+    "collapsed": true,
+    "paneGap": 8,
+    "bodyGap": 8,
+    "pass": true,
+    "hitTarget": 0
+  },
+  {
+    "side": "Top",
+    "collapsed": false,
+    "paneGap": 11,
+    "bodyGap": 8,
+    "pass": false,
+    "hitTarget": 6
+  },
+  {
+    "side": "Top",
+    "collapsed": true,
+    "paneGap": 8,
+    "bodyGap": 8,
+    "pass": true,
+    "hitTarget": 0
+  },
+  {
+    "side": "Right",
+    "collapsed": false,
+    "paneGap": 10,
+    "bodyGap": 8,
+    "pass": false,
+    "hitTarget": 6
+  },
+  {
+    "side": "Right",
+    "collapsed": true,
+    "paneGap": 8,
+    "bodyGap": 8,
+    "pass": true,
+    "hitTarget": 0
+  },
+  {
+    "side": "Bottom",
+    "collapsed": false,
+    "paneGap": 10,
+    "bodyGap": 8,
+    "pass": false,
+    "hitTarget": 6
+  },
+  {
+    "side": "Bottom",
+    "collapsed": true,
+    "paneGap": 8,
+    "bodyGap": 8,
+    "pass": true,
+    "hitTarget": 0
+  }
+]

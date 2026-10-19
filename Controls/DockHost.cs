@@ -106,14 +106,20 @@ namespace KillerFamily.Layout
             _splitter.Template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse("""
                 <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="GridSplitter">
                     <Border Background="Transparent">
-                        <Rectangle x:Name="line" Width="1" HorizontalAlignment="Center" Fill="{DynamicResource PaneBorderBrush}" Opacity="0"/>
+                        <Rectangle x:Name="line" Width="1" HorizontalAlignment="Right" Fill="{DynamicResource PaneBorderBrush}" Opacity="0"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="ResizeDirection" Value="Rows">
                             <Setter TargetName="line" Property="Width" Value="Auto"/>
                             <Setter TargetName="line" Property="Height" Value="1"/>
                             <Setter TargetName="line" Property="HorizontalAlignment" Value="Stretch"/>
-                            <Setter TargetName="line" Property="VerticalAlignment" Value="Center"/>
+                            <Setter TargetName="line" Property="VerticalAlignment" Value="Bottom"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="Right">
+                            <Setter TargetName="line" Property="HorizontalAlignment" Value="Left"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="Bottom">
+                            <Setter TargetName="line" Property="VerticalAlignment" Value="Top"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="line" Property="Opacity" Value="1"/></Trigger>
                         <Trigger Property="IsDragging" Value="True">
@@ -247,6 +253,8 @@ namespace KillerFamily.Layout
             }
 
             _splitter.ResizeDirection = horizontal ? GridResizeDirection.Rows : GridResizeDirection.Columns;
+            // Keep the line beside the rail while the full splitter track remains draggable.
+            _splitter.Tag = Side.ToString();
             _splitter.HorizontalAlignment = HorizontalAlignment.Stretch;
             _splitter.VerticalAlignment = VerticalAlignment.Stretch;
             _splitter.Cursor = horizontal ? Cursors.SizeNS : Cursors.SizeWE;
