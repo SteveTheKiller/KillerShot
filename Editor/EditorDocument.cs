@@ -131,9 +131,9 @@ public sealed class EditorDocument
         }
         var rtb = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
         rtb.Render(visual);
-        // The capture is opaque, so drop the premultiplied alpha channel for the clipboard and PNG.
-        var opaque = new FormatConvertedBitmap(rtb, PixelFormats.Bgr32, null, 0);
-        opaque.Freeze();
-        return opaque;
+        // Imported images can have transparent pixels. Keep their alpha when exporting marks.
+        var rendered = new FormatConvertedBitmap(rtb, PixelFormats.Bgra32, null, 0);
+        rendered.Freeze();
+        return rendered;
     }
 }
