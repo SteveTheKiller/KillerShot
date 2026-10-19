@@ -43,7 +43,7 @@ internal static partial class CaptureLibrary
         SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlcipher());
     }
 
-    private const int SchemaVersion = 2;
+    private const int SchemaVersion = 3;
     private const int ThumbLongSide = 512;
     private static readonly byte[] KeyEntropy = "KillerShot.Library.v1"u8.ToArray();
 
@@ -422,6 +422,8 @@ internal static partial class CaptureLibrary
                 text TEXT NOT NULL);
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
+            INSERT INTO meta(key, value) VALUES ('capture_id', (SELECT COALESCE(MAX(id), 0) FROM captures))
+            ON CONFLICT(key) DO UPDATE SET value = MAX(CAST(meta.value AS INTEGER), CAST(excluded.value AS INTEGER));
             """);
         using var cmd = db.CreateCommand();
         cmd.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('schema', $v)";
@@ -491,13 +493,26 @@ internal static partial class CaptureLibrary
         {
             album = Db;
             using var transaction = album.BeginTransaction();
+            // Keep a persistent high-water mark. SQLite's implicit row IDs can reuse a
+            // deleted capture while OCR or QR recognition still holds its old identity.
+            using (var allocate = album.CreateCommand())
+            {
+                allocate.Transaction = transaction;
+                allocate.CommandText = """
+                    UPDATE meta SET value = CAST(value AS INTEGER) + 1
+                    WHERE key = 'capture_id' AND CAST(value AS INTEGER) < 9223372036854775807
+                    RETURNING CAST(value AS INTEGER);
+                    """;
+                id = Convert.ToInt64(allocate.ExecuteScalar()
+                    ?? throw new InvalidOperationException("The album cannot allocate another capture ID."));
+            }
             using var cmd = Db.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandText = """
-                INSERT INTO captures(taken_utc, width, height, mode, window_title, process_name, thumb, image)
-                VALUES ($t, $w, $h, $m, $win, $proc, $thumb, $image);
-                SELECT last_insert_rowid();
+                INSERT INTO captures(id, taken_utc, width, height, mode, window_title, process_name, thumb, image)
+                VALUES ($id, $t, $w, $h, $m, $win, $proc, $thumb, $image);
                 """;
+            cmd.Parameters.AddWithValue("$id", id);
             cmd.Parameters.AddWithValue("$t", taken.ToUniversalTime().Ticks);
             cmd.Parameters.AddWithValue("$w", bmp.PixelWidth);
             cmd.Parameters.AddWithValue("$h", bmp.PixelHeight);
@@ -506,7 +521,7 @@ internal static partial class CaptureLibrary
             cmd.Parameters.AddWithValue("$proc", (object?)Trimmed(process) ?? DBNull.Value);
             cmd.Parameters.AddWithValue("$thumb", thumb);
             cmd.Parameters.AddWithValue("$image", image);
-            id = (long)cmd.ExecuteScalar()!;
+            cmd.ExecuteNonQuery();
             IndexText(id, transaction);
             transaction.Commit();
         }
