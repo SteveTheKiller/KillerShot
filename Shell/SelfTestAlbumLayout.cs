@@ -109,8 +109,16 @@ internal static class SelfTestAlbumLayout
             Check(Math.Abs(pane.ActualWidth - 180) < 1, "Album navigation must restore its own saved width.");
             var browser = Visuals(pane).OfType<ListBox>().Single();
             Check(browser.Items.Count == 3, "Album navigation must list All captures, the named collection, and Not in a collection.");
+            for (int attempt = 0; attempt < 40 && !Visuals(browser).OfType<Image>().Any(photo => photo.Source != null); attempt++)
+                await Task.Delay(25);
+            var loadedPreviews = Visuals(browser).OfType<Image>().Where(photo => photo.Source != null)
+                .Select(photo => (Photo: photo, Source: photo.Source)).ToArray();
+            Check(loadedPreviews.Length > 0, "The collection selection check needs loaded photo previews.");
             browser.SelectedIndex = 1;
             Layout(root);
+            Check(loadedPreviews.All(preview => Visuals(browser).Contains(preview.Photo)
+                && ReferenceEquals(preview.Photo.Source, preview.Source)),
+                "Selecting a collection must keep loaded sidebar photos in place instead of rebuilding them.");
             await Task.Delay(250);
             Check(window.TestStrip!.Source == "c" + collectionId && App.Instance.Document == null,
                 "Selecting a collection must filter the album without opening a photo.");
@@ -191,6 +199,18 @@ internal static class SelfTestAlbumLayout
                         && centers.Max(p => p.Y) - centers.Min(p => p.Y) > 24,
                         "Scattered photos must spread across both dimensions instead of forming an offset stack.");
                 }
+                var stablePhotos = Visuals(browser).OfType<Image>().Where(photo => photo.Source != null)
+                    .Select(photo => (Photo: photo, Source: photo.Source)).ToArray();
+                Check(stablePhotos.Length > 0, "Each preview style needs loaded photos before selection.");
+                browser.SelectedIndex = 0;
+                Layout(root);
+                browser.SelectedIndex = 1;
+                Layout(root);
+                await Task.Delay(100);
+                Check(stablePhotos.All(preview => Visuals(browser).Contains(preview.Photo)
+                    && ReferenceEquals(preview.Photo.Source, preview.Source)),
+                    "Collection selection must preserve loaded photos and mini-carousel position for " + choice.Tag);
+                report.Add("collection_selection_preserves_loaded_previews_" + choice.Tag + "=True");
                 Render(root, Path.Combine(folder, "collection-preview-" + choice.Tag + ".png"));
             }
             foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 }.Concat(Enum.GetValues<Theme>()).Distinct())

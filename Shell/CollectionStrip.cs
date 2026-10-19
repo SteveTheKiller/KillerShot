@@ -333,8 +333,13 @@ namespace KillerShot.Shell
                     foreach (var c in collections)
                         Choice("c" + c.Id.ToString(CultureInfo.InvariantCulture), c.Name, membersByCollection[c.Id].ToArray());
                     Choice("c0", Loc("Str_Lib_Unfiled"), all.Where(i => i.CollectionId is not long id || !known.Contains(id)).ToArray());
-                    _browser.ItemsSource = choices;
-                    _browser.SelectedItem = choices.FirstOrDefault(c => c.Source == _source);
+                    var existing = _browser.Items.OfType<CollectionChoice>().ToArray();
+                    bool unchanged = existing.Length == choices.Count && existing.Zip(choices).All(pair =>
+                        pair.First.Source == pair.Second.Source && pair.First.Name == pair.Second.Name
+                        && pair.First.Count == pair.Second.Count && pair.First.Style == pair.Second.Style
+                        && pair.First.Preview.SequenceEqual(pair.Second.Preview));
+                    if (!unchanged) _browser.ItemsSource = choices;
+                    _browser.SelectedItem = _browser.Items.OfType<CollectionChoice>().FirstOrDefault(c => c.Source == _source);
                 }
 
                 _items = _source switch
