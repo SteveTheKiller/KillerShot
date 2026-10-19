@@ -322,8 +322,7 @@
         <!-- ================= FOOTER (24px) =================
              Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
              The overlays are declared after this and stay on top. -->
-        <Border x:Name="FooterBar" Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}"
-                shell:WindowChrome.IsHitTestVisibleInChrome="True">
+        <Border x:Name="FooterBar" Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
             <!-- KillerPDF's footer button styles, with the theme accent for hover and the checked
                  underline. FooterView.cs fills and syncs the view cell. -->
             <Border.Resources>
