@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -21,7 +22,7 @@ namespace KillerShot.Controls
         private readonly ContextMenu _menu;
         private readonly UIElement _button;
         private Grid? _accentHost;
-        private readonly List<Border> _accentDots = [];
+        private readonly List<RadioButton> _accentDots = [];
         private CheckBox? _filmGrainCheck;
         internal ThemePicker(Window window, ContextMenu menu, UIElement themeButton)
         {
@@ -211,6 +212,8 @@ namespace KillerShot.Controls
             host.Children.Add(divider);
 
             var strip = new Grid { Margin = new Thickness(7, 6, 2, 6) };
+            KeyboardNavigation.SetTabNavigation(strip, KeyboardNavigationMode.Once);
+            KeyboardNavigation.SetDirectionalNavigation(strip, KeyboardNavigationMode.Cycle);
             var colors = StripColors(family);
             for (int i = 0; i < colors.Length; i++)
             {
@@ -218,30 +221,47 @@ namespace KillerShot.Controls
                 var (accent, hex) = colors[i];
                 var dot = new Border
                 {
-                    Tag = accent,
                     Style = (Style)Application.Current.FindResource("AccentDot"),
                     Width = 26,
                     Height = double.NaN,
                     VerticalAlignment = VerticalAlignment.Stretch,
-                    Margin = new Thickness(0, 0, 0, i == colors.Length - 1 ? 0 : 8),
+                    Margin = new Thickness(0),
                     Background = AccentStripBrush(family, accent, hex),
                     RenderTransformOrigin = new Point(0.5, 0.5),
                     RenderTransform = new ScaleTransform(),
                 };
-                dot.MouseEnter += (_, _) => RingAccentStrip(family);
-                dot.MouseLeave += (_, _) => RingAccentStrip(family);
+                var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+                presenter.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+                presenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+                var option = new RadioButton
+                {
+                    Tag = accent, GroupName = "ThemeAccentGroup", Content = dot,
+                    Width = 26, VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    VerticalContentAlignment = VerticalAlignment.Stretch,
+                    Margin = new Thickness(0, 0, 0, i == colors.Length - 1 ? 0 : 8),
+                    IsChecked = ThemeManager.AccentChoiceFor(family) == accent,
+                    Template = new ControlTemplate(typeof(RadioButton)) { VisualTree = presenter },
+                };
+                string name = Application.Current.TryFindResource("Str_Color_" + accent) as string
+                    ?? LocaleManager.Loc("Str_Color_Name") + " " + hex;
+                AutomationProperties.SetName(option, name);
+                option.MouseEnter += (_, _) => RingAccentStrip(family);
+                option.MouseLeave += (_, _) => RingAccentStrip(family);
+                option.GotKeyboardFocus += (_, _) => RingAccentStrip(family);
+                option.LostKeyboardFocus += (_, _) => RingAccentStrip(family);
                 if (ThemeManager.AccentChoiceFor(family) == accent)
                     dot.BorderBrush = Application.Current.TryFindResource("TextBrush") as Brush;
-                dot.MouseLeftButtonUp += (_, _) =>
+                option.Checked += (_, _) =>
                 {
                     if (ThemeManager.AccentChoiceFor(family) == accent) return;
                     CrossfadeAccent(() => ThemeManager.ApplyAccent(family, accent),
                                     () => DwmChrome.SetThemeBorder(_window));
                     RingAccentStrip(family);
                 };
-                _accentDots.Add(dot);
-                Grid.SetRow(dot, i);
-                strip.Children.Add(dot);
+                _accentDots.Add(option);
+                Grid.SetRow(option, i);
+                strip.Children.Add(option);
             }
             host.Children.Add(strip);
             return host;
@@ -279,10 +299,12 @@ namespace KillerShot.Controls
         {
             var selected = ThemeManager.AccentChoiceFor(family);
             Brush? ring = Application.Current.TryFindResource("TextBrush") as Brush;
-            foreach (Border dot in _accentDots)
+            foreach (RadioButton option in _accentDots)
             {
-                dot.BorderBrush = dot.IsMouseOver || (dot.Tag is Accent accent && accent == selected) ? ring : Brushes.Transparent;
-                bool pop = dot.IsMouseOver && family != Theme.SE98;
+                var dot = (Border)option.Content;
+                option.IsChecked = option.Tag is Accent accent && accent == selected;
+                dot.BorderBrush = option.IsMouseOver || option.IsKeyboardFocusWithin || option.IsChecked == true ? ring : Brushes.Transparent;
+                bool pop = option.IsMouseOver && family != Theme.SE98;
                 if (dot.RenderTransform is ScaleTransform scale)
                 {
                     scale.BeginAnimation(ScaleTransform.ScaleXProperty,
