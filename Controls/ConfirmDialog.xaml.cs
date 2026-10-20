@@ -10,6 +10,21 @@ namespace KillerShot.Controls
     public partial class ConfirmDialog : Window
     {
         public bool Confirmed { get; private set; }
+        public bool AlternativeChosen { get; private set; }
+
+        public void SetAlternative(string label)
+        {
+            AlternativeButton.Content = label;
+            AlternativeButton.Visibility = Visibility.Visible;
+            MinWidth = 430;
+            SizeToContent = SizeToContent.WidthAndHeight;
+        }
+
+        private void Alternative_Click(object sender, RoutedEventArgs e)
+        {
+            AlternativeChosen = true;
+            Close();
+        }
 
         /// <summary>State of the first optional checkbox. Meaningless unless check1Label was passed.</summary>
         public bool Check1Checked => Check1.IsChecked == true;

@@ -116,6 +116,9 @@
                 <!-- Buttons -->
                 <StackPanel Grid.Row="2" Orientation="Horizontal"
                             HorizontalAlignment="Right" Margin="24,0,24,20">
+                    <Button x:Name="AlternativeButton" Visibility="Collapsed" Click="Alternative_Click"
+                            Style="{StaticResource SurfaceButton}"
+                            Height="28" MinWidth="80" Padding="12,2" Margin="0,0,8,0"/>
                     <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click"
                             Style="{StaticResource SurfaceButton}"
                             Height="28" MinWidth="80" Padding="12,2" Margin="0,0,8,0"/>

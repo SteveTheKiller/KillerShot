@@ -78,7 +78,7 @@ namespace KillerShot.Shell
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            if (!App.CloseToTray && !App.Instance.IsExiting && Services.CaptureLibrary.PendingCount > 0)
+            if (!App.CloseToTray && !App.Instance.IsExiting)
             {
                 e.Cancel = true;
                 Dispatcher.BeginInvoke(new Action(App.Instance.RequestExit));

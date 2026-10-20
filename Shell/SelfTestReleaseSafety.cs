@@ -55,6 +55,23 @@ internal static class SelfTestReleaseSafety
             App.Instance.ShowEditor();
             await Task.Delay(150);
             original.Crop(new Int32Rect(0, 0, 2, 2));
+            Task<bool>? exitAttempt = null;
+            bool exitPrompted = RespondToConfirmation(false, () => exitAttempt = App.Instance.CanExitAsync(),
+                renderPath: Path.Combine(folder, "unsaved-exit.png"));
+            Check(exitPrompted && !await exitAttempt! && ReferenceEquals(App.Instance.Document, original) && original.Dirty,
+                "Canceling exit preserves the open editor and unsaved crop.");
+            report.Add("exit_cancel_preserves_unsaved_crop=True");
+            exitPrompted = RespondToConfirmation(false, () => exitAttempt = App.Instance.CanExitAsync(), alternative: true);
+            Check(exitPrompted && await exitAttempt! && ReferenceEquals(App.Instance.Document, original),
+                "Discard permits exit without replacing the document.");
+            string exitSave = Path.Combine(folder, "exit-save.png");
+            ImageOutput.Save(image, exitSave);
+            original.FilePath = exitSave;
+            exitPrompted = RespondToConfirmation(true, () => exitAttempt = App.Instance.CanExitAsync());
+            Check(exitPrompted && await exitAttempt! && !original.Dirty && ImageOutput.Load(exitSave).PixelWidth == 2,
+                "Save before exit writes the cropped image and clears dirty state.");
+            report.Add("exit_save_and_discard_choices=True");
+            original.Add(new ShapeAnnotation(ShapeKind.Rectangle, new Point(0, 0), new Point(1, 1), Colors.Red, 1));
             bool prompted = RespondToConfirmation(false, () => App.Instance.SetDocument(new EditorDocument(image)));
             Check(prompted && ReferenceEquals(App.Instance.Document, original) && original.Dirty,
                 "Cancel preserves the unsaved document and its edits.");
@@ -211,7 +228,7 @@ internal static class SelfTestReleaseSafety
         }
     }
 
-    private static bool RespondToConfirmation(bool accept, Action action)
+    private static bool RespondToConfirmation(bool accept, Action action, bool alternative = false, string? renderPath = null)
     {
         bool seen = false;
         var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(30) };
@@ -221,7 +238,8 @@ internal static class SelfTestReleaseSafety
             if (dialog == null) return;
             seen = true;
             timer.Stop();
-            ((Button)dialog.FindName(accept ? "OkButton" : "CancelButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            if (renderPath != null) Render(dialog, renderPath);
+            ((Button)dialog.FindName(alternative ? "AlternativeButton" : accept ? "OkButton" : "CancelButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         };
         timer.Start();
         try { action(); }

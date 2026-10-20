@@ -569,6 +569,7 @@ namespace KillerShot.Shell
         }
 
         internal void CommitPendingText() => Editor.CommitText();
+        internal void SaveDocumentForExit() => Save();
 
         private bool OpenPath(string path)
         {

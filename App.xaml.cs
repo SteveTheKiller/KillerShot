@@ -341,6 +341,24 @@ public partial class App : Application
 
     internal async Task<bool> CanExitAsync()
     {
+        _editor?.CommitPendingText();
+        if (Document?.Dirty == true)
+        {
+            var expected = Document;
+            ShowEditor();
+            var edits = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Tray_Exit"),
+                LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Btn_Save"),
+                LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
+            edits.SetAlternative(LocaleManager.Loc("Str_Rec_Cancel"));
+            edits.ShowDialog();
+            if (!ReferenceEquals(Document, expected)) return false;
+            if (edits.Confirmed)
+            {
+                _editor!.SaveDocumentForExit();
+                if (Document.Dirty) return false;
+            }
+            else if (!edits.AlternativeChosen) return false;
+        }
         await CaptureLibrary.RetryPendingAsync();
         int pending = CaptureLibrary.PendingCount;
         if (pending == 0) return true;
