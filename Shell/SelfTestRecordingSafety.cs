@@ -169,7 +169,7 @@ internal static class SelfTestRecordingSafety
         Task startup = controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
         bool ready = await controller.PrepareForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
         if (!ready || !startup.IsCompleted || controller.IsRecording || controller.LastVideoPath != null)
-            throw new InvalidOperationException("Exit did not await countdown cancellation and startup cleanup.");
+            throw new InvalidOperationException($"Exit did not await countdown cancellation and startup cleanup: ready={ready}, startup={startup.Status}, recording={controller.IsRecording}, path={controller.LastVideoPath}.");
         await startup;
         VideoSettings.Countdown = false;
         report.Add("Exit during countdown waits for startup cleanup: PASS");

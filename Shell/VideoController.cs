@@ -83,7 +83,7 @@ internal sealed class VideoController
 
             if (VideoSettings.Countdown)
             {
-                _countdownSkip = new TaskCompletionSource();
+                _countdownSkip = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 for (int s = 3; s > 0 && !_countdownSkip.Task.IsCompleted; s--)
                 {
                     _chrome.SetCountdown(s);
