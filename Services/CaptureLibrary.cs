@@ -837,10 +837,6 @@ internal static partial class CaptureLibrary
         }
     }
 
-    private static readonly Dictionary<long, BitmapSource> _thumbs = [];
-    private static readonly LinkedList<long> _thumbOrder = new();
-    private const int ThumbCacheSize = 600;
-
     /// <summary>A larger, bounded decode for the album's selected photo. The view owns its single cached result.</summary>
     public static BitmapSource LoadPreview(CaptureItem item)
     {
@@ -868,36 +864,44 @@ internal static partial class CaptureLibrary
     /// <summary>A capture's thumbnail, cached. Null when it no longer exists.</summary>
     public static BitmapSource? LoadThumb(CaptureItem item)
     {
-        lock (_gate) return IsCurrent(item) ? LoadThumb(item.Id) : null;
+        return FolderCaptures.IsFolderId(item.Id) ? FolderCaptures.LoadThumb(item.Id) : LoadStoredThumb(item.Id, item.Session);
     }
 
     public static BitmapSource? LoadThumb(long id)
     {
-        if (FolderCaptures.IsFolderId(id)) return FolderCaptures.LoadThumb(id);
+        return FolderCaptures.IsFolderId(id) ? FolderCaptures.LoadThumb(id) : LoadStoredThumb(id, Volatile.Read(ref _session));
+    }
+
+    private static long _thumbnailGeneration;
+
+    private static BitmapSource? LoadStoredThumb(long id, long session)
+    {
+        long generation = Volatile.Read(ref _thumbnailGeneration);
+        if (session != Volatile.Read(ref _session)) return null;
+        if (ThumbnailCache.Get(session, id) is { } cached) return cached;
+        byte[] jpg;
         lock (_gate)
         {
-            if (_thumbs.TryGetValue(id, out var cached)) return cached;
-            if (_db == null) return null;
+            if (_db == null || session != _session) return null;
             using var cmd = _db.CreateCommand();
             cmd.CommandText = "SELECT thumb FROM captures WHERE id = $id";
             cmd.Parameters.AddWithValue("$id", id);
-            if (cmd.ExecuteScalar() is not byte[] jpg) return null;
-            var bmp = Decode(jpg, exactPixels: false);
-            _thumbs[id] = bmp;
-            _thumbOrder.AddLast(id);
-            while (_thumbOrder.Count > ThumbCacheSize)
-            {
-                _thumbs.Remove(_thumbOrder.First!.Value);
-                _thumbOrder.RemoveFirst();
-            }
-            return bmp;
+            if (cmd.ExecuteScalar() is not byte[] bytes) return null;
+            jpg = bytes;
         }
+        var bmp = Decode(jpg, exactPixels: false);
+        lock (_gate)
+        {
+            if (_db == null || session != _session || generation != _thumbnailGeneration) return null;
+            ThumbnailCache.Put(session, id, bmp);
+        }
+        return bmp;
     }
 
     private static void ClearThumbCache()
     {
-        _thumbs.Clear();
-        _thumbOrder.Clear();
+        _thumbnailGeneration++;
+        ThumbnailCache.Clear(folders: false);
     }
 
     private static BitmapSource Decode(byte[] bytes, bool exactPixels)
@@ -935,7 +939,7 @@ internal static partial class CaptureLibrary
                 cmd.CommandText = "DELETE FROM captures WHERE id = $id; DELETE FROM capture_search WHERE rowid = $id;";
                 cmd.Parameters.AddWithValue("$id", id);
                 cmd.ExecuteNonQuery();
-                if (_thumbs.Remove(id)) _thumbOrder.Remove(id);
+                ThumbnailCache.Remove(_session, id);
             }
             tx.Commit();
         }

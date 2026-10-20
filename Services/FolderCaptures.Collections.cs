@@ -17,6 +17,7 @@ internal static partial class FolderCaptures
         internal IReadOnlyList<CaptureItem> Items = [];
         internal bool Available;
         internal bool Initialized;
+        internal bool Network;
         internal Task? Scan;
         internal DateTime NextScan;
     }
@@ -28,6 +29,15 @@ internal static partial class FolderCaptures
     private static readonly SemaphoreSlim ScanSlots = new(2);
     private static readonly SemaphoreSlim NetworkScanSlots = new(2);
     private static readonly Timer LinkedPoll = new(_ => PollLinkedFolders(), null, 10000, 10000);
+
+    public static bool IsNetworkItem(long id)
+    {
+        string? path = PathOf(id);
+        if (path == null) return false;
+        if (path.StartsWith(@"\\", StringComparison.Ordinal)) return true;
+        lock (LinkedGate) return Linked.Values.Any(folder => folder.Network &&
+            path.StartsWith(folder.Path.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase));
+    }
 
     public static bool IsSource(string? source) => source == "folder" || source?.StartsWith("folder:", StringComparison.Ordinal) == true;
 
@@ -170,6 +180,7 @@ internal static partial class FolderCaptures
                 // A stalled share must not occupy the local-directory scan slots.
                 bool network = folder.Path.StartsWith(@"\\", StringComparison.Ordinal)
                     || new DriveInfo(Path.GetPathRoot(folder.Path)!).DriveType == DriveType.Network;
+                folder.Network = network;
                 var slots = network ? NetworkScanSlots : ScanSlots;
                 await slots.WaitAsync();
                 try { ScanLinkedFolder(folder); }

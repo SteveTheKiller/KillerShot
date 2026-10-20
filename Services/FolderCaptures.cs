@@ -19,10 +19,6 @@ internal static partial class FolderCaptures
     private static readonly Dictionary<string, long> _ids = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<long, string> _paths = [];
     private static readonly Dictionary<string, (DateTime Stamp, int W, int H)> _sizes = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<long, BitmapSource> _thumbs = [];
-    private static readonly LinkedList<long> _thumbOrder = new();
-    private static readonly Dictionary<long, LinkedListNode<long>> _thumbNodes = [];
-    private const int ThumbCacheSize = 128;
     private static long _nextId = -2;
     private static FileSystemWatcher? _watcher;
     private static Timer? _debounce;
@@ -53,7 +49,7 @@ internal static partial class FolderCaptures
             _watcher?.Dispose();
             _watcher = null;
             _ids.Clear(); _paths.Clear(); _sizes.Clear();
-            _thumbs.Clear(); _thumbOrder.Clear(); _thumbNodes.Clear();
+            ThumbnailCache.Clear(folders: true);
         }
     }
 
@@ -152,19 +148,13 @@ internal static partial class FolderCaptures
 
     public static BitmapSource? LoadThumb(long id)
     {
-        lock (_gate)
-        {
-            if (_thumbs.TryGetValue(id, out var t))
-            {
-                var node = _thumbNodes[id];
-                _thumbOrder.Remove(node);
-                _thumbOrder.AddLast(node);
-                return t;
-            }
-        }
+        if (ThumbnailCache.Get(0, id) is { } cached) return cached;
         if (PathOf(id) is not { } path) return null;
         try
         {
+            var file = new FileInfo(path);
+            DateTime stamp = file.LastWriteTimeUtc;
+            long length = file.Length;
             var (width, height) = SizeOf(new FileInfo(path));
             if (width <= 0 || height <= 0) return null;
             var bmp = new BitmapImage();
@@ -179,14 +169,14 @@ internal static partial class FolderCaptures
                 bmp.EndInit();
             }
             bmp.Freeze();
+            file.Refresh();
+            if (!file.Exists || file.LastWriteTimeUtc != stamp || file.Length != length) return null;
             lock (_gate)
             {
                 if (!_paths.TryGetValue(id, out string? current) || !string.Equals(current, path, StringComparison.OrdinalIgnoreCase))
                     return null;
                 RemoveThumb(id);
-                _thumbs[id] = bmp;
-                _thumbNodes[id] = _thumbOrder.AddLast(id);
-                while (_thumbOrder.Count > ThumbCacheSize) RemoveThumb(_thumbOrder.First!.Value);
+                ThumbnailCache.Put(0, id, bmp);
             }
             return bmp;
         }
@@ -195,8 +185,7 @@ internal static partial class FolderCaptures
 
     private static void RemoveThumb(long id)
     {
-        _thumbs.Remove(id);
-        if (_thumbNodes.Remove(id, out var node)) _thumbOrder.Remove(node);
+        ThumbnailCache.Remove(0, id);
     }
 
     public static BitmapSource LoadImage(long id) =>

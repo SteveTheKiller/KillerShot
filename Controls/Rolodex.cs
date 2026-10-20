@@ -73,6 +73,7 @@ internal sealed class Rolodex : FrameworkElement
 
     /// <summary>Gives a capture's thumbnail; null draws an empty card.</summary>
     public Func<CaptureItem, BitmapSource?>? ThumbnailSource { get; set; }
+    public bool DeferHiddenLoading { get; set; }
 
     /// <summary>The title printed at the foot of each card.</summary>
     public Func<CaptureItem, string>? Caption { get; set; }
@@ -179,20 +180,28 @@ internal sealed class Rolodex : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
+        IsVisibleChanged += (_, _) => Rebuild();
         Loaded += (_, _) =>
         {
             ThemeManager.ThemeChanged += Refresh;
+            CaptureLibrary.ThumbnailReady += OnThumbnailReady;
             ViewInfoCards.Changed += SyncInfoCards;
             SyncInfoCards();
         };
         Unloaded += (_, _) =>
         {
             ThemeManager.ThemeChanged -= Refresh;
+            CaptureLibrary.ThumbnailReady -= OnThumbnailReady;
             ViewInfoCards.Changed -= SyncInfoCards;
         };
     }
 
     private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get(true);
+
+    private void OnThumbnailReady(CaptureItem item) => Dispatcher.BeginInvoke(new Action(() =>
+    {
+        if (IsLoaded && IsVisible && _items.Contains(item)) Refresh();
+    }));
 
     private int IndexOf(long id)
     {
@@ -286,6 +295,7 @@ internal sealed class Rolodex : FrameworkElement
 
     private void Rebuild()
     {
+        if (DeferHiddenLoading && !IsVisible) return;
         int center = (int)Math.Round(_position);
         var wanted = _items.Count == 0 ? [] : Enumerable.Range(center - Window, Window * 2 + 1)
             .Select(i => (i % _items.Count + _items.Count) % _items.Count).Where(Visible).ToHashSet();

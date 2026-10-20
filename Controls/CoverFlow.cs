@@ -85,6 +85,7 @@ internal sealed class CoverFlow : FrameworkElement
 
     /// <summary>Gives a capture's thumbnail; null draws a blank card.</summary>
     public Func<CaptureItem, BitmapSource?>? ThumbnailSource { get; set; }
+    public bool DeferHiddenLoading { get; set; }
     public Func<CaptureItem, BitmapSource?>? SelectedPreviewSource { get; set; }
     private readonly SemaphoreSlim _previewSlot = new(1);
     private CancellationTokenSource? _previewRequest;
@@ -170,10 +171,11 @@ internal sealed class CoverFlow : FrameworkElement
         _root.Content = _scene;
         _viewport.Children.Add(_root);
         AddVisualChild(_viewport);
-        IsVisibleChanged += (_, _) => QueueSelectedPreview();
+        IsVisibleChanged += (_, _) => { Rebuild(); QueueSelectedPreview(); };
         Loaded += (_, _) =>
         {
             ThemeManager.ThemeChanged += RefreshCards;
+            CaptureLibrary.ThumbnailReady += OnThumbnailReady;
             CardColors.Changed += RefreshCards;
             ViewInfoCards.Changed += SyncInfoCards;
             SyncInfoCards();
@@ -182,6 +184,7 @@ internal sealed class CoverFlow : FrameworkElement
         Unloaded += (_, _) =>
         {
             ThemeManager.ThemeChanged -= RefreshCards;
+            CaptureLibrary.ThumbnailReady -= OnThumbnailReady;
             CardColors.Changed -= RefreshCards;
             ViewInfoCards.Changed -= SyncInfoCards;
             _previewRequest?.Cancel();
@@ -192,6 +195,11 @@ internal sealed class CoverFlow : FrameworkElement
     }
 
     private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get(false);
+
+    private void OnThumbnailReady(CaptureItem item) => Dispatcher.BeginInvoke(new Action(() =>
+    {
+        if (IsLoaded && IsVisible && _items.Contains(item)) RefreshCards();
+    }));
 
     private int IndexOf(long id)
     {
@@ -322,6 +330,7 @@ internal sealed class CoverFlow : FrameworkElement
     /// <summary>Creates the models near the position, drops the rest, and places them all.</summary>
     private void Rebuild()
     {
+        if (DeferHiddenLoading && !IsVisible) return;
         UpdateCamera(RenderSize);
         int center = (int)Math.Round(_position);
         int first = Math.Max(0, center - Window), last = Math.Min(_items.Count - 1, center + Window);

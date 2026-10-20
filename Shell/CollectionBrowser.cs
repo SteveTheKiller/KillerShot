@@ -81,7 +81,6 @@ internal sealed class CollectionBrowser : ListBox
 /// <summary>A small photo preview for a virtualized collection row.</summary>
 public sealed class CollectionPreview : StackPanel
 {
-    private static readonly SemaphoreSlim LoadSlots = new(2);
     private readonly Grid _photos = new() { Height = 78, ClipToBounds = true };
     private readonly Canvas _pile = new() { ClipToBounds = false };
     private readonly TextBlock _name = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 0) };
@@ -212,17 +211,15 @@ public sealed class CollectionPreview : StackPanel
             var item = preview[i];
             frame.Cursor = Controls.DragCursors.Open;
             ImageDrag.Attach(frame, _ => () => CaptureLibrary.LoadImage(item));
-            await LoadSlots.WaitAsync();
             try
             {
                 if (generation != _generation || !CaptureLibrary.IsCurrent(item)) return;
-                var bitmap = await Task.Run(() => CaptureLibrary.LoadThumb(item));
+                var bitmap = await CaptureLibrary.LoadThumbAsync(item);
                 if (generation != _generation || !CaptureLibrary.IsCurrent(item)) return;
                 image.Source = bitmap;
                 bitmaps[i] = bitmap;
             }
             catch (Exception) { /* The collection remains selectable if a preview is unavailable. */ }
-            finally { LoadSlots.Release(); }
         }
         if (choice.Style == "mini" && preview.Length > 0 && generation == _generation)
         {

@@ -40,6 +40,7 @@ internal static class SelfTestCarouselPerspective
             CheckAlbumHosts(report);
             var main = (CoverFlow)new LibraryView().FindName("BigFlow");
             main.ThumbnailSource = item => Thumbnail((int)item.Id);
+            main.DeferHiddenLoading = false;
             main.Items = Enumerable.Range(0, 9).Select(i => new CaptureItem(i, DateTime.Today, 180, 120,
                 "region", "Large photo " + i, null, null, null)).ToArray();
             main.SelectedIndex = 4;

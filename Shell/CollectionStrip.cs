@@ -87,7 +87,7 @@ namespace KillerShot.Shell
                 _source = tag;
                 Load(keepCurrent: true);
             };
-            _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.LoadThumb, Describe = LibraryView.Describe, ViewHeight = 1.2 };
+            _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.RequestThumb, DeferHiddenLoading = true, Describe = LibraryView.Describe, ViewHeight = 1.2 };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
             _flow.ItemMenuRequested += ShowItemMenu;
@@ -136,7 +136,7 @@ namespace KillerShot.Shell
 
             _rolodex = new Rolodex
             {
-                ThumbnailSource = CaptureLibrary.LoadThumb, Caption = LibraryView.Title, Describe = LibraryView.Describe,
+                ThumbnailSource = CaptureLibrary.RequestThumb, DeferHiddenLoading = true, Caption = LibraryView.Title, Describe = LibraryView.Describe,
                 CardColor = CardColors.StripCard(), Accent = item => CardColors.Collection(item.CollectionId),
             };
             CardColors.Changed += OnCardColorsChanged;
@@ -564,7 +564,7 @@ namespace KillerShot.Shell
             _caption.Text = LibraryView.Title(item);
             AutomationProperties.SetName(this, LibraryView.Describe(item));
             ToolTip = LibraryView.Describe(item);
-            Task.Run(() => CaptureLibrary.LoadThumb(item)).ContinueWith(t =>
+            CaptureLibrary.LoadThumbAsync(item).ContinueWith(t =>
             {
                 if (t.Status == TaskStatus.RanToCompletion && CaptureLibrary.IsCurrent(item) && DataContext is CaptureItem now && now == item) _image.Source = t.Result;
             }, TaskScheduler.FromCurrentSynchronizationContext());

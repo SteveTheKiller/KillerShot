@@ -113,7 +113,8 @@ namespace KillerShot.Shell
             _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" ? Settings.Get("LibraryView")! : "shelves";
             _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
 
-            BigFlow.ThumbnailSource = CaptureLibrary.LoadThumb;
+            BigFlow.ThumbnailSource = CaptureLibrary.RequestThumb;
+            BigFlow.DeferHiddenLoading = true;
             BigFlow.SelectedPreviewSource = CaptureLibrary.LoadPreview;
             BigFlow.Describe = Describe;
             BigFlow.ItemActivated += item => OpenRequested?.Invoke(item);
@@ -490,7 +491,8 @@ namespace KillerShot.Shell
                 ViewHeight = 1.52,
                 PerspectiveZoomEnabled = true,
                 ViewCenterY = 0.255,
-                ThumbnailSource = CaptureLibrary.LoadThumb,
+                ThumbnailSource = CaptureLibrary.RequestThumb,
+                DeferHiddenLoading = true,
                 Describe = item => row.Title + ", " + Describe(item),
             };
             flow.Items = row.Items;
