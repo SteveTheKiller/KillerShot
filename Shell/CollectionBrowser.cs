@@ -28,6 +28,7 @@ internal sealed class CollectionBrowser : ListBox
         BorderThickness = new Thickness(0);
         Padding = new Thickness(0);
         HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        Controls.SidebarEdgeFade.Attach(this);
         Template = (ControlTemplate)System.Windows.Markup.XamlReader.Parse("""
             <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBox">
                 <Border Background="{TemplateBinding Background}" ClipToBounds="False">

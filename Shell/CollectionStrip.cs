@@ -106,6 +106,7 @@ namespace KillerShot.Shell
                     "xmlns:s=\"clr-namespace:KillerShot.Shell;assembly=KillerShot\"><s:StripThumb/></DataTemplate>"),
             };
             ScrollViewer.SetHorizontalScrollBarVisibility(_list, ScrollBarVisibility.Disabled);
+            SidebarEdgeFade.Attach(_list);
             VirtualizingPanel.SetIsVirtualizing(_list, true);
             VirtualizingPanel.SetVirtualizationMode(_list, VirtualizationMode.Recycling);
             _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
