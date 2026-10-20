@@ -92,7 +92,7 @@ internal static class WindowCapture
 
     /// <summary>Captures the window, composites it over the frozen desktop and returns a
     /// 96-DPI bitmap. Falls back to cropping the frozen desktop when capture is unavailable.</summary>
-    public static async Task<(BitmapSource? Bitmap, bool UsedGraphicsCapture)> CaptureAsync(IntPtr hwnd, FrozenDesktop frozen, int timeoutMs = 1500)
+    public static async Task<(BitmapSource? Bitmap, bool UsedGraphicsCapture)> CaptureAsync(IntPtr hwnd, FrozenDesktop frozen, int timeoutMs = 1500, bool? includeCursor = null)
     {
         var bounds = FrameBounds(hwnd);
         if (bounds is null) return (null, false);
@@ -100,7 +100,7 @@ internal static class WindowCapture
         (byte[] Px, int W, int H)? shot = null;
         if (IsSupported)
         {
-            try { shot = await GrabAsync(hwnd, timeoutMs); }
+            try { shot = await GrabAsync(hwnd, timeoutMs, includeCursor ?? Services.CaptureSettings.IncludeCursor); }
             catch { shot = null; }
         }
 
@@ -170,7 +170,7 @@ internal static class WindowCapture
         finally { Marshal.Release(ptr); }
     }
 
-    private static async Task<(byte[], int, int)?> GrabAsync(IntPtr hwnd, int timeoutMs)
+    private static async Task<(byte[], int, int)?> GrabAsync(IntPtr hwnd, int timeoutMs, bool includeCursor)
     {
         EnsureDevice();
         var item = CreateItem(hwnd);
@@ -179,7 +179,7 @@ internal static class WindowCapture
 
         using var pool = Direct3D11CaptureFramePool.CreateFreeThreaded(_device!, DirectXPixelFormat.B8G8R8A8UIntNormalized, 1, item.Size);
         using var session = pool.CreateCaptureSession(item);
-        try { session.IsCursorCaptureEnabled = Services.CaptureSettings.IncludeCursor; } catch { }
+        try { session.IsCursorCaptureEnabled = includeCursor; } catch { }
         try { session.IsBorderRequired = false; } catch { }
 
         var tcs = new TaskCompletionSource<Direct3D11CaptureFrame>(TaskCreationOptions.RunContinuationsAsynchronously);

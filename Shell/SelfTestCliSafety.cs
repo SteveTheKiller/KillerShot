@@ -20,6 +20,7 @@ internal static class SelfTestCliSafety
         Settings.UseFolder(Path.Combine(dir, "settings"));
         CaptureLibrary.UseFolder(Path.Combine(dir, "library"));
         CaptureLibrary.BackgroundWork = false;
+        if (args[2] is "cursor-on" or "cursor-off") CaptureSettings.IncludeCursor = args[2] == "cursor-on";
         if (args[2] == "protected")
         {
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);

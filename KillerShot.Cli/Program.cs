@@ -226,7 +226,7 @@ public static class Program
                     if (windowPicker.PickedWindow == IntPtr.Zero) { bmp = frozen.Crop(clicked.Value); break; }
                     window = windowPicker.PickedWindow;
                 }
-                (bmp, usedGraphicsCapture) = await WindowCapture.CaptureAsync(window, frozen);
+                (bmp, usedGraphicsCapture) = await WindowCapture.CaptureAsync(window, frozen, includeCursor: cursor);
                 if (bmp == null) throw new CliException("The window could not be captured.", ExitFailed);
                 break;
             case CaptureMode.Monitor:
