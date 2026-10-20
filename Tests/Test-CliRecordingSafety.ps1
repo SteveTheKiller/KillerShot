@@ -13,6 +13,7 @@ foreach ($collision in @($false, $true)) {
         '--rect', '2,2,320,240', '--seconds', '2', '--format', 'mp4', '--sound', 'microphone', '--out', $destination)
     $quotedArguments = $arguments | ForEach-Object { '"' + $_ + '"' }
     $process = Start-Process -FilePath $AppPath -ArgumentList $quotedArguments -WindowStyle Hidden -PassThru -RedirectStandardError $stderr
+    $null = $process.Handle
     if ($collision) {
         $deadline = [DateTime]::UtcNow.AddSeconds(10)
         do {
