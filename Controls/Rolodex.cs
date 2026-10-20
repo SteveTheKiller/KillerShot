@@ -167,7 +167,7 @@ internal sealed class Rolodex : FrameworkElement
             return () => CaptureLibrary.LoadImage(item);
         }, verticalNavigation: true);
         Focusable = true;
-        FocusVisualStyle = null;
+        FocusVisualStyle = KillerFamily.Accessibility.AccessibleControls.FocusStyleFor(this);
         ClipToBounds = true;
         _viewport.Camera = new PerspectiveCamera
         {

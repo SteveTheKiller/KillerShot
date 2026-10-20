@@ -157,7 +157,7 @@ internal sealed class CoverFlow : FrameworkElement
             return () => CaptureLibrary.LoadImage(item);
         }, verticalNavigation: false);
         Focusable = true;
-        FocusVisualStyle = null;
+        FocusVisualStyle = KillerFamily.Accessibility.AccessibleControls.FocusStyleFor(this);
         ClipToBounds = true;
         _viewport.Camera = new PerspectiveCamera
         {

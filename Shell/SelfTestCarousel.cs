@@ -37,6 +37,8 @@ internal static class SelfTestCarousel
                 var flow = vertical ? null : new CoverFlow { ThumbnailSource = _ => image, Items = items };
                 var drum = vertical ? new Rolodex { ThumbnailSource = _ => image, Caption = c => c.Window!, Items = items } : null;
                 FrameworkElement control = (FrameworkElement?)flow ?? drum!;
+                if (control.FocusVisualStyle == null)
+                    throw new InvalidOperationException("Keyboard-focusable carousel has no visible focus style.");
                 window = new Window { Content = control, Width = vertical ? 300 : 1000, Height = vertical ? 720 : 500,
                     Left = -20000, Top = -20000, ShowActivated = false, WindowStartupLocation = WindowStartupLocation.Manual };
                 window.Show();
