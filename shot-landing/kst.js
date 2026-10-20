@@ -485,7 +485,13 @@
   btn.className = 'tb-more-toggle';
   btn.setAttribute('aria-haspopup', 'true');
   btn.setAttribute('aria-expanded', 'false');
-  btn.setAttribute('aria-label', 'More');
+  function labelMore(lang) {
+    lang = lang === 'zh-Hant' ? 'zh' : lang === 'zh-Hans' ? 'zh-cn' : lang;
+    var dict = window.I18N && window.I18N[lang];
+    btn.setAttribute('aria-label', dict && dict.ui_more ? dict.ui_more : 'More');
+  }
+  labelMore(document.documentElement.getAttribute('lang'));
+  document.addEventListener('kshot-languagechange', function (e) { labelMore(e.detail && e.detail.lang); });
   btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
   var menu = document.createElement('div');
   menu.className = 'lang-menu tb-more-menu';

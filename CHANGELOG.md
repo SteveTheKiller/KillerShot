@@ -70,3 +70,4 @@
 - Restored film grain on the file picker sidebar.
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.
+- The website's More button uses the selected language for its accessible name.
