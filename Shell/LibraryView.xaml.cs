@@ -224,9 +224,11 @@ namespace KillerShot.Shell
             if (_source != "all") _folderItems = [];
 
             SyncHeader();
+            string? folderStatus = FolderReadStatus();
             CountText.Text = search.Length > 0
                 ? string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_CountMatches"), _items.Count, total)
                 : string.Format(CultureInfo.CurrentCulture, Loc(total == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), total);
+            if (folderStatus != null) CountText.Text += " (" + Loc(folderStatus) + ")";
             CountChanged?.Invoke(CountText.Text);
 
             // The Screenshots folder shows as a collection, so only where collections do.
@@ -235,7 +237,7 @@ namespace KillerShot.Shell
             bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0 && !linkedPhotos;
             if (_items.Count == 0 && !folderShown && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
             {
-                ShowEmpty(searching: search.Length > 0 && !libraryEmpty);
+                ShowEmpty(searching: search.Length > 0 && !libraryEmpty, folderStatus);
                 return;
             }
             EmptyPanel.Visibility = Visibility.Collapsed;
@@ -268,15 +270,25 @@ namespace KillerShot.Shell
                     : Loc("Str_Lib_LockedDetail");
         }
 
-        private void ShowEmpty(bool searching)
+        private string? FolderReadStatus()
+        {
+            var folders = FolderCaptures.IsSource(_source)
+                ? new[] { FolderCaptures.StatusForSource(_source) }.OfType<FolderCollection>()
+                : _source == "all" ? FolderCaptures.LinkedCollections().Concat(FolderCaptures.Enabled
+                    ? new[] { FolderCaptures.StatusForSource("folder") }.OfType<FolderCollection>() : []) : [];
+            if (folders.Any(folder => !folder.Loading && !folder.Available)) return "Str_FolderCollection_Unavailable";
+            return folders.Any(folder => folder.Loading) ? "Str_FolderCollection_Loading" : null;
+        }
+
+        private void ShowEmpty(bool searching, string? folderStatus = null)
         {
             RowsList.Visibility = FlowHost.Visibility = Visibility.Collapsed;
             EmptyPanel.Visibility = Visibility.Visible;
-            EmptyTitle.Text = Loc(searching ? "Str_Lib_NoMatches" : "Str_Empty_Title");
-            EmptyHint.Text = searching
+            EmptyTitle.Text = Loc(folderStatus ?? (searching ? "Str_Lib_NoMatches" : "Str_Empty_Title"));
+            EmptyHint.Text = folderStatus != null ? (FolderCaptures.IsSource(_source) ? FolderCaptures.PathForSource(_source) : "") : searching
                 ? Loc("Str_Lib_NoMatchesHint")
                 : string.Format(Loc("Str_Empty_Hint"), Shortcut.TryParse(CaptureSettings.ShortcutText(ShortcutAction.LastMode), out var sc) ? sc.Short : "PrtScn");
-            EmptyCaptureBtn.Visibility = searching ? Visibility.Collapsed : Visibility.Visible;
+            EmptyCaptureBtn.Visibility = searching || folderStatus != null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void SyncHeader()

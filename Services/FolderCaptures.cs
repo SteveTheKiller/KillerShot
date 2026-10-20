@@ -3,6 +3,18 @@ using System.Windows.Media.Imaging;
 
 namespace KillerShot.Services;
 
+internal interface IFolderDirectoryReader
+{
+    IEnumerable<FileInfo> EnumerateFiles(DirectoryInfo directory, EnumerationOptions options);
+    IEnumerable<DirectoryInfo> EnumerateDirectories(DirectoryInfo directory, EnumerationOptions options);
+}
+
+internal sealed class SystemFolderDirectoryReader : IFolderDirectoryReader
+{
+    public IEnumerable<FileInfo> EnumerateFiles(DirectoryInfo directory, EnumerationOptions options) => directory.EnumerateFiles("*", options);
+    public IEnumerable<DirectoryInfo> EnumerateDirectories(DirectoryInfo directory, EnumerationOptions options) => directory.EnumerateDirectories("*", options);
+}
+
 /// <summary>
 /// The Windows Screenshots folder (Pictures\Screenshots), shown in the library as a live
 /// collection read from the files as they are. Nothing is copied into the encrypted library, and
@@ -23,6 +35,8 @@ internal static partial class FolderCaptures
     private static FileSystemWatcher? _watcher;
     private static Timer? _debounce;
     private static string? _folderOverride;
+    private static IFolderDirectoryReader _directoryReader = new SystemFolderDirectoryReader();
+    private static bool _folderAvailable = true;
 
     /// <summary>A file was added, removed, renamed or changed in the folder.</summary>
     public static event Action? Changed;
@@ -32,6 +46,12 @@ internal static partial class FolderCaptures
     /// <summary>The folder's name as the collection title.</summary>
     public static string Name => Path.GetFileName(Folder.TrimEnd('\\')) is { Length: > 0 } n ? n : Folder;
 
+    public static FolderCollection? StatusForSource(string source)
+    {
+        if (source != "folder") return LinkedCollections().FirstOrDefault(folder => folder.Source == source);
+        lock (_gate) return new FolderCollection(source, Folder, _folderAvailable, false);
+    }
+
     /// <summary>Shown as a collection unless turned off in Capture settings.</summary>
     public static bool Enabled
     {
@@ -40,12 +60,14 @@ internal static partial class FolderCaptures
     }
 
     /// <summary>For the self-test: another folder in place of the user's.</summary>
-    internal static void UseFolder(string dir)
+    internal static void UseFolder(string dir, IFolderDirectoryReader? directoryReader = null)
     {
         ResetLinkedFolders();
         lock (_gate)
         {
             _folderOverride = dir;
+            _directoryReader = directoryReader ?? new SystemFolderDirectoryReader();
+            _folderAvailable = true;
             _watcher?.Dispose();
             _watcher = null;
             _ids.Clear(); _paths.Clear(); _sizes.Clear();
@@ -63,20 +85,22 @@ internal static partial class FolderCaptures
     {
         if (!Enabled) return [];
         string folder = Folder;
-        FileInfo[] files;
+        var found = new List<FileInfo>();
+        bool available = true;
         try
         {
             var dir = new DirectoryInfo(folder);
-            if (!dir.Exists)
-            {
-                Reconcile([]);
-                return [];
-            }
-            files = dir.GetFiles().Where(f => Extensions.Contains(f.Extension, StringComparer.OrdinalIgnoreCase)).ToArray();
+            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = false, AttributesToSkip = 0 };
+            foreach (var file in ReadDirectoryEntries(() => _directoryReader.EnumerateFiles(dir, options), error =>
+                { if (error is not DirectoryNotFoundException || found.Count != 0) available = false; }))
+                if (Extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase)) found.Add(file);
         }
-        catch { return []; }
-        Reconcile(files);
-        Watch(folder);
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException) { available = false; }
+        bool statusChanged;
+        lock (_gate) { statusChanged = _folderAvailable != available; _folderAvailable = available; }
+        var files = found.ToArray();
+        if (available) { Reconcile(files); Watch(folder); }
+        if (statusChanged) Changed?.Invoke();
         string[] words = (search ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var list = new List<CaptureItem>();
         foreach (var f in files.OrderByDescending(f => f.LastWriteTime))
@@ -226,6 +250,26 @@ internal static partial class FolderCaptures
             _sizes.Remove(path);
             _debounce?.Dispose();
             _debounce = new Timer(_ => Changed?.Invoke(), null, 400, Timeout.Infinite);
+        }
+    }
+
+    private static IEnumerable<T> ReadDirectoryEntries<T>(Func<IEnumerable<T>> enumerate, Action<Exception> failed) where T : class
+    {
+        IEnumerator<T>? iterator = null;
+        try { iterator = enumerate().GetEnumerator(); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Security.SecurityException) { failed(error); }
+        if (iterator == null) yield break;
+        using (iterator)
+        {
+            while (true)
+            {
+                bool moved = false;
+                T? value = null;
+                try { moved = iterator.MoveNext(); if (moved) value = iterator.Current; }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Security.SecurityException) { moved = false; failed(error); }
+                if (!moved) break;
+                yield return value!;
+            }
         }
     }
 }

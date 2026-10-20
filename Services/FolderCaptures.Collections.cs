@@ -197,11 +197,8 @@ internal static partial class FolderCaptures
         bool available = false;
         try
         {
-            var directory = new DirectoryInfo(folder.Path);
-            if (!directory.Exists) throw new DirectoryNotFoundException();
-            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true,
-                AttributesToSkip = FileAttributes.ReparsePoint, ReturnSpecialDirectories = false };
-            foreach (var file in directory.EnumerateFiles("*", options))
+            bool complete = true;
+            foreach (var file in LinkedFiles(folder, _directoryReader, () => complete = false))
             {
                 if (!Extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase)) continue;
                 lock (LinkedGate)
@@ -232,7 +229,7 @@ internal static partial class FolderCaptures
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             }
-            available = true;
+            available = complete;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
         bool changed;
@@ -252,6 +249,21 @@ internal static partial class FolderCaptures
             PruneLinkedMetadata();
         }
         if (changed) Changed?.Invoke();
+    }
+
+    private static IEnumerable<FileInfo> LinkedFiles(LinkedFolder folder, IFolderDirectoryReader reader, Action incomplete)
+    {
+        var pending = new Stack<DirectoryInfo>();
+        pending.Push(new DirectoryInfo(folder.Path));
+        while (pending.TryPop(out var directory))
+        {
+            lock (LinkedGate)
+                if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) yield break;
+            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = false,
+                AttributesToSkip = FileAttributes.ReparsePoint, ReturnSpecialDirectories = false };
+            foreach (var child in ReadDirectoryEntries(() => reader.EnumerateDirectories(directory, options), _ => incomplete())) pending.Push(child);
+            foreach (var file in ReadDirectoryEntries(() => reader.EnumerateFiles(directory, options), _ => incomplete())) yield return file;
+        }
     }
 
     private static void PruneLinkedMetadata()

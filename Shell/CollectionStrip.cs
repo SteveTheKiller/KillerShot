@@ -343,7 +343,12 @@ namespace KillerShot.Shell
                     void Choice(string source, string name, IReadOnlyList<CaptureItem> members, string? status = null, string? path = null) =>
                         choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, PreviewStyle, status, path));
                     Choice("all", Loc("Str_Strip_All"), all);
-                    if (FolderCaptures.Enabled) Choice("folder", FolderCaptures.Name, FolderCaptures.Items());
+                    if (FolderCaptures.Enabled)
+                    {
+                        var members = FolderCaptures.Items();
+                        Choice("folder", FolderCaptures.Name, members, FolderCaptures.StatusForSource("folder") is { Available: false }
+                            ? "Str_FolderCollection_Unavailable" : null, FolderCaptures.Folder);
+                    }
                     foreach (var folder in folders) Choice(folder.Source, folder.Name, FolderCaptures.LinkedItems(folder.Source),
                         folder.Loading ? "Str_FolderCollection_Loading" : !folder.Available ? "Str_FolderCollection_Unavailable" : null, folder.Path);
                     foreach (var c in collections)
@@ -367,6 +372,11 @@ namespace KillerShot.Shell
                     _ => CaptureLibrary.Items().Where(i => "c" + i.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source).ToList(),
                 };
                 _count.Text = string.Format(CultureInfo.CurrentCulture, Loc(_items.Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), _items.Count);
+                if (FolderCaptures.IsSource(_source) && FolderCaptures.StatusForSource(_source) is { } folderStatus)
+                {
+                    string? status = folderStatus.Loading ? "Str_FolderCollection_Loading" : !folderStatus.Available ? "Str_FolderCollection_Unavailable" : null;
+                    if (status != null) _count.Text += " (" + Loc(status) + ")";
+                }
                 if (!_albumMode)
                 {
                     _flow.Items = _items;
