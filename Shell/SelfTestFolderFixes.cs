@@ -75,6 +75,22 @@ internal static partial class SelfTestLibrary
             if (carousel.Items.Count != 1 || carousel.SelectedItem?.Id != selected.Id)
                 throw new InvalidOperationException("A linked editor refresh must remove deleted files and preserve the surviving selected photo.");
             report.Add("same_source_editor_refreshes_added_removed_files_and_retains_selection=PASS");
+            var pixels = new byte[6000 * 4000 * 4];
+            Array.Fill(pixels, (byte)255);
+            var large = BitmapSource.Create(6000, 4000, 96, 96, PixelFormats.Bgra32, null, pixels, 6000 * 4);
+            var jpeg = new JpegBitmapEncoder { QualityLevel = 80 };
+            jpeg.Frames.Add(BitmapFrame.Create(large));
+            using (var output = File.Create(Path.Combine(photos, "large.jpg"))) jpeg.Save(output);
+            await FolderCaptures.RefreshFolderAsync(source);
+            var largeItem = FolderCaptures.LinkedItems(source).Single(item => item.Window == "large");
+            long before = GC.GetTotalAllocatedBytes(true);
+            var preview = CaptureLibrary.LoadPreview(largeItem);
+            long allocated = GC.GetTotalAllocatedBytes(true) - before;
+            report.Add($"large_preview_managed_allocation_bytes={allocated}");
+            if (preview.PixelWidth != 2048 || preview.PixelHeight != 1365 || !preview.IsFrozen
+                || allocated >= 64 * 1024 * 1024)
+                throw new InvalidOperationException("The linked JPEG preview must decode at bounded size without full-image conversion.");
+            report.Add("large_linked_preview_has_bounded_decode=PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

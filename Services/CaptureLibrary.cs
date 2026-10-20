@@ -818,8 +818,10 @@ internal static partial class CaptureLibrary
     /// <summary>A larger, bounded decode for the album's selected photo. The view owns its single cached result.</summary>
     public static BitmapSource LoadPreview(CaptureItem item)
     {
-        byte[] png = LoadPng(item);
-        using var stream = new MemoryStream(png);
+        using Stream stream = FolderCaptures.IsFolderId(item.Id)
+            ? new FileStream(FolderCaptures.PathOf(item.Id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")),
+                FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)
+            : new MemoryStream(LoadPng(item));
         var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.DelayCreation | BitmapCreateOptions.IgnoreColorProfile,
             BitmapCacheOption.None);
         var frame = decoder.Frames[0];
