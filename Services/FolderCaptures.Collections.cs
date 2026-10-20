@@ -14,6 +14,7 @@ internal static partial class FolderCaptures
     {
         internal readonly string Source = source;
         internal readonly string Path = path;
+        internal readonly HashSet<string> ScanningPaths = new(StringComparer.OrdinalIgnoreCase);
         internal IReadOnlyList<CaptureItem> Items = [];
         internal bool Available;
         internal bool Initialized;
@@ -95,6 +96,7 @@ internal static partial class FolderCaptures
             {
                 _linkedConfig = json;
                 Linked.Remove(source);
+                PruneLinkedMetadata();
             }
         }
         Changed?.Invoke();
@@ -203,7 +205,10 @@ internal static partial class FolderCaptures
             {
                 if (!Extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase)) continue;
                 lock (LinkedGate)
+                {
                     if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
+                    folder.ScanningPaths.Add(file.FullName);
+                }
                 try
                 {
                     lock (_gate)
@@ -214,8 +219,16 @@ internal static partial class FolderCaptures
                         }
                     var (width, height) = SizeOf(file);
                     if (width == 0 || height == 0) continue;
-                    items.Add(new CaptureItem(IdOf(file.FullName), file.LastWriteTime, width, height,
-                        "file", Path.GetFileNameWithoutExtension(file.Name), null, CollectionId, null));
+                    lock (LinkedGate)
+                    {
+                        if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder))
+                        {
+                            PruneLinkedMetadata();
+                            return;
+                        }
+                        items.Add(new CaptureItem(IdOf(file.FullName), file.LastWriteTime, width, height,
+                            "file", Path.GetFileNameWithoutExtension(file.Name), null, CollectionId, null));
+                    }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             }
@@ -223,25 +236,42 @@ internal static partial class FolderCaptures
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
         bool changed;
+        var ordered = items.OrderByDescending(item => item.Taken).ThenBy(item => item.Id).ToArray();
         lock (LinkedGate)
         {
-            if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
-            var ordered = items.OrderByDescending(item => item.Taken).ThenBy(item => item.Id).ToArray();
+            if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder))
+            {
+                PruneLinkedMetadata();
+                return;
+            }
             changed = !folder.Initialized || folder.Available != available || !folder.Items.SequenceEqual(ordered);
-            var retained = ordered.Select(item => item.Id).ToHashSet();
-            foreach (long removed in folder.Items.Select(item => item.Id).Where(id => !retained.Contains(id)
-                && !Linked.Values.Any(other => !ReferenceEquals(other, folder) && other.Items.Any(item => item.Id == id))))
-                lock (_gate)
-                    if (_paths.Remove(removed, out string? path))
-                    {
-                        _ids.Remove(path);
-                        _sizes.Remove(path);
-                        RemoveThumb(removed);
-                    }
             folder.Items = ordered;
             folder.Available = available;
             folder.Initialized = true;
+            folder.ScanningPaths.Clear();
+            PruneLinkedMetadata();
         }
         if (changed) Changed?.Invoke();
+    }
+
+    private static void PruneLinkedMetadata()
+    {
+        var retained = Linked.Values.SelectMany(folder => folder.Items).Select(item => item.Id).ToHashSet();
+        var scanning = Linked.Values.SelectMany(folder => folder.ScanningPaths).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        string screenshots = Folder.TrimEnd(Path.DirectorySeparatorChar);
+        bool IsScreenshotsPath(string path) => string.Equals(Path.GetDirectoryName(path), screenshots, StringComparison.OrdinalIgnoreCase);
+        lock (_gate)
+        {
+            foreach (var (id, path) in _paths.ToArray())
+            {
+                if (retained.Contains(id) || scanning.Contains(path) || IsScreenshotsPath(path)) continue;
+                _paths.Remove(id);
+                _ids.Remove(path);
+                _sizes.Remove(path);
+                RemoveThumb(id);
+            }
+            foreach (string path in _sizes.Keys.Where(path => !_ids.ContainsKey(path) && !scanning.Contains(path)
+                && !IsScreenshotsPath(path)).ToArray()) _sizes.Remove(path);
+        }
     }
 }
