@@ -72,6 +72,7 @@ public partial class App : Application
         if (SelfTestGifDuration.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
+        if (SelfTestDragCleanup.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
@@ -110,6 +111,7 @@ public partial class App : Application
         }
 
         InitializeKit();
+        ImageDrag.Initialize();
         // The encrypted library opens with the Windows-account key without a prompt, off this
         // thread so the editor paints first. With a password set it stays locked until the
         // library screen unlocks it.

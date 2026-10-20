@@ -10,15 +10,80 @@ namespace KillerShot.Services;
 
 internal static class ImageDrag
 {
-    private static readonly string ExportFolder = Path.Combine(Path.GetTempPath(), "KillerShot-Drag", Guid.NewGuid().ToString("N"));
+    private static string ExportRoot = Path.Combine(Path.GetTempPath(), "KillerShot-Drag");
+    private static string ExportFolder = Path.Combine(ExportRoot, Guid.NewGuid().ToString("N"));
+    private static FileStream? _owner;
+    private static System.Windows.Threading.DispatcherTimer? _cleanupTimer;
     internal static bool Active { get; private set; }
+
+    internal static void Initialize(string? root = null)
+    {
+        if (root != null)
+        {
+            ExportRoot = Path.GetFullPath(root);
+            ExportFolder = Path.Combine(ExportRoot, Guid.NewGuid().ToString("N"));
+        }
+        ReclaimAbandoned();
+        if (_cleanupTimer != null) return;
+        _cleanupTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(1) };
+        _cleanupTimer.Tick += (_, _) => ReclaimAbandoned();
+        _cleanupTimer.Start();
+    }
+
+    internal static void ReclaimAbandoned()
+    {
+        try
+        {
+            if (!Directory.Exists(ExportRoot) || IsLink(ExportRoot)) return;
+            foreach (string session in Directory.EnumerateDirectories(ExportRoot))
+                DeleteSession(session, DateTime.UtcNow.AddHours(-24));
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    private static bool IsLink(string path) => (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+
+    private static void DeleteSession(string session, DateTime cutoff)
+    {
+        var handles = new List<FileStream>();
+        try
+        {
+            if (!Guid.TryParseExact(Path.GetFileName(session), "N", out _) ||
+                !string.Equals(Path.GetDirectoryName(Path.GetFullPath(session)), Path.GetFullPath(ExportRoot), StringComparison.OrdinalIgnoreCase) ||
+                !Directory.Exists(session) || IsLink(ExportRoot) || IsLink(session) ||
+                Directory.GetLastWriteTimeUtc(session) > cutoff || Directory.EnumerateDirectories(session).Any()) return;
+            string[] files = Directory.GetFiles(session);
+            foreach (string file in files)
+            {
+                string name = Path.GetFileName(file);
+                bool png = name.StartsWith("KillerShot ", StringComparison.Ordinal) && name.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
+                    Guid.TryParseExact(name[11..^4], "N", out _);
+                if ((name != ".session.lock" && !png) || IsLink(file) || File.GetLastWriteTimeUtc(file) > cutoff) return;
+                // Hold every file before deleting any. A live owner or consumer preserves the session.
+                handles.Add(new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.Delete));
+            }
+            foreach (string file in files)
+            {
+                if (IsLink(ExportRoot) || IsLink(session) || IsLink(file)) return;
+                File.Delete(file);
+            }
+            foreach (var handle in handles) handle.Dispose();
+            handles.Clear();
+            if (!IsLink(ExportRoot) && !IsLink(session)) Directory.Delete(session, false);
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        finally { foreach (var handle in handles) handle.Dispose(); }
+    }
 
     // Keep successful exports readable for targets that finish reading after Drop returns.
     internal static void Cleanup()
     {
-        try { if (Directory.Exists(ExportFolder)) Directory.Delete(ExportFolder, true); }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        _cleanupTimer?.Stop();
+        _owner?.Dispose();
+        _owner = null;
+        DeleteSession(ExportFolder, DateTime.MaxValue);
     }
 
     internal static void Start(BitmapSource image)
@@ -42,7 +107,15 @@ internal static class ImageDrag
         }
     }
 
-    internal static ImageTransfer CreateTransfer(BitmapSource image) => new(image, ExportFolder);
+    internal static ImageTransfer CreateTransfer(BitmapSource image)
+    {
+        Directory.CreateDirectory(ExportRoot);
+        if (IsLink(ExportRoot)) throw new IOException("The drag export folder cannot be a link.");
+        Directory.CreateDirectory(ExportFolder);
+        if (IsLink(ExportFolder)) throw new IOException("The drag session folder cannot be a link.");
+        _owner ??= new FileStream(Path.Combine(ExportFolder, ".session.lock"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read);
+        return new(image, ExportFolder);
+    }
 
     internal sealed class ImageTransfer : IDisposable
     {
