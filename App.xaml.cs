@@ -360,6 +360,7 @@ public partial class App : Application
             }
             else if (!edits.AlternativeChosen) return false;
         }
+        if (Video != null && !await Video.PrepareForExitAsync()) return false;
         await CaptureLibrary.RetryPendingAsync();
         int pending = CaptureLibrary.PendingCount;
         if (pending == 0) return true;

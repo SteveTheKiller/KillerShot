@@ -25,6 +25,8 @@ internal sealed class VideoController
     private string? _path, _stagingFolder, _outputFolder, _outputName;
     private bool _starting, _stopping, _stopRequested, _discard;
     private TaskCompletionSource? _countdownSkip;
+    private TaskCompletionSource _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _stopSucceeded = true;
 
     public bool IsRecording => _recorder != null || _starting || _stopping;
     public string? LastVideoPath { get; private set; }
@@ -52,6 +54,8 @@ internal sealed class VideoController
     public async Task StartAsync(Win32.RECT rect)
     {
         if (IsRecording) return;
+        _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _stopSucceeded = false;
         _discard = false;
         _stopRequested = false;
         _starting = true;
@@ -131,6 +135,7 @@ internal sealed class VideoController
                 _stopRequested = false;
                 await StopAsync(_discard);
             }
+            if (!IsRecording) _idle.TrySetResult();
             StateChanged?.Invoke();
         }
     }
@@ -144,11 +149,18 @@ internal sealed class VideoController
 
     public async Task StopAsync(bool discard)
     {
-        if (_stopping) { _discard |= discard; return; }
-        if (_starting && _recorder != null)
+        if (_stopping) { _discard |= discard; await _idle.Task; return; }
+        if (_starting)
         {
             _stopRequested = true;
             _discard |= discard;
+            if (_recorder == null)
+            {
+                _countdownSkip?.TrySetResult();
+                Cleanup();
+                _stopSucceeded = true;
+            }
+            await _idle.Task;
             return;
         }
         _discard = discard;
@@ -182,6 +194,7 @@ internal sealed class VideoController
                 return;
             }
             LastVideoPath = published;
+            _stopSucceeded = true;
             if (VideoSettings.CopyFile) CopyFileToClipboard(published);
             if (captureWarning != null)
                 _tray.ShowWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
@@ -197,8 +210,16 @@ internal sealed class VideoController
             CleanupStaging(retainFinalizedStage);
             Cleanup();
             _stopping = false;
+            _idle.TrySetResult();
             StateChanged?.Invoke();
         }
+    }
+
+    public async Task<bool> PrepareForExitAsync()
+    {
+        if (!IsRecording) return true;
+        await StopAsync(discard: false);
+        return _stopSucceeded;
     }
 
     private void ReportPublicationFailure(string path, Exception error)

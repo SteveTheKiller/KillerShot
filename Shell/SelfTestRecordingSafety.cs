@@ -31,6 +31,8 @@ internal static class SelfTestRecordingSafety
             await StopCutsOffAudioAsync(report, paused: true);
             await AudioFailureKeepsVideoAsync(dir, report);
             await DiscardStillRemovesVideoAsync(dir, report);
+            await ConcurrentStopWaitsAsync(dir, report);
+            await ExitDuringCountdownAsync(dir, report);
             await FailedFinalizationStaysFailedAsync(report);
             code = 0;
         }
@@ -131,6 +133,48 @@ internal static class SelfTestRecordingSafety
         report.Add("Explicit discard still removes finalized video after an audio error: PASS");
     }
 
+    private static async Task ConcurrentStopWaitsAsync(string dir, List<string> report)
+    {
+        VideoSettings.OutputFolder = Path.Combine(dir, "concurrent-stop");
+        using var tray = new TrayHost();
+        using var gate = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var controller = new VideoController(tray, [new TestAudioDevice { StopGate = gate, StopEntered = entered }]);
+        await controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
+        await Task.Delay(150);
+        Task first = controller.StopAsync(false);
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            Task second = controller.StopAsync(false);
+            Task<bool> exit = controller.PrepareForExitAsync();
+            if (second.IsCompleted || exit.IsCompleted)
+                throw new InvalidOperationException("A second Stop returned before finalization and publication completed.");
+            gate.Set();
+            await Task.WhenAll(first, second, exit).WaitAsync(TimeSpan.FromSeconds(10));
+            if (!await exit) throw new InvalidOperationException("Successful publication blocked exit.");
+            if (controller.IsRecording || controller.LastVideoPath == null || !File.Exists(controller.LastVideoPath))
+                throw new InvalidOperationException("Stop completed without publishing the finalized video.");
+            report.Add("Concurrent Stop waits for finalization and publication: PASS");
+        }
+        finally { gate.Set(); await first; }
+    }
+
+    private static async Task ExitDuringCountdownAsync(string dir, List<string> report)
+    {
+        VideoSettings.OutputFolder = Path.Combine(dir, "countdown-exit");
+        VideoSettings.Countdown = true;
+        using var tray = new TrayHost();
+        var controller = new VideoController(tray);
+        Task startup = controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
+        bool ready = await controller.PrepareForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        if (!ready || !startup.IsCompleted || controller.IsRecording || controller.LastVideoPath != null)
+            throw new InvalidOperationException("Exit did not await countdown cancellation and startup cleanup.");
+        await startup;
+        VideoSettings.Countdown = false;
+        report.Add("Exit during countdown waits for startup cleanup: PASS");
+    }
+
     private static async Task FailedFinalizationStaysFailedAsync(List<string> report)
     {
         using var sink = new DelayedEncoder { FailFinalization = true };
@@ -151,10 +195,14 @@ internal static class SelfTestRecordingSafety
         public bool Stopped => Volatile.Read(ref _stopped);
         private bool _stopped;
         public bool FailOnStop { get; init; }
+        public ManualResetEventSlim? StopGate { get; init; }
+        public TaskCompletionSource? StopEntered { get; init; }
         public Exception? Error { get; private set; }
         public void Start() { }
         public void Stop()
         {
+            StopEntered?.TrySetResult();
+            StopGate?.Wait(TimeSpan.FromSeconds(15));
             Volatile.Write(ref _stopped, true);
             if (FailOnStop) Error ??= new IOException("The synthetic audio device disconnected.");
         }
