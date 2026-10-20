@@ -11,6 +11,7 @@ namespace KillerShot.Shell;
 internal sealed class CaptureController
 {
     private readonly TrayHost _tray;
+    private readonly VideoController? _video;
     private bool _busy;
 
     public BitmapSource? Last { get; private set; }
@@ -26,9 +27,10 @@ internal sealed class CaptureController
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
-    public CaptureController(TrayHost tray)
+    public CaptureController(TrayHost tray, VideoController? video = null)
     {
         _tray = tray;
+        _video = video;
         _tray.CaptureRequested += (action, mode, fg) =>
         {
             if (action == ShortcutAction.Video) App.Instance.Video?.Toggle(fromShortcut: true);
@@ -57,7 +59,7 @@ internal sealed class CaptureController
 
     private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false)
     {
-        if (_busy || App.Instance.Video?.IsRecording == true) return;
+        if (_busy || (_video ?? App.Instance.Video)?.IsRecording == true) return;
         _busy = true;
         Action? restore = null;
         try
@@ -82,7 +84,12 @@ internal sealed class CaptureController
                 mode = picker.Mode;
                 if (picker.IsVideo)
                 {
-                    if (App.Instance.Video is { } recorder) await recorder.StartAsync(picked.Value);
+                    if ((_video ?? App.Instance.Video) is { } recorder)
+                    {
+                        var completed = restore;
+                        restore = null;
+                        await recorder.StartAsync(picked.Value, completed);
+                    }
                     return;
                 }
                 source = picker.PickedWindow != IntPtr.Zero ? picker.PickedWindow

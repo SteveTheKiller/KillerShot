@@ -12,13 +12,86 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault")) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
         App.InitializeKit();
-        _ = args[0] == "--selftest-recording-fault" ? RunFaultAsync(dir) : RunAsync(dir);
+        _ = args[0] switch
+        {
+            "--selftest-recording-fault" => RunFaultAsync(dir),
+            "--selftest-recording-restore" => RunRestoreAsync(dir),
+            _ => RunAsync(dir)
+        };
         return true;
+    }
+
+    private static async Task RunRestoreAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        using var tray = new TrayHost();
+        var controller = new VideoController(tray);
+        try
+        {
+            VideoSettings.OutputFolder = Path.Combine(dir, "videos");
+            VideoSettings.Format = "gif";
+            VideoSettings.Countdown = VideoSettings.CopyFile = VideoSettings.Notify = false;
+            CaptureSettings.DelaySeconds = 0;
+            int restored = 0;
+            var capture = new CaptureController(tray, controller)
+            {
+                HideEditor = () => Task.FromResult<Action?>(() => restored++)
+            };
+            Task picking = capture.StartVideo(false);
+            for (int i = 0; i < 100 && !Application.Current.Windows.OfType<CaptureBar>().Any(); i++) await Task.Delay(20);
+            var bar = Application.Current.Windows.OfType<CaptureBar>().Single();
+            var combo = Visuals(bar).OfType<System.Windows.Controls.ComboBox>().Single();
+            combo.SelectedItem = combo.Items.OfType<System.Windows.Controls.ComboBoxItem>()
+                .Single(i => Equals(i.Tag, KillerShot.Capture.CaptureMode.Monitor));
+            var button = Visuals(bar).OfType<System.Windows.Controls.Button>()
+                .Single(b => System.Windows.Automation.AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Btn_Capture"));
+            button.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+            await picking.WaitAsync(TimeSpan.FromSeconds(5));
+            if (!controller.IsRecording || restored != 0)
+                throw new InvalidOperationException("The editor restore callback ran while its subject was still recording.");
+            await Task.Delay(150);
+            await controller.StopAsync(false);
+            await controller.StopAsync(false);
+            if (restored != 1 || controller.IsRecording)
+                throw new InvalidOperationException("Recording completion did not restore exactly once.");
+            report.Add("Capture picker transfers editor restoration until recording completion, repeated Stop restores once: PASS");
+            await controller.StartAsync(new Win32.RECT(0, 0, 64, 64), () => restored++);
+            await Task.Delay(100);
+            await controller.StopAsync(true);
+            if (restored != 2) throw new InvalidOperationException("Discard did not restore once.");
+            VideoSettings.Countdown = true;
+            Task countdown = controller.StartAsync(new Win32.RECT(0, 0, 64, 64), () => restored++);
+            await controller.StopAsync(true);
+            await countdown;
+            if (restored != 3) throw new InvalidOperationException("Countdown cancellation did not restore once.");
+            VideoSettings.Countdown = false;
+            var failed = new VideoController(tray, sinkFactory: _ => throw new IOException("Injected startup failure."));
+            await failed.StartAsync(new Win32.RECT(0, 0, 64, 64), () => restored++);
+            if (restored != 4 || failed.IsRecording) throw new InvalidOperationException("Startup failure did not restore once.");
+            report.Add("Discard, canceled countdown and startup failure each restore exactly once: PASS");
+            code = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        finally
+        {
+            foreach (var bar in Application.Current.Windows.OfType<CaptureBar>().ToArray()) bar.Close();
+            await controller.StopAsync(true);
+            File.WriteAllLines(Path.Combine(dir, "recording-restore-report.txt"), report);
+            App.Current.Shutdown(code);
+        }
+    }
+
+    private static IEnumerable<DependencyObject> Visuals(DependencyObject root)
+    {
+        yield return root;
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+            foreach (var item in Visuals(System.Windows.Media.VisualTreeHelper.GetChild(root, i))) yield return item;
     }
 
     private static async Task RunFaultAsync(string dir)
@@ -293,3 +366,4 @@ internal static class SelfTestRecordingSafety
         public void Dispose() { }
     }
 }
+

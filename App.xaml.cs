@@ -322,7 +322,7 @@ public partial class App : Application
         await Task.Delay(220);
         return () =>
         {
-            if (_editor != w) return;
+            if (_editor != w || w.IsVisible) return;
             w.Show();
             w.Activate();
         };

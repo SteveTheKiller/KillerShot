@@ -28,6 +28,7 @@ internal sealed class VideoController
     private TaskCompletionSource? _countdownSkip;
     private TaskCompletionSource _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _stopSucceeded = true;
+    private Action? _restoreEditor;
 
     public bool IsRecording => _recorder != null || _starting || _stopping;
     public string? LastVideoPath { get; private set; }
@@ -53,9 +54,10 @@ internal sealed class VideoController
         else if (App.Instance.Capture is { } capture) _ = capture.StartVideo(fromShortcut);
     }
 
-    public async Task StartAsync(Win32.RECT rect)
+    public async Task StartAsync(Win32.RECT rect, Action? restoreEditor = null)
     {
-        if (IsRecording) return;
+        if (IsRecording) { restoreEditor?.Invoke(); return; }
+        _restoreEditor = restoreEditor;
         _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         _stopSucceeded = false;
         _discard = false;
@@ -142,7 +144,7 @@ internal sealed class VideoController
                 _stopRequested = false;
                 await StopAsync(_discard);
             }
-            if (!IsRecording) _idle.TrySetResult();
+            if (!IsRecording) { RestoreEditor(); _idle.TrySetResult(); }
             StateChanged?.Invoke();
         }
     }
@@ -217,6 +219,7 @@ internal sealed class VideoController
             CleanupStaging(retainFinalizedStage);
             Cleanup();
             _stopping = false;
+            RestoreEditor();
             _idle.TrySetResult();
             StateChanged?.Invoke();
         }
@@ -227,6 +230,13 @@ internal sealed class VideoController
         if (!IsRecording) return true;
         await StopAsync(discard: false);
         return _stopSucceeded;
+    }
+
+    private void RestoreEditor()
+    {
+        var restore = _restoreEditor;
+        _restoreEditor = null;
+        restore?.Invoke();
     }
 
     private void ReportPublicationFailure(string path, Exception error)
