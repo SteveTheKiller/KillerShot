@@ -44,16 +44,16 @@ public static class Program
 
     /// <summary>Runs one command on the UI thread and calls <paramref name="exit"/> with its exit
     /// code when it finishes.</summary>
-    internal static void Start(string[] args, bool attachConsole, Action<int> exit)
+    internal static void Start(string[] args, bool attachConsole, Action<int> exit, IEnumerable<IAudioCaptureSource>? audioSources = null)
     {
         OpenConsole(attachConsole);
-        _ = RunAndExitAsync(args, exit);
+        _ = RunAndExitAsync(args, exit, audioSources);
     }
 
-    private static async Task RunAndExitAsync(string[] args, Action<int> exit)
+    private static async Task RunAndExitAsync(string[] args, Action<int> exit, IEnumerable<IAudioCaptureSource>? audioSources)
     {
         int code;
-        try { code = await RunAsync(args); }
+        try { code = await RunAsync(args, audioSources); }
         catch (CliException ex) { Err.WriteLine(ex.Message); code = ex.Code; }
         catch (Exception ex)
         {
@@ -64,7 +64,7 @@ public static class Program
         exit(code);
     }
 
-    private static Task<int> RunAsync(string[] args)
+    private static Task<int> RunAsync(string[] args, IEnumerable<IAudioCaptureSource>? audioSources)
     {
         // A command line process can end at any moment, so it leaves importing and reading text
         // in pictures to the app.
@@ -86,7 +86,7 @@ public static class Program
                 return Task.FromResult(ExitOk);
             case "capture": return CaptureAsync(rest);
             case "qr": return QrAsync(rest);
-            case "record": return RecordAsync(rest);
+            case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
             case "monitors": return Task.FromResult(Monitors(rest));
@@ -329,7 +329,7 @@ public static class Program
         "quality", "gif-colors", "gif-size"];
     private static readonly string[] RecordFlags = ["json", "cursor", "no-cursor", "clipboard", "pick", "overwrite", "loop", "no-loop"];
 
-    private static async Task<int> RecordAsync(string[] args)
+    private static async Task<int> RecordAsync(string[] args, IEnumerable<IAudioCaptureSource>? audioSources)
     {
         var o = Options.Parse(args, RecordValues, RecordFlags);
         o.NoPositionals();
@@ -409,6 +409,7 @@ public static class Program
         string? stageFolder = null;
         string? recordingPath = null;
         bool recordingComplete = false;
+        Exception? recordingWarning = null;
         bool published = false;
         IVideoSink sink = null!;
         Recorder recorder = null!;
@@ -426,12 +427,13 @@ public static class Program
             sink = gif
                 ? new GifEncoder(recordingPath, gifColors >= 256 ? 255 : gifColors, gifSize / 100.0, loop)
                 : new Mp4Encoder(recordingPath, bitsPerPixel, sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
-            recorder = new Recorder(area, sink, fps, cursor, sound);
+            recorder = new Recorder(area, sink, fps, cursor, sound, audioSources);
             Console.CancelKeyPress += onCancel;
             await recorder.StartAsync();
             await Task.WhenAny(Task.Delay(seconds * 1000), stop.Task);
             duration = recorder.Elapsed;
-            await recorder.StopAsync();
+            try { await recorder.StopAsync(); }
+            catch (Exception ex) when (recorder.IsFinalized) { recordingWarning = ex; }
             recordingComplete = true;
             if (target?.File == null) path = OutputFiles.PublishUnique(recordingPath, outputFolder, fileName);
             else if (o.Has("overwrite")) File.Move(recordingPath, path, true);
@@ -454,6 +456,7 @@ public static class Program
         }
 
         bool copied = false;
+        if (recordingWarning != null) Err.WriteLine("Recording saved with a warning: " + OneLine(recordingWarning.Message));
         if (o.Has("clipboard")) copied = CopyFileDrop(path);
 
         if (o.Has("json"))

@@ -40,22 +40,33 @@ internal static class SelfTestCliSafety
             command.ExecuteNonQuery();
             CaptureLibrary.Close();
         }
-        _ = RunAsync(args[3..]);
+        _ = RunAsync(args[3..], args[2] == "recording-audio-failure");
         return true;
     }
 
-    private static async Task RunAsync(string[] command)
+    private static async Task RunAsync(string[] command, bool failAudio)
     {
-        // The test captures only a 2x2 patch inside this solid synthetic surface.
+        // The test captures inside this solid synthetic surface.
         var window = new Window
         {
-            Title = "KillerShot synthetic CLI check", Left = 0, Top = 0, Width = 96, Height = 96,
+            Title = "KillerShot synthetic CLI check", Left = 0, Top = 0,
+            Width = failAudio ? 640 : 96, Height = failAudio ? 480 : 96,
             WindowStartupLocation = WindowStartupLocation.Manual, WindowStyle = WindowStyle.None,
             ResizeMode = ResizeMode.NoResize, ShowActivated = false, ShowInTaskbar = false,
             Topmost = true, Background = Brushes.Red,
         };
         window.Show();
         await Task.Delay(100);
-        Cli.Program.Start(command, attachConsole: false, Application.Current.Shutdown);
+        Cli.Program.Start(command, attachConsole: false, Application.Current.Shutdown,
+            failAudio ? [new FailingAudioSource()] : null);
+    }
+
+    private sealed class FailingAudioSource : KillerShot.Video.IAudioCaptureSource
+    {
+        public Exception? Error { get; private set; }
+        public void Start() { }
+        public void Stop() => Error = new IOException("Synthetic recording audio failure.");
+        public void Drain(int frames, float[]? mix) { }
+        public void Dispose() => Stop();
     }
 }
