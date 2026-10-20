@@ -330,16 +330,6 @@ internal static partial class CaptureLibrary
             try { OpenWith(password, byPassword: true); }
             catch (SqliteException ex) when (IsKeyFailure(ex)) { return false; }
             NeedsPassword = false;
-            // The swap that set the password may have been interrupted before it removed the
-            // old key file. The password opened it, so the stale key goes.
-            try
-            {
-                if (File.Exists(KeyPath)) File.Delete(KeyPath);
-                if (File.Exists(KeyPath + ".next")) File.Delete(KeyPath + ".next");
-                string backup = FilePath + ".bak";
-                if (File.Exists(backup)) File.Delete(backup);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         AfterOpen();
         return true;
@@ -364,9 +354,29 @@ internal static partial class CaptureLibrary
     /// reports a connection that failed to open or failed its key check.</summary>
     private static void OpenWith(string key, bool byPassword, bool create = false)
     {
-        _db = OpenAlbumConnection(FilePath, key, create);
+        _db = byPassword ? OpenPasswordAlbumConnection(FilePath, key) : OpenAlbumConnection(FilePath, key, create);
         _keyedByPassword = byPassword;
         ObserveExternalChanges();
+    }
+
+    private static SqliteConnection OpenPasswordAlbumConnection(string path, string password)
+    {
+        var db = OpenAlbumConnection(path, password);
+        try
+        {
+            // Password validation must succeed before account-readable recovery artifacts go.
+            string keyPath = Path.ChangeExtension(path, ".key");
+            File.Delete(keyPath);
+            File.Delete(keyPath + ".next");
+            File.Delete(path + ".bak");
+            return db;
+        }
+        catch
+        {
+            db.Dispose();
+            SqliteConnection.ClearAllPools();
+            throw;
+        }
     }
 
     private static SqliteConnection OpenAlbumConnection(string path, string key, bool create = false)

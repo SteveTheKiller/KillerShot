@@ -2,14 +2,14 @@
 
 ## [1.0.0] - Unreleased
 - Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
-- Collection selection matches the KillerNotes fill and hover states. Selected pile captions stay readable over photos.
 - Unsaved edits require confirmation before another image opens. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
-- Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
+- Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Password recovery removes obsolete account keys and backups before opening; cleanup failures can be retried. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
 - Add local or network folders as saved collections, including subfolders. Images stay in their original locations; background scans refresh the browser and editor and retry unavailable folders. Folder snapshots stay readable during settings writes. Failed collection removal reports the error and preserves selection.
 - Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor.
 - Keep collection navigation beside the editor, with its photo carousel above or below the open image. Sidebar placement, carousel placement, sizing, and collapse are independent.
 - Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges beneath the scrollbar. Selecting a collection keeps loaded previews in place. The larger main carousel loads a sharper selected photo without converting full-size folder images, Multiple carousels is easier to find, and resizing gaps are tighter.
+- Collection selection matches the KillerNotes fill and hover states. Selected pile captions stay readable over photos.
 - Recording audio stops when Stop is pressed, repeated Stop and application exit wait for finalization and publication, completed videos survive capture-device errors, and failed graphics initialization releases its resources. Fixed folder cache pruning and capture outline redraws.
 - Command-line captures refresh the open album and search, report when nothing was saved, and explain the password-protected album limit. Completed command-line recordings survive audio errors and report the warning.
 - Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.

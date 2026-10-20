@@ -319,6 +319,7 @@ internal static partial class SelfTestAlbums
                 report.Add("After switching, a real child process wakes the destination album observer and leaves the original unchanged: PASS");
             }
             else if (scenario == "manager") await CheckManagerAsync(folder, report);
+            else if (scenario == "password-cleanup") CheckPasswordCleanup(original, report);
             else if (scenario == "interaction") await CheckManagerInteractionAsync(folder, report);
             else throw new ArgumentException("Unknown album scenario.");
             await Task.CompletedTask;

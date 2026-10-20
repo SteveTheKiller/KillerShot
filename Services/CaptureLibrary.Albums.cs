@@ -343,7 +343,7 @@ internal static partial class CaptureLibrary
         if (!File.Exists(path)) throw new FileNotFoundException(Loc("Str_Album_Missing"), path);
         if (password != null)
         {
-            try { var result = OpenAlbumConnection(path, password); byPassword = true; return result; }
+            try { var result = OpenPasswordAlbumConnection(path, password); byPassword = true; return result; }
             catch (SqliteException error) when (IsKeyFailure(error)) { return null; }
         }
         string keyPath = Path.ChangeExtension(path, ".key");

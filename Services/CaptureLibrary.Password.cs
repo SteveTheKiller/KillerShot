@@ -122,7 +122,6 @@ internal static partial class CaptureLibrary
             {
                 OpenWith(newKey, newPassword != null);
                 if (newPassword == null) File.Move(stagedKey, KeyPath, true);
-                else if (File.Exists(KeyPath)) File.Delete(KeyPath);
                 NeedsPassword = false;
                 try { File.Delete(bak); } catch (IOException) { }
             }
