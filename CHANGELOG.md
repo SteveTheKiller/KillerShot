@@ -2,6 +2,7 @@
 
 ## [1.0.0] - Unreleased
 - Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
+- Collection selection matches the KillerNotes fill and hover states. Selected pile captions stay readable over photos.
 - Unsaved edits require confirmation before another image opens. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.

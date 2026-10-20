@@ -58,20 +58,19 @@ internal sealed class CollectionBrowser : ListBox
         ItemContainerStyle = (Style)System.Windows.Markup.XamlReader.Parse("""
             <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBoxItem">
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                <Setter Property="Padding" Value="4"/>
+                <Setter Property="Padding" Value="5"/>
                 <Setter Property="Margin" Value="0,2"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
                 <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}"/>
                 <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="row" Background="Transparent" BorderBrush="Transparent" BorderThickness="1"
-                            CornerRadius="{DynamicResource SmallCornerRadius}" Padding="{TemplateBinding Padding}">
+                    <Border x:Name="row" Background="Transparent"
+                            CornerRadius="{DynamicResource ControlCornerRadius}" Padding="{TemplateBinding Padding}">
                         <ContentPresenter/>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource SelectionBg}"/><Setter TargetName="row" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/><Setter Property="Foreground" Value="{DynamicResource SelectionFg}"/></Trigger>
-                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/></Trigger>
-                        <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="row" Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/></Trigger>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
+                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource SelectionBg}"/><Setter Property="Foreground" Value="{DynamicResource SelectionFg}"/></Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate></Setter.Value></Setter>
             </Style>
@@ -113,7 +112,21 @@ public sealed class CollectionPreview : StackPanel
         var captions = new StackPanel();
         captions.Children.Add(_name);
         captions.Children.Add(_count);
-        _label.Child = captions;
+        var labelContent = new Grid();
+        var selectionWash = new Border();
+        selectionWash.Style = (Style)System.Windows.Markup.XamlReader.Parse("""
+            <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
+                <Style.Triggers>
+                    <MultiDataTrigger><MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Style}" Value="pile"/>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                    </MultiDataTrigger.Conditions><Setter Property="Background" Value="{DynamicResource SelectionBg}"/></MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+            """);
+        labelContent.Children.Add(selectionWash);
+        labelContent.Children.Add(captions);
+        _label.Child = labelContent;
         _label.Style = (Style)System.Windows.Markup.XamlReader.Parse("""
             <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
                 <Style.Triggers>
@@ -121,10 +134,6 @@ public sealed class CollectionPreview : StackPanel
                         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
                         <Setter Property="Padding" Value="3,0,3,1"/>
                     </DataTrigger>
-                    <MultiDataTrigger><MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Style}" Value="pile"/>
-                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
-                    </MultiDataTrigger.Conditions><Setter Property="Background" Value="{DynamicResource SelectionBg}"/></MultiDataTrigger>
                 </Style.Triggers>
             </Style>
             """);
