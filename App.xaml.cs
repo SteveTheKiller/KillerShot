@@ -70,6 +70,7 @@ public partial class App : Application
         if (SelfTestMenuOverflow.TryRun(e.Args)) return;
         if (SelfTestFlyoutScale.TryRun(e.Args)) return;
         if (SelfTestGifDuration.TryRun(e.Args)) return;
+        if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
