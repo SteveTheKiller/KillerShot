@@ -250,19 +250,19 @@ public static class Program
         var taken = DateTime.Now;
         var warnings = new List<string>();
         long? libraryId = null;
+        string? libraryRef = null;
         if (recent)
         {
             try
             {
                 IntPtr source = window != IntPtr.Zero ? window : IntPtr.Zero;
                 if (!CaptureLibrary.TryAddNowFromCli(bmp, taken, ModeName(mode),
-                    source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source), out long stored))
+                    source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source), out long stored, out libraryRef))
                     throw new InvalidOperationException(LibraryClosedReason());
                 libraryId = stored;
             }
             catch (Exception ex) { warnings.Add("The capture was not added to the library: " + OneLine(ex.Message)); }
         }
-        string? libraryRef = libraryId is long lid ? LibraryRef(lid) : null;
 
         string? saved = null;
         if (save)
@@ -519,6 +519,7 @@ public static class Program
         IReadOnlyList<CaptureItem> items = [];
         Dictionary<long, string> collections = new();
         CaptureItem? selected = null;
+        string? selectedReference = null;
         BitmapSource? image = null;
         byte[]? png = null;
         if (!CaptureLibrary.TryReadForCli(() =>
@@ -532,6 +533,7 @@ public static class Program
             if (index > items.Count)
                 throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
             selected = items[index - 1];
+            selectedReference = CaptureLibrary.CaptureReference(selected.Id);
             if (action == "copy" || imageExport) image = CaptureLibrary.LoadImage(selected.Id);
             else if (action == "export") png = CaptureLibrary.LoadPng(selected.Id);
         })) throw new CliException(LibraryClosedReason(), ExitFailed);
@@ -579,7 +581,7 @@ public static class Program
         }
 
         var item = selected!;
-        string result = LibraryRef(item.Id);
+        string result = selectedReference!;
         switch (action)
         {
             case "copy":
@@ -628,9 +630,6 @@ public static class Program
 
     private const int RecentListDefault = 20;
     private const int RecentListMax = 1000;
-
-    /// <summary>How the editor and the command line name a library capture: library:id.</summary>
-    private static string LibraryRef(long id) => "library:" + id.ToString(CultureInfo.InvariantCulture);
 
     private static string LibraryClosedReason() => CaptureLibrary.NeedsPassword
         ? "The command line cannot open password-protected libraries."

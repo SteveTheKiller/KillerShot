@@ -148,7 +148,7 @@ public partial class App : Application
     {
         int i = Array.FindIndex(args, a => a.Equals("--open", StringComparison.OrdinalIgnoreCase));
         if (i < 0 || i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1])) return null;
-        if (LibraryId(args[i + 1]) != null) return args[i + 1].Trim();
+        if (IsLibraryReference(args[i + 1])) return args[i + 1].Trim();
         try { return Path.GetFullPath(args[i + 1]); } catch { return null; }
     }
 
@@ -166,16 +166,16 @@ public partial class App : Application
         if (!string.IsNullOrEmpty(path)) OpenImage(path);
     }
 
-    /// <summary>Loads an image file, or a library capture named library:id, into the editor.</summary>
-    private void OpenImage(string path)
+    /// <summary>Loads an image file or an album-qualified capture reference into the editor.</summary>
+    internal void OpenImage(string path)
     {
         try
         {
-            if (LibraryId(path) is long id)
+            if (IsLibraryReference(path))
             {
                 CaptureLibrary.Opening.Wait();
                 if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_LockedTitle"));
-                var item = CaptureLibrary.Items().FirstOrDefault(c => c.Id == id)
+                var item = CaptureLibrary.ResolveReference(path)
                     ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
                 OpenLibraryCapture(item);
                 return;
@@ -189,11 +189,8 @@ public partial class App : Application
         }
     }
 
-    /// <summary>The id in a library:id reference, or null.</summary>
-    private static long? LibraryId(string text) =>
-        text.Trim().StartsWith("library:", StringComparison.OrdinalIgnoreCase) &&
-        long.TryParse(text.Trim()[8..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out long id)
-            ? id : null;
+    private static bool IsLibraryReference(string text) =>
+        text.Trim().StartsWith("library:", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Opens a library capture in the editor. It opens as a capture, not a file, so Save
     /// asks where to put it.</summary>

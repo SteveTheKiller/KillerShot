@@ -202,8 +202,18 @@ internal static partial class CaptureLibrary
     /// command-line capture is committed and its connection is closed.</summary>
     public static bool TryAddNowFromCli(BitmapSource bmp, DateTime taken, string mode,
         string? window, string? process, out long id)
+        => TryAddNowFromCli(bmp, taken, mode, window, process, out id, out _);
+
+    public static bool TryAddNowFromCli(BitmapSource bmp, DateTime taken, string mode,
+        string? window, string? process, out long id, out string? reference)
     {
-        bool saved = TryUseAlbumFromCli(() => AddNow(bmp, taken, mode, window, process), out id);
+        bool saved = TryUseAlbumFromCli(() =>
+        {
+            long stored = AddNow(bmp, taken, mode, window, process);
+            return (Id: stored, Reference: CaptureReference(stored));
+        }, out var result);
+        id = result.Id;
+        reference = result.Reference;
         if (saved) NotifyExternalChange();
         return saved;
     }
