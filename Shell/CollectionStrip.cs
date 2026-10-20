@@ -62,6 +62,7 @@ namespace KillerShot.Shell
         private bool _syncing;
         private volatile bool _disposed;
         private long? _current;
+        private string? _followFolderPath;
         private long _albumSession = -1;
 
         public CollectionStrip(DockHost host, Style sliderStyle)
@@ -79,12 +80,14 @@ namespace KillerShot.Shell
             _browser.SelectionChanged += (_, _) =>
             {
                 if (_syncing || _browser.SelectedItem is not CollectionChoice choice) return;
+                _followFolderPath = null;
                 _source = choice.Source;
                 Load(keepCurrent: true);
             };
             _picker.SelectionChanged += (_, _) =>
             {
                 if (_syncing || _picker.SelectedItem is not ComboBoxItem { Tag: string tag }) return;
+                _followFolderPath = null;
                 _source = tag;
                 Load(keepCurrent: true);
             };
@@ -194,7 +197,7 @@ namespace KillerShot.Shell
         private void OnFolderChanged()
         {
             if (_disposed || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || FolderCaptures.IsSource(_source)) Load(keepCurrent: true); }));
+            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || _followFolderPath != null || FolderCaptures.IsSource(_source)) Load(keepCurrent: true); }));
         }
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -286,8 +289,9 @@ namespace KillerShot.Shell
         /// <summary>Follows the picture in the editor: its collection, with it selected.</summary>
         public void Follow(CaptureItem? item, string? filePath)
         {
+            _followFolderPath = item == null && filePath != null && IsInFolder(filePath) ? filePath : null;
             if (item == null && filePath != null && IsInFolder(filePath))
-                item = FolderCaptures.Items().FirstOrDefault(i => string.Equals(FolderCaptures.PathOf(i.Id), filePath, StringComparison.OrdinalIgnoreCase));
+                item = FolderCaptures.Snapshot().FirstOrDefault(i => string.Equals(FolderCaptures.PathOf(i.Id), filePath, StringComparison.OrdinalIgnoreCase));
             _current = item?.Id;
             if (item != null)
             {
@@ -317,6 +321,13 @@ namespace KillerShot.Shell
                 _source = "all";
                 _albumSource = "all";
             }
+            if (_followFolderPath is string path && FolderCaptures.Snapshot().FirstOrDefault(i =>
+                string.Equals(FolderCaptures.PathOf(i.Id), path, StringComparison.OrdinalIgnoreCase)) is { } followed)
+            {
+                _current = followed.Id;
+                _source = "folder";
+                _followFolderPath = null;
+            }
             _syncing = true;
             try
             {
@@ -345,9 +356,10 @@ namespace KillerShot.Shell
                     Choice("all", Loc("Str_Strip_All"), all);
                     if (FolderCaptures.Enabled)
                     {
-                        var members = FolderCaptures.Items();
-                        Choice("folder", FolderCaptures.Name, members, FolderCaptures.StatusForSource("folder") is { Available: false }
-                            ? "Str_FolderCollection_Unavailable" : null, FolderCaptures.Folder);
+                        var members = FolderCaptures.Snapshot();
+                        var status = FolderCaptures.StatusForSource("folder");
+                        Choice("folder", FolderCaptures.Name, members, status is { Loading: true } ? "Str_FolderCollection_Loading"
+                            : status is { Available: false } ? "Str_FolderCollection_Unavailable" : null, FolderCaptures.Folder);
                     }
                     foreach (var folder in folders) Choice(folder.Source, folder.Name, FolderCaptures.LinkedItems(folder.Source),
                         folder.Loading ? "Str_FolderCollection_Loading" : !folder.Available ? "Str_FolderCollection_Unavailable" : null, folder.Path);
@@ -447,7 +459,7 @@ namespace KillerShot.Shell
             {
                 string tag = (string)choice.Tag;
                 var item = new MenuItem { Header = choice.Content, IsCheckable = true, IsChecked = tag == _source };
-                item.Click += (_, _) => { _source = tag; Load(keepCurrent: true); };
+                item.Click += (_, _) => { _followFolderPath = null; _source = tag; Load(keepCurrent: true); };
                 menu.Items.Add(item);
             }
             menu.Items.Add(new Separator());
@@ -508,6 +520,7 @@ namespace KillerShot.Shell
 
         internal void SetSource(string source)
         {
+            _followFolderPath = null;
             _source = source;
             Load(keepCurrent: true);
         }

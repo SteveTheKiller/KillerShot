@@ -204,7 +204,7 @@ namespace KillerShot.Shell
             string search = SearchBox.Text.Trim();
             _items = CaptureLibrary.Items(search.Length > 0 ? search : null);
             _collections = CaptureLibrary.Collections();
-            _folderItems = FolderCaptures.Items(search.Length > 0 ? search : null);
+            _folderItems = FolderCaptures.Snapshot(search.Length > 0 ? search : null);
             bool Matches(CaptureItem item) => _source == "all" || (_source == "c0"
                 ? item.CollectionId == null || !_collections.Any(c => c.Id == item.CollectionId)
                 : "c" + item.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source);

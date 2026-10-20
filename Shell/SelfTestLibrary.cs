@@ -23,6 +23,7 @@ internal static partial class SelfTestLibrary
 
     public static bool TryRun(string[] args)
     {
+        if (SelfTestScreenshotsLoading.TryRun(args)) return true;
         if (SelfTestFolderEnumeration.TryRun(args)) return true;
         if (args.Length == 2 && args[0] == "--selftest-folder-removal")
         {

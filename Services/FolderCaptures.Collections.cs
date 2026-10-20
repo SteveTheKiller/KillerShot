@@ -113,7 +113,7 @@ internal static partial class FolderCaptures
     }
 
     public static IReadOnlyList<CaptureItem> ItemsForSource(string source, string? search = null) =>
-        source == "folder" ? Items(search) : LinkedItems(source, search);
+        source == "folder" ? Snapshot(search) : LinkedItems(source, search);
 
     public static string PathForSource(string source) => source == "folder" ? Folder
         : LinkedCollections().FirstOrDefault(folder => folder.Source == source)?.Path ?? "";
@@ -171,6 +171,7 @@ internal static partial class FolderCaptures
 
     public static Task RefreshFolderAsync(string source)
     {
+        if (source == "folder") return RefreshScreenshotsAsync();
         EnsureLinkedFolders();
         lock (LinkedGate)
         {

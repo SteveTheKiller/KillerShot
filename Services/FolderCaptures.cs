@@ -37,6 +37,11 @@ internal static partial class FolderCaptures
     private static string? _folderOverride;
     private static IFolderDirectoryReader _directoryReader = new SystemFolderDirectoryReader();
     private static bool _folderAvailable = true;
+    private static IReadOnlyList<CaptureItem> _screenshots = [];
+    private static Task? _screenshotsScan;
+    private static DateTime _nextScreenshotsScan;
+    private static bool _screenshotsLoading;
+    private static int _screenshotsGeneration;
 
     /// <summary>A file was added, removed, renamed or changed in the folder.</summary>
     public static event Action? Changed;
@@ -49,7 +54,7 @@ internal static partial class FolderCaptures
     public static FolderCollection? StatusForSource(string source)
     {
         if (source != "folder") return LinkedCollections().FirstOrDefault(folder => folder.Source == source);
-        lock (_gate) return new FolderCollection(source, Folder, _folderAvailable, false);
+        lock (_gate) return new FolderCollection(source, Folder, _folderAvailable, _screenshotsLoading);
     }
 
     /// <summary>Shown as a collection unless turned off in Capture settings.</summary>
@@ -68,6 +73,11 @@ internal static partial class FolderCaptures
             _folderOverride = dir;
             _directoryReader = directoryReader ?? new SystemFolderDirectoryReader();
             _folderAvailable = true;
+            _screenshots = [];
+            _screenshotsScan = null;
+            _nextScreenshotsScan = DateTime.MinValue;
+            _screenshotsLoading = false;
+            _screenshotsGeneration++;
             _watcher?.Dispose();
             _watcher = null;
             _ids.Clear(); _paths.Clear(); _sizes.Clear();
@@ -78,6 +88,57 @@ internal static partial class FolderCaptures
     public static bool IsFolderId(long id) => id < 0;
 
     public static string? PathOf(long id) { lock (_gate) return _paths.GetValueOrDefault(id); }
+
+    /// <summary>Cached Screenshots entries for UI callers. Directory and image-header work shares
+    /// the linked-folder local/network limits and never runs on the caller's dispatcher.</summary>
+    public static IReadOnlyList<CaptureItem> Snapshot(string? search = null)
+    {
+        if (!Enabled) return [];
+        IReadOnlyList<CaptureItem> items;
+        lock (_gate)
+        {
+            if (DateTime.UtcNow >= _nextScreenshotsScan) _ = RefreshScreenshotsAsync();
+            items = _screenshots;
+        }
+        string[] words = (search ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return words.Length == 0 ? items : items.Where(item => words.All(word =>
+            (item.Window ?? "").Contains(word, StringComparison.CurrentCultureIgnoreCase))).ToArray();
+    }
+
+    public static Task RefreshScreenshotsAsync()
+    {
+        lock (_gate)
+        {
+            if (_screenshotsScan is { IsCompleted: false }) return _screenshotsScan;
+            int generation = _screenshotsGeneration;
+            _nextScreenshotsScan = DateTime.UtcNow.AddSeconds(10);
+            _screenshotsLoading = true;
+            return _screenshotsScan = Task.Run(async () =>
+            {
+                SemaphoreSlim? slots = null;
+                try
+                {
+                    string path = Folder;
+                    bool network = path.StartsWith(@"\\", StringComparison.Ordinal)
+                        || new DriveInfo(Path.GetPathRoot(path)!).DriveType == DriveType.Network;
+                    slots = network ? NetworkScanSlots : ScanSlots;
+                    await slots.WaitAsync();
+                    var items = Items();
+                    lock (_gate) if (generation == _screenshotsGeneration) _screenshots = items;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+                {
+                    lock (_gate) if (generation == _screenshotsGeneration) _folderAvailable = false;
+                }
+                finally
+                {
+                    slots?.Release();
+                    lock (_gate) if (generation == _screenshotsGeneration) _screenshotsLoading = false;
+                    Changed?.Invoke();
+                }
+            });
+        }
+    }
 
     /// <summary>The pictures in the folder, newest first, matching every word of a search in their
     /// file name. Empty when the folder is turned off or missing.</summary>
@@ -110,6 +171,7 @@ internal static partial class FolderCaptures
             var (w, h) = SizeOf(f);
             list.Add(new CaptureItem(IdOf(f.FullName), f.LastWriteTime, w, h, "file", name, null, CollectionId, null));
         }
+        if (search == null) lock (_gate) _screenshots = list;
         return list;
     }
 
@@ -246,6 +308,7 @@ internal static partial class FolderCaptures
     {
         lock (_gate)
         {
+            _nextScreenshotsScan = DateTime.MinValue;
             if (_ids.TryGetValue(path, out long id)) RemoveThumb(id);
             _sizes.Remove(path);
             _debounce?.Dispose();
