@@ -485,18 +485,23 @@ window.addEventListener('resize', fit);
 <script>
 (function(){
   var items=[].slice.call(document.querySelectorAll('.acc-item'));
+  function measure(it){
+    var b=it.querySelector('.acc-body'), inner=b.querySelector('.acc-body-inner');
+    if(it.classList.contains('open')) b.style.maxHeight=Math.ceil(inner.getBoundingClientRect().height)+'px';
+  }
   function setOpen(it, open){
     var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
     it.classList.toggle('open', open);
     h.setAttribute('aria-expanded', open ? 'true' : 'false');
     b.inert=!open;
     b.setAttribute('aria-hidden', open ? 'false' : 'true');
-    b.style.maxHeight=open ? b.scrollHeight+'px' : null;
+    if(open) measure(it); else b.style.maxHeight=null;
   }
   items.forEach(function(it, i){ var h=it.querySelector('.acc-head'), b=it.querySelector('.acc-body');
     b.id='help-panel-'+i;
     h.setAttribute('aria-controls', b.id);
     setOpen(it, false);
+    new ResizeObserver(function(){ measure(it); }).observe(b.querySelector('.acc-body-inner'));
     h.addEventListener('click', function(){
       var open=it.classList.contains('open');
       items.forEach(function(o){ setOpen(o, false); });
@@ -506,7 +511,7 @@ window.addEventListener('resize', fit);
   // A locale change rewrites the copy, so a section that is open has to be measured again.
   document.addEventListener('kshot-languagechange', function(){
     var o=document.querySelector('.acc-item.open');
-    if(o){ var b=o.querySelector('.acc-body'); b.style.maxHeight=b.scrollHeight+'px'; }
+    if(o) measure(o);
   });
 })();
 </script>
