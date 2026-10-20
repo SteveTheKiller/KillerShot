@@ -12,7 +12,7 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix")) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
@@ -22,10 +22,62 @@ internal static class SelfTestRecordingSafety
             "--selftest-recording-fault" => RunFaultAsync(dir),
             "--selftest-recording-restore" => RunRestoreAsync(dir),
             "--selftest-audio-downmix" => RunDownmixAsync(dir),
+            "--selftest-recording-commands" => RunCommandsAsync(dir),
             _ => RunAsync(dir)
         };
         return true;
     }
+
+    private static async Task RunCommandsAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        using var tray = new TrayHost();
+        var controller = new VideoController(tray);
+        try
+        {
+            VideoSettings.OutputFolder = Path.Combine(dir, "videos");
+            VideoSettings.Format = "gif";
+            VideoSettings.Countdown = VideoSettings.CopyFile = VideoSettings.Notify = false;
+            await controller.StartAsync(new Win32.RECT(0, 0, 64, 64));
+            InvokeTray("Str_Rec_Pause");
+            await Task.Delay(100);
+            InvokeTray("Str_Rec_Resume");
+            await Task.Delay(100);
+            InvokeTray("Str_Rec_Cancel");
+            for (int i = 0; i < 100 && controller.IsRecording; i++) await Task.Delay(20);
+            if (controller.IsRecording || controller.LastVideoPath != null)
+                throw new InvalidOperationException("Keyboard-reachable Discard did not discard recording.");
+            report.Add("Keyboard notification menu exposes Pause, Resume and Discard throughout a recording: PASS");
+            code = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        finally
+        {
+            await controller.StopAsync(true);
+            File.WriteAllLines(Path.Combine(dir, "recording-commands-report.txt"), report);
+            App.Current.Shutdown(code);
+        }
+
+        void InvokeTray(string key)
+        {
+            SendTrayMessage(tray.Handle, 0x8001, IntPtr.Zero, (IntPtr)0x7B);
+            var menu = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
+                .SelectMany(s => Visuals(s.RootVisual)).OfType<System.Windows.Controls.ContextMenu>().Single(m => m.IsOpen);
+            try
+            {
+                var item = menu.Items.OfType<System.Windows.Controls.MenuItem>()
+                    .SingleOrDefault(i => Equals(i.Header, LocaleManager.Loc(key)));
+                if (item == null) throw new InvalidOperationException("Recording keyboard menu is missing " + key);
+                if (string.IsNullOrEmpty(item.InputGestureText)) throw new InvalidOperationException("Recording action has no discoverable shortcut.");
+                item.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+            }
+            finally { menu.IsOpen = false; }
+        }
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SendMessageW")]
+    private static extern IntPtr SendTrayMessage(IntPtr window, int message, IntPtr wParam, IntPtr lParam);
 
     private static Task RunDownmixAsync(string dir)
     {

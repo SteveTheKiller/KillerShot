@@ -22,6 +22,7 @@ internal sealed class RecordingChrome
     private readonly TextBlock _time;
     private readonly Ellipse _dot;
     private readonly Button _pause, _stop, _discard;
+    private bool? _announcedPause;
 
     public event Action? PauseClicked;
     public event Action? StopClicked;
@@ -57,9 +58,13 @@ internal sealed class RecordingChrome
         _time = new TextBlock { Text = "0:00", FontSize = 14, MinWidth = 64, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
         _time.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
         _time.SetResourceReference(TextBlock.FontFamilyProperty, "BrandSansFont");
+        System.Windows.Automation.AutomationProperties.SetLiveSetting(_time, System.Windows.Automation.AutomationLiveSetting.Polite);
         _pause = BarButton(Loc("Str_Rec_Pause"), () => PauseClicked?.Invoke());
         _stop = BarButton(Loc("Str_Rec_Stop"), () => StopClicked?.Invoke());
         _discard = BarButton(Loc("Str_Rec_Cancel"), () => DiscardClicked?.Invoke());
+        _pause.ToolTip = Loc("Str_Rec_Pause") + " (Ctrl+Shift+R)";
+        _stop.ToolTip = Loc("Str_Rec_Stop") + " (Ctrl+R)";
+        _discard.ToolTip = Loc("Str_Rec_Cancel") + " (Ctrl+Shift+D)";
 
         var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 6, 8, 6) };
         row.Children.Add(_dot);
@@ -137,18 +142,32 @@ internal sealed class RecordingChrome
     {
         _pause.IsEnabled = true;
         _pause.Content = Loc(paused ? "Str_Rec_Resume" : "Str_Rec_Pause");
+        _pause.ToolTip = _pause.Content + " (Ctrl+Shift+R)";
         _time.Text = paused ? Loc("Str_Rec_Paused") + "  " + Format(elapsed) : Format(elapsed);
+        if (_announcedPause != paused)
+        {
+            _announcedPause = paused;
+            AnnounceState();
+        }
         _dot.Opacity = paused ? 0.35 : (DateTime.Now.Millisecond < 500 ? 1 : 0.55);
     }
 
     public void SetSaving()
     {
         _time.Text = Loc("Str_Rec_Saving");
+        AnnounceState();
         _pause.IsEnabled = _stop.IsEnabled = _discard.IsEnabled = false;
         _frame.Hide();
     }
 
     private static string Format(TimeSpan t) => t.TotalHours >= 1 ? t.ToString(@"h\:mm\:ss") : t.ToString(@"m\:ss");
+
+    private void AnnounceState()
+    {
+        var peer = System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(_time)
+            ?? System.Windows.Automation.Peers.UIElementAutomationPeer.CreatePeerForElement(_time);
+        peer?.RaiseAutomationEvent(System.Windows.Automation.Peers.AutomationEvents.LiveRegionChanged);
+    }
 
     private const int GWL_EXSTYLE = -20;
     private const int WS_EX_TRANSPARENT = 0x20, WS_EX_LAYERED = 0x80000, WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000;

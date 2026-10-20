@@ -37,6 +37,9 @@ internal sealed class TrayHost : IDisposable
     public event Action? PrintLastRequested;
     /// <summary>Record video from the menu, or stop the recording in progress.</summary>
     public event Action? RecordRequested;
+    public event Action? PauseRecordingRequested;
+    public event Action? DiscardRecordingRequested;
+    public Func<bool>? RecordingPaused { get; set; }
     private bool _recording;
     private Action? _balloonAction;
     /// <summary>The user clicked the last notification.</summary>
@@ -143,7 +146,7 @@ internal sealed class TrayHost : IDisposable
                 if (_recording) RecordRequested?.Invoke();   // a click on the tray stops a recording
                 else DeferCapture(null, CaptureMode.Region);
             }
-            else if (mouse == Win32.WM_RBUTTONUP) ShowMenu();
+            else if (mouse is Win32.WM_RBUTTONUP or 0x7B) ShowMenu();
             else if (mouse == NIN_BALLOONUSERCLICK)
             {
                 if (_balloonAction != null) _balloonAction();
@@ -201,6 +204,11 @@ internal sealed class TrayHost : IDisposable
                 t.Start();
             }
         });
+        if (_recording)
+        {
+            Item(Loc(RecordingPaused?.Invoke() == true ? "Str_Rec_Resume" : "Str_Rec_Pause"), "Ctrl+Shift+R", () => PauseRecordingRequested?.Invoke());
+            Item(Loc("Str_Rec_Cancel"), "Ctrl+Shift+D", () => DiscardRecordingRequested?.Invoke());
+        }
         menu.Items.Add(new Separator());
         Item(Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
         Item(Loc("Str_Tray_PrintLast"), "", () => PrintLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);

@@ -231,7 +231,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <h2 class="help-cat" id="recording" data-i18n="h_recording">Recording</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_rec_t">Record the screen</span><span class="kbd">Ctrl + Shift + Print Screen</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_rec_1">Press <b>Ctrl + Shift + Print Screen</b>, click <b>Record</b> in the editor (Ctrl+R) or choose <b>Record video</b> from the tray. Pick a region, window or monitor on the frozen desktop, and recording starts after a three second countdown. Pressing the shortcut again during the countdown starts at once.</p>
-<p data-i18n="h_rec_2">A frame marks the area and a bar offers Pause, Stop and Discard. Neither appears in the video. Press the shortcut again, click Stop, or click the tray icon to save.</p>
+<p data-i18n="h_rec_2">A frame marks the area and a bar offers Pause, Stop and Discard. Neither appears in the video. Press the shortcut again, click Stop, or click the tray icon to save. In the editor, Ctrl+Shift+R pauses or resumes and Ctrl+Shift+D discards. Keyboard users can also press Win+B, select KillerShot, and open its menu with Shift+F10 for Pause, Resume, Stop and Discard.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_mp4_t">MP4 and GIF settings</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_mp4_1"><b>MP4</b> records H.264 video at 15, 24, 30 or 60 frames per second, in Small file, Balanced or High quality. Sound can be off, the system sound, the microphone, or both, at 96 to 192 kbps.</p>
@@ -423,6 +423,8 @@ window.addEventListener('resize', fit);
 <div class="kbd-group"><h4 data-i18n="hk_file">File</h4>
 <div class="kbd-row"><span class="k">Ctrl + N</span><span class="d" data-i18n="hk_new">Capture a region</span></div>
 <div class="kbd-row"><span class="k">Ctrl + R</span><span class="d" data-i18n="hk_record">Start or stop a video recording</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Shift + R</span><span class="d">Pause or resume a recording</span></div>
+<div class="kbd-row"><span class="k">Ctrl + Shift + D</span><span class="d">Discard a recording</span></div>
 <div class="kbd-row"><span class="k">Ctrl + L</span><span class="d" data-i18n="hk_library">Show or hide the capture library</span></div>
 <div class="kbd-row"><span class="k">Ctrl + F</span><span class="d" data-i18n="hk_libsearch">Search the library</span></div>
 <div class="kbd-row"><span class="k">Alt + Shift + arrows</span><span class="d" data-i18n="hk_strip">Dock the collection strip to that side, or minimize it on its own side</span></div>

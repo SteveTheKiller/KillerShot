@@ -43,6 +43,9 @@ internal sealed class VideoController
         _tray = tray;
         _audioSources = audioSources;
         _sinkFactory = sinkFactory;
+        _tray.PauseRecordingRequested += TogglePause;
+        _tray.DiscardRecordingRequested += () => _ = StopAsync(true);
+        _tray.RecordingPaused = () => _recorder?.IsPaused == true;
     }
 
     /// <summary>The video shortcut: start when idle, stop when recording.</summary>
@@ -149,11 +152,12 @@ internal sealed class VideoController
         }
     }
 
-    private void TogglePause()
+    public void TogglePause()
     {
         if (_recorder == null) return;
         if (_recorder.IsPaused) _recorder.Resume(); else _recorder.Pause();
         _chrome?.SetRecording(_recorder.Elapsed, _recorder.IsPaused);
+        StateChanged?.Invoke();
     }
 
     public async Task StopAsync(bool discard)

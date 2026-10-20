@@ -94,7 +94,11 @@ namespace KillerShot.Shell
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
                     case Key.L: ToggleLibrary(); break;
                     case Key.F when Library.IsVisible: Library.FocusSearch(); break;
-                    case Key.R: App.Instance.Video?.Toggle(); break;
+                    case Key.R when shift: if (!e.IsRepeat) App.Instance.Video?.TogglePause(); break;
+                    case Key.D when shift:
+                        if (!e.IsRepeat && App.Instance.Video is { IsRecording: true } recording) _ = recording.StopAsync(true);
+                        break;
+                    case Key.R: if (!e.IsRepeat) App.Instance.Video?.Toggle(); break;
                     case Key.O: OpenFile(); break;
                     case Key.S when shift: SaveAs(); break;
                     case Key.S: Save(); break;
