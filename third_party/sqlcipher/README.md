@@ -30,6 +30,22 @@ Source tarballs (verify before building):
 | libtomcrypt 1.18.2 | github.com/libtom/libtomcrypt/releases/download/v1.18.2/crypt-1.18.2.tar.xz | `96ad4c3b8336050993c5bc2cf6c057484f2b0f9f763448151567fbab5e767b84` |
 | llvm-mingw 20260616 | github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-ubuntu-22.04-x86_64.tar.xz | `534b92e067b22a6b4441f48ae9240a3341b17825d04d577eab0cf85c44b4deda` |
 
+## Dependency review, October 19, 2026
+
+The current binary hash matches the inventory above and its Authenticode signature verifies.
+The app and CLI NuGet audits reported no known package vulnerabilities, including transitive
+packages. NuGet does not audit this vendored DLL.
+
+[SQLCipher 4.19.0](https://www.zetetic.net/blog/2026/09/08/sqlcipher-4.19.0-release/)
+fixes two low-risk issues affecting 4.18.0: export alias quoting and invalid `hexkey` URI handling.
+The reviewed password export uses the fixed alias `rekeyed`, and the production album code
+uses connection-string builder passwords with no `hexkey` use found. Those observations limit
+the identified paths; they do not establish that the native library has no vulnerabilities.
+
+Follow-up: rebuild and sign the native library with the security fixes, then verify album
+compatibility, password transitions and packaged extraction. The binary was not changed by
+this review. Keep the shared native copies coordinated when that upgrade is performed.
+
 ## Build (Linux host, cross-compiles to Windows x64)
 
 Extract the three tarballs into one folder. Generate the amalgamation first
