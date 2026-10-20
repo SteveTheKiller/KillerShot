@@ -1,6 +1,7 @@
 # Changelog
 
 ## [1.0.0] - Unreleased
+- Window resize minimums stay within the current monitor's work area on small or scaled displays.
 - Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
 - Unsaved edits require confirmation before another image opens. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Failed password swaps preserve the original album and complete recovery copies. Password recovery removes obsolete account keys and backups before opening; cleanup failures can be retried. Retention preserves search results on failure and missing search entries repair on reopen. Capture IDs stay unique after deletion.
