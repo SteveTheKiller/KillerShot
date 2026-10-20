@@ -14,6 +14,7 @@ internal static class SelfTestEditorSafety
 {
     public static bool TryRun(string[] args)
     {
+        if (SelfTestSaveSafety.TryRun(args)) return true;
         if (SelfTestCarouselPerspective.TryRun(args)) return true;
         if (args.Length != 2 || args[0] != "--selftest-editor-safety") return false;
         string folder = Path.GetFullPath(args[1]);

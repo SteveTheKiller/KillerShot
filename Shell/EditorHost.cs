@@ -603,8 +603,10 @@ namespace KillerShot.Shell
                 Title = Loc("Str_Dlg_SaveTitle"),
                 Filter = Loc("Str_Dlg_ImageFilter"),
                 DefaultExt = ".png",
-                FileName = _doc.FilePath != null ? System.IO.Path.ChangeExtension(System.IO.Path.GetFileName(_doc.FilePath),
-                    ImageOutput.CanSaveInPlace(_doc.FilePath) ? System.IO.Path.GetExtension(_doc.FilePath) : ".png") : $"KillerShot {_doc.Taken:yyyy-MM-dd HHmmss}.png",
+                FileName = _doc.FilePath != null ? ImageOutput.CanSaveInPlace(_doc.FilePath)
+                    ? System.IO.Path.GetFileName(_doc.FilePath)
+                    : System.IO.Path.GetFileNameWithoutExtension(_doc.FilePath) + "-static.png"
+                    : $"KillerShot {_doc.Taken:yyyy-MM-dd HHmmss}.png",
                 InitialDirectory = _doc.FilePath != null ? System.IO.Path.GetDirectoryName(_doc.FilePath) ?? "" : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             };
             if (dlg.ShowDialog(this) != true) return;
@@ -617,6 +619,10 @@ namespace KillerShot.Shell
             Editor.CommitText();
             try
             {
+                if (_doc.FilePath is string source && System.IO.File.Exists(source)
+                    && string.Equals(System.IO.Path.GetFullPath(source), System.IO.Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)
+                    && !ImageOutput.CanSaveInPlace(source))
+                    throw new NotSupportedException("Choose a different filename to export a static image and preserve the original.");
                 ImageOutput.Save(_doc.Render(), path, CaptureSettings.JpegQuality);
                 _doc.FilePath = path;
                 _doc.MarkSaved();

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -82,7 +83,7 @@ internal static class ImageOutput
             if (decoder.Frames.Count != 1) return false;
             return Path.GetExtension(path).ToLowerInvariant() switch
             {
-                ".png" => decoder is PngBitmapDecoder,
+                ".png" => decoder is PngBitmapDecoder && !HasAnimation(stream),
                 ".jpg" or ".jpeg" => decoder is JpegBitmapDecoder,
                 _ => false,
             };
@@ -91,6 +92,23 @@ internal static class ImageOutput
         {
             return false;
         }
+    }
+
+    // WPF exposes only APNG's default image. Inspect PNG chunks instead of trusting its frame count.
+    private static bool HasAnimation(Stream stream)
+    {
+        stream.Position = 8;
+        Span<byte> header = stackalloc byte[8];
+        while (stream.Position < stream.Length)
+        {
+            stream.ReadExactly(header);
+            uint length = BinaryPrimitives.ReadUInt32BigEndian(header);
+            if (length > stream.Length - stream.Position - 4) throw new InvalidDataException("Incomplete PNG chunk.");
+            if (header[4..].SequenceEqual("acTL"u8)) return true;
+            if (header[4..].SequenceEqual("IEND"u8)) return false;
+            stream.Seek((long)length + 4, SeekOrigin.Current);
+        }
+        throw new InvalidDataException("Missing PNG end chunk.");
     }
 
     /// <summary>Loads an image at its true pixel size. WPF would otherwise lay out a 144 DPI file

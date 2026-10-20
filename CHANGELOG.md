@@ -5,7 +5,7 @@
 - The album recovers after an interrupted password removal without losing captures. (#1)
 - Captures waiting in memory remain visible after a failed album write, save on retry, and warn before exit. (#2)
 - Unsaved edits require confirmation before another image opens. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
-- Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
+- Save preserves animated PNG, GIF, TIFF, BMP and mismatched image files by offering a separate static PNG or JPEG export.
 - Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.
 - QR and image-text links now use a private local scanner for hidden destinations, encoded download names and disguised executable extensions. Invisible address characters block opening. Result cards explain each finding and state that the destination was not visited; links are never submitted to a third party.
 - Updated the encrypted album engine to SQLCipher 4.19.0 and SQLite bindings to 10.0.13 with upstream security and reliability fixes.
