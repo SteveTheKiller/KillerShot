@@ -29,6 +29,7 @@ namespace KillerShot.Shell
         /// <summary>The side view changed between the thumbnail list and the rolodex.</summary>
         public event Action? SideViewChanged;
         public event Action? SourceChanged;
+        public event Action<string>? StatusMessage;
         public string Source => _source;
         public bool AlbumMode => _albumMode;
         public string SourceCaption => _caption.Text;
@@ -172,6 +173,7 @@ namespace KillerShot.Shell
             ItemMenuRequested = null;
             SideViewChanged = null;
             SourceChanged = null;
+            StatusMessage = null;
         }
 
         private void OnCardColorsChanged()
@@ -447,7 +449,11 @@ namespace KillerShot.Shell
             if (_source.StartsWith("folder:", StringComparison.Ordinal))
             {
                 var remove = new MenuItem { Header = Loc("Str_FolderCollection_Remove"), ToolTip = FolderCaptures.PathForSource(_source) };
-                remove.Click += (_, _) => { FolderCaptures.RemoveFolder(_source); SetSource("all"); };
+                remove.Click += (_, _) =>
+                {
+                    try { FolderCaptures.RemoveFolder(_source); SetSource("all"); }
+                    catch (Exception error) { StatusMessage?.Invoke(error.Message); }
+                };
                 menu.Items.Add(remove);
             }
             return menu;

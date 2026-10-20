@@ -23,6 +23,11 @@ internal static partial class SelfTestLibrary
 
     public static bool TryRun(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--selftest-folder-fixes")
+        {
+            _ = RunFolderFixes(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (args.Length == 4 && args[0] == "--selftest-folder-probe")
         {
             _ = ProbeFolderCollections(args[1], args[2], args[3]);

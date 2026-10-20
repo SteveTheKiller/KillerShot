@@ -36,6 +36,8 @@ namespace KillerShot.Shell
             _navigationStrip.SetAlbumMode(true);
             NavigationDock.Pane = _navigationStrip;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));
+            _navigationStrip.StatusMessage += message => StatusText.Text = message;
+            _strip.StatusMessage += message => StatusText.Text = message;
             _navigationStrip.SourceChanged += () => SyncSources(_navigationStrip);
             _strip.SourceChanged += () => SyncSources(_strip);
             _strip.SourceChanged += SyncFooterCollection;
