@@ -30,7 +30,12 @@ internal static partial class CaptureLibrary
     }
 
     public static void SetPassword(string? newPassword)
+        => SetPassword(newPassword, File.Replace);
+
+    /// <summary>Changes the password using the supplied filesystem replacement operation.</summary>
+    public static void SetPassword(string? newPassword, Action<string, string, string> replaceFile)
     {
+        ArgumentNullException.ThrowIfNull(replaceFile);
         if (string.IsNullOrEmpty(newPassword)) newPassword = null;
         lock (_gate)
         {
@@ -97,7 +102,7 @@ internal static partial class CaptureLibrary
             string bak = path + ".bak";
             try
             {
-                ReplaceWithRetry(tmp, path, bak);
+                ReplaceWithRetry(tmp, path, bak, replaceFile);
             }
             catch (Exception swapError)
             {
@@ -105,7 +110,7 @@ internal static partial class CaptureLibrary
                 // Keep every recovery file until that album has reopened with its old key.
                 try
                 {
-                    if (!File.Exists(path) && File.Exists(bak)) File.Copy(bak, path);
+                    RestoreReplacementDestination(path, bak);
                     OpenWith(oldPassword, oldByPassword);
                 }
                 catch (Exception recoveryError)
@@ -138,16 +143,18 @@ internal static partial class CaptureLibrary
     /// <summary>File.Replace with backoff retries, falling back to a move-based swap that puts
     /// the original back if the second move fails. Antivirus and indexer scans of the freshly
     /// written file cause transient sharing violations.</summary>
-    private static void ReplaceWithRetry(string source, string dest, string backup)
+    private static void ReplaceWithRetry(string source, string dest, string backup, Action<string, string, string> replaceFile)
     {
         for (int attempt = 1; attempt <= 8; attempt++)
         {
-            try { File.Replace(source, dest, backup); return; }
+            try { replaceFile(source, dest, backup); return; }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
+                RestoreReplacementDestination(dest, backup);
                 Thread.Sleep(150 * attempt);
             }
         }
+        RestoreReplacementDestination(dest, backup);
         if (File.Exists(backup)) File.Delete(backup);
         File.Move(dest, backup);
         try { File.Move(source, dest); }
@@ -156,5 +163,14 @@ internal static partial class CaptureLibrary
             File.Move(backup, dest);
             throw;
         }
+    }
+
+    private static void RestoreReplacementDestination(string destination, string backup)
+    {
+        if (File.Exists(destination)) return;
+        if (!File.Exists(backup)) throw new IOException("The original album is unavailable. Recovery files were kept.");
+        string restored = destination + ".restore-" + Guid.NewGuid().ToString("N");
+        File.Copy(backup, restored);
+        File.Move(restored, destination);
     }
 }

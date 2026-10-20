@@ -232,6 +232,84 @@ internal static class SelfTestStorageSafety
             && CaptureLibrary.Items().Single().Id == id;
         log.AppendLine($"password_retry_after_export_failure={recovered}");
         if (!recovered) throw new InvalidOperationException("A password change could not retry after export failure.");
+        PasswordSwapRecovery(log, id);
+    }
+
+    private static void PasswordSwapRecovery(StringBuilder log, long id)
+    {
+        foreach (string? password in new string?[] { "new swap password", null, "final swap password" })
+        {
+            int replacements = 0;
+            CaptureLibrary.SetPassword(password, (source, destination, backup) =>
+            {
+                if (++replacements == 1)
+                {
+                    File.Move(destination, backup);
+                    throw new IOException("Replacement failed after renaming the original.", unchecked((int)0x80070499));
+                }
+                File.Replace(source, destination, backup);
+            });
+            CaptureLibrary.Close();
+            bool opened = password == null ? CaptureLibrary.OpenAuto()
+                : !CaptureLibrary.OpenAuto() && CaptureLibrary.NeedsPassword && CaptureLibrary.Unlock(password);
+            if (!opened || replacements != 2 || CaptureLibrary.Items().Single().Id != id
+                || CaptureLibrary.LoadImage(id).PixelWidth != 1 || File.Exists(CaptureLibrary.FilePath + ".bak")
+                || File.Exists(CaptureLibrary.FilePath + ".rekey"))
+                throw new InvalidOperationException("A partial password replacement lost the capture, key, or recovery cleanup.");
+        }
+        log.AppendLine("post_rename_replacement_recovered_all_key_transitions=True");
+
+        string path = CaptureLibrary.FilePath;
+        string stagedKey = Path.ChangeExtension(path, ".key") + ".next";
+        FileStream? heldBackup = null;
+        bool failed = false;
+        try
+        {
+            try
+            {
+                CaptureLibrary.SetPassword(null, (source, destination, backup) =>
+                {
+                    File.Move(destination, backup);
+                    heldBackup = new FileStream(backup, FileMode.Open, FileAccess.Read, FileShare.None);
+                    throw new IOException("Replacement failed after renaming the original.", unchecked((int)0x80070499));
+                });
+            }
+            catch (IOException) { failed = true; }
+            if (!failed || CaptureLibrary.IsOpen || File.Exists(path) || !File.Exists(path + ".bak")
+                || !File.Exists(path + ".rekey") || !File.Exists(stagedKey))
+                throw new InvalidOperationException("An unrestorable password swap discarded recovery files or created an empty album.");
+        }
+        finally { heldBackup?.Dispose(); }
+
+        string accountKey = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(stagedKey),
+            "KillerShot.Library.v1"u8.ToArray(), DataProtectionScope.CurrentUser));
+        foreach (var copy in new[] { (Path: path + ".bak", Key: "final swap password"), (Path: path + ".rekey", Key: accountKey) })
+        {
+            using var database = new SqliteConnection(new SqliteConnectionStringBuilder
+            { DataSource = copy.Path, Password = copy.Key, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ConnectionString);
+            database.Open();
+            using var query = database.CreateCommand();
+            query.CommandText = "SELECT id FROM captures";
+            if (Convert.ToInt64(query.ExecuteScalar()) != id)
+                throw new InvalidOperationException("A retained password recovery file lost its capture.");
+        }
+        File.Copy(path + ".bak", path);
+        if (!CaptureLibrary.Unlock("final swap password") || CaptureLibrary.Items().Single().Id != id)
+            throw new InvalidOperationException("The retained original album could not reopen.");
+        log.AppendLine("failed_restoration_keeps_complete_databases_and_staged_key=True");
+
+        int attempts = 0;
+        CaptureLibrary.SetPassword("fallback password", (source, destination, backup) =>
+        {
+            attempts++;
+            throw new IOException("Synthetic sharing failure.", unchecked((int)0x80070020));
+        });
+        CaptureLibrary.Close();
+        if (attempts != 8 || CaptureLibrary.OpenAuto() || !CaptureLibrary.NeedsPassword
+            || CaptureLibrary.Unlock("final swap password") || !CaptureLibrary.Unlock("fallback password")
+            || CaptureLibrary.Items().Single().Id != id)
+            throw new InvalidOperationException("Password swap retries or move fallback lost the capture or key.");
+        log.AppendLine("sharing_retries_and_move_fallback_preserved=True");
     }
 
     private static void FailingIndex(Action action)
