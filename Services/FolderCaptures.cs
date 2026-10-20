@@ -165,11 +165,14 @@ internal static partial class FolderCaptures
         if (PathOf(id) is not { } path) return null;
         try
         {
+            var (width, height) = SizeOf(new FileInfo(path));
+            if (width <= 0 || height <= 0) return null;
             var bmp = new BitmapImage();
             bmp.BeginInit();
             bmp.CacheOption = BitmapCacheOption.OnLoad;
             bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-            bmp.DecodePixelWidth = 512;
+            if (width >= height) bmp.DecodePixelWidth = Math.Min(512, width);
+            else bmp.DecodePixelHeight = Math.Min(512, height);
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
                 bmp.StreamSource = stream;

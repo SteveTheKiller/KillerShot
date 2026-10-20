@@ -134,6 +134,21 @@ internal static partial class SelfTestLibrary
             if (FolderCaptures.LinkedItems(retrySource).Count != 1)
                 throw new InvalidOperationException("A transient dimension-read failure remains cached after the image is unlocked.");
             report.Add("locked_image_dimension_failure_retries_on_refresh=PASS");
+            foreach (var shape in new[] { (64, 8192, 4, 512), (8192, 64, 512, 4), (8, 32, 8, 32), (32, 8, 32, 8) })
+            {
+                string name = $"shape-{shape.Item1}-{shape.Item2}";
+                var shapePixels = new byte[shape.Item1 * shape.Item2 * 4];
+                Array.Fill(shapePixels, (byte)255);
+                var shapeImage = BitmapSource.Create(shape.Item1, shape.Item2, 96, 96, PixelFormats.Bgra32,
+                    null, shapePixels, shape.Item1 * 4);
+                ImageOutput.Save(shapeImage, Path.Combine(retryFolder, name + ".png"));
+                await FolderCaptures.RefreshFolderAsync(retrySource);
+                var shapeItem = FolderCaptures.LinkedItems(retrySource).Single(item => item.Window == name);
+                var thumb = FolderCaptures.LoadThumb(shapeItem.Id);
+                if (thumb == null || thumb.PixelWidth != shape.Item3 || thumb.PixelHeight != shape.Item4 || !thumb.IsFrozen)
+                    throw new InvalidOperationException($"Folder thumbnail {name} decoded to {thumb?.PixelWidth}x{thumb?.PixelHeight}, expected {shape.Item3}x{shape.Item4}.");
+            }
+            report.Add("folder_thumbnails_bound_longest_edge_without_upscaling=PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
