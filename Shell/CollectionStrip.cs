@@ -91,9 +91,8 @@ namespace KillerShot.Shell
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
             _flow.ItemMenuRequested += ShowItemMenu;
-            // The slider runs along the strip's bottom edge and hangs a little over it (past the 6 px
-            // padding and the border), so the carousel keeps the height.
-            _slider = new Slider { Style = sliderStyle, Minimum = 0, Focusable = false, IsTabStop = false, Margin = new Thickness(40, 0, 40, -14) };
+            // Keep the slider in its own row above the pane's resize boundary.
+            _slider = new Slider { Style = sliderStyle, Minimum = 0, Focusable = false, IsTabStop = false, Margin = new Thickness(40, 0, 40, 0) };
             _slider.SetBinding(RangeBase.MaximumProperty, new Binding(nameof(CoverFlow.MaximumIndex)) { Source = _flow });
             _slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(CoverFlow.SelectedIndex)) { Source = _flow, Mode = BindingMode.TwoWay });
 

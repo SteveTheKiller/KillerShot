@@ -36,7 +36,7 @@ internal sealed class CollectionBrowser : ListBox
                         <ScrollViewer.Template><ControlTemplate TargetType="ScrollViewer">
                             <Grid ClipToBounds="False">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Column="0" Margin="-4,-4,-6,0"
+                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Column="0" Margin="8,0,8,0"
                                     Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" CanContentScroll="{TemplateBinding CanContentScroll}"/>
                                 <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Panel.ZIndex="10" Orientation="Vertical" Cursor="Arrow"
                                     Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
