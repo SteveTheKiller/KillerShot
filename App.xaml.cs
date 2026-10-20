@@ -67,6 +67,7 @@ public partial class App : Application
         if (SelfTestCaptureMenus.TryRun(e.Args)) return;
         if (SelfTestOutputFiles.TryRun(e.Args)) return;
         if (SelfTestSidebarSelection.TryRun(e.Args)) return;
+        if (SelfTestMenuOverflow.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.

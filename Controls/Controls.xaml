@@ -552,7 +552,9 @@
                 <ControlTemplate TargetType="ContextMenu">
                     <Border x:Name="MenuRoot" Opacity="0" Style="{StaticResource FlyoutCard}">
                         <Grid>
-                            <StackPanel IsItemsHost="True" Margin="{TemplateBinding Padding}" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel IsItemsHost="True" Margin="{TemplateBinding Padding}" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </ScrollViewer>
                             <Border Style="{StaticResource FlyoutGrain}"/>
                             <Border IsHitTestVisible="False" BorderBrush="{DynamicResource MenuBevelLightBrush}"
                                     BorderThickness="{DynamicResource MenuBevelLightThickness}"/>
@@ -650,8 +652,10 @@
                                             BorderBrush="{DynamicResource MenuBorderBrush}"
                                             BorderThickness="1" CornerRadius="{DynamicResource FlyoutCornerRadius}" SnapsToDevicePixels="True">
                                         <Grid>
-                                            <StackPanel IsItemsHost="True" Margin="0,4"
-                                                        KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                <StackPanel IsItemsHost="True" Margin="0,4"
+                                                            KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                            </ScrollViewer>
                                             <Border IsHitTestVisible="False" CornerRadius="{DynamicResource FlyoutCornerRadius}"
                                                     Background="{DynamicResource GrainTileBrush}"
                                                     Opacity="{DynamicResource GrainOpacity}"/>
