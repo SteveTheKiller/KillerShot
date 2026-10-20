@@ -28,10 +28,9 @@ public partial class App : Application
     /// takes the command line path without needing the --cli switch.</summary>
     internal static string[]? PendingCli { get; set; }
 
-    /// <summary>Where a second launch leaves the image it was asked to open, for the running
-    /// instance to pick up when the wake event arrives.</summary>
-    internal static readonly string OpenRequestPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", "open-request.txt");
+    /// <summary>Atomic, individually acknowledged image requests from secondary launches.</summary>
+    private static readonly ImageOpenRequests OpenRequests = new(Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KillerShot", "OpenRequests"));
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -85,19 +84,9 @@ public partial class App : Application
         string? openPath = OpenArgument(e.Args);
         if (!first)
         {
-            if (openPath != null)
-            {
-                try
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(OpenRequestPath)!);
-                    File.WriteAllText(OpenRequestPath, openPath);
-                }
-                catch { }
-            }
-            try { using var h = EventWaitHandle.OpenExisting(@"Local\KillerShot-Wake"); h.Set(); } catch { }
             _instance!.Dispose();
             _instance = null;
-            Shutdown();
+            _ = DeliverSecondaryOpenAsync(openPath);
             return;
         }
         if (!demo)
@@ -141,6 +130,7 @@ public partial class App : Application
         // Started with Windows: stay in the notification area. Started by hand or asked to open
         // an image: show the editor.
         if (openPath != null) OpenImage(openPath);
+        if (!demo) OpenRequested();
         if (demo)
         {
             // With no tray icon to come back to, closing the demo window quits.
@@ -163,15 +153,27 @@ public partial class App : Application
     /// <summary>Opens the image a second launch left behind, if there is one.</summary>
     private void OpenRequested()
     {
-        string? path = null;
         try
         {
-            if (!File.Exists(OpenRequestPath)) return;
-            path = File.ReadAllText(OpenRequestPath).Trim();
-            File.Delete(OpenRequestPath);
+            OpenRequests.Drain(path => { if (path.Length > 0) OpenImage(path); ShowEditor(); });
+            if (!OpenRequests.IsDraining && OpenRequests.HasPending)
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(OpenRequested));
         }
-        catch { }
-        if (!string.IsNullOrEmpty(path)) OpenImage(path);
+        catch (Exception ex) { Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message); }
+    }
+
+    private async Task DeliverSecondaryOpenAsync(string? path)
+    {
+        int code = 0;
+        try { await OpenRequests.SendAsync(path ?? "", @"Local\KillerShot-Wake", TimeSpan.FromSeconds(10)); }
+        catch (Exception ex)
+        {
+            code = 1;
+            InitializeKit();
+            new Controls.ConfirmDialog(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message,
+                LocaleManager.Loc("Str_Btn_OK"), LocaleManager.Loc("Str_Btn_Cancel")).ShowDialog();
+        }
+        Shutdown(code);
     }
 
     /// <summary>Loads an image file or an album-qualified capture reference into the editor.</summary>
