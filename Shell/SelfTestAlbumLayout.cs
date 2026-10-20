@@ -282,14 +282,14 @@ internal static class SelfTestAlbumLayout
             report.Add("album_sidebar_chevron_available_in_all_views=True");
             report.Add("album_and_editor_minimized_states_are_independent=True");
 
-            report.Add("Chooser H1: The populated collection picker is absent from the carousel's visual tree, so adding it restores selection.");
-            report.Add("Chooser H2: The picker is present but clipped; measuring its visible bounds inside the strip distinguishes clipping.");
-            report.Add("Chooser H3: Collection selection is stale; choosing a source must update the strip and its current caption.");
+            report.Add("The collection chooser belongs in the main toolbar and must still switch the carousel source.");
             photoDock.Restore();
             Layout(root);
             var photoPane = (FrameworkElement)photoDock.Pane!;
-            var picker = Visuals(photoPane).OfType<ComboBox>().SingleOrDefault();
-            Check(picker != null && picker.IsVisible, "The horizontal carousel frame needs its collection chooser.");
+            var toolbar = (FrameworkElement)window.FindName("ToolbarGrid");
+            var picker = Visuals(toolbar).OfType<ComboBox>().SingleOrDefault();
+            Check(picker != null && picker.IsVisible, "The main toolbar needs its collection chooser.");
+            Check(!Visuals(photoPane).OfType<ComboBox>().Any(), "The collection chooser must not overlay the carousel.");
             picker!.IsDropDownOpen = true;
             await Task.Delay(100);
             picker.SelectedItem = picker.Items.OfType<ComboBoxItem>().Single(item => item.Tag is string tag && tag == "c" + collectionId);
@@ -298,11 +298,11 @@ internal static class SelfTestAlbumLayout
             var strip = (CollectionStrip)photoPane;
             Check(strip.Source == "c" + collectionId && strip.SourceCaption == "Layout collection",
                 "The carousel chooser did not switch to its selected collection.");
-            var pickerBounds = picker.TransformToAncestor(photoPane).TransformBounds(new Rect(picker.RenderSize));
-            Check(pickerBounds.Left >= 0 && pickerBounds.Top >= 0 && pickerBounds.Right <= photoPane.ActualWidth
-                && pickerBounds.Bottom <= photoPane.ActualHeight, "The carousel chooser is clipped outside its frame.");
-            Render(root, Path.Combine(folder, "carousel-collection-chooser.png"));
-            report.Add("carousel_collection_chooser_switches_source_inside_frame=True");
+            var pickerBounds = picker.TransformToAncestor(toolbar).TransformBounds(new Rect(picker.RenderSize));
+            Check(pickerBounds.Left >= 0 && pickerBounds.Top >= 0 && pickerBounds.Right <= toolbar.ActualWidth
+                && pickerBounds.Bottom <= toolbar.ActualHeight, "The collection chooser is clipped outside the main toolbar.");
+            Render(root, Path.Combine(folder, "toolbar-collection-chooser.png"));
+            report.Add("toolbar_collection_chooser_switches_source=True");
 
             ((Button)window.FindName("LibrarySearchButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(150);

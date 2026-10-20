@@ -70,7 +70,6 @@ public partial class MainWindow
             menu.Items.Add((_navigationStrip ?? _strip).PreviewMenu());
             foreach (var (side, key, _) in StripSides)
             {
-                if (Library.IsVisible && side is DockSide.Top or DockSide.Bottom) continue;
                 var target = side;
                 var host = side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock;
                 Add(key, () => host.DockTo(target), host.Side == side);

@@ -225,7 +225,9 @@ namespace KillerShot.Shell
                 LeftBar.Measure(infinite);
                 RightBar.Measure(infinite);
                 MoreBtn.Measure(infinite);
-                return LeftBar.DesiredSize.Width + RightBar.DesiredSize.Width + (more ? MoreBtn.DesiredSize.Width : 0);
+                ToolbarCollectionHost.Measure(infinite);
+                return LeftBar.DesiredSize.Width + RightBar.DesiredSize.Width + ToolbarCollectionHost.DesiredSize.Width
+                    + (more ? MoreBtn.DesiredSize.Width : 0);
             }
 
             if (avail > 0)

@@ -28,7 +28,7 @@ namespace KillerShot.Shell
             // Alt+Shift+arrow docks the collection strip, or folds it on its own side.
             var dockKey = e.Key == Key.System ? e.SystemKey : e.Key;
             if (!AnyOverlayOpen && (dockKey is Key.Left or Key.Right ? NavigationDock.HandleKey(e)
-                : !Library.IsVisible && StripDock.HandleKey(e))) return;
+                : StripDock.HandleKey(e))) return;
 
             var mods = Keyboard.Modifiers;
             bool ctrl = (mods & ModifierKeys.Control) != 0;

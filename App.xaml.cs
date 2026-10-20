@@ -73,6 +73,7 @@ public partial class App : Application
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;
+        if (SelfTestWorkspaceAreas.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.

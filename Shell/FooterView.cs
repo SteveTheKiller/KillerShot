@@ -216,14 +216,13 @@ namespace KillerShot.Shell
                     Header = Loc(key), InputGestureText = "Alt+Shift+" + arrow,
                     Icon = DockIcon(side, typeof(MenuItem)),
                     IsCheckable = true, IsChecked = (side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).Side == side,
-                    IsEnabled = side is DockSide.Left or DockSide.Right || !Library.IsVisible,
                 };
                 DockSide target = side;
                 item.Click += (_, _) => (target is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).DockTo(target);
                 menu.Items.Add(item);
             }
             menu.Items.Add(new Separator());
-            var minimizeHost = Library.IsVisible ? NavigationDock : StripDock;
+            var minimizeHost = StripDock;
             var arrowOfSide = StripSides.First(s => s.Side == minimizeHost.Side).Arrow;
             var minimize = new MenuItem
             {
@@ -240,18 +239,18 @@ namespace KillerShot.Shell
         {
             bool library = Library.Visibility == Visibility.Visible;
             bool picture = !library && _doc != null;
-            FooterStripControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
+            FooterStripControls.Visibility = Visibility.Visible;
             FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
             if (_stripButton != null)
             {
                 _stripButton.Visibility = Visibility.Visible;
-                _stripButton.Content = DockIcon(picture ? StripDock.Side : NavigationDock.Side, typeof(Button));
+                _stripButton.Content = DockIcon(StripDock.Side, typeof(Button));
             }
             _footerSyncing = true;
             try
             {
                 string stripView = StripDock.Side.ToString();
-                foreach (var (button, view) in _footerStripViews) button.IsChecked = picture && stripView == view;
+                foreach (var (button, view) in _footerStripViews) button.IsChecked = stripView == view;
                 // Over a picture none is underlined: the library is not what is showing.
                 foreach (var (button, view) in _footerViews) button.IsChecked = library && Library.CurrentView == view;
                 // The timeline is a line of days, so it is always by date.

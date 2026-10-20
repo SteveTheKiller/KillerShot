@@ -249,6 +249,8 @@
                         <Button x:Name="FitBtn" Style="{StaticResource ToolbarButton}" Click="FitBtn_Click"/>
                         <Button x:Name="ActualSizeBtn" Style="{StaticResource ToolbarButton}" Click="ActualSizeBtn_Click"/>
                     </StackPanel>
+                    <ContentControl x:Name="ToolbarCollectionHost" Grid.Column="1" HorizontalAlignment="Left"
+                                    VerticalAlignment="Center" Margin="8,0"/>
                     <StackPanel x:Name="RightBar" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"/>
                     <!-- The More menu: buttons the user put there, and those the window is too narrow
                          for. Shown only when it has something in it. -->

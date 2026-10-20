@@ -416,7 +416,7 @@ namespace KillerShot.Shell
         {
             bool library = _doc == null || _libraryShown;
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
-            SyncStripPlacement(library);
+            SyncStripPlacement();
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
             SyncContentPane();
             SyncFooterView();

@@ -39,6 +39,7 @@ namespace KillerShot.Shell
         public string SideView => _sideView;
 
         internal FrameworkElement TestCarousel => _flow;
+        internal ComboBox CollectionPicker => _picker;
 
         private readonly DockHost _host;
         private readonly ComboBox _picker = new() { MinWidth = 150, MaxWidth = 260, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
@@ -228,7 +229,6 @@ namespace KillerShot.Shell
                 Grid.SetRow(_slider, 1);
                 _body.Children.Add(_flow);
                 _body.Children.Add(_slider);
-                _body.Children.Add(_picker);
             }
             else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
 

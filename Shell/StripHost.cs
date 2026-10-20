@@ -4,7 +4,7 @@ using KillerFamily.Layout;
 using KillerShot.Controls;
 using KillerShot.Services;
 
-// Collections beside the workspace and a separate photo carousel above or below the editor.
+// Collections beside the workspace and a separate photo carousel above or below its main view.
 namespace KillerShot.Shell
 {
     public partial class MainWindow
@@ -36,6 +36,7 @@ namespace KillerShot.Shell
             _navigationStrip.SetAlbumMode(true);
             NavigationDock.Pane = _navigationStrip;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));
+            ToolbarCollectionHost.Content = _strip.CollectionPicker;
             _navigationStrip.StatusMessage += message => StatusText.Text = message;
             _strip.StatusMessage += message => StatusText.Text = message;
             _navigationStrip.SourceChanged += () => SyncSources(_navigationStrip);
@@ -90,14 +91,13 @@ namespace KillerShot.Shell
             finally { _syncingSources = false; }
         }
 
-        private void SyncStripPlacement(bool library)
+        private void SyncStripPlacement()
         {
             NavigationDock.ShowPane = true;
-            double railSize = library ? 0 : 24;
-            bool railChanged = StripDock.RailSize != railSize;
-            bool paneChanged = StripDock.ShowPane != !library;
-            StripDock.RailSize = railSize;
-            StripDock.ShowPane = !library;
+            bool railChanged = StripDock.RailSize != 24;
+            bool paneChanged = !StripDock.ShowPane;
+            StripDock.RailSize = 24;
+            StripDock.ShowPane = true;
             if (railChanged && !paneChanged) StripDock.RefreshLayout();
             if (_navigationStrip != null) SyncSources(_navigationStrip);
             SyncEditorPaneMargin();
