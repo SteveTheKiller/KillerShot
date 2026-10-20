@@ -4,7 +4,7 @@
 - Unsaved edits require confirmation before another image opens. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
-- Add local or network folders as saved collections, including subfolders. Images stay in their original locations; background scans refresh changes and retry unavailable folders. Failed collection removal reports the error and preserves selection.
+- Add local or network folders as saved collections, including subfolders. Images stay in their original locations; background scans refresh the browser and editor and retry unavailable folders. Failed collection removal reports the error and preserves selection.
 - Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor.
 - Keep collection navigation beside the editor, with its photo carousel above or below the open image. Sidebar placement, carousel placement, sizing, and collapse are independent.
 - Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges beneath the scrollbar. Selecting a collection keeps loaded previews in place. The larger main carousel loads a sharper selected photo, Multiple carousels is easier to find, and resizing gaps are tighter.

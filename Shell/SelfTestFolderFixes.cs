@@ -1,6 +1,9 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using KillerFamily.Layout;
 using KillerShot.Services;
 
@@ -24,6 +27,10 @@ internal static partial class SelfTestLibrary
             App.InitializeKit();
             string photos = Path.Combine(folder, "photos");
             Directory.CreateDirectory(photos);
+            var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
+            pixel.Freeze();
+            string first = Path.Combine(photos, "first.png");
+            ImageOutput.SavePng(pixel, first);
             string source = FolderCaptures.AddFolder(photos);
             await FolderCaptures.RefreshFolderAsync(source);
             using var strip = new CollectionStrip(new DockHost(), new Style(typeof(Slider)));
@@ -50,6 +57,24 @@ internal static partial class SelfTestLibrary
             if (strip.Source != "all" || FolderCaptures.LinkedCollections().Any(item => item.Source == source))
                 throw new InvalidOperationException("A successful removal must reset selection and remove only the saved link.");
             report.Add("remove_command_succeeds_after_settings_recover=PASS");
+            source = FolderCaptures.AddFolder(photos);
+            await FolderCaptures.RefreshFolderAsync(source);
+            strip.SetSource(source);
+            await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            ImageOutput.SavePng(pixel, Path.Combine(photos, "second.png"));
+            await FolderCaptures.RefreshFolderAsync(source);
+            await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            var carousel = (KillerShot.Controls.CoverFlow)strip.TestCarousel;
+            if (carousel.Items.Count != 2 || strip.Source != source)
+                throw new InvalidOperationException("The same linked editor source must refresh when its snapshot changes.");
+            var selected = FolderCaptures.LinkedItems(source).Single(item => item.Window == "second");
+            strip.Follow(selected, null);
+            File.Delete(first);
+            await FolderCaptures.RefreshFolderAsync(source);
+            await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            if (carousel.Items.Count != 1 || carousel.SelectedItem?.Id != selected.Id)
+                throw new InvalidOperationException("A linked editor refresh must remove deleted files and preserve the surviving selected photo.");
+            report.Add("same_source_editor_refreshes_added_removed_files_and_retains_selection=PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

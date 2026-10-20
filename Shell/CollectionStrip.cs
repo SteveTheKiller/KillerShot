@@ -193,7 +193,7 @@ namespace KillerShot.Shell
         private void OnFolderChanged()
         {
             if (_disposed || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || _source == "folder") Load(keepCurrent: true); }));
+            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || FolderCaptures.IsSource(_source)) Load(keepCurrent: true); }));
         }
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
