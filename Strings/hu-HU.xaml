@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Mappagyűjtemény eltávolítása</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Mappa olvasása...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">A mappa nem érhető el</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Válasszon másik fájlnevet az állókép exportálásához és az eredeti megőrzéséhez.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">A megnyitott kép megváltozott. Mentse újra az aktuális képet.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">Az F2 beállít egy sarkot. A nyílbillentyűkkel méretezhet (Shifttel 10 képpontonként), majd az Enterrel rögzíthet. Az Escape megszakítja a műveletet.</sys:String>
 </ResourceDictionary>

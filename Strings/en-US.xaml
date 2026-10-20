@@ -480,4 +480,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Remove folder collection</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Reading folder...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Folder unavailable</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Choose a different filename to export a static image and preserve the original.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">The open image changed. Save the current image again.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 sets a corner. Use arrow keys to resize (Shift for 10 pixels), then Enter to capture. Escape cancels.</sys:String>
 </ResourceDictionary>

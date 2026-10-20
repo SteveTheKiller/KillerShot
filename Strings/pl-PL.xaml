@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Usuń kolekcję folderu</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Odczytywanie folderu...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Folder jest niedostępny</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Wybierz inną nazwę pliku, aby wyeksportować obraz statyczny i zachować oryginał.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Otwarty obraz uległ zmianie. Zapisz ponownie bieżący obraz.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 ustawia narożnik. Użyj strzałek, aby zmienić rozmiar (Shift dla 10 pikseli), a następnie Enter, aby przechwycić. Escape anuluje.</sys:String>
 </ResourceDictionary>

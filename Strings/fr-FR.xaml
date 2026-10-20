@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Retirer la collection de dossier</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Lecture du dossier...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Dossier indisponible</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Choisissez un autre nom de fichier pour exporter une image statique et conserver l’original.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">L’image ouverte a changé. Enregistrez à nouveau l’image actuelle.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 définit un coin. Utilisez les flèches pour redimensionner (Shift pour 10 pixels), puis Enter pour capturer. Escape annule.</sys:String>
 </ResourceDictionary>

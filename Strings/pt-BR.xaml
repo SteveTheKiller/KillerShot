@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Remover coleção de pasta</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Lendo pasta...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Pasta indisponível</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Escolha outro nome de arquivo para exportar uma imagem estática e preservar o original.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">A imagem aberta foi alterada. Salve a imagem atual novamente.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 define um canto. Use as setas para redimensionar (Shift para 10 pixels) e depois Enter para capturar. Escape cancela.</sys:String>
 </ResourceDictionary>

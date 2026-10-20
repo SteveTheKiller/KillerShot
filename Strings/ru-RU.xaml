@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Убрать коллекцию папки</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Чтение папки...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Папка недоступна</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Выберите другое имя файла, чтобы экспортировать статичное изображение и сохранить оригинал.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Открытое изображение изменилось. Сохраните текущее изображение еще раз.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 задает угол. Используйте клавиши со стрелками для изменения размера (с Shift на 10 пикселей), затем Enter для захвата. Escape отменяет действие.</sys:String>
 </ResourceDictionary>

@@ -23,6 +23,11 @@ internal static class SelfTestCaptureMenus
 
     internal static bool TryRun(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--selftest-selector-keyboard")
+        {
+            _ = RunSelectorKeyboard(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (args.Length == 2 && args[0] == "--selftest-selector-close")
         {
             _ = RunSelectorClose(Path.GetFullPath(args[1]));
@@ -36,6 +41,61 @@ internal static class SelfTestCaptureMenus
         if (args.Length < 2 || args[0] != "--selftest-capture-menus") return false;
         _ = RunAsync(Path.GetFullPath(args[1]), args.Contains("--show"));
         return true;
+    }
+
+    private static async Task RunSelectorKeyboard(string folder)
+    {
+        Directory.CreateDirectory(folder);
+        int exit = 1;
+        var report = new List<string>();
+        RegionSelector? selector = null;
+        try
+        {
+            Settings.UseFolder(Path.Combine(folder, "settings"));
+            App.InitializeKit();
+            var bounds = new Win32.RECT(-100, -100, 100, 100);
+            var desktop = new FrozenDesktop(bounds, new byte[200 * 200 * 4],
+                [new MonitorBounds(IntPtr.Zero, new Win32.RECT(-100, -100, 0, 0), true),
+                 new MonitorBounds(IntPtr.Zero, new Win32.RECT(0, 0, 100, 100), false)], []);
+            foreach (var mode in new[] { CaptureMode.Region, CaptureMode.Qr })
+            {
+                selector = new RegionSelector(desktop, showBar: true, mode: mode);
+                var result = selector.RunAsync();
+                var overlay = Application.Current.Windows.OfType<RegionOverlay>().Single(w => w.Monitor.Left == -100);
+                Key(overlay, System.Windows.Input.Key.F2);
+                for (int i = 0; i < 5; i++) Key(overlay, System.Windows.Input.Key.Right);
+                for (int i = 0; i < 5; i++) Key(overlay, System.Windows.Input.Key.Down);
+                Key(overlay, System.Windows.Input.Key.Enter);
+                if (await result.WaitAsync(TimeSpan.FromSeconds(1)) is not { Left: -50, Top: -50, Right: -44, Bottom: -44 })
+                    throw new InvalidOperationException("Keyboard selection did not preserve physical negative desktop coordinates.");
+                report.Add(mode + " keyboard corner/arrows/Enter returns the selected physical rectangle: PASS");
+            }
+            selector = new RegionSelector(desktop, showBar: true, video: true);
+            var canceled = selector.RunAsync();
+            Key(Application.Current.Windows.OfType<CaptureBar>().Single(), System.Windows.Input.Key.F2);
+            if (selector.CurrentSelection == null) throw new InvalidOperationException("F2 from the capture bar did not establish an anchor.");
+            for (int i = 0; i < 50; i++)
+            {
+                selector.HandleKey(System.Windows.Input.Key.Right, ModifierKeys.Shift);
+                selector.HandleKey(System.Windows.Input.Key.Down, ModifierKeys.Shift);
+            }
+            if (selector.CurrentSelection is not { Left: -50, Top: -50, Right: 100, Bottom: 100 })
+                throw new InvalidOperationException("Accelerated recording selection did not stop at desktop edges.");
+            selector.HandleKey(System.Windows.Input.Key.Escape, ModifierKeys.None);
+            if (await canceled != null) throw new InvalidOperationException("Escape produced an output.");
+            report.Add("F2 from the capture bar, accelerated recording selection, edge clamps and Escape: PASS");
+            exit = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        finally
+        {
+            selector?.Cancel();
+            File.WriteAllLines(Path.Combine(folder, "selector-keyboard-report.txt"), report);
+            App.Current.Shutdown(exit);
+        }
+
+        static void Key(Window window, Key key) => window.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice,
+            PresentationSource.FromVisual(window), 0, key) { RoutedEvent = Keyboard.PreviewKeyDownEvent });
     }
 
     private static async Task RunSelectorClose(string folder)

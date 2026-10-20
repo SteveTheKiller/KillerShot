@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Fjern mappesamling</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Leser mappe...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Mappen er utilgjengelig</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Velg et annet filnavn for å eksportere et stillbilde og bevare originalen.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Det åpne bildet er endret. Lagre det gjeldende bildet på nytt.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 angir et hjørne. Bruk piltastene for å endre størrelse (Shift for 10 piksler), og deretter Enter for å ta bildet. Escape avbryter.</sys:String>
 </ResourceDictionary>

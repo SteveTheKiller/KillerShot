@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">移除文件夹集合</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">正在读取文件夹...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">文件夹不可用</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">请选择其他文件名以导出静态图像并保留原始文件。</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">打开的图像已更改。请重新保存当前图像。</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 设置一个角。使用方向键调整大小（按住 Shift 每次调整 10 像素），然后按 Enter 捕获。按 Escape 取消。</sys:String>
 </ResourceDictionary>

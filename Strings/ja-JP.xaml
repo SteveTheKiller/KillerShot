@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">フォルダーコレクションを削除</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">フォルダーを読み込み中...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">フォルダーを利用できません</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">静止画像を書き出して元のファイルを保持するには、別のファイル名を選んでください。</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">開いている画像が変更されました。現在の画像をもう一度保存してください。</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 で角を設定します。矢印キーでサイズを変更し（Shift で 10 ピクセルずつ）、Enter でキャプチャします。Escape でキャンセルします。</sys:String>
 </ResourceDictionary>

@@ -107,6 +107,10 @@ internal sealed class CaptureBar : Window
             }));
         };
         KeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; _selector.Cancel(); } };
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.F2) e.Handled = _selector.HandleKey(e.Key, Keyboard.Modifiers);
+        };
         Closed += (_, _) => _selector.Cancel();
         Sync();
     }

@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">ফোল্ডার সংগ্রহ সরান</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">ফোল্ডার পড়া হচ্ছে...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">ফোল্ডার পাওয়া যাচ্ছে না</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">স্থির ছবি রপ্তানি করতে এবং মূল ফাইলটি অক্ষত রাখতে অন্য একটি ফাইলের নাম বেছে নিন।</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">খোলা ছবিটি পরিবর্তিত হয়েছে। বর্তমান ছবিটি আবার সংরক্ষণ করুন।</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 দিয়ে একটি কোণা নির্ধারণ করুন। আকার বদলাতে তীরচিহ্নের কীগুলো ব্যবহার করুন (10 পিক্সেলের জন্য Shift), তারপর ক্যাপচার করতে Enter চাপুন। Escape বাতিল করে।</sys:String>
 </ResourceDictionary>

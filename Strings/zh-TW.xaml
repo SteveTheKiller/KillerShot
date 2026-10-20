@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">移除資料夾集合</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">正在讀取資料夾...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">資料夾無法使用</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">請選擇其他檔案名稱以匯出靜態影像並保留原始檔案。</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">開啟的影像已變更。請重新儲存目前的影像。</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 設定一個角。使用方向鍵調整大小（按住 Shift 每次調整 10 像素），然後按 Enter 擷取。按 Escape 取消。</sys:String>
 </ResourceDictionary>

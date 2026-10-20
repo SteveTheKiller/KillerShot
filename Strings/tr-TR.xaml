@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Klasör koleksiyonunu kaldır</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Klasör okunuyor...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Klasör kullanılamıyor</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Sabit bir görüntü dışa aktarmak ve özgün dosyayı korumak için farklı bir dosya adı seçin.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Açık görüntü değişti. Geçerli görüntüyü yeniden kaydedin.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 bir köşe belirler. Boyutlandırmak için ok tuşlarını (10 piksel için Shift), ardından yakalamak için Enter tuşunu kullanın. Escape iptal eder.</sys:String>
 </ResourceDictionary>

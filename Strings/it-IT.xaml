@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Rimuovi raccolta da cartella</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Lettura della cartella...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Cartella non disponibile</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Scegli un nome file diverso per esportare un’immagine statica e conservare l’originale.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">L’immagine aperta è cambiata. Salva di nuovo l’immagine corrente.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 imposta un angolo. Usa i tasti freccia per ridimensionare (Shift per 10 pixel), quindi Enter per acquisire. Escape annulla.</sys:String>
 </ResourceDictionary>

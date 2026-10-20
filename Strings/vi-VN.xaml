@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Gỡ bộ sưu tập thư mục</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Đang đọc thư mục...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Thư mục không khả dụng</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Chọn tên tệp khác để xuất ảnh tĩnh và giữ nguyên bản gốc.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Ảnh đang mở đã thay đổi. Hãy lưu lại ảnh hiện tại.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 đặt một góc. Dùng các phím mũi tên để đổi kích thước (Shift để đổi 10 pixel), rồi nhấn Enter để chụp. Escape hủy thao tác.</sys:String>
 </ResourceDictionary>

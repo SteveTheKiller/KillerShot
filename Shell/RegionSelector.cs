@@ -15,7 +15,7 @@ namespace KillerShot.Shell;
 /// <summary>Region selection across every monitor. Each monitor gets its own borderless overlay
 /// showing that monitor's slice of the frozen desktop at one image pixel per device pixel, and
 /// all overlays share one selection in physical virtual-desktop coordinates, so a drag can cross
-/// monitors with different scaling. Region mode selects only by dragging a rectangle;
+/// monitors with different scaling. Region mode supports dragging or a keyboard rectangle;
 /// window-pick mode highlights windows and captures one with a click.</summary>
 internal sealed class RegionSelector
 {
@@ -27,6 +27,7 @@ internal sealed class RegionSelector
     private WindowBounds? _hover;
     private bool _dragged;
     private bool _finished;
+    private Win32.POINT? _keyboardPoint;
     private readonly bool _showBar;
     private CaptureBar? _bar;
     public CaptureMode Mode { get; private set; }
@@ -93,6 +94,7 @@ internal sealed class RegionSelector
 
     internal void BeginAt(Win32.POINT p)
     {
+        _keyboardPoint = null;
         _start = p;
         _dragged = false;
     }
@@ -105,6 +107,7 @@ internal sealed class RegionSelector
 
     internal void MoveAt(Win32.POINT p)
     {
+        if (_keyboardPoint != null) return;
         if (_start == null && Mode is CaptureMode.Region or CaptureMode.Qr)
         {
             _hover = null;
@@ -159,6 +162,7 @@ internal sealed class RegionSelector
     public void SetMode(CaptureMode mode)
     {
         Mode = IsVideo && mode == CaptureMode.Qr ? CaptureMode.Region : mode;
+        _keyboardPoint = null;
         _start = null; _selection = null; _hover = null;
         RedrawAll();
         Move();
@@ -173,9 +177,48 @@ internal sealed class RegionSelector
 
     public void CaptureSelection()
     {
-        if (_selection is not { IsEmpty: false } selection) return;
+        if (_selection is not { Width: >= 3, Height: >= 3 } selection)
+        {
+            if (Mode is CaptureMode.Region or CaptureMode.Qr) HandleKey(Key.F2, ModifierKeys.None);
+            return;
+        }
         if (Mode == CaptureMode.Window) PickedWindow = _hover?.Handle ?? IntPtr.Zero;
         Finish(selection);
+    }
+
+    public bool HandleKey(Key key, ModifierKeys modifiers, Win32.RECT? monitor = null)
+    {
+        if (key == Key.Escape) { Cancel(); return true; }
+        if (Mode is not (CaptureMode.Region or CaptureMode.Qr)) return false;
+        if (key == Key.F2)
+        {
+            var home = monitor ?? _frozen.Monitors.FirstOrDefault(m => m.Primary)?.Bounds ?? _frozen.Bounds;
+            _keyboardPoint ??= new Win32.POINT { X = home.Left + home.Width / 2, Y = home.Top + home.Height / 2 };
+            _start = _keyboardPoint;
+            _selection = new Win32.RECT(_start.Value.X, _start.Value.Y, _start.Value.X + 1, _start.Value.Y + 1);
+            _dragged = false;
+            var overlay = _overlays.FirstOrDefault(o => o.Monitor.Contains(_keyboardPoint.Value));
+            overlay?.Activate();
+            if (overlay != null) Keyboard.Focus(overlay);
+            RedrawAll();
+            return true;
+        }
+        if (_keyboardPoint is not { } point || _start is not { } anchor) return false;
+        if (key == Key.Enter) { CaptureSelection(); return true; }
+        int step = (modifiers & ModifierKeys.Shift) != 0 ? 10 : 1;
+        switch (key)
+        {
+            case Key.Left: point.X = Math.Max(_frozen.Bounds.Left, point.X - step); break;
+            case Key.Right: point.X = Math.Min(_frozen.Bounds.Right - 1, point.X + step); break;
+            case Key.Up: point.Y = Math.Max(_frozen.Bounds.Top, point.Y - step); break;
+            case Key.Down: point.Y = Math.Min(_frozen.Bounds.Bottom - 1, point.Y + step); break;
+            default: return false;
+        }
+        _keyboardPoint = point;
+        _selection = new Win32.RECT(Math.Min(anchor.X, point.X), Math.Min(anchor.Y, point.Y),
+            Math.Max(anchor.X, point.X) + 1, Math.Max(anchor.Y, point.Y) + 1);
+        RedrawAll();
+        return true;
     }
 
     private void RedrawAll()
@@ -208,6 +251,7 @@ internal sealed class RegionOverlay : Window
     private readonly Rectangle _box;
     private readonly Border _label;
     private readonly TextBlock _labelText;
+    private readonly TextBlock _hint;
 
     public Win32.RECT Monitor { get; }
 
@@ -244,21 +288,29 @@ internal sealed class RegionOverlay : Window
         var root = new Grid { Background = Brushes.Transparent };
         root.Children.Add(image);
         root.Children.Add(canvas);
+        _hint = new TextBlock
+        {
+            Text = Services.LocaleManager.Loc("Str_Capture_Keyboard"), Foreground = Brushes.White,
+            Background = LabelBack, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12), Padding = new Thickness(6),
+            VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Center,
+            MaxWidth = 600, IsHitTestVisible = false
+        };
+        root.Children.Add(_hint);
         root.Children.Add(new Border { BorderBrush = Accent, BorderThickness = new Thickness(3), IsHitTestVisible = false });
         Content = root;
 
         SourceInitialized += (_, _) => PlaceOnMonitor();
         // A move onto a monitor with different scaling makes WPF apply a DPI-scaled size, so
         // place the window again once it lives on its own monitor.
-        Loaded += (_, _) => { PlaceOnMonitor(); Redraw(null); };
-        SizeChanged += (_, _) => Redraw(null);
+        Loaded += (_, _) => { PlaceOnMonitor(); Redraw(_owner.CurrentSelection); };
+        SizeChanged += (_, _) => Redraw(_owner.CurrentSelection);
         Closed += (_, _) => _owner.Cancel();
 
         MouseLeftButtonDown += (_, _) => { CaptureMouse(); _owner.Begin(); };
         MouseMove += (_, _) => _owner.Move();
         MouseLeftButtonUp += (_, _) => { ReleaseMouseCapture(); _owner.End(); };
         MouseRightButtonUp += (_, _) => _owner.Cancel();
-        KeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; _owner.Cancel(); } };
+        PreviewKeyDown += (_, e) => e.Handled = _owner.HandleKey(e.Key, Keyboard.Modifiers, Monitor);
     }
 
     private static Brush Freeze(Brush b) { b.Freeze(); return b; }
@@ -275,6 +327,7 @@ internal sealed class RegionOverlay : Window
     /// its actual size to the monitor's pixel size.</summary>
     public void Redraw(Win32.RECT? selection)
     {
+        _hint.Visibility = _owner.Mode is CaptureMode.Region or CaptureMode.Qr ? Visibility.Visible : Visibility.Collapsed;
         double w = ActualWidth, h = ActualHeight;
         if (w <= 0 || h <= 0) return;
         double sx = w / Monitor.Width, sy = h / Monitor.Height;

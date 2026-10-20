@@ -613,7 +613,7 @@ namespace KillerShot.Shell
             if (dlg.ShowDialog(this) != true) return;
             if (!ReferenceEquals(document, _doc))
             {
-                StatusText.Text = string.Format(Loc("Str_Status_SaveFailed"), "The open image changed. Save the current image again.");
+                StatusText.Text = string.Format(Loc("Str_Status_SaveFailed"), Loc("Str_Save_DocumentChanged"));
                 return;
             }
             WriteTo(document, dlg.FileName);
@@ -628,7 +628,7 @@ namespace KillerShot.Shell
                 if (document.FilePath is string source && System.IO.File.Exists(source)
                     && string.Equals(System.IO.Path.GetFullPath(source), System.IO.Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)
                     && !ImageOutput.CanSaveInPlace(source))
-                    throw new NotSupportedException("Choose a different filename to export a static image and preserve the original.");
+                    throw new NotSupportedException(Loc("Str_Save_StaticOriginal"));
                 ImageOutput.Save(document.Render(), path, CaptureSettings.JpegQuality);
                 document.FilePath = path;
                 document.MarkSaved();

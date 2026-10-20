@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Қалта жинағын алып тастау</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Қалта оқылуда...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Қалта қолжетімсіз</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Қозғалыссыз кескінді экспорттап, түпнұсқаны сақтау үшін басқа файл атауын таңдаңыз.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Ашық кескін өзгерді. Ағымдағы кескінді қайта сақтаңыз.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 бұрышты белгілейді. Өлшемді өзгерту үшін көрсеткі пернелерін (10 пиксель үшін Shift), содан кейін түсіру үшін Enter пернесін басыңыз. Escape әрекетті тоқтатады.</sys:String>
 </ResourceDictionary>

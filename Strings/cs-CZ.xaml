@@ -477,4 +477,7 @@
     <sys:String x:Key="Str_FolderCollection_Remove">Odebrat kolekci ze složky</sys:String>
     <sys:String x:Key="Str_FolderCollection_Loading">Načítání složky...</sys:String>
     <sys:String x:Key="Str_FolderCollection_Unavailable">Složka není dostupná</sys:String>
+    <sys:String x:Key="Str_Save_StaticOriginal">Chcete-li exportovat statický obrázek a zachovat originál, zvolte jiný název souboru.</sys:String>
+    <sys:String x:Key="Str_Save_DocumentChanged">Otevřený obrázek se změnil. Uložte aktuální obrázek znovu.</sys:String>
+    <sys:String x:Key="Str_Capture_Keyboard">F2 nastaví roh. Velikost upravte šipkami (se Shiftem po 10 pixelech), poté stiskněte Enter pro zachycení. Escape akci zruší.</sys:String>
 </ResourceDictionary>
