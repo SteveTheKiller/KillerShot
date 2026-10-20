@@ -295,6 +295,8 @@ namespace KillerShot.Shell
             ApplyToolbarStyle();
             Library.Relocalize();
             _strip?.Relocalize();
+            _navigationStrip?.Relocalize();
+            SyncFooterCollection();
         }
     }
 }

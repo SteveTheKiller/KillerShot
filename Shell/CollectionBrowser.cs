@@ -9,9 +9,12 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
-internal sealed record CollectionChoice(string Source, string Name, IReadOnlyList<CaptureItem> Preview, int Count, string Style,
-    string? Status = null, string? Path = null)
+internal sealed record CollectionChoice(string Source, string StoredName, IReadOnlyList<CaptureItem> Preview, int Count, string Style,
+    string? StatusKey = null, string? Path = null)
 {
+    public string Name => Source == "all" ? LocaleManager.Loc("Str_Strip_All")
+        : Source == "c0" ? LocaleManager.Loc("Str_Lib_Unfiled") : StoredName;
+    public string? Status => StatusKey == null ? null : LocaleManager.Loc(StatusKey);
     public string Detail => Status ?? string.Format(CultureInfo.CurrentCulture,
         LocaleManager.Loc(Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), Count);
     public string AccessibleName => Name + ", " + Detail;
@@ -141,6 +144,17 @@ public sealed class CollectionPreview : StackPanel
         DataContextChanged += (_, _) => Refresh();
         Loaded += (_, _) => { ThemeManager.ThemeChanged += Refresh; Refresh(); };
         Unloaded += (_, _) => { ThemeManager.ThemeChanged -= Refresh; _generation++; _photos.Children.Clear(); _pile.Children.Clear(); _scattered.Clear(); };
+    }
+
+    internal void Relocalize()
+    {
+        if (DataContext is not CollectionChoice choice) return;
+        _name.Text = choice.Name;
+        _count.Text = choice.Detail;
+        ToolTip = choice.Path is { } path ? path + "\n" + choice.Detail : choice.AccessibleName;
+        DependencyObject? parent = this;
+        while (parent != null && parent is not ListBoxItem) parent = VisualTreeHelper.GetParent(parent);
+        if (parent is ListBoxItem row) row.GetBindingExpression(AutomationProperties.NameProperty)?.UpdateTarget();
     }
 
     private async void Refresh()

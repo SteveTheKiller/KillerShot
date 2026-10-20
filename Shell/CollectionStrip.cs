@@ -258,6 +258,14 @@ namespace KillerShot.Shell
             _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.ResizeText = Loc("Str_Dock_Resize");
             Load(keepCurrent: true);
+            for (int i = 0; i < _browser.Items.Count; i++)
+                if (_browser.ItemContainerGenerator.ContainerFromIndex(i) is ListBoxItem row
+                    && row.Template.FindName("row", row) is Border { Child: ContentPresenter presenter })
+                {
+                    presenter.ApplyTemplate();
+                    if (VisualTreeHelper.GetChildrenCount(presenter) > 0
+                        && VisualTreeHelper.GetChild(presenter, 0) is CollectionPreview preview) preview.Relocalize();
+                }
         }
 
         private static string Arrow(DockSide side) => side switch
@@ -337,7 +345,7 @@ namespace KillerShot.Shell
                     Choice("all", Loc("Str_Strip_All"), all);
                     if (FolderCaptures.Enabled) Choice("folder", FolderCaptures.Name, FolderCaptures.Items());
                     foreach (var folder in folders) Choice(folder.Source, folder.Name, FolderCaptures.LinkedItems(folder.Source),
-                        folder.Loading ? Loc("Str_FolderCollection_Loading") : !folder.Available ? Loc("Str_FolderCollection_Unavailable") : null, folder.Path);
+                        folder.Loading ? "Str_FolderCollection_Loading" : !folder.Available ? "Str_FolderCollection_Unavailable" : null, folder.Path);
                     foreach (var c in collections)
                         Choice("c" + c.Id.ToString(CultureInfo.InvariantCulture), c.Name, membersByCollection[c.Id].ToArray());
                     Choice("c0", Loc("Str_Lib_Unfiled"), all.Where(i => i.CollectionId is not long id || !known.Contains(id)).ToArray());
