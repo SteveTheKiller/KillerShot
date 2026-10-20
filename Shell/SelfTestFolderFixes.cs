@@ -118,6 +118,22 @@ internal static partial class SelfTestLibrary
                     throw new InvalidOperationException("Published folder snapshots must remain readable while a new link waits for settings persistence.");
                 report.Add("folder_snapshots_do_not_wait_for_settings_persistence=PASS");
             });
+            string retryFolder = Path.Combine(folder, "retry-locked-image");
+            Directory.CreateDirectory(retryFolder);
+            string retryImage = Path.Combine(retryFolder, "locked.png");
+            ImageOutput.SavePng(pixel, retryImage);
+            string retrySource;
+            using (var held = new FileStream(retryImage, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                retrySource = FolderCaptures.AddFolder(retryFolder);
+                await FolderCaptures.RefreshFolderAsync(retrySource);
+                if (FolderCaptures.LinkedItems(retrySource).Count != 0)
+                    throw new InvalidOperationException("The locked-image fixture unexpectedly loaded.");
+            }
+            await FolderCaptures.RefreshFolderAsync(retrySource);
+            if (FolderCaptures.LinkedItems(retrySource).Count != 1)
+                throw new InvalidOperationException("A transient dimension-read failure remains cached after the image is unlocked.");
+            report.Add("locked_image_dimension_failure_retries_on_refresh=PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

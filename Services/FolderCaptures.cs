@@ -145,7 +145,8 @@ internal static partial class FolderCaptures
             w = frame.PixelWidth; h = frame.PixelHeight;
         }
         catch { }
-        lock (_gate) _sizes[f.FullName] = (f.LastWriteTimeUtc, w, h);
+        if (w > 0 && h > 0)
+            lock (_gate) _sizes[f.FullName] = (f.LastWriteTimeUtc, w, h);
         return (w, h);
     }
 
