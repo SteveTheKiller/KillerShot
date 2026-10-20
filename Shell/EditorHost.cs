@@ -589,7 +589,7 @@ namespace KillerShot.Shell
         private void Save()
         {
             if (_doc == null) return;
-            if (_doc.FilePath == null) { SaveAs(); return; }
+            if (_doc.FilePath == null || !ImageOutput.CanSaveInPlace(_doc.FilePath)) { SaveAs(); return; }
             WriteTo(_doc.FilePath);
         }
 
@@ -602,7 +602,8 @@ namespace KillerShot.Shell
                 Title = Loc("Str_Dlg_SaveTitle"),
                 Filter = Loc("Str_Dlg_ImageFilter"),
                 DefaultExt = ".png",
-                FileName = _doc.FilePath != null ? System.IO.Path.GetFileName(_doc.FilePath) : $"KillerShot {_doc.Taken:yyyy-MM-dd HHmmss}.png",
+                FileName = _doc.FilePath != null ? System.IO.Path.ChangeExtension(System.IO.Path.GetFileName(_doc.FilePath),
+                    ImageOutput.CanSaveInPlace(_doc.FilePath) ? System.IO.Path.GetExtension(_doc.FilePath) : ".png") : $"KillerShot {_doc.Taken:yyyy-MM-dd HHmmss}.png",
                 InitialDirectory = _doc.FilePath != null ? System.IO.Path.GetDirectoryName(_doc.FilePath) ?? "" : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             };
             if (dlg.ShowDialog(this) != true) return;

@@ -1,6 +1,7 @@
 # Changelog
 
 ## [1.0.0] - Unreleased
+- Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
 - Unsaved edits require confirmation before another image opens. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Capture IDs stay unique after deletion.
 - Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.

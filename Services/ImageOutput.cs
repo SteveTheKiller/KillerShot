@@ -63,10 +63,34 @@ internal static class ImageOutput
     private static BitmapEncoder CreateEncoder(BitmapSource bmp, string path, int jpegQuality)
     {
         string ext = Path.GetExtension(path).ToLowerInvariant();
-        BitmapEncoder encoder = ext is ".jpg" or ".jpeg"
-            ? new JpegBitmapEncoder { QualityLevel = jpegQuality } : new PngBitmapEncoder();
+        BitmapEncoder encoder = ext switch
+        {
+            ".jpg" or ".jpeg" => new JpegBitmapEncoder { QualityLevel = jpegQuality },
+            ".png" => new PngBitmapEncoder(),
+            _ => throw new NotSupportedException("Image output requires a PNG or JPEG extension."),
+        };
         encoder.Frames.Add(BitmapFrame.Create(bmp));
         return encoder;
+    }
+
+    public static bool CanSaveInPlace(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            if (decoder.Frames.Count != 1) return false;
+            return Path.GetExtension(path).ToLowerInvariant() switch
+            {
+                ".png" => decoder is PngBitmapDecoder,
+                ".jpg" or ".jpeg" => decoder is JpegBitmapDecoder,
+                _ => false,
+            };
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or FileFormatException)
+        {
+            return false;
+        }
     }
 
     /// <summary>Loads an image at its true pixel size. WPF would otherwise lay out a 144 DPI file

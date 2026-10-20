@@ -69,10 +69,46 @@ internal static class SelfTestOutputFiles
 
             var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
             pixel.Freeze();
+            foreach (string extension in new[] { ".gif", ".tif", ".tiff", ".bmp", ".webp" })
+            {
+                string unsupported = Path.Combine(folder, "preserve" + extension);
+                byte[] original = [1, 2, 3, 4];
+                File.WriteAllBytes(unsupported, original);
+                bool rejected = false;
+                try { ImageOutput.Save(pixel, unsupported); }
+                catch (NotSupportedException) { rejected = true; }
+                if (!rejected || !File.ReadAllBytes(unsupported).SequenceEqual(original))
+                    throw new InvalidOperationException("Unsupported image save changed the original: " + extension);
+            }
             string image1 = ImageOutput.SaveUnique(pixel, folder, "image.png");
             string image2 = ImageOutput.SaveUnique(pixel, folder, "image.png");
             if (image1 == image2 || !File.Exists(image1) || !File.Exists(image2))
                 throw new InvalidOperationException("Image saves did not use unique names.");
+            if (!ImageOutput.CanSaveInPlace(image1))
+                throw new InvalidOperationException("A single-frame PNG cannot be saved in place.");
+            string jpeg = Path.Combine(folder, "image.jpg");
+            ImageOutput.Save(pixel, jpeg);
+            if (!ImageOutput.CanSaveInPlace(jpeg))
+                throw new InvalidOperationException("A single-frame JPEG cannot be saved in place.");
+            string mismatch = Path.Combine(folder, "mismatch.png");
+            File.Copy(jpeg, mismatch);
+            if (ImageOutput.CanSaveInPlace(mismatch))
+                throw new InvalidOperationException("A JPEG with a PNG extension allows in-place saving.");
+            string multiPage = Path.Combine(folder, "two-pages.tif");
+            var tiff = new TiffBitmapEncoder();
+            tiff.Frames.Add(BitmapFrame.Create(pixel));
+            tiff.Frames.Add(BitmapFrame.Create(pixel));
+            using (var stream = File.Create(multiPage)) tiff.Save(stream);
+            byte[] originalTiff = File.ReadAllBytes(multiPage);
+            if (ImageOutput.CanSaveInPlace(multiPage))
+                throw new InvalidOperationException("A two-page TIFF allows in-place saving.");
+            string disguisedTiff = Path.Combine(folder, "two-pages.png");
+            File.Copy(multiPage, disguisedTiff);
+            if (ImageOutput.CanSaveInPlace(disguisedTiff))
+                throw new InvalidOperationException("A two-page TIFF with a PNG extension allows in-place saving.");
+            ImageOutput.Save(ImageOutput.Load(multiPage), Path.Combine(folder, "export.png"));
+            if (!File.ReadAllBytes(multiPage).SequenceEqual(originalTiff))
+                throw new InvalidOperationException("Exporting a TIFF changed its source.");
             if (Directory.EnumerateFiles(folder, ".KillerShot-*.tmp").Any())
                 throw new InvalidOperationException("A completed or failed write left a staging file.");
             report = "Output reservations, atomic replacement, concurrent unique writes, video publication, and image saves: PASS";
