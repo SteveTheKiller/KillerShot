@@ -49,7 +49,7 @@
 - Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
 - The bottom window edge resizes reliably, while footer controls stay clickable and mark the displayed album or strip view. Collection grouping uses a folder icon, distinct from the title-bar database settings.
 - Album mode keeps its left sidebar and collapse chevron, with a tighter timeline gutter and separate Search and New collection rail buttons. The editor keeps its own dock position and collapsed state.
-- Capture, Search and album flyouts open 8px inside the content pane. Settings and Help keep scrollbars at the panel edge and show shadows where more content remains. Printing settings use the left column.
+- Capture, Search and album flyouts open 8px inside the content pane, including at larger app sizes. Settings and Help keep scrollbars at the panel edge and show shadows where more content remains. Printing settings use the left column.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.

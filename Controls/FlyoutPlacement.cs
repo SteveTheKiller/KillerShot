@@ -51,11 +51,20 @@ internal static class FlyoutPlacement
         {
             if (_pane == null || button is not FrameworkElement element)
                 return [new CustomPopupPlacement(new Point(0, targetSize.Height + 8), PopupPrimaryAxis.None)];
-            Point origin = _pane.TranslatePoint(new Point(), element);
             FrameworkElement? face = card();
-            Thickness halo = face?.Margin ?? new Thickness();
-            double faceWidth = face is { ActualWidth: > 0 } ? face.ActualWidth : Math.Max(0, popupSize.Width - halo.Left - halo.Right);
-            double x = alignRight ? Math.Max(8, _pane.ActualWidth - faceWidth - 8) - halo.Left : 8 - halo.Left;
-            return [new CustomPopupPlacement(new Point(origin.X + x, origin.Y + 8 - halo.Top), PopupPrimaryAxis.None)];
+            Vector faceOffset = new();
+            double faceWidth = popupSize.Width;
+            if (face != null && PresentationSource.FromVisual(face) is { RootVisual: System.Windows.Media.Visual root, CompositionTarget: { } target })
+            {
+                var transform = face.TransformToAncestor(root);
+                Point left = target.TransformToDevice.Transform(transform.Transform(new Point()));
+                Point right = target.TransformToDevice.Transform(transform.Transform(new Point(face.ActualWidth, 0)));
+                faceOffset = (Vector)left;
+                faceWidth = right.X - left.X;
+            }
+            Point desired = _pane.PointToScreen(new Point(alignRight ? _pane.ActualWidth - 8 : 8, 8));
+            Vector position = desired - element.PointToScreen(new Point()) - faceOffset;
+            if (alignRight) position.X -= faceWidth;
+            return [new CustomPopupPlacement((Point)position, PopupPrimaryAxis.None)];
         };
 }
