@@ -53,6 +53,13 @@ internal static class SelfTestCursorOverride
                 results.Add(name, bytes);
                 report.Add(name + ": " + json.Trim());
             }
+            if (results.Values.All(bytes => bytes.SequenceEqual(results["saved-False-flag-False"])))
+            {
+                report.Add("BLOCKED: This desktop session exposes no cursor pixels even with inclusion enabled. Repeat with a visible pointer over the capture window.");
+                File.WriteAllLines(Path.Combine(folder, "cursor-override-report.txt"), report);
+                App.Instance.Shutdown(2);
+                return;
+            }
             if (!results["saved-False-flag-False"].SequenceEqual(results["saved-True-flag-False"]) ||
                 !results["saved-False-flag-True"].SequenceEqual(results["saved-True-flag-True"]) ||
                 results["saved-False-flag-False"].SequenceEqual(results["saved-False-flag-True"]))
