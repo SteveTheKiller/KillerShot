@@ -31,6 +31,7 @@ internal sealed class Recorder
     public int Frames { get; private set; }
     public int Dropped { get; private set; }
     public bool IsPaused => _paused;
+    public bool HasFailed => Volatile.Read(ref _error) != null;
     /// <summary>The encoder completed the file, even if a capture source reported an error.</summary>
     public bool IsFinalized { get; private set; }
 
@@ -175,7 +176,7 @@ internal sealed class Recorder
                 if (now - next > frameMs) next = now + frameMs;   // fell behind: skip ahead, don't burst
             }
         }
-        catch (Exception ex) { _error ??= ex; }
+        catch (Exception ex) { Fail(ex); }
         finally
         {
             Win32.timeEndPeriod(1);
@@ -195,9 +196,15 @@ internal sealed class Recorder
         }
         catch (Exception ex)
         {
-            _error ??= ex;
-            _stop = true;
+            Fail(ex);
             foreach (var _ in _queue.GetConsumingEnumerable()) { }
         }
+    }
+
+    private void Fail(Exception error)
+    {
+        lock (_clock) _clock.Stop();
+        Interlocked.CompareExchange(ref _error, error, null);
+        _stop = true;
     }
 }

@@ -19,6 +19,7 @@ internal sealed class VideoController
 {
     private readonly TrayHost _tray;
     private readonly IEnumerable<IAudioCaptureSource>? _audioSources;
+    private readonly Func<string, IVideoSink>? _sinkFactory;
     private Recorder? _recorder;
     private RecordingChrome? _chrome;
     private DispatcherTimer? _tick;
@@ -36,10 +37,11 @@ internal sealed class VideoController
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
-    public VideoController(TrayHost tray, IEnumerable<IAudioCaptureSource>? audioSources = null)
+    public VideoController(TrayHost tray, IEnumerable<IAudioCaptureSource>? audioSources = null, Func<string, IVideoSink>? sinkFactory = null)
     {
         _tray = tray;
         _audioSources = audioSources;
+        _sinkFactory = sinkFactory;
     }
 
     /// <summary>The video shortcut: start when idle, stop when recording.</summary>
@@ -100,16 +102,21 @@ internal sealed class VideoController
             try { File.SetAttributes(_stagingFolder, File.GetAttributes(_stagingFolder) | FileAttributes.Hidden); }
             catch { }
             _path = OutputFiles.NextPath(_stagingFolder, $"recording.{ext}");
-            sink = gif
+            sink = _sinkFactory?.Invoke(_path) ?? (gif
                 ? new GifEncoder(_path, VideoSettings.GifColors >= 256 ? 255 : VideoSettings.GifColors, VideoSettings.GifSize / 100.0, VideoSettings.GifLoop)
-                : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000);
+                : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000));
             _recorder = new Recorder(rect, sink, fps, VideoSettings.IncludeCursor, gif ? SoundSource.None : VideoSettings.Sound,
                 gif ? null : _audioSources);
             await _recorder.StartAsync();
             recorderStarted = true;
             if (_stopRequested) return;
             _tick = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-            _tick.Tick += (_, _) => { if (_recorder != null) _chrome?.SetRecording(_recorder.Elapsed, _recorder.IsPaused); };
+            _tick.Tick += (_, _) =>
+            {
+                if (_recorder is not { } recorder) return;
+                if (recorder.HasFailed) { _ = StopAsync(discard: false); return; }
+                _chrome?.SetRecording(recorder.Elapsed, recorder.IsPaused);
+            };
             _tick.Start();
             _chrome.SetRecording(TimeSpan.Zero, false);
             _tray.SetRecording(true);

@@ -12,13 +12,72 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || !args[0].Equals("--selftest-recording-safety", StringComparison.OrdinalIgnoreCase)) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
         App.InitializeKit();
-        _ = RunAsync(dir);
+        _ = args[0] == "--selftest-recording-fault" ? RunFaultAsync(dir) : RunAsync(dir);
         return true;
+    }
+
+    private static async Task RunFaultAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        using var tray = new TrayHost();
+        FaultSink? sink = null;
+        VideoSettings.OutputFolder = Path.Combine(dir, "videos");
+        VideoSettings.Format = "gif";
+        VideoSettings.Countdown = VideoSettings.CopyFile = VideoSettings.Notify = false;
+        var controller = new VideoController(tray, sinkFactory: path => sink = new FaultSink(path));
+        try
+        {
+            await controller.StartAsync(new Win32.RECT(0, 0, 64, 64));
+            if (sink == null) throw new InvalidOperationException("Recording did not start through the sink boundary.");
+            await sink.Failed.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            for (int i = 0; i < 100 && controller.IsRecording; i++) await Task.Delay(20);
+            if (controller.IsRecording) throw new InvalidOperationException("Controller still appears active after a terminal encoder I/O failure.");
+            if (controller.LastVideoPath is not { } path || !File.Exists(path))
+                throw new InvalidOperationException("The valid recording prefix was discarded.");
+            using var stream = File.OpenRead(path);
+            var decoded = System.Windows.Media.Imaging.BitmapDecoder.Create(stream,
+                System.Windows.Media.Imaging.BitmapCreateOptions.None, System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+            if (decoded.Frames.Count < 1 || sink.Finishes != 1)
+                throw new InvalidOperationException("Fault recovery did not finalize a playable prefix exactly once.");
+            await Task.WhenAll(controller.StopAsync(false), controller.PrepareForExitAsync());
+            if (sink.Finishes != 1) throw new InvalidOperationException("Repeated stop finalized the sink again.");
+            report.Add("Started recording reaches injected encoder I/O fault, leaves active state, retains decodable GIF, and finalizes once: PASS");
+            code = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        finally
+        {
+            await controller.StopAsync(true);
+            File.WriteAllLines(Path.Combine(dir, "recording-fault-report.txt"), report);
+            App.Current.Shutdown(code);
+        }
+    }
+
+    private sealed class FaultSink(string path) : IVideoSink
+    {
+        private readonly GifEncoder _inner = new(path, 16, 1, false);
+        private int _frames;
+        public int Finishes { get; private set; }
+        public TaskCompletionSource Failed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task StartAsync(int width, int height, int fps) => _inner.StartAsync(width, height, fps);
+        public void AddFrame(byte[] bgra, TimeSpan timestamp)
+        {
+            if (++_frames == 3)
+            {
+                Failed.TrySetResult();
+                throw new IOException("Injected recording sink write failure.");
+            }
+            _inner.AddFrame(bgra, timestamp);
+        }
+        public void AddAudio(byte[] pcm, TimeSpan timestamp) { }
+        public Task FinishAsync(TimeSpan duration) { Finishes++; return _inner.FinishAsync(duration); }
+        public void Dispose() => _inner.Dispose();
     }
 
     private static async Task RunAsync(string dir)
