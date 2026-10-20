@@ -39,6 +39,7 @@ internal static class SelfTestStorageSafety
             else if (scenario == "identity") CaptureIdentity(log);
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
+            else if (scenario == "retention") await RetentionRollback(log);
             else throw new ArgumentException("Unknown storage scenario.");
             log.AppendLine("result=ok");
         }
@@ -46,6 +47,31 @@ internal static class SelfTestStorageSafety
         finally { CaptureLibrary.Close(); }
         File.WriteAllText(Path.Combine(dir, "report.txt"), log.ToString());
         Application.Current.Shutdown(exit);
+    }
+
+    private static async Task RetentionRollback(StringBuilder log)
+    {
+        CaptureLibrary.AddNow(Pixel(), DateTime.Now.AddDays(-2), "region", "Older searchable", null);
+        CaptureLibrary.AddNow(Pixel(), DateTime.Now, "region", "Newer searchable", null);
+        using (var fault = OpenFixtureDatabase())
+        {
+            Execute(fault, "CREATE TRIGGER fail_retention BEFORE DELETE ON captures BEGIN SELECT RAISE(ABORT, 'retention failure'); END");
+            CaptureLibrary.Keep = "count:1";
+            await Task.Delay(600);
+            if (CaptureLibrary.Count != 2 || CaptureLibrary.Items("Older").Count != 1)
+                throw new InvalidOperationException("Failed retention removed surviving capture search results.");
+            Execute(fault, "DROP TRIGGER fail_retention");
+            Execute(fault, "DELETE FROM capture_search");
+        }
+        CaptureLibrary.Keep = "all";
+        CaptureLibrary.Close();
+        if (!CaptureLibrary.OpenAuto() || CaptureLibrary.Items("searchable").Count != 2)
+            throw new InvalidOperationException("Reopening did not repair missing search rows from surviving captures.");
+        CaptureLibrary.Keep = "count:1";
+        for (int n = 0; n < 100 && CaptureLibrary.Count != 1; n++) await Task.Delay(20);
+        if (CaptureLibrary.Count != 1 || CaptureLibrary.Items("Older").Count != 0 || CaptureLibrary.Items("Newer").Count != 1)
+            throw new InvalidOperationException("Retention retry did not remove the same capture from storage and search.");
+        log.AppendLine("retention_rollback_search_repair_and_retry=True");
     }
 
     private static BitmapSource Pixel()

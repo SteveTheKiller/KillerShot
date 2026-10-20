@@ -503,6 +503,12 @@ internal static partial class CaptureLibrary
                 text TEXT NOT NULL);
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
+            INSERT INTO capture_search(rowid, title, process, note, ocr, collection)
+            SELECT c.id, c.window_title, c.process_name, c.note,
+                COALESCE(c.ocr_text, '') || char(10) || COALESCE(q.text, ''), k.name
+            FROM captures c LEFT JOIN collections k ON k.id = c.collection_id
+            LEFT JOIN capture_qr q ON q.capture_id = c.id
+            WHERE NOT EXISTS (SELECT 1 FROM capture_search s WHERE s.rowid = c.id);
             INSERT INTO meta(key, value) VALUES ('capture_id', (SELECT COALESCE(MAX(id), 0) FROM captures))
             ON CONFLICT(key) DO UPDATE SET value = MAX(CAST(meta.value AS INTEGER), CAST(excluded.value AS INTEGER));
             """);
@@ -1096,7 +1102,9 @@ internal static partial class CaptureLibrary
             if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
             var (kind, amount) = ParseKeep(Keep);
             if (kind is not ("count" or "days")) return;
+            using var transaction = _db.BeginTransaction();
             using var cmd = _db.CreateCommand();
+            cmd.Transaction = transaction;
             if (kind == "count")
             {
                 cmd.CommandText = """
@@ -1114,6 +1122,7 @@ internal static partial class CaptureLibrary
                 cmd.Parameters.AddWithValue("$t", DateTime.UtcNow.AddDays(-amount).Ticks);
             }
             removed = cmd.ExecuteNonQuery();
+            transaction.Commit();
             if (removed > 0) ClearThumbCache();
         }
         if (removed > 0) RaiseChanged();
