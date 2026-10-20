@@ -34,8 +34,13 @@ internal static partial class CaptureLibrary
 
     /// <summary>Changes the password using the supplied filesystem replacement operation.</summary>
     public static void SetPassword(string? newPassword, Action<string, string, string> replaceFile)
+        => SetPassword(newPassword, replaceFile, File.Delete);
+
+    /// <summary>Changes the password using supplied replacement and owned restoration-copy deletion operations.</summary>
+    public static void SetPassword(string? newPassword, Action<string, string, string> replaceFile, Action<string> deleteRestorationCopy)
     {
         ArgumentNullException.ThrowIfNull(replaceFile);
+        ArgumentNullException.ThrowIfNull(deleteRestorationCopy);
         if (string.IsNullOrEmpty(newPassword)) newPassword = null;
         lock (_gate)
         {
@@ -102,7 +107,7 @@ internal static partial class CaptureLibrary
             string bak = path + ".bak";
             try
             {
-                ReplaceWithRetry(tmp, path, bak, replaceFile);
+                ReplaceWithRetry(tmp, path, bak, replaceFile, deleteRestorationCopy);
             }
             catch (Exception swapError)
             {
@@ -110,12 +115,13 @@ internal static partial class CaptureLibrary
                 // Keep every recovery file until that album has reopened with its old key.
                 try
                 {
-                    RestoreReplacementDestination(path, bak);
+                    RestoreReplacementDestination(path, bak, deleteRestorationCopy);
                     OpenWith(oldPassword, oldByPassword);
                 }
                 catch (Exception recoveryError)
                 {
-                    throw new IOException("The album could not reopen after the password change failed. Recovery files were kept.",
+                    throw new IOException("The album could not reopen after the password change failed. Recovery files were kept. Backup: " + bak
+                        + ". Staged: " + tmp + ". Swap: " + swapError.Message + " Recovery: " + recoveryError.Message,
                         new AggregateException(swapError, recoveryError));
                 }
                 try { File.Delete(tmp); } catch { }
@@ -143,18 +149,18 @@ internal static partial class CaptureLibrary
     /// <summary>File.Replace with backoff retries, falling back to a move-based swap that puts
     /// the original back if the second move fails. Antivirus and indexer scans of the freshly
     /// written file cause transient sharing violations.</summary>
-    private static void ReplaceWithRetry(string source, string dest, string backup, Action<string, string, string> replaceFile)
+    private static void ReplaceWithRetry(string source, string dest, string backup, Action<string, string, string> replaceFile, Action<string> deleteRestorationCopy)
     {
         for (int attempt = 1; attempt <= 8; attempt++)
         {
             try { replaceFile(source, dest, backup); return; }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                RestoreReplacementDestination(dest, backup);
+                RestoreReplacementDestination(dest, backup, deleteRestorationCopy);
                 Thread.Sleep(150 * attempt);
             }
         }
-        RestoreReplacementDestination(dest, backup);
+        RestoreReplacementDestination(dest, backup, deleteRestorationCopy);
         if (File.Exists(backup)) File.Delete(backup);
         File.Move(dest, backup);
         try { File.Move(source, dest); }
@@ -165,12 +171,36 @@ internal static partial class CaptureLibrary
         }
     }
 
-    private static void RestoreReplacementDestination(string destination, string backup)
+    private static void RestoreReplacementDestination(string destination, string backup, Action<string> deleteRestorationCopy)
     {
         if (File.Exists(destination)) return;
         if (!File.Exists(backup)) throw new IOException("The original album is unavailable. Recovery files were kept.");
         string restored = destination + ".restore-" + Guid.NewGuid().ToString("N");
-        File.Copy(backup, restored);
-        File.Move(restored, destination);
+        using var input = new FileStream(backup, FileMode.Open, FileAccess.Read, FileShare.Read);
+        bool ownsRestored = false;
+        try
+        {
+            using (var output = new FileStream(restored, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                ownsRestored = true;
+                input.CopyTo(output);
+                output.Flush(flushToDisk: true);
+            }
+            File.Move(restored, destination);
+            ownsRestored = false;
+        }
+        catch (Exception recoveryError)
+        {
+            if (ownsRestored)
+            {
+                try { deleteRestorationCopy(restored); }
+                catch (Exception cleanupError)
+                {
+                    throw new IOException("The temporary album restoration copy could not be removed. Retained: " + restored,
+                        new AggregateException(recoveryError, cleanupError));
+                }
+            }
+            throw;
+        }
     }
 }

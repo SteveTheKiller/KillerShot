@@ -258,6 +258,7 @@ internal static class SelfTestStorageSafety
                 throw new InvalidOperationException("A partial password replacement lost the capture, key, or recovery cleanup.");
         }
         log.AppendLine("post_rename_replacement_recovered_all_key_transitions=True");
+        PasswordRestorationCopyLifecycle(log, id);
 
         string path = CaptureLibrary.FilePath;
         string stagedKey = Path.ChangeExtension(path, ".key") + ".next";
@@ -310,6 +311,116 @@ internal static class SelfTestStorageSafety
             || CaptureLibrary.Items().Single().Id != id)
             throw new InvalidOperationException("Password swap retries or move fallback lost the capture or key.");
         log.AppendLine("sharing_retries_and_move_fallback_preserved=True");
+        PasswordRecoveryDiagnostic(log, id);
+    }
+
+    private static void PasswordRecoveryDiagnostic(StringBuilder log, long id)
+    {
+        string path = CaptureLibrary.FilePath;
+        var retained = new List<string>();
+        IOException? error = null;
+        try
+        {
+            CaptureLibrary.SetPassword(null, (source, destination, backup) =>
+            {
+                File.Move(destination, backup);
+                Directory.CreateDirectory(destination);
+                throw new IOException("Replacement failed after renaming the original.", unchecked((int)0x80070499));
+            }, copy =>
+            {
+                retained.Add(copy);
+                throw new UnauthorizedAccessException("Owned-copy cleanup was refused.");
+            });
+        }
+        catch (IOException problem) { error = problem; }
+        if (error == null || CaptureLibrary.IsOpen || retained.Distinct().Count() != 2)
+            throw new InvalidOperationException("The owned-copy cleanup refusal did not preserve both failed restoration attempts.");
+        string stagedKey = Path.ChangeExtension(path, ".key") + ".next";
+        string accountKey = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(stagedKey),
+            "KillerShot.Library.v1"u8.ToArray(), DataProtectionScope.CurrentUser));
+        foreach (var copy in retained.Select(file => (Path: file, Key: "fallback password")).Concat(new[]
+        {
+            (Path: path + ".bak", Key: "fallback password"), (Path: path + ".rekey", Key: accountKey)
+        }))
+        {
+            using var database = new SqliteConnection(new SqliteConnectionStringBuilder
+            { DataSource = copy.Path, Password = copy.Key, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ConnectionString);
+            database.Open();
+            using var query = database.CreateCommand();
+            query.CommandText = "SELECT id FROM captures";
+            if (Convert.ToInt64(query.ExecuteScalar()) != id)
+                throw new InvalidOperationException("Cleanup refusal changed a retained album recovery image.");
+        }
+        log.AppendLine("cleanup_refusal_top_level_message=" + error.Message);
+        if (error.InnerException is not AggregateException || retained.Concat(new[] { path + ".bak", path + ".rekey" })
+            .Any(file => !error.Message.Contains(file, StringComparison.Ordinal)))
+            throw new InvalidOperationException("The top-level password error omitted a retained recovery path.");
+        log.AppendLine("cleanup_refusal_reports_all_retained_paths_with_complete_databases=True");
+    }
+
+    private static void PasswordRestorationCopyLifecycle(StringBuilder log, long id)
+    {
+        string path = CaptureLibrary.FilePath;
+        string directory = Path.GetDirectoryName(path)!;
+        string unrelated = path + ".restore-unrelated";
+        File.WriteAllText(unrelated, "Independent retained file");
+        bool retired = true;
+        foreach (var transition in new[]
+        {
+            (Old: (string?)"final swap password", New: (string?)"interrupted password"),
+            (Old: (string?)"final swap password", New: (string?)null),
+            (Old: (string?)null, New: (string?)"interrupted password")
+        })
+        {
+            CaptureLibrary.SetPassword(transition.Old);
+            string oldKey = transition.Old ?? Encoding.UTF8.GetString(ProtectedData.Unprotect(
+                File.ReadAllBytes(Path.ChangeExtension(path, ".key")), "KillerShot.Library.v1"u8.ToArray(), DataProtectionScope.CurrentUser));
+            bool failed = false;
+            try
+            {
+                CaptureLibrary.SetPassword(transition.New, (source, destination, backup) =>
+                {
+                    File.Move(destination, backup);
+                    Directory.CreateDirectory(destination);
+                    throw new IOException("Replacement failed after renaming the original.", unchecked((int)0x80070499));
+                });
+            }
+            catch (IOException) { failed = true; }
+            if (!failed || CaptureLibrary.IsOpen || !Directory.Exists(path))
+                throw new InvalidOperationException("The restoration rename fixture did not leave the album closed.");
+            string newKey = transition.New ?? Encoding.UTF8.GetString(ProtectedData.Unprotect(
+                File.ReadAllBytes(Path.ChangeExtension(path, ".key") + ".next"), "KillerShot.Library.v1"u8.ToArray(), DataProtectionScope.CurrentUser));
+            foreach (var copy in new[] { (Path: path + ".bak", Key: oldKey), (Path: path + ".rekey", Key: newKey) })
+            {
+                using var database = new SqliteConnection(new SqliteConnectionStringBuilder
+                { DataSource = copy.Path, Password = copy.Key, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ConnectionString);
+                database.Open();
+                using var query = database.CreateCommand();
+                query.CommandText = "SELECT id FROM captures";
+                if (Convert.ToInt64(query.ExecuteScalar()) != id)
+                    throw new InvalidOperationException("Restoration rename failure lost a complete album recovery image.");
+            }
+            int afterFailure = Directory.GetFiles(directory, Path.GetFileName(path) + ".restore-*").Count(file => file != unrelated);
+            Directory.Delete(path);
+            File.Move(path + ".bak", path);
+            bool reopened = transition.Old == null ? CaptureLibrary.OpenAuto() : CaptureLibrary.Unlock(transition.Old);
+            if (!reopened || CaptureLibrary.Items().Single().Id != id)
+                throw new InvalidOperationException("The retained original album did not reopen after the fixture blocker was removed.");
+            CaptureLibrary.SetPassword("retired recovery key");
+            CaptureLibrary.Close();
+            if (CaptureLibrary.OpenAuto() || (transition.Old != null && CaptureLibrary.Unlock(transition.Old))
+                || !CaptureLibrary.Unlock("retired recovery key") || CaptureLibrary.Items().Single().Id != id
+                || CaptureLibrary.LoadImage(id).PixelWidth != 1)
+                throw new InvalidOperationException("The later password change did not preserve the capture and new key.");
+            int afterSuccess = Directory.GetFiles(directory, Path.GetFileName(path) + ".restore-*").Count(file => file != unrelated);
+            log.AppendLine($"restoration_copy_lifecycle old_account={transition.Old == null} new_account={transition.New == null} after_failure={afterFailure} after_later_success={afterSuccess}");
+            retired &= afterFailure == 0 && afterSuccess == 0;
+            if (File.ReadAllText(unrelated) != "Independent retained file" || File.Exists(path + ".bak") || File.Exists(path + ".rekey"))
+                throw new InvalidOperationException("Restoration cleanup changed unrelated files or left completed transition files.");
+        }
+        CaptureLibrary.SetPassword("final swap password");
+        if (!retired) throw new InvalidOperationException("Owned restoration copies survived a failed rename and later password change.");
+        log.AppendLine("failed_restoration_rename_retires_only_owned_copy_all_key_transitions=True");
     }
 
     private static void FailingIndex(Action action)
