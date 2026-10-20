@@ -591,13 +591,14 @@ namespace KillerShot.Shell
         {
             if (_doc == null) return;
             if (_doc.FilePath == null || !ImageOutput.CanSaveInPlace(_doc.FilePath)) { SaveAs(); return; }
-            WriteTo(_doc.FilePath);
+            WriteTo(_doc, _doc.FilePath);
         }
 
         private void SaveAs()
         {
             if (_doc == null) return;
             Editor.CommitText();
+            var document = _doc;
             var dlg = new FileDialog(FileDialogMode.Save)
             {
                 Title = Loc("Str_Dlg_SaveTitle"),
@@ -610,22 +611,27 @@ namespace KillerShot.Shell
                 InitialDirectory = _doc.FilePath != null ? System.IO.Path.GetDirectoryName(_doc.FilePath) ?? "" : Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
             };
             if (dlg.ShowDialog(this) != true) return;
-            WriteTo(dlg.FileName);
+            if (!ReferenceEquals(document, _doc))
+            {
+                StatusText.Text = string.Format(Loc("Str_Status_SaveFailed"), "The open image changed. Save the current image again.");
+                return;
+            }
+            WriteTo(document, dlg.FileName);
         }
 
-        private void WriteTo(string path)
+        private void WriteTo(EditorDocument document, string path)
         {
-            if (_doc == null) return;
+            if (!ReferenceEquals(document, _doc)) return;
             Editor.CommitText();
             try
             {
-                if (_doc.FilePath is string source && System.IO.File.Exists(source)
+                if (document.FilePath is string source && System.IO.File.Exists(source)
                     && string.Equals(System.IO.Path.GetFullPath(source), System.IO.Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)
                     && !ImageOutput.CanSaveInPlace(source))
                     throw new NotSupportedException("Choose a different filename to export a static image and preserve the original.");
-                ImageOutput.Save(_doc.Render(), path, CaptureSettings.JpegQuality);
-                _doc.FilePath = path;
-                _doc.MarkSaved();
+                ImageOutput.Save(document.Render(), path, CaptureSettings.JpegQuality);
+                document.FilePath = path;
+                document.MarkSaved();
                 RefreshDocumentUi();
                 StatusText.Text = string.Format(Loc("Str_Status_Saved"), System.IO.Path.GetFileName(path));
             }

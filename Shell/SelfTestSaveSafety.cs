@@ -71,6 +71,7 @@ internal static class SelfTestSaveSafety
             Check(((TextBlock)window.FindName("StatusText")).Text.Contains("different filename"),
                 "Rejected animation conversion did not explain how to preserve the original.");
             report.Add("Cancel and attempted same-path static conversion preserve the animated original: PASS");
+            await CheckReplacement(window, folder, report);
             code = 0;
         }
         catch (Exception ex) { report.Add(ex.ToString()); }
@@ -81,6 +82,64 @@ internal static class SelfTestSaveSafety
             CaptureLibrary.Close();
             App.Instance.Shutdown(code);
         }
+    }
+
+    private static Task CheckReplacement(MainWindow window, string folder, List<string> report)
+    {
+        App.Instance.Document?.MarkSaved();
+        string destination = Path.Combine(folder, "A.png");
+        var aPixels = System.Windows.Media.Imaging.BitmapSource.Create(2, 2, 96, 96,
+            PixelFormats.Bgra32, null, Enumerable.Repeat((byte)255, 16).ToArray(), 8);
+        var bPixels = System.Windows.Media.Imaging.BitmapSource.Create(4, 4, 96, 96,
+            PixelFormats.Bgra32, null, new byte[64], 16);
+        ImageOutput.Save(aPixels, destination);
+        byte[] original = File.ReadAllBytes(destination);
+        var a = new EditorDocument(aPixels, destination);
+        var b = new EditorDocument(bPixels);
+        App.Instance.SetDocument(a);
+        Check(WithSaveDialog(window, "SaveAsBtn", dialog =>
+        {
+            Check(App.Instance.SetDocument(b), "The replacement entry did not accept clean A.");
+            b.Crop(new Int32Rect(0, 0, 3, 3));
+            dialog.FileName = destination;
+            dialog.DialogResult = true;
+        }), "Save As never displayed its real modal dialog.");
+        Check(File.ReadAllBytes(destination).SequenceEqual(original), "Replacement B overwrote A's destination.");
+        Check(ReferenceEquals(App.Instance.Document, b) && b.Dirty && b.FilePath == null,
+            "Canceled save transaction changed replacement B's saved state.");
+        report.Add("Document replacement inside the real Save As modal preserves A and B's dirty state: PASS");
+        b.MarkSaved();
+        App.Instance.SetDocument(a);
+        string bPath = Path.Combine(folder, "B.png");
+        ImageOutput.Save(bPixels, bPath);
+        WithSaveDialog(window, "SaveAsBtn", dialog =>
+        {
+            App.Instance.OpenImage(bPath);
+            dialog.FileName = destination;
+            dialog.DialogResult = true;
+        });
+        Check(File.ReadAllBytes(destination).SequenceEqual(original)
+            && App.Instance.Document?.FilePath == bPath && App.Instance.Document.PixelWidth == 4,
+            "External open during Save As changed A or saved B to the old destination.");
+        App.Instance.SetDocument(a);
+        a.Crop(new Int32Rect(0, 0, 1, 1));
+        WithSaveDialog(window, "SaveAsBtn", dialog => dialog.DialogResult = false);
+        Check(a.Dirty && File.ReadAllBytes(destination).SequenceEqual(original), "Canceled Save As cleared dirty state.");
+        WithSaveDialog(window, "SaveAsBtn", dialog =>
+        {
+            dialog.FileName = Path.Combine(folder, "unsupported.gif");
+            dialog.DialogResult = true;
+        });
+        Check(a.Dirty && a.FilePath == destination && !File.Exists(Path.Combine(folder, "unsupported.gif")),
+            "Failed output cleared dirty state or changed the document path.");
+        WithSaveDialog(window, "SaveAsBtn", dialog =>
+        {
+            dialog.FileName = Path.Combine(folder, "saved-A.png");
+            dialog.DialogResult = true;
+        });
+        Check(!a.Dirty && ImageOutput.Load(a.FilePath!).PixelWidth == 1, "Successful Save As failed to save intended edits.");
+        report.Add("External open, cancel, output failure and successful dirty-document Save As: PASS");
+        return Task.CompletedTask;
     }
 
     private static bool WithSaveDialog(MainWindow window, string button, Action<FileDialog> respond)
