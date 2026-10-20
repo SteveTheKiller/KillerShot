@@ -23,6 +23,11 @@ internal static class SelfTestCaptureMenus
 
     internal static bool TryRun(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--selftest-selector-close")
+        {
+            _ = RunSelectorClose(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (args.Length >= 2 && args[0] == "--selftest-region-gesture")
         {
             _ = RunRegionGesture(Path.GetFullPath(args[1]));
@@ -31,6 +36,43 @@ internal static class SelfTestCaptureMenus
         if (args.Length < 2 || args[0] != "--selftest-capture-menus") return false;
         _ = RunAsync(Path.GetFullPath(args[1]), args.Contains("--show"));
         return true;
+    }
+
+    private static async Task RunSelectorClose(string folder)
+    {
+        Directory.CreateDirectory(folder);
+        int exit = 1;
+        var report = new List<string>();
+        RegionSelector? selector = null;
+        try
+        {
+            var bounds = new Win32.RECT(0, 0, 200, 100);
+            var desktop = new FrozenDesktop(bounds, new byte[200 * 100 * 4],
+                [new MonitorBounds(IntPtr.Zero, new Win32.RECT(0, 0, 100, 100), true),
+                 new MonitorBounds(IntPtr.Zero, new Win32.RECT(100, 0, 200, 100), false)], []);
+            foreach (var mode in new[] { CaptureMode.Region, CaptureMode.Qr })
+            {
+                selector = new RegionSelector(desktop, mode: mode);
+                Task<Win32.RECT?> result = selector.RunAsync();
+                var overlays = Application.Current.Windows.OfType<RegionOverlay>().ToArray();
+                if (overlays.Length != 2) throw new InvalidOperationException("Expected two synthetic monitor overlays.");
+                overlays[0].Close();
+                if (await result.WaitAsync(TimeSpan.FromSeconds(1)) != null)
+                    throw new InvalidOperationException("Closing an overlay returned a capture instead of cancellation.");
+                if (Application.Current.Windows.OfType<RegionOverlay>().Any())
+                    throw new InvalidOperationException("A sibling overlay survived cancellation.");
+                selector.Cancel();
+                report.Add(mode + " external close cancels once and closes both overlays: PASS");
+            }
+            exit = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        finally
+        {
+            selector?.Cancel();
+            File.WriteAllLines(Path.Combine(folder, "selector-close-report.txt"), report);
+            App.Current.Shutdown(exit);
+        }
     }
 
     private static async Task RunRegionGesture(string folder)

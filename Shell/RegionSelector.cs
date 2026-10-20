@@ -252,6 +252,7 @@ internal sealed class RegionOverlay : Window
         // place the window again once it lives on its own monitor.
         Loaded += (_, _) => { PlaceOnMonitor(); Redraw(null); };
         SizeChanged += (_, _) => Redraw(null);
+        Closed += (_, _) => _owner.Cancel();
 
         MouseLeftButtonDown += (_, _) => { CaptureMouse(); _owner.Begin(); };
         MouseMove += (_, _) => _owner.Move();
