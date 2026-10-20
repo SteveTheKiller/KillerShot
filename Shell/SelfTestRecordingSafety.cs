@@ -12,7 +12,7 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore")) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
@@ -21,9 +21,46 @@ internal static class SelfTestRecordingSafety
         {
             "--selftest-recording-fault" => RunFaultAsync(dir),
             "--selftest-recording-restore" => RunRestoreAsync(dir),
+            "--selftest-audio-downmix" => RunDownmixAsync(dir),
             _ => RunAsync(dir)
         };
         return true;
+    }
+
+    private static Task RunDownmixAsync(string dir)
+    {
+        var report = new List<string>();
+        int code = 1;
+        try
+        {
+            Check([0, 0, 1, 0, 0, 0], 0x3F, .70710678f, .70710678f, "5.1 center");
+            Check([0, 0, 0, 0, 1, 0], 0x3F, .70710678f, 0, "5.1 rear left");
+            Check([0, 0, 0, 0, 0, 1], 0x3F, 0, .70710678f, "5.1 rear right");
+            Check([0, 0, 0, 0, 0, 0, 1, 0], 0x63F, .70710678f, 0, "7.1 side left");
+            Check([0, 0, 0, 0, 0, 0, 0, 1], 0x63F, 0, .70710678f, "7.1 side right");
+            Check([.5f], 0, .5f, .5f, "mono");
+            Check([.25f, -.5f], 3, .25f, -.5f, "stereo");
+            Check([0, 0, 0, 1, 0, 0], 0x3F, .5f, .5f, "LFE");
+            Check([1, 1, 1, 1, 1, 1], 0x3F, 1, 1, "clipping control");
+            report.Add("Mono, stereo, 5.1 center/rear/LFE, 7.1 sides and clipping retain expected stereo samples: PASS");
+            code = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        File.WriteAllLines(Path.Combine(dir, "audio-downmix-report.txt"), report);
+        App.Current.Shutdown(code);
+        return Task.CompletedTask;
+
+        static void Check(float[] samples, uint mask, float left, float right, string name)
+        {
+            var handle = System.Runtime.InteropServices.GCHandle.Alloc(samples, System.Runtime.InteropServices.GCHandleType.Pinned);
+            try
+            {
+                var actual = AudioDownmix.Frame(handle.AddrOfPinnedObject(), 0, samples.Length, 32, true, mask);
+                if (Math.Abs(actual.Left - left) > .00001 || Math.Abs(actual.Right - right) > .00001)
+                    throw new InvalidOperationException($"{name}: expected {left},{right}; got {actual.Left},{actual.Right}.");
+            }
+            finally { handle.Free(); }
+        }
     }
 
     private static async Task RunRestoreAsync(string dir)
@@ -366,4 +403,3 @@ internal static class SelfTestRecordingSafety
         public void Dispose() { }
     }
 }
-

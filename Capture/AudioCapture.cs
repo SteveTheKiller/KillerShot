@@ -187,6 +187,7 @@ internal sealed class AudioCapture : IDisposable
                 client = (IAudioClient)obj;
                 IntPtr fmtPtr = IntPtr.Zero;
                 int channels, rate, bits;
+                uint channelMask = 0;
                 bool isFloat;
                 try
                 {
@@ -195,10 +196,17 @@ internal sealed class AudioCapture : IDisposable
                     isFloat = fmt.wFormatTag == 3;
                     if (fmt.wFormatTag == 0xFFFE)   // WAVE_FORMAT_EXTENSIBLE: the subformat follows the base struct
                     {
+                        if (fmt.cbSize < 22) throw new NotSupportedException("Incomplete extended audio format.");
+                        channelMask = (uint)Marshal.ReadInt32(fmtPtr + 20);
                         var sub = Marshal.PtrToStructure<Guid>(fmtPtr + 24);
                         isFloat = sub == new Guid("00000003-0000-0010-8000-00aa00389b71");
+                        if (!isFloat && sub != new Guid("00000001-0000-0010-8000-00aa00389b71"))
+                            throw new NotSupportedException("Unsupported audio device encoding.");
                     }
+                    else if (fmt.wFormatTag is not (1 or 3)) throw new NotSupportedException("Unsupported audio device encoding.");
                     channels = fmt.nChannels; rate = (int)fmt.nSamplesPerSec; bits = fmt.wBitsPerSample;
+                    AudioDownmix.Validate(channels, bits, isFloat, channelMask);
+                    if (rate <= 0) throw new NotSupportedException("Invalid audio sample rate.");
                     int flags = _loopback ? 0x00020000 /* AUDCLNT_STREAMFLAGS_LOOPBACK */ : 0;
                     Check(client.Initialize(0, flags, 2_000_000 /* 200 ms */, 0, fmtPtr, IntPtr.Zero));
                 }
@@ -218,7 +226,7 @@ internal sealed class AudioCapture : IDisposable
                         if (packet == 0) break;
                         Check(capture.GetBuffer(out IntPtr data, out uint frames, out uint bufFlags, out _, out _));
                         bool silent = (bufFlags & 0x2) != 0;   // AUDCLNT_BUFFERFLAGS_SILENT
-                        Convert(data, (int)frames, channels, rate, bits, isFloat, silent);
+                        Convert(data, (int)frames, channels, rate, bits, isFloat, silent, channelMask);
                         Check(capture.ReleaseBuffer(frames));
                     }
                 }
@@ -236,7 +244,7 @@ internal sealed class AudioCapture : IDisposable
         }
 
         /// <summary>Device format to 48 kHz stereo float, with linear resampling.</summary>
-        private void Convert(IntPtr data, int frames, int channels, int rate, int bits, bool isFloat, bool silent)
+        private void Convert(IntPtr data, int frames, int channels, int rate, int bits, bool isFloat, bool silent, uint channelMask)
         {
             var left = new float[frames];
             var right = new float[frames];
@@ -244,8 +252,7 @@ internal sealed class AudioCapture : IDisposable
             {
                 for (int f = 0; f < frames; f++)
                 {
-                    float l = Sample(data, f * channels, bits, isFloat);
-                    float r = channels > 1 ? Sample(data, f * channels + 1, bits, isFloat) : l;
+                    var (l, r) = AudioDownmix.Frame(data, f, channels, bits, isFloat, channelMask);
                     left[f] = l; right[f] = r;
                 }
             }
@@ -265,18 +272,6 @@ internal sealed class AudioCapture : IDisposable
                 _resamplePos -= frames;
                 if (frames > 0) { _lastL = left[frames - 1]; _lastR = right[frames - 1]; }
             }
-        }
-
-        private static float Sample(IntPtr data, int index, int bits, bool isFloat)
-        {
-            if (isFloat && bits == 32) return BitConverter.Int32BitsToSingle(Marshal.ReadInt32(data, index * 4));
-            return bits switch
-            {
-                16 => Marshal.ReadInt16(data, index * 2) / 32768f,
-                24 => ((Marshal.ReadByte(data, index * 3) | (Marshal.ReadByte(data, index * 3 + 1) << 8) | ((sbyte)Marshal.ReadByte(data, index * 3 + 2) << 16)) / 8388608f),
-                32 => Marshal.ReadInt32(data, index * 4) / 2147483648f,
-                _ => 0f,
-            };
         }
 
         private static void Check(int hr)
