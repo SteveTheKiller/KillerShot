@@ -91,6 +91,33 @@ internal static partial class SelfTestLibrary
                 || allocated >= 64 * 1024 * 1024)
                 throw new InvalidOperationException("The linked JPEG preview must decode at bounded size without full-image conversion.");
             report.Add("large_linked_preview_has_bounded_decode=PASS");
+            string another = Path.Combine(folder, "another");
+            Directory.CreateDirectory(another);
+            await Task.Run(async () =>
+            {
+                Task<string> adding;
+                var snapshot = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                using (var held = new FileStream(settings + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                {
+                    adding = Task.Run(() => FolderCaptures.AddFolder(another));
+                    await Task.Delay(150).ConfigureAwait(false);
+                    using var started = new ManualResetEventSlim();
+                    new Thread(() =>
+                    {
+                        started.Set();
+                        try { snapshot.SetResult(FolderCaptures.LinkedCollections().Count == 1 && FolderCaptures.LinkedItems(source).Count == 2); }
+                        catch (Exception error) { snapshot.SetException(error); }
+                    }) { IsBackground = true }.Start();
+                    started.Wait();
+                    await Task.WhenAny(snapshot.Task, Task.Delay(350)).ConfigureAwait(false);
+                    report.Add($"snapshots_completed_during_settings_lock={snapshot.Task.IsCompleted}");
+                }
+                string added = await adding;
+                if (!await snapshot.Task || !report.Contains("snapshots_completed_during_settings_lock=True")
+                    || !FolderCaptures.LinkedCollections().Any(item => item.Source == added))
+                    throw new InvalidOperationException("Published folder snapshots must remain readable while a new link waits for settings persistence.");
+                report.Add("folder_snapshots_do_not_wait_for_settings_persistence=PASS");
+            });
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

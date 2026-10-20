@@ -22,6 +22,7 @@ internal static partial class FolderCaptures
     }
 
     private static readonly object LinkedGate = new();
+    private static readonly object LinkedWriteGate = new();
     private static readonly Dictionary<string, LinkedFolder> Linked = [];
     private static string? _linkedConfig;
     private static readonly SemaphoreSlim ScanSlots = new(2);
@@ -41,19 +42,26 @@ internal static partial class FolderCaptures
     {
         path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Environment.ExpandEnvironmentVariables(path)));
         if (!Path.IsPathFullyQualified(path)) throw new ArgumentException(nameof(path));
-        EnsureLinkedFolders();
         string source;
-        lock (LinkedGate)
+        lock (LinkedWriteGate)
         {
-            if (Linked.Values.FirstOrDefault(folder => string.Equals(folder.Path, path, StringComparison.OrdinalIgnoreCase)) is { } existing)
-                return existing.Source;
-            source = "folder:" + Guid.NewGuid().ToString("N");
-            var paths = Linked.ToDictionary(pair => pair.Key, pair => pair.Value.Path);
-            paths[source] = path;
-            string json = JsonSerializer.Serialize(paths);
+            EnsureLinkedFolders();
+            string json;
+            lock (LinkedGate)
+            {
+                if (Linked.Values.FirstOrDefault(folder => string.Equals(folder.Path, path, StringComparison.OrdinalIgnoreCase)) is { } existing)
+                    return existing.Source;
+                source = "folder:" + Guid.NewGuid().ToString("N");
+                var paths = Linked.ToDictionary(pair => pair.Key, pair => pair.Value.Path);
+                paths[source] = path;
+                json = JsonSerializer.Serialize(paths);
+            }
             Settings.SetRequired("LinkedFolderCollections", json);
-            _linkedConfig = json;
-            Linked[source] = new LinkedFolder(source, path);
+            lock (LinkedGate)
+            {
+                _linkedConfig = json;
+                Linked[source] = new LinkedFolder(source, path);
+            }
         }
         _ = RefreshFolderAsync(source);
         Changed?.Invoke();
@@ -62,15 +70,22 @@ internal static partial class FolderCaptures
 
     public static void RemoveFolder(string source)
     {
-        EnsureLinkedFolders();
-        lock (LinkedGate)
+        lock (LinkedWriteGate)
         {
-            if (!Linked.TryGetValue(source, out var folder)) return;
-            var paths = Linked.Where(pair => pair.Key != source).ToDictionary(pair => pair.Key, pair => pair.Value.Path);
-            string json = JsonSerializer.Serialize(paths);
+            EnsureLinkedFolders();
+            string json;
+            lock (LinkedGate)
+            {
+                if (!Linked.ContainsKey(source)) return;
+                var paths = Linked.Where(pair => pair.Key != source).ToDictionary(pair => pair.Key, pair => pair.Value.Path);
+                json = JsonSerializer.Serialize(paths);
+            }
             Settings.SetRequired("LinkedFolderCollections", json);
-            _linkedConfig = json;
-            Linked.Remove(source);
+            lock (LinkedGate)
+            {
+                _linkedConfig = json;
+                Linked.Remove(source);
+            }
         }
         Changed?.Invoke();
     }
@@ -102,26 +117,31 @@ internal static partial class FolderCaptures
 
     private static void EnsureLinkedFolders()
     {
-        string config = Settings.Get("LinkedFolderCollections") ?? "{}";
+        lock (LinkedGate) if (_linkedConfig != null) return;
         string[] start;
-        lock (LinkedGate)
+        lock (LinkedWriteGate)
         {
-            if (_linkedConfig == config) return;
+            lock (LinkedGate) if (_linkedConfig != null) return;
+            string config = Settings.Get("LinkedFolderCollections") ?? "{}";
             Dictionary<string, string> paths;
             try { paths = JsonSerializer.Deserialize<Dictionary<string, string>>(config) ?? []; }
             catch (JsonException) { paths = []; }
-            Linked.Clear();
-            foreach (var (source, path) in paths)
-                if (source.StartsWith("folder:", StringComparison.Ordinal) && Path.IsPathFullyQualified(path))
-                    Linked[source] = new LinkedFolder(source, path);
-            _linkedConfig = config;
-            start = Linked.Keys.ToArray();
+            lock (LinkedGate)
+            {
+                Linked.Clear();
+                foreach (var (source, path) in paths)
+                    if (source.StartsWith("folder:", StringComparison.Ordinal) && Path.IsPathFullyQualified(path))
+                        Linked[source] = new LinkedFolder(source, path);
+                _linkedConfig = config;
+                start = Linked.Keys.ToArray();
+            }
         }
         foreach (string source in start) _ = RefreshFolderAsync(source);
     }
 
     private static void ResetLinkedFolders()
     {
+        lock (LinkedWriteGate)
         lock (LinkedGate)
         {
             Linked.Clear();
