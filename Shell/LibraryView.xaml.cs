@@ -303,7 +303,7 @@ namespace KillerShot.Shell
                     return groups;
                 }
                 var known = _collections.Select(c => c.Id).ToHashSet();
-                if (FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
+                if (_source == "all" && FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
                     groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _folderItems.ToList(), IsFolder: true));
                 foreach (var folder in _source == "all" ? FolderCaptures.LinkedCollections() : [])
                 {

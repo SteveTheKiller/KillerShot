@@ -12,11 +12,11 @@ internal static class SelfTestSidebarSelection
 {
     internal static bool TryRun(string[] args)
     {
-        if (args.Length != 2 || args[0] is not ("--selftest-sidebar-selection" or "--selftest-live-sidebar-language")) return false;
+        if (args.Length != 2 || args[0] is not ("--selftest-sidebar-selection" or "--selftest-live-sidebar-language" or "--selftest-filtered-groups")) return false;
         string folder = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(folder);
         Settings.UseFolder(Path.Combine(folder, "settings"));
-        if (args[0] == "--selftest-live-sidebar-language")
+        if (args[0] != "--selftest-sidebar-selection")
         {
             SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
             CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
@@ -25,8 +25,43 @@ internal static class SelfTestSidebarSelection
             FolderCaptures.Enabled = false;
         }
         App.InitializeKit();
-        _ = args[0] == "--selftest-live-sidebar-language" ? RunLanguageAsync(folder) : RunAsync(folder);
+        _ = args[0] == "--selftest-filtered-groups" ? RunGroupsAsync(folder)
+            : args[0] == "--selftest-live-sidebar-language" ? RunLanguageAsync(folder) : RunAsync(folder);
         return true;
+    }
+
+    private static async Task RunGroupsAsync(string folder)
+    {
+        var report = new List<string>();
+        int code = 1;
+        try
+        {
+            Directory.CreateDirectory(FolderCaptures.Folder);
+            FolderCaptures.Enabled = true;
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            var pixel = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 255, 255 }, 4);
+            long id = CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Filtered photo", null);
+            long collection = CaptureLibrary.CreateCollection("Chosen collection", [id]);
+            var window = new MainWindow { Width = 900, Height = 650, ShowActivated = false };
+            window.Show();
+            var library = (LibraryView)window.FindName("Library");
+            foreach (string source in new[] { "c" + collection, "folder", "all" })
+            {
+                if (source == "folder") ImageOutput.Save(pixel, Path.Combine(FolderCaptures.Folder, "folder-photo.png"));
+                library.SetSource(source);
+                library.TestSet("shelves", "collection", "");
+                await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+                bool folderHeader = Descendants<TextBlock>(library).Any(text => text.IsVisible && text.Text == FolderCaptures.Name);
+                if (folderHeader != (source != "c" + collection))
+                    throw new InvalidOperationException("Screenshots group visibility ignores the selected collection: " + source);
+                report.Add(source + ": Screenshots heading follows collection filter PASS");
+            }
+            code = 0;
+        }
+        catch (Exception error) { report.Add(error.ToString()); }
+        CaptureLibrary.Close();
+        File.WriteAllLines(Path.Combine(folder, "filtered-groups-report.txt"), report);
+        App.Instance.Shutdown(code);
     }
 
     private static async Task RunLanguageAsync(string folder)
