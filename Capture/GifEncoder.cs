@@ -115,12 +115,18 @@ internal sealed class GifEncoder : IVideoSink
     private void FlushPending(TimeSpan next)
     {
         if (_pendingBlock == null) return;
-        int cs = (int)Math.Round((next - _pendingAt).TotalMilliseconds / 10);
-        cs = Math.Clamp(cs, 2, 65535);   // browsers treat 0 and 1 as 10
-        // The delay lives at bytes 4 and 5 of the graphic control extension at the block start.
-        _pendingBlock[4] = (byte)(cs & 0xFF);
-        _pendingBlock[5] = (byte)(cs >> 8);
-        _file!.Write(_pendingBlock);
+        long remaining = Math.Max(2, (long)Math.Round((next - _pendingAt).TotalMilliseconds / 10));
+        // Repeating the same leave-in-place image preserves long static intervals.
+        // Avoid a one-centisecond tail, which browsers lengthen to ten.
+        while (remaining > 0)
+        {
+            int cs = (int)Math.Min(remaining, 65535);
+            if (remaining - cs == 1) cs--;
+            _pendingBlock[4] = (byte)(cs & 0xFF);
+            _pendingBlock[5] = (byte)(cs >> 8);
+            _file!.Write(_pendingBlock);
+            remaining -= cs;
+        }
         _pendingBlock = null;
     }
 
