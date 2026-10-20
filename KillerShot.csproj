@@ -48,7 +48,7 @@
          KillerNotes and Killendar. The STATIC provider (not bundle_e_sqlcipher) is deliberate:
          it binds through plain DllImport, satisfied by SqlCipherBootstrap's preload, so the
          native loads the same way in every build. The .Core ADO.NET wrapper stays managed. -->
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.13" />
     <PackageReference Include="SQLitePCLRaw.provider.e_sqlcipher" Version="2.1.11" />
     <!-- The x64 SQLCipher native itself is VENDORED (third_party\sqlcipher\e_sqlcipher.dll,
          built from upstream source - see the README there), embedded as a resource and

@@ -8,9 +8,8 @@ package (a managed P/Invoke shim) still loads this DLL by name exactly as before
 The recipe reproduces SQLitePCL.raw's own build (github.com/ericsink/cb): the SQLCipher
 amalgamation compiled with the LibTomCrypt crypto provider and AES-256-CBC, so the file
 format, KDF (PBKDF2-HMAC-SHA512, 256000 iterations) and defaults are identical -
-databases created under the old package open unchanged. KillerNotes and Killendar have
-separate vendored copies. This upgrade changes KillerShot only; coordinate a family
-upgrade separately.
+databases created under the old package open unchanged. KillerNotes and Killendar
+also use this DLL, with matching SHA-256 hashes.
 
 ## Current binary
 
@@ -48,8 +47,7 @@ The reviewed password export uses the fixed alias `rekeyed`, and the production 
 uses connection-string builder passwords with no `hexkey` use found. Those observations limit
 the identified paths; they do not establish that the native library has no vulnerabilities.
 
-Signing, timestamping and final release review remain open. No release or family-wide
-native update was performed.
+Signing, timestamping and final release review remain open. No release was performed.
 
 ## Build (Linux host, cross-compiles to Windows x64)
 
