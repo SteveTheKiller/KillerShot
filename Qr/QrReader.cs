@@ -6,10 +6,16 @@ namespace KillerTools.Qr;
 public static class QrReader
 {
     /// <summary>Reads every QR code in an 8-bit grayscale image (0 black, 255 white), row by row with no padding.</summary>
+    /// <exception cref="ArgumentNullException">The pixel buffer is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A dimension is not positive.</exception>
+    /// <exception cref="ArgumentException">The buffer length is not exactly the pixel count.</exception>
     public static IReadOnlyList<QrResult> Read(byte[] gray, int width, int height)
     {
         ArgumentNullException.ThrowIfNull(gray);
-        if (width <= 0 || height <= 0 || gray.Length < width * height) throw new ArgumentException("The pixel buffer does not match the size.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
+        if (gray.LongLength != (long)width * height)
+            throw new ArgumentException("The pixel buffer length must equal width times height.", nameof(gray));
         var results = new List<QrResult>();
         var image = Binarizer.Global(gray, width, height);
         ReadAll(image, results);
