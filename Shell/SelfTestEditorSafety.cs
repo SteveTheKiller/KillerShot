@@ -14,6 +14,7 @@ internal static class SelfTestEditorSafety
 {
     public static bool TryRun(string[] args)
     {
+        if (SelfTestPrintWorkArea.TryRun(args)) return true;
         if (SelfTestOpenRequests.TryRun(args)) return true;
         if (SelfTestSaveSafety.TryRun(args)) return true;
         if (SelfTestCarouselPerspective.TryRun(args)) return true;
