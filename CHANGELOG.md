@@ -4,7 +4,7 @@
 - Save preserves imported GIF, TIFF, BMP and mismatched image files by offering PNG or JPEG export.
 - Unsaved edits require confirmation before another image opens. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
 - Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Password recovery removes obsolete account keys and backups before opening; cleanup failures can be retried. Retention preserves search results on failure and missing search entries repair on reopen. Capture IDs stay unique after deletion.
-- Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy.
+- Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy. New collections do not inherit deleted collections' colors.
 - Add local or network folders as saved collections, including subfolders. Images stay in their original locations; background scans refresh the browser and editor and retry unavailable folders. Folder snapshots stay readable during settings writes. Failed collection removal reports the error and preserves selection.
 - Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor.
 - Keep collection navigation beside the editor, with its photo carousel above or below the open image. Sidebar placement, carousel placement, sizing, and collapse are independent.

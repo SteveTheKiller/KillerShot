@@ -1035,8 +1035,9 @@ internal static partial class CaptureLibrary
             var members = MembersOf(id, tx);
             using var cmd = Db.CreateCommand();
             cmd.Transaction = tx;
-            cmd.CommandText = "UPDATE captures SET collection_id = NULL WHERE collection_id = $id; DELETE FROM collections WHERE id = $id;";
+            cmd.CommandText = "UPDATE captures SET collection_id = NULL WHERE collection_id = $id; DELETE FROM collections WHERE id = $id; DELETE FROM meta WHERE key = $color;";
             cmd.Parameters.AddWithValue("$id", id);
+            cmd.Parameters.AddWithValue("$color", "setting.CollectionColor." + id.ToString(System.Globalization.CultureInfo.InvariantCulture));
             cmd.ExecuteNonQuery();
             foreach (long m in members) IndexText(m, tx);
             tx.Commit();

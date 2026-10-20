@@ -40,6 +40,7 @@ internal static class SelfTestStorageSafety
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
             else if (scenario == "retention") await RetentionRollback(log);
+            else if (scenario == "collection-color") CollectionColorReuse(log);
             else throw new ArgumentException("Unknown storage scenario.");
             log.AppendLine("result=ok");
         }
@@ -47,6 +48,26 @@ internal static class SelfTestStorageSafety
         finally { CaptureLibrary.Close(); }
         File.WriteAllText(Path.Combine(dir, "report.txt"), log.ToString());
         Application.Current.Shutdown(exit);
+    }
+
+    private static void CollectionColorReuse(StringBuilder log)
+    {
+        long id = CaptureLibrary.CreateCollection("Colored collection");
+        CardColors.SetCollection(id, Color.FromRgb(0x12, 0x34, 0x56));
+        using (var fault = OpenFixtureDatabase())
+        {
+            Execute(fault, "CREATE TRIGGER fail_collection_delete BEFORE DELETE ON collections BEGIN SELECT RAISE(ABORT, 'delete failure'); END");
+            try { CaptureLibrary.DeleteCollection(id); }
+            catch (SqliteException) { }
+            if (CardColors.Collection(id) != Color.FromRgb(0x12, 0x34, 0x56))
+                throw new InvalidOperationException("Failed collection deletion removed its color.");
+            Execute(fault, "DROP TRIGGER fail_collection_delete");
+        }
+        CaptureLibrary.DeleteCollection(id);
+        long recreated = CaptureLibrary.CreateCollection("New collection");
+        if (recreated != id || CardColors.Collection(recreated) != null)
+            throw new InvalidOperationException("A new collection inherited the deleted collection's color.");
+        log.AppendLine("collection_color_delete_rollback_and_reuse=True");
     }
 
     private static async Task RetentionRollback(StringBuilder log)
