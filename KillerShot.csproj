@@ -51,12 +51,14 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.11" />
     <PackageReference Include="SQLitePCLRaw.provider.e_sqlcipher" Version="2.1.11" />
     <!-- The x64 SQLCipher native itself is VENDORED (third_party\sqlcipher\e_sqlcipher.dll,
-         built from upstream source - see the README there, and the same file KillerNotes and
-         Killendar carry), embedded as a resource and self-extracted at runtime. No Condition: a
+         built from upstream source - see the README there), embedded as a resource and
+         self-extracted at runtime using the family loading pattern. No Condition: a
          missing crypto native must fail the build, not ship without it. -->
     <EmbeddedResource Include="third_party\sqlcipher\e_sqlcipher.dll">
       <LogicalName>KillerShot.SqlCipherNative.e_sqlcipher.dll</LogicalName>
     </EmbeddedResource>
+    <Content Include="third_party\sqlcipher\LICENSE-*.txt" CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <ItemGroup>
