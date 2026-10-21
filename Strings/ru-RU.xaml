@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Шестнадцатеричный цвет</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} на {2} пикселей в точке {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Пометки на изображении</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Вставленное изображение</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Изображение PNG (*.png)|*.png|Изображение JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Изображения|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Все файлы|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Открыть изображение</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Обрезать однотонную рамку</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Нет однотонной рамки для обрезки.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Введите размер, например 1280 x 720, ширину или 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Вставить изображение поверх</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Вставить как новое изображение</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Вставить изображение из файла…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">В буфере обмена нет изображения.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Вставлено изображение {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Новые прямоугольники и эллипсы заливаются.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Новые прямоугольники и эллипсы рисуются контуром.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Буфер обмена занят другой программой ({0}). Сделайте снимок снова или используйте «Сохранить последний снимок».</sys:String>

@@ -55,6 +55,11 @@ public static class MarksFormat
             ["t"] = "callout", ["tx"] = s.Tip.X, ["ty"] = s.Tip.Y, ["x"] = s.Origin.X, ["y"] = s.Origin.Y, ["s"] = s.Text,
             ["c"] = Hex(s.Color), ["w"] = s.Width,
         },
+        ImageAnnotation s => new JsonObject
+        {
+            ["t"] = "image", ["x"] = s.Box.X, ["y"] = s.Box.Y, ["bw"] = s.Box.Width, ["bh"] = s.Box.Height,
+            ["png"] = Convert.ToBase64String(Services.ImageOutput.EncodePng(s.Image)), ["c"] = Hex(s.Color), ["w"] = s.Width,
+        },
         _ => null,
     };
 
@@ -78,6 +83,16 @@ public static class MarksFormat
                 return new TextAnnotation(new Point(D("x"), D("y")), o["s"]!.GetValue<string>(), c, w);
             case "step":
                 return new StepAnnotation(new Point(D("x"), D("y")), o["n"]!.GetValue<int>(), c, w);
+            case "image":
+                using (var png = new System.IO.MemoryStream(Convert.FromBase64String(o["png"]!.GetValue<string>()), writable: false))
+                {
+                    var frame = System.Windows.Media.Imaging.BitmapFrame.Create(png, System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                        System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+                    Services.ImageOutput.CheckSize(frame.PixelWidth, frame.PixelHeight);
+                    frame.Freeze();
+                    double bw = D("bw"), bh = D("bh");
+                    return bw > 0 && bh > 0 ? new ImageAnnotation(frame, new Rect(D("x"), D("y"), bw, bh)) : null;
+                }
             case "callout":
                 return new CalloutAnnotation(new Point(D("tx"), D("ty")), new Point(D("x"), D("y")), o["s"]!.GetValue<string>(), c, w);
             default:

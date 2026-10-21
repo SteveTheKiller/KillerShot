@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Barva v šestnáctkovém zápisu</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} pixelů na {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Značky v obrázku</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Vložený obrázek</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Obrázek PNG (*.png)|*.png|Obrázek JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Obrázky|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Všechny soubory|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Otevřít obrázek</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Oříznout jednobarevný okraj</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Žádný jednobarevný okraj k oříznutí.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Zadejte velikost jako 1280 x 720, šířku nebo 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Vložit obrázek navrch</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Vložit jako nový obrázek</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Vložit obrázek ze souboru…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Schránka neobsahuje obrázek.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Vložen obrázek {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Nové obdélníky a elipsy budou vyplněné.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Nové obdélníky a elipsy budou jen obrysy.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Schránku drží jiný program ({0}). Zachyťte znovu, nebo použijte Uložit poslední snímek.</sys:String>

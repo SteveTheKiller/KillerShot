@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace KillerShot.Editor;
 
@@ -385,4 +386,40 @@ public sealed record CalloutAnnotation(Point Tip, Point Origin, string Text, Col
     }
 
     public override bool Hit(Point p, double tolerance) => Shape().FillContains(p) || Inflate(BubbleRect, tolerance).Contains(p);
+}
+
+/// <summary>A picture placed on the capture as an object: pasted or inserted, then moved and
+/// resized like any mark. Turning or mirroring the capture turns and mirrors it too.</summary>
+public sealed record ImageAnnotation(BitmapSource Image, Rect Box) : Annotation(Colors.Transparent, 1)
+{
+    public override void Render(DrawingContext dc) => dc.DrawImage(Image, Box);
+
+    public override Rect Bounds => Box;
+
+    public override Annotation Offset(Vector v) => this with { Box = new Rect(Box.TopLeft + v, Box.Size) };
+
+    /// <summary>Keeps the picture's shape: the larger change of the two sets the new size.</summary>
+    public override Annotation Resize(Vector d)
+    {
+        double aspect = Box.Height > 0 ? Box.Width / Box.Height : 1;
+        double width = Math.Max(4, Box.Width + (Math.Abs(d.X) >= Math.Abs(d.Y * aspect) ? d.X : d.Y * aspect));
+        return this with { Box = new Rect(Box.TopLeft, new Size(width, Math.Max(4, width / aspect))) };
+    }
+
+    public override Annotation Transform(Matrix m, double scale)
+    {
+        var box = new Rect(m.Transform(Box.TopLeft), m.Transform(Box.BottomRight));
+        // The turn or mirror part of m, without its scale or shift, applied to the pixels.
+        var turn = new Matrix(Math.Sign(m.M11), Math.Sign(m.M12), Math.Sign(m.M21), Math.Sign(m.M22), 0, 0);
+        BitmapSource image = Image;
+        if (!turn.IsIdentity)
+        {
+            var turned = new TransformedBitmap(Image, new MatrixTransform(turn));
+            turned.Freeze();
+            image = turned;
+        }
+        return this with { Image = image, Box = box };
+    }
+
+    public override bool Hit(Point p, double tolerance) => Inflate(Box, tolerance).Contains(p);
 }

@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Heksfarge</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} ganger {2} piksler ved {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Merker i bildet</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Innsatt bilde</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-bilde (*.png)|*.png|JPEG-bilde (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Bilder|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Alle filer|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Åpne bilde</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Fjern ensfarget kant</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Ingen ensfarget kant å fjerne.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Skriv inn en størrelse som 1280 x 720, en bredde eller 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Lim inn bilde oppå</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Lim inn som nytt bilde</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Sett inn bilde fra fil…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Utklippstavlen har ikke noe bilde.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Limte inn et bilde på {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Nye rektangler og ellipser fylles.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Nye rektangler og ellipser er omriss.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Et annet program holder utklippstavlen ({0}). Ta bilde igjen, eller bruk Lagre siste skjermbilde.</sys:String>

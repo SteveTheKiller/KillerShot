@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Couleur hexadécimale</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} sur {2} pixels à {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Annotations de l'image</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Image insérée</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Image PNG (*.png)|*.png|Image JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tous les fichiers|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Ouvrir une image</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Rogner la bordure unie</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Aucune bordure unie à rogner.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Saisissez une taille comme 1280 x 720, une largeur ou 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Coller l'image par-dessus</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Coller comme nouvelle image</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Insérer une image depuis un fichier…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Le presse-papiers ne contient aucune image.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Image de {0} x {1} collée.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Les nouveaux rectangles et ellipses sont remplis.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Les nouveaux rectangles et ellipses sont des contours.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Un autre programme bloque le presse-papiers ({0}). Capturez à nouveau ou utilisez Enregistrer la dernière capture.</sys:String>

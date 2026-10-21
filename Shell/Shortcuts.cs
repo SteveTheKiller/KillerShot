@@ -108,6 +108,9 @@ namespace KillerShot.Shell
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;
+                    case Key.V when !TypingInField():
+                        if (shift || _doc == null || Library.IsVisible) PasteAsNewPicture(); else PasteIntoPicture();
+                        break;
                     case Key.A when EditorKeysApply(): if (!Editor.SelectAll()) handled = false; break;
                     case Key.D when !shift && EditorKeysApply(): if (!Editor.DuplicateSelected()) handled = false; break;
                     case Key.OemCloseBrackets when EditorKeysApply(): if (!Editor.Reorder(+1, shift)) handled = false; break;

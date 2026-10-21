@@ -40,11 +40,10 @@ internal static class SelfTestImageImport
         return true;
     }
 
-    /// <summary>A PNG whose header claims 30000 x 30000 pixels with no image data behind it.</summary>
-    private static void Oversized(string folder, List<string> report)
+    /// <summary>A valid PNG whose header claims 30000 x 30000 pixels, with almost no data behind it.</summary>
+    internal static byte[] OversizedPng()
     {
-        string path = Path.Combine(folder, "oversized.png");
-        using (var s = File.Create(path))
+        using var s = new MemoryStream();
         {
             s.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
             var ihdr = new byte[13];
@@ -57,6 +56,13 @@ internal static class SelfTestImageImport
             Chunk(s, "IDAT", ms.ToArray());
             Chunk(s, "IEND", []);
         }
+        return s.ToArray();
+    }
+
+    private static void Oversized(string folder, List<string> report)
+    {
+        string path = Path.Combine(folder, "oversized.png");
+        File.WriteAllBytes(path, OversizedPng());
         long before = GC.GetTotalMemory(true);
         try
         {

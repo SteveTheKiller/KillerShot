@@ -30,6 +30,9 @@ public partial class MainWindow
             item.Click += (_, _) => { if (_doc != null) { Editor.CommitText(); action(); } };
             return item;
         }
+        yield return Item("Str_Img_Paste", PasteIntoPicture, "Ctrl+V");
+        yield return Item("Str_Img_InsertFile", InsertImageFile);
+        yield return new Separator();
         yield return Item("Str_Img_RotateRight", () => _doc!.Rotate(clockwise: true));
         yield return Item("Str_Img_RotateLeft", () => _doc!.Rotate(clockwise: false));
         yield return Item("Str_Img_FlipH", () => _doc!.Flip(horizontal: true));
@@ -53,6 +56,42 @@ public partial class MainWindow
         {
             if (!_doc!.AutoCrop()) StatusText.Text = Loc("Str_Status_NoBorder");
         });
+    }
+
+    /// <summary>Ctrl+V on an open picture: the clipboard's picture goes on top as an object.</summary>
+    private void PasteIntoPicture()
+    {
+        if (_doc == null) { PasteAsNewPicture(); return; }
+        try
+        {
+            if (ClipboardImages.FromClipboard() is { } image) Editor.InsertImage(image);
+            else StatusText.Text = Loc("Str_Status_NoClipboardImage");
+        }
+        catch (Exception error) when (error is NotSupportedException or System.IO.IOException) { StatusText.Text = error.Message; }
+    }
+
+    /// <summary>Ctrl+Shift+V: the clipboard's picture opens as a new picture of its own.</summary>
+    private void PasteAsNewPicture()
+    {
+        try
+        {
+            if (ClipboardImages.FromClipboard() is not { } image) { StatusText.Text = Loc("Str_Status_NoClipboardImage"); return; }
+            if (App.Instance.SetDocument(new KillerShot.Editor.EditorDocument(image)))
+            {
+                if (_libraryShown) { _libraryShown = false; SyncLibraryVisibility(); }
+                StatusText.Text = string.Format(Loc("Str_Status_Pasted"), image.PixelWidth, image.PixelHeight);
+            }
+        }
+        catch (Exception error) when (error is NotSupportedException or System.IO.IOException) { StatusText.Text = error.Message; }
+    }
+
+    private void InsertImageFile()
+    {
+        if (_doc == null) return;
+        var dialog = new FileDialog(FileDialogMode.Open) { Title = Loc("Str_Img_InsertFile"), Filter = Loc("Str_Dlg_OpenFilter") };
+        if (dialog.ShowDialog(this) != true) return;
+        try { Editor.InsertImage(ImageOutput.Load(dialog.FileName)); }
+        catch (Exception error) { StatusText.Text = string.Format(Loc("Str_Status_OpenFailed"), error.Message); }
     }
 
     private void ResizeTo(int width, int height)

@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">16 進カラー</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}、{1} × {2} ピクセル、位置 {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">画像の注釈</sys:String>
+    <sys:String x:Key="Str_Mark_Image">配置した画像</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 画像 (*.png)|*.png|JPEG 画像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">画像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|すべてのファイル|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">画像を開く</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">単色の余白を切り取る</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">切り取る単色の余白はありません。</sys:String>
     <sys:String x:Key="Str_Img_Invalid">1280 x 720、幅、または 50% のようにサイズを入力してください。</sys:String>
+    <sys:String x:Key="Str_Img_Paste">画像を上に貼り付け</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">新しい画像として貼り付け</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">ファイルから画像を挿入…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">クリップボードに画像がありません。</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">{0} x {1} の画像を貼り付けました。</sys:String>
     <sys:String x:Key="Str_Status_FillOn">新しい四角形と楕円は塗りつぶされます。</sys:String>
     <sys:String x:Key="Str_Status_FillOff">新しい四角形と楕円は輪郭のみです。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">別のプログラムがクリップボードを使用中です ({0})。もう一度キャプチャするか、[最後のキャプチャを保存] を使ってください。</sys:String>

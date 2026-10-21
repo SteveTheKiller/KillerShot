@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Màu hex</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} x {2} điểm ảnh tại {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Các đánh dấu trên ảnh</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Ảnh đã chèn</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Ảnh PNG (*.png)|*.png|Ảnh JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Hình ảnh|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tất cả tệp|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Mở ảnh</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Cắt viền một màu</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Không có viền một màu để cắt.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Nhập kích thước như 1280 x 720, một chiều rộng, hoặc 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Dán ảnh lên trên</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Dán thành ảnh mới</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Chèn ảnh từ tệp…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Bộ nhớ tạm không có ảnh.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Đã dán ảnh {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Hình chữ nhật và hình elip mới sẽ được tô kín.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Hình chữ nhật và hình elip mới chỉ có đường viền.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Một chương trình khác đang giữ bảng nhớ tạm ({0}). Hãy chụp lại hoặc dùng Lưu ảnh chụp cuối.</sys:String>

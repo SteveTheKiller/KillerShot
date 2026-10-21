@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Шістнадцятковий колір</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} на {2} пікселів у точці {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Позначки на зображенні</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Вставлене зображення</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Зображення PNG (*.png)|*.png|Зображення JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Зображення|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Усі файли|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Відкрити зображення</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Обрізати однотонну рамку</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Немає однотонної рамки для обрізання.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Введіть розмір, наприклад 1280 x 720, ширину або 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Вставити зображення поверх</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Вставити як нове зображення</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Вставити зображення з файлу…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">У буфері обміну немає зображення.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Вставлено зображення {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Нові прямокутники й еліпси заливаються.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Нові прямокутники й еліпси малюються контуром.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Буфер обміну зайнятий іншою програмою ({0}). Зробіть знімок знову або скористайтеся «Зберегти останній знімок».</sys:String>

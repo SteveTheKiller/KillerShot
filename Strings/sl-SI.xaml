@@ -144,6 +144,7 @@
     <sys:String x:Key="Str_Color_Hex">Šestnajstiška barva</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} slikovnih pik na {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Oznake na sliki</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Vstavljena slika</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Slika PNG (*.png)|*.png|Slika JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Slike|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Vse datoteke|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Odpri sliko</sys:String>
@@ -229,6 +230,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Obreži enobarvni rob</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Ni enobarvnega roba za obrezovanje.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Vnesite velikost, npr. 1280 x 720, širino ali 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Prilepi sliko na vrh</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Prilepi kot novo sliko</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Vstavi sliko iz datoteke…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Odložišče ne vsebuje slike.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Prilepljena slika {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Novi pravokotniki in elipse so zapolnjeni.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Novi pravokotniki in elipse so obrisi.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Drug program uporablja odložišče ({0}). Ponovi zajem ali uporabi Shrani zadnji posnetek.</sys:String>

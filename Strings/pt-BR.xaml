@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Cor hexadecimal</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} por {2} pixels em {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Marcações da imagem</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Imagem inserida</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Imagem PNG (*.png)|*.png|Imagem JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Imagens|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Todos os arquivos|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Abrir imagem</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Cortar borda lisa</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Nenhuma borda lisa para cortar.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Digite um tamanho como 1280 x 720, uma largura ou 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Colar imagem por cima</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Colar como nova imagem</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Inserir imagem de arquivo…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">A área de transferência não tem imagem.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Imagem de {0} x {1} colada.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Novos retângulos e elipses são preenchidos.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Novos retângulos e elipses são contornos.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Outro programa está usando a área de transferência ({0}). Capture de novo ou use Salvar a última captura.</sys:String>

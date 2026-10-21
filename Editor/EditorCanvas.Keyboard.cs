@@ -110,6 +110,24 @@ public sealed partial class EditorCanvas
         NotifySelection();
     }
 
+    /// <summary>Places a picture on the capture as an object: centered in the visible area, scaled
+    /// down to fit it, selected so it can be moved and resized straight away.</summary>
+    public bool InsertImage(System.Windows.Media.Imaging.BitmapSource image)
+    {
+        if (_doc == null) return false;
+        CommitText();
+        var view = VisibleImage();
+        double fit = Math.Min(1, Math.Min(view.Width * .8 / image.PixelWidth, view.Height * .8 / image.PixelHeight));
+        double w = Math.Max(4, Math.Round(image.PixelWidth * fit)), h = Math.Max(4, Math.Round(image.PixelHeight * fit));
+        var box = new Rect(Math.Round(view.X + (view.Width - w) / 2), Math.Round(view.Y + (view.Height - h) / 2), w, h);
+        var mark = new ImageAnnotation(image, box);
+        _doc.Add(mark);
+        _selected = mark;
+        InvalidateVisual();
+        NotifySelection();
+        return true;
+    }
+
     /// <summary>Ctrl+arrows: grows or shrinks the selected mark from its bottom right.</summary>
     public bool ResizeSelected(Vector d)
     {
@@ -160,6 +178,7 @@ public sealed partial class EditorCanvas
             ShapeAnnotation { Kind: ShapeKind.Line } => LocaleManager.Loc("Str_Tool_Line"),
             StepAnnotation s => LocaleManager.Loc("Str_Tool_Step") + " " + s.Number.ToString(CultureInfo.CurrentCulture),
             CalloutAnnotation c => LocaleManager.Loc("Str_Tool_Callout") + " \u201C" + c.Text + "\u201D",
+            ImageAnnotation => LocaleManager.Loc("Str_Mark_Image"),
             ShapeAnnotation { Kind: ShapeKind.Rectangle } => LocaleManager.Loc("Str_Tool_Rectangle"),
             ShapeAnnotation { Kind: ShapeKind.Ellipse } => LocaleManager.Loc("Str_Tool_Ellipse"),
             ShapeAnnotation => LocaleManager.Loc("Str_Tool_Redact"),

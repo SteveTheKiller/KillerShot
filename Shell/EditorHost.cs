@@ -565,6 +565,9 @@ namespace KillerShot.Shell
             var open = new MenuItem { Header = Loc("Str_Btn_Open"), InputGestureText = "Ctrl+O", Icon = ToolbarUnitIcon("open") };
             open.Click += (_, _) => OpenFile();
             menu.Items.Add(open);
+            var paste = new MenuItem { Header = Loc("Str_Img_PasteNew"), InputGestureText = "Ctrl+Shift+V" };
+            paste.Click += (_, _) => PasteAsNewPicture();
+            menu.Items.Add(paste);
             var recent = new MenuItem { Header = Loc("Str_Btn_Recent"), Icon = ToolbarUnitIcon("recent") };
             FillRecentMenu(recent);
             menu.Items.Add(recent);

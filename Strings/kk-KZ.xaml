@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Он алтылық түс</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} пиксель, орны {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Суреттегі белгілер</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Қойылған сурет</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG суреті (*.png)|*.png|JPEG суреті (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Суреттер|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Барлық файлдар|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Суретті ашу</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Біркелкі жиекті кесу</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Кесетін біркелкі жиек жоқ.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">1280 x 720 сияқты өлшем, ен немесе 50% енгізіңіз.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Суретті үстіне қою</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Жаңа сурет ретінде қою</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Файлдан сурет қою…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Алмасу буферінде сурет жоқ.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">{0} x {1} сурет қойылды.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Жаңа тіктөртбұрыштар мен эллипстер толтырылады.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Жаңа тіктөртбұрыштар мен эллипстер тек контур.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Алмасу буферін басқа бағдарлама ұстап тұр ({0}). Қайта түсіріңіз немесе «Соңғы түсірілімді сақтау» пәрменін қолданыңыз.</sys:String>

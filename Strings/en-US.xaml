@@ -151,6 +151,7 @@
     <sys:String x:Key="Str_Color_Hex">Hex color</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} by {2} pixels at {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Picture marks</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Placed picture</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG image (*.png)|*.png|JPEG image (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|All files|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Open image</sys:String>
@@ -236,6 +237,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Trim plain border</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">No plain border to trim.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Enter a size such as 1280 x 720, a width, or 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Paste picture on top</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Paste as new picture</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Insert picture from file…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">The clipboard has no picture.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Pasted a {0} x {1} picture.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">New rectangles and ellipses are filled.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">New rectangles and ellipses are outlines.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Another program is holding the clipboard ({0}). Capture again, or use Save last capture.</sys:String>

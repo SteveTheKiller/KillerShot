@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Kolor szesnastkowy</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} na {2} pikseli w {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Oznaczenia na obrazie</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Wstawiony obraz</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Obraz PNG (*.png)|*.png|Obraz JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Obrazy|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Wszystkie pliki|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Otwórz obraz</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Przytnij jednolitą ramkę</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Brak jednolitej ramki do przycięcia.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Wpisz rozmiar, np. 1280 x 720, szerokość lub 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Wklej obraz na wierzch</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Wklej jako nowy obraz</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Wstaw obraz z pliku…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Schowek nie zawiera obrazu.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Wklejono obraz {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Nowe prostokąty i elipsy są wypełniane.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Nowe prostokąty i elipsy są konturami.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Inny program blokuje schowek ({0}). Przechwyć ponownie lub użyj Zapisz ostatni zrzut.</sys:String>

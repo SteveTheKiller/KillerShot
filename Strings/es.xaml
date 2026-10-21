@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Color hexadecimal</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} por {2} píxeles en {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Marcas de la imagen</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Imagen insertada</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Imagen PNG (*.png)|*.png|Imagen JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Imágenes|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Todos los archivos|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Abrir imagen</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Recortar borde liso</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">No hay ningún borde liso que recortar.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Escribe un tamaño como 1280 x 720, un ancho o 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Pegar imagen encima</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Pegar como imagen nueva</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Insertar imagen desde archivo…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">El portapapeles no contiene ninguna imagen.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Se pegó una imagen de {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Los rectángulos y elipses nuevos se rellenan.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Los rectángulos y elipses nuevos son solo contornos.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Otro programa está usando el portapapeles ({0}). Vuelve a capturar o usa Guardar la última captura.</sys:String>

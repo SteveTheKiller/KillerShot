@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">十六進位色彩</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}，{1} × {2} 像素，位於 {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">圖片標註</sys:String>
+    <sys:String x:Key="Str_Mark_Image">插入的圖片</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 影像 (*.png)|*.png|JPEG 影像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">影像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|所有檔案|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">開啟影像</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">裁去純色邊框</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">沒有可裁去的純色邊框。</sys:String>
     <sys:String x:Key="Str_Img_Invalid">請輸入如 1280 x 720 的尺寸、寬度或 50%。</sys:String>
+    <sys:String x:Key="Str_Img_Paste">將圖片貼在上方</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">貼上為新圖片</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">從檔案插入圖片…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">剪貼簿中沒有圖片。</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">已貼上 {0} x {1} 的圖片。</sys:String>
     <sys:String x:Key="Str_Status_FillOn">新的矩形與橢圓會填滿。</sys:String>
     <sys:String x:Key="Str_Status_FillOff">新的矩形與橢圓僅為外框。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">另一個程式正在占用剪貼簿 ({0})。請重新擷取，或使用「儲存上次擷取」。</sys:String>

@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Colore esadecimale</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} per {2} pixel in {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Segni sull'immagine</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Immagine inserita</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Immagine PNG (*.png)|*.png|Immagine JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Immagini|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tutti i file|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Apri immagine</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Ritaglia bordo uniforme</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Nessun bordo uniforme da ritagliare.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Inserisci una dimensione come 1280 x 720, una larghezza o 50%.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Incolla immagine sopra</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Incolla come nuova immagine</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Inserisci immagine da file…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Gli appunti non contengono immagini.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Incollata un'immagine di {0} x {1}.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">I nuovi rettangoli ed ellissi sono riempiti.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">I nuovi rettangoli ed ellissi sono contorni.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Un altro programma sta usando gli appunti ({0}). Cattura di nuovo o usa Salva l'ultima cattura.</sys:String>

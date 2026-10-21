@@ -147,6 +147,7 @@
     <sys:String x:Key="Str_Color_Hex">Hexadecimális szín</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} képpont, helye {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Jelölések a képen</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Beillesztett kép</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-kép (*.png)|*.png|JPEG-kép (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Képek|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Minden fájl|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Kép megnyitása</sys:String>
@@ -232,6 +233,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Egyszínű keret levágása</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Nincs levágható egyszínű keret.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Adjon meg egy méretet, például 1280 x 720, egy szélességet vagy 50%-ot.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Kép beillesztése felülre</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Beillesztés új képként</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Kép beszúrása fájlból…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">A vágólapon nincs kép.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">{0} x {1} méretű kép beillesztve.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Az új téglalapok és ellipszisek kitöltöttek.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Az új téglalapok és ellipszisek körvonalak.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Egy másik program foglalja a vágólapot ({0}). Rögzítsen újra, vagy használja a Legutóbbi rögzítés mentése parancsot.</sys:String>

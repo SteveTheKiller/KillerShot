@@ -148,6 +148,7 @@
     <sys:String x:Key="Str_Color_Hex">Hex-Farbe</sys:String>
     <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} Pixel bei {3}, {4}</sys:String>
     <sys:String x:Key="Str_Mark_List">Markierungen im Bild</sys:String>
+    <sys:String x:Key="Str_Mark_Image">Eingefügtes Bild</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-Bild (*.png)|*.png|JPEG-Bild (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Bilder|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Alle Dateien|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Bild öffnen</sys:String>
@@ -233,6 +234,11 @@
     <sys:String x:Key="Str_Img_AutoCrop">Einfarbigen Rand entfernen</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Kein einfarbiger Rand zum Entfernen.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Geben Sie eine Größe wie 1280 x 720, eine Breite oder 50% ein.</sys:String>
+    <sys:String x:Key="Str_Img_Paste">Bild darüber einfügen</sys:String>
+    <sys:String x:Key="Str_Img_PasteNew">Als neues Bild einfügen</sys:String>
+    <sys:String x:Key="Str_Img_InsertFile">Bild aus Datei einfügen…</sys:String>
+    <sys:String x:Key="Str_Status_NoClipboardImage">Die Zwischenablage enthält kein Bild.</sys:String>
+    <sys:String x:Key="Str_Status_Pasted">Bild mit {0} x {1} eingefügt.</sys:String>
     <sys:String x:Key="Str_Status_FillOn">Neue Rechtecke und Ellipsen werden gefüllt.</sys:String>
     <sys:String x:Key="Str_Status_FillOff">Neue Rechtecke und Ellipsen sind Umrisse.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Ein anderes Programm blockiert die Zwischenablage ({0}). Nehmen Sie erneut auf oder verwenden Sie Letzte Aufnahme speichern.</sys:String>
