@@ -169,7 +169,6 @@ internal sealed partial class CaptureController
     {
         if (CaptureSettings.PlaySound) ShutterSound.Play();
         CaptureSettings.LastMode = mode;
-        Last = result;
         var taken = DateTime.Now;
         // A locked or failing album holds only so much; past that the capture still goes to
         // the clipboard, folder and editor, but the album keeps what it already holds.
@@ -223,6 +222,9 @@ internal sealed partial class CaptureController
     /// reviewed capture comes back here with <paramref name="openEditor"/> off, since it is open.</summary>
     public string? Publish(BitmapSource result, DateTime taken, CaptureMode mode, bool interval = false, bool openEditor = true)
     {
+        // The tray's Save last and Print last only ever reach a picture that was allowed out: with
+        // review first, that is the accepted, edited one.
+        Last = result;
         // Interval captures go to the album and folder only: no clipboard churn, editor or prompts.
         bool wantCopy = CaptureSettings.CopyToClipboard && !interval;
         bool copied = false;

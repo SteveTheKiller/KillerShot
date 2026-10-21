@@ -68,6 +68,7 @@ internal static class SelfTestReviewFirst
             await WaitFor(() => App.Instance.EditorWindow?.InReview == true);
             var editor = App.Instance.EditorWindow ?? throw new InvalidOperationException("The editor did not open for review.");
             Expect(editor.InReview && Files() == 0, "A capture held for review was saved before it was accepted.");
+            Expect(capture.Last == null, "The tray's Save last and Print last could reach a capture held for review.");
             await WaitFor(() => CaptureLibrary.Count == 1);
             Expect(CaptureLibrary.Count == 1, "The album did not keep the reviewed capture's original.");
             report.Add("held for review: editor and album only, nothing saved PASS");
@@ -81,6 +82,10 @@ internal static class SelfTestReviewFirst
             var px = new byte[4];
             new FormatConvertedBitmap(saved, PixelFormats.Bgra32, null, 0).CopyPixels(px, 4, 0);
             Expect(px[0] == 0 && px[1] == 0 && px[2] == 0, "The saved file is not the edited, redacted picture.");
+            var last = new byte[4];
+            new FormatConvertedBitmap(capture.Last ?? throw new InvalidOperationException("Accepting left no last capture."), PixelFormats.Bgra32, null, 0)
+                .CopyPixels(new Int32Rect(0, 0, 1, 1), last, 4, 0);
+            Expect(last[0] == 0 && last[1] == 0 && last[2] == 0, "The tray's last capture is not the accepted, redacted picture.");
             report.Add("accept saves the edited picture PASS");
 
             // Discard, and replacing the picture, send nothing.
