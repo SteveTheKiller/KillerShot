@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Každých {0} s</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Oblast {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Spustit nebo zastavit snímání v intervalech</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Snímek s posouváním</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Nyní posouvejte stránku. Enter dokončí, Esc zruší.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">Přidáno řádků: {0}. Pokračujte v posouvání nebo stiskněte Enter.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Posunuto příliš daleko. Posuňte se kousek zpět.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Obrázek dosáhl maximální velikosti, snímání skončilo.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Hotovo</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Odkazy v textu obrázku</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Jeden řádek</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Dva řádky</sys:String>

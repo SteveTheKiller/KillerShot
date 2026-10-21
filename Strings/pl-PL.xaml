@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Co {0} s</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Obszar {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Rozpocznij lub zatrzymaj przechwytywanie co określony czas</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Przechwytywanie przewijane</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Teraz przewijaj stronę. Enter kończy, Esc anuluje.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">Dodano wierszy: {0}. Przewijaj dalej lub naciśnij Enter.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Przewinięto za daleko. Przewiń trochę z powrotem.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Obraz osiągnął limit rozmiaru, więc przechwytywanie zakończono.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Gotowe</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Łącza w tekście obrazu</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Jeden wiersz</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Dwa wiersze</sys:String>

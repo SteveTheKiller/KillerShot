@@ -97,6 +97,8 @@ public partial class App : Application
         if (SelfTestRegions.TryRun(e.Args)) return;
         if (SelfTestTextRecognition.TryRun(e.Args)) return;
         if (SelfTestReviewFirst.TryRun(e.Args)) return;
+        if (SelfTestScrollStitch.TryRun(e.Args)) return;
+        if (SelfTestScrollCapture.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;

@@ -104,6 +104,10 @@ internal sealed partial class CaptureController
         repeat.Click += (_, _) => Defer(() => _ = RepeatRegion());
         yield return repeat;
 
+        var scrolling = new MenuItem { Header = Loc("Str_Scroll_Title") };
+        scrolling.Click += (_, _) => Defer(() => _ = ScrollingCapture());
+        yield return scrolling;
+
         var saved = new MenuItem { Header = Loc("Str_Region_Saved") };
         foreach (var preset in RegionMemory.Presets)
         {

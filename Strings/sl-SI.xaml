@@ -509,6 +509,12 @@
     <sys:String x:Key="Str_Region_Every">Vsakih {0} s</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Območje {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Začni ali ustavi zajem v intervalih</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Zajem s pomikanjem</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Zdaj se pomikajte po strani. Enter konča, Esc prekliče.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">Dodanih vrstic: {0}. Nadaljujte s pomikanjem ali pritisnite Enter.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Pomaknili ste se predaleč. Pomaknite se malo nazaj.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Slika je dosegla omejitev velikosti, zato se je zajem končal.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Končano</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Povezave v besedilu slike</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Ena vrstica</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Dve vrstici</sys:String>

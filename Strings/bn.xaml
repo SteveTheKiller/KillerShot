@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">প্রতি {0} সেকেন্ডে</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">অঞ্চল {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">নির্দিষ্ট সময় পরপর ক্যাপচার শুরু বা বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">স্ক্রল করে ক্যাপচার</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">এখন পেজটি স্ক্রল করুন। Enter শেষ করে, Esc বাতিল করে।</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0}টি লাইন যোগ হয়েছে। স্ক্রল চালিয়ে যান, শেষ হলে Enter চাপুন।</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">অনেক বেশি স্ক্রল হয়েছে। একটু পিছনে স্ক্রল করুন।</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">ছবিটি সর্বোচ্চ আকারে পৌঁছেছে, তাই ক্যাপচার শেষ হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">সম্পন্ন</sys:String>
     <sys:String x:Key="Str_Ocr_Links">ছবির লেখায় থাকা লিংক</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">এক সারি</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">দুই সারি</sys:String>

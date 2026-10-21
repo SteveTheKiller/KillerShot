@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">每 {0} 秒</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">区域 {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">开始或停止定时截图</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">滚动截图</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">现在滚动页面。按 Enter 完成，按 Esc 取消。</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">已添加 {0} 行。继续滚动，或完成后按 Enter。</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">滚动过多，无法跟上。请往回滚动一点。</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">图片已达到大小上限，截图已结束。</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">完成</sys:String>
     <sys:String x:Key="Str_Ocr_Links">图片文字中的链接</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">一行</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">两行</sys:String>

@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">{0} 秒ごと</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">範囲 {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">一定間隔のキャプチャを開始/停止</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">スクロール キャプチャ</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">ページをスクロールしてください。Enter で完了、Esc で取り消します。</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} 行を追加しました。続けてスクロールするか、終わったら Enter を押します。</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">スクロールしすぎました。少し戻してください。</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">画像がサイズの上限に達したため、キャプチャを終了しました。</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">完了</sys:String>
     <sys:String x:Key="Str_Ocr_Links">画像内のテキストのリンク</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">1 行</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">2 行</sys:String>

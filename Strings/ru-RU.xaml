@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Каждые {0} с</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Область {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Запустить или остановить съёмку по интервалу</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Снимок с прокруткой</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Прокрутите страницу. Enter завершает, Esc отменяет.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">Добавлено строк: {0}. Прокручивайте дальше или нажмите Enter.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Прокручено слишком далеко. Вернитесь немного назад.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Изображение достигло предела размера, съёмка завершена.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Готово</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Ссылки в тексте изображения</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Один ряд</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Два ряда</sys:String>

@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Alle {0} Sekunden</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Bereich {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Intervallaufnahme starten oder beenden</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Scrollende Aufnahme</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Scrollen Sie jetzt die Seite. Eingabe beendet, Esc bricht ab.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} Zeilen hinzugefügt. Weiter scrollen oder Eingabe drücken, wenn fertig.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Zu weit gescrollt. Scrollen Sie ein Stück zurück.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Das Bild hat die Größengrenze erreicht, die Aufnahme ist beendet.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Fertig</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links im Bildtext</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Eine Zeile</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Zwei Zeilen</sys:String>

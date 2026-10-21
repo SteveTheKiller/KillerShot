@@ -518,6 +518,12 @@
     <sys:String x:Key="Str_Region_Every">Every {0} seconds</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Region {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Start or stop interval capture</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Scrolling capture</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Scroll the page now. Enter finishes, Esc cancels.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} lines added. Keep scrolling, or press Enter when done.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Scrolled too far to follow. Scroll back a little.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">The picture reached its size limit, so the capture finished.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Done</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links in image text</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">One row</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Two rows</sys:String>

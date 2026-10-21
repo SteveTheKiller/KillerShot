@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Mỗi {0} giây</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Vùng {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Bắt đầu hoặc dừng chụp theo khoảng thời gian</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Chụp cuộn trang</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Hãy cuộn trang ngay. Enter để xong, Esc để hủy.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">Đã thêm {0} dòng. Tiếp tục cuộn, hoặc nhấn Enter khi xong.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Cuộn quá xa. Hãy cuộn lại một chút.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Ảnh đã đạt giới hạn kích thước nên đã kết thúc chụp.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Xong</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Liên kết trong văn bản của ảnh</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Một hàng</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Hai hàng</sys:String>

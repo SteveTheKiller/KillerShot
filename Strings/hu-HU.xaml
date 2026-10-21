@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">{0} másodpercenként</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Terület {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Időközönkénti felvétel indítása vagy leállítása</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Görgetős felvétel</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Most görgesse az oldalt. Az Enter befejezi, az Esc megszakítja.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} sor hozzáadva. Görgessen tovább, vagy nyomja meg az Entert.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Túl messzire görgetett. Görgessen vissza egy kicsit.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">A kép elérte a méretkorlátot, ezért a felvétel befejeződött.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Kész</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Hivatkozások a kép szövegében</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Egy sor</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Két sor</sys:String>

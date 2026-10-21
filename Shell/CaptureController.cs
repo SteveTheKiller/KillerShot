@@ -151,23 +151,58 @@ internal sealed partial class CaptureController
             }
 
             if (result == null) return;   // cancelled: no output, last mode unchanged
-            if (CaptureSettings.PlaySound) ShutterSound.Play();
-            CaptureSettings.LastMode = mode;
-            Last = result;
-            var taken = DateTime.Now;
-            // A locked or failing album holds only so much; past that the capture still goes to
-            // the clipboard, folder and editor, but the album keeps what it already holds.
-            if (!CaptureLibrary.Add(result, taken, ModeKey(mode),
-                source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
-                _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
+            Deliver(result, mode, source, interval);
+        }
+        catch (Exception ex)
+        {
+            _tray.ShowWarning(Loc("Str_Tray_FailedTitle"), ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+            restore?.Invoke();
+        }
+    }
 
-            if (CaptureSettings.ReviewFirst && !interval)
-            {
-                // Nothing leaves KillerShot until the reviewed picture is accepted.
-                ReviewRequested?.Invoke(result, taken, mode);
-                return;
-            }
-            Publish(result, taken, mode, interval);
+    /// <summary>A finished capture: the shutter, the album, then review or the chosen outputs.</summary>
+    private void Deliver(BitmapSource result, CaptureMode mode, IntPtr source, bool interval)
+    {
+        if (CaptureSettings.PlaySound) ShutterSound.Play();
+        CaptureSettings.LastMode = mode;
+        Last = result;
+        var taken = DateTime.Now;
+        // A locked or failing album holds only so much; past that the capture still goes to
+        // the clipboard, folder and editor, but the album keeps what it already holds.
+        if (!CaptureLibrary.Add(result, taken, ModeKey(mode),
+            source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
+            _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
+
+        if (CaptureSettings.ReviewFirst && !interval)
+        {
+            // Nothing leaves KillerShot until the reviewed picture is accepted.
+            ReviewRequested?.Invoke(result, taken, mode);
+            return;
+        }
+        Publish(result, taken, mode, interval);
+    }
+
+    /// <summary>Scrolling capture: pick a region, scroll it, and the stitched page is delivered like
+    /// any capture. Nothing is sent to the scrolled program.</summary>
+    public async Task ScrollingCapture()
+    {
+        if (_busy || (_video ?? App.Instance.Video)?.IsRecording == true) return;
+        _busy = true;
+        Action? restore = null;
+        try
+        {
+            if (HideEditor != null) restore = await HideEditor();
+            var frozen = FrozenDesktop.Capture(false);
+            var picker = new RegionSelector(frozen);
+            if (await picker.RunAsync() is not { } region || region.Width < 8 || region.Height < 8) return;
+            var source = frozen.WindowAt(Center(region))?.Handle ?? IntPtr.Zero;
+            _tray.ShowInfo(Loc("Str_Scroll_Title"), Loc("Str_Scroll_Start"));
+            var stitched = await new ScrollCaptureSession(region).RunAsync();
+            if (stitched != null) Deliver(stitched, CaptureMode.Region, source, interval: false);
         }
         catch (Exception ex)
         {

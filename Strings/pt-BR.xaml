@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">A cada {0} segundos</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Região {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Iniciar ou parar a captura por intervalo</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Captura com rolagem</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Role a página agora. Enter conclui, Esc cancela.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} linhas adicionadas. Continue rolando ou pressione Enter ao terminar.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Rolou demais. Volte um pouco.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">A imagem atingiu o limite de tamanho, então a captura terminou.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Concluído</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Links no texto da imagem</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Uma linha</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Duas linhas</sys:String>

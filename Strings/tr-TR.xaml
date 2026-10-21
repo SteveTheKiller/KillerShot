@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Her {0} saniyede</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Bölge {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Aralıklı yakalamayı başlat veya durdur</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Kaydırmalı yakalama</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Şimdi sayfayı kaydırın. Enter bitirir, Esc iptal eder.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} satır eklendi. Kaydırmaya devam edin veya bitince Enter'a basın.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Çok fazla kaydırıldı. Biraz geri kaydırın.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Resim boyut sınırına ulaştı, yakalama tamamlandı.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Bitti</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Görüntü metnindeki bağlantılar</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Tek satır</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">İki satır</sys:String>

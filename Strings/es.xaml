@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Cada {0} segundos</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Región {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Iniciar o detener la captura por intervalos</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Captura con desplazamiento</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Desplaza la página ahora. Intro termina, Esc cancela.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} líneas añadidas. Sigue desplazando o pulsa Intro al terminar.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Te desplazaste demasiado. Vuelve un poco atrás.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">La imagen llegó a su tamaño máximo y la captura terminó.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Listo</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Enlaces en el texto de la imagen</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Una fila</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Dos filas</sys:String>

@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">每 {0} 秒</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">區域 {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">開始或停止定時擷取</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">捲動擷取</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">現在捲動頁面。按 Enter 完成，按 Esc 取消。</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">已新增 {0} 行。繼續捲動，或完成後按 Enter。</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">捲動過多，無法跟上。請往回捲動一點。</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">圖片已達到大小上限，擷取已結束。</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">完成</sys:String>
     <sys:String x:Key="Str_Ocr_Links">圖片文字中的連結</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">一列</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">兩列</sys:String>

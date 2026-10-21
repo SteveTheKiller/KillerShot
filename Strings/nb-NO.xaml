@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Hvert {0}. sekund</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Område {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Start eller stopp intervallopptak</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Rullende opptak</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Rull siden nå. Enter fullfører, Esc avbryter.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} linjer lagt til. Fortsett å rulle, eller trykk Enter når du er ferdig.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Rullet for langt. Rull litt tilbake.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">Bildet nådde størrelsesgrensen, så opptaket er ferdig.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Ferdig</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Lenker i bildeteksten</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Én rad</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">To rader</sys:String>

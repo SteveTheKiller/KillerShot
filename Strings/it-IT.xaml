@@ -514,6 +514,12 @@
     <sys:String x:Key="Str_Region_Every">Ogni {0} secondi</sys:String>
     <sys:String x:Key="Str_Region_DefaultName">Area {0} x {1}</sys:String>
     <sys:String x:Key="Str_Region_IntervalToggle">Avvia o ferma la cattura a intervalli</sys:String>
+    <sys:String x:Key="Str_Scroll_Title">Cattura a scorrimento</sys:String>
+    <sys:String x:Key="Str_Scroll_Start">Scorri ora la pagina. Invio termina, Esc annulla.</sys:String>
+    <sys:String x:Key="Str_Scroll_Progress">{0} righe aggiunte. Continua a scorrere o premi Invio quando hai finito.</sys:String>
+    <sys:String x:Key="Str_Scroll_Lost">Scorrimento troppo ampio. Torna un po' indietro.</sys:String>
+    <sys:String x:Key="Str_Scroll_Full">L'immagine ha raggiunto il limite di dimensione, la cattura è terminata.</sys:String>
+    <sys:String x:Key="Str_Scroll_Done">Fatto</sys:String>
     <sys:String x:Key="Str_Ocr_Links">Link nel testo dell’immagine</sys:String>
     <sys:String x:Key="Str_Toolbar_OneRow">Una riga</sys:String>
     <sys:String x:Key="Str_Toolbar_TwoRows">Due righe</sys:String>
