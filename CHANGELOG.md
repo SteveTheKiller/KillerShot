@@ -42,7 +42,7 @@
 - Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
 - The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
-- The title bar shows the active album name on the right and an open image's name after the wordmark. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
+- The title bar shows the active album name on the right and an open image's name after the wordmark. Database names use the shared Notes and Calendar font, size and icon-bottom alignment. Text buttons, context menus, the shortcut list and the keyboard map use the embedded interface font. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
 - Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
 - KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
@@ -69,6 +69,6 @@
 - The capture bar stays centered when moving between monitors with different scaling.
 - Album help points to the current settings location, and capture fallback warnings cover all 19 languages.
 - 98SE controls and native window corners stay square, including after theme changes.
-- Restored film grain on the file picker sidebar.
+- Restored film grain on the file picker sidebar. Grain has crisper specks and fades midtones across app and website themes without dimming bright highlights.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.
 - The website's More button uses the selected language for its accessible name.
