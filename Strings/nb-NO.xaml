@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Skjermbilder som ennå ikke er lagret i albumet: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Skjermbilder som ennå ikke er lagret i albumet: {0}. Hvis du avslutter nå, går de tapt.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Albumet lagrer ikke</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} skjermbilder venter på albumet, det meste det kan holde. Dette ble ikke lagt til i albumet. Lås opp albumet eller løs lagringsproblemet for å lagre de ventende skjermbildene.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Prøv igjen</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Vinduets overflate var ikke tilgjengelig. Dette skjermbildet viser bare det som var synlig på skrivebordet.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>

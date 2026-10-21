@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Wideo</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Zrzuty jeszcze niezapisane w albumie: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Zrzuty jeszcze niezapisane w albumie: {0}. Jeśli teraz zamkniesz aplikację, zostaną utracone.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Album nie zapisuje</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">Na album czeka {0} zrzutów, czyli maksimum. Ten nie został dodany do albumu. Odblokuj album lub rozwiąż problem z magazynem, aby zapisać oczekujące zrzuty.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Ponów próbę</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Powierzchnia okna była niedostępna. Ten zrzut pokazuje tylko to, co było widoczne na pulpicie.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUMY</sys:String>

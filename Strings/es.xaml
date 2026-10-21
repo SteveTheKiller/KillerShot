@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Vídeo</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Capturas aún no guardadas en el álbum: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Capturas aún no guardadas en el álbum: {0}. Si sale ahora, se perderán.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">El álbum no se está guardando</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} capturas esperan al álbum, el máximo que admite. Esta no se añadió al álbum. Desbloquea el álbum o soluciona el problema de almacenamiento para guardar las capturas en espera.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Reintentar</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">La superficie de la ventana no estaba disponible. Esta captura muestra solo lo que era visible en el escritorio.</sys:String>
     <sys:String x:Key="Str_Album_Title">ÁLBUMES</sys:String>

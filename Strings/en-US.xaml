@@ -454,6 +454,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Captures not yet saved to the album: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Captures not yet saved to the album: {0}. Exiting now will discard them.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Album is not saving</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} captures are waiting for the album, the most it can hold. This one was not added to the album. Unlock the album or fix the storage problem to save the waiting captures.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Retry</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUMS</sys:String>
     <sys:String x:Key="Str_Album_New">New album...</sys:String>

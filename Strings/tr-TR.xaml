@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} yakalama albüme kaydedilmedi.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} yakalama albüme kaydedilmedi. Şimdi çıkarsanız kaybolacaklar.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Albüm kaydetmiyor</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} yakalama albümü bekliyor; bu, tutabileceği en fazla sayı. Bu yakalama albüme eklenmedi. Bekleyen yakalamaları kaydetmek için albümün kilidini açın veya depolama sorununu giderin.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Yeniden dene</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Pencerenin görüntü yüzeyi kullanılamıyordu. Bu yakalama yalnızca masaüstünde görünenleri gösterir.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBÜMLER</sys:String>

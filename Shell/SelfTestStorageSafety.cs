@@ -36,6 +36,7 @@ internal static class SelfTestStorageSafety
         {
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
             if (scenario == "pending") await PendingAfterWriteFailure(log);
+            else if (scenario == "pending-budget") await PendingBudget(log);
             else if (scenario == "identity") CaptureIdentity(log);
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
@@ -165,6 +166,36 @@ internal static class SelfTestStorageSafety
             && CaptureLibrary.Items().Count(item => item.Window == "Explicit retry") == 1;
         log.AppendLine($"concurrent_explicit_retry_once={retried}");
         if (!retried) throw new InvalidOperationException("Concurrent retries lost or duplicated a pending capture.");
+    }
+
+    /// <summary>A failing album holds captures only up to its memory budget. The next capture is
+    /// refused with a result the caller can show, the held ones are kept and stored once on retry.</summary>
+    private static async Task PendingBudget(StringBuilder log)
+    {
+        using var db = OpenFixtureDatabase();
+        Execute(db, "CREATE TRIGGER fail_capture BEFORE INSERT ON captures BEGIN SELECT RAISE(ABORT, 'synthetic write failure'); END");
+        long saved = CaptureLibrary.PendingBudgetBytes;
+        CaptureLibrary.PendingBudgetBytes = 10;   // two 1x1 captures of 4 bytes each
+        try
+        {
+            bool first = CaptureLibrary.Add(Pixel(), DateTime.Now, "region", "Held 1", null);
+            bool second = CaptureLibrary.Add(Pixel(), DateTime.Now, "region", "Held 2", null);
+            await WaitUntil(() => false);
+            bool third = CaptureLibrary.Add(Pixel(), DateTime.Now, "region", "Refused", null);
+            log.AppendLine($"accepted={first},{second} refused={!third} pending={CaptureLibrary.PendingCount} bytes={CaptureLibrary.PendingBytes}");
+            if (!first || !second || third || CaptureLibrary.PendingCount != 2)
+                throw new InvalidOperationException("The pending budget did not hold exactly the accepted captures.");
+            Execute(db, "DROP TRIGGER fail_capture");
+            await CaptureLibrary.RetryPendingAsync();
+            var items = CaptureLibrary.Items();
+            if (CaptureLibrary.PendingCount != 0 || CaptureLibrary.PendingBytes != 0 || items.Count != 2
+                || items.Count(i => i.Window == "Held 1") != 1 || items.Count(i => i.Window == "Held 2") != 1)
+                throw new InvalidOperationException("Retry did not store each accepted capture exactly once.");
+            if (!CaptureLibrary.Add(Pixel(), DateTime.Now, "region", "After", null))
+                throw new InvalidOperationException("The budget did not free after the retry.");
+            log.AppendLine("pending_budget_recovered=True");
+        }
+        finally { CaptureLibrary.PendingBudgetBytes = saved; }
     }
 
     private static void CaptureIdentity(StringBuilder log)

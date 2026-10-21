@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">動画</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} 件のキャプチャがアルバムに保存されていません。</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} 件のキャプチャがアルバムに保存されていません。今終了すると失われます。</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">アルバムに保存できません</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} 件のキャプチャがアルバムへの保存待ちで、上限に達しました。このキャプチャはアルバムに追加されていません。待機中のキャプチャを保存するには、アルバムのロックを解除するかストレージの問題を解決してください。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">再試行</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">ウィンドウの描画内容を取得できませんでした。このキャプチャには、デスクトップ上で見えていた内容だけが表示されています。</sys:String>
     <sys:String x:Key="Str_Album_Title">アルバム</sys:String>

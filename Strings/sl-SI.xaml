@@ -445,6 +445,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Posnetki, ki še niso shranjeni v album: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Posnetki, ki še niso shranjeni v album: {0}. Če zdaj zapreš program, bodo zavrženi.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Album ne shranjuje</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">Na album čaka {0} posnetkov, kar je največ. Ta ni bil dodan v album. Odklenite album ali odpravite težavo s shrambo, da se čakajoči posnetki shranijo.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Poskusi znova</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUMI</sys:String>
     <sys:String x:Key="Str_Album_New">Nov album...</sys:String>

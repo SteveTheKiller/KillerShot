@@ -141,8 +141,11 @@ internal sealed class CaptureController
             CaptureSettings.LastMode = mode;
             Last = result;
             var taken = DateTime.Now;
-            CaptureLibrary.Add(result, taken, ModeKey(mode),
-                source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source));
+            // A locked or failing album holds only so much; past that the capture still goes to
+            // the clipboard, folder and editor, but the album keeps what it already holds.
+            if (!CaptureLibrary.Add(result, taken, ModeKey(mode),
+                source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
+                _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
 
             bool wantCopy = CaptureSettings.CopyToClipboard;
             bool copied = false;

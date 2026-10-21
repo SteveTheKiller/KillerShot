@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Snímky dosud neuložené do alba: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Snímky dosud neuložené do alba: {0}. Pokud nyní aplikaci ukončíte, budou ztraceny.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Album se neukládá</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">Na album čeká {0} snímků, což je maximum. Tento snímek nebyl do alba přidán. Odemkněte album nebo opravte problém s úložištěm, aby se čekající snímky uložily.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Zkusit znovu</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Povrch okna nebyl dostupný. Tento snímek zachycuje pouze to, co bylo viditelné na ploše.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBA</sys:String>

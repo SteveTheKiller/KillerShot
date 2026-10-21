@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">影片</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} 張擷取畫面尚未儲存至相簿。</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} 張擷取畫面尚未儲存至相簿。現在結束將捨棄這些畫面。</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">相簿未在儲存</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">有 {0} 張擷取畫面正在等待存入相簿，已達上限。此擷取未加入相簿。請解鎖相簿或解決儲存問題，以儲存等待中的擷取畫面。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">重試</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">無法取得視窗畫面。此擷取畫面只顯示當時桌面上可見的內容。</sys:String>
     <sys:String x:Key="Str_Album_Title">相簿</sys:String>

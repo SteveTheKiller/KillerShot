@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Відео</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Знімки не збережено в альбомі: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Знімки не збережено в альбомі: {0}. Якщо вийти зараз, їх буде втрачено.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Альбом не зберігає</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} знімків чекають на альбом, це максимум. Цей знімок не додано до альбому. Розблокуйте альбом або усуньте проблему зі сховищем, щоб зберегти знімки в черзі.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Спробувати знову</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Зображення вікна було недоступне. Цей знімок показує лише те, що було видно на робочому столі.</sys:String>
     <sys:String x:Key="Str_Album_Title">АЛЬБОМИ</sys:String>

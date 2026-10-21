@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} ảnh chụp chưa được lưu vào album.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} ảnh chụp chưa được lưu vào album. Nếu thoát ngay, các ảnh này sẽ bị mất.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Album không lưu được</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} ảnh chụp đang chờ album, mức tối đa có thể giữ. Ảnh này chưa được thêm vào album. Hãy mở khóa album hoặc khắc phục sự cố lưu trữ để lưu các ảnh đang chờ.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Thử lại</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Không thể lấy hình ảnh cửa sổ. Ảnh chụp này chỉ chứa nội dung nhìn thấy trên màn hình nền lúc đó.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>

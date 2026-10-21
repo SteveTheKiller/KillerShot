@@ -547,15 +547,34 @@ internal static partial class CaptureLibrary
 
     private static readonly List<(BitmapSource Bmp, DateTime Taken, string Mode, string? Window, string? Process)> _pending = [];
 
+    /// <summary>The most pixel memory waiting captures may hold while the album is locked or
+    /// failing: 1 GiB, about eight 8K screenshots.</summary>
+    public static long PendingBudgetBytes { get; set; } = 1L << 30;
+
+    private static long _pendingBytes;
+
+    /// <summary>Pixel memory held by captures waiting for the album.</summary>
+    public static long PendingBytes { get { lock (_pending) return _pendingBytes; } }
+
+    private static long SizeOf(BitmapSource bmp) => (long)bmp.PixelWidth * bmp.PixelHeight * 4;
+
     /// <summary>Queues a capture immediately, then stores it in the background. A locked album
-    /// or failed write keeps it in memory until a later retry succeeds.</summary>
-    public static void Add(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
+    /// or failed write keeps it in memory until a later retry succeeds. Returns false, keeping
+    /// everything already queued, when holding this capture would pass the pending budget.</summary>
+    public static bool Add(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
+        long size = SizeOf(bmp);
         lock (_gate)
-        lock (_pending) _pending.Add((bmp, taken, mode, window, process));
+        lock (_pending)
+        {
+            if (_pending.Count > 0 && _pendingBytes + size > PendingBudgetBytes) return false;
+            _pending.Add((bmp, taken, mode, window, process));
+            _pendingBytes += size;
+        }
         RaiseChanged();
         _ = RetryPendingAsync();
+        return true;
     }
 
     /// <summary>Stores a capture before returning and gives its id. Throws when the library is
@@ -654,7 +673,7 @@ internal static partial class CaptureLibrary
                     }
                     try { AddNow(item.Bmp, item.Taken, item.Mode, item.Window, item.Process); }
                     catch (Exception ex) { ReportWriteFailure(ex); return; }
-                    lock (_pending) _pending.RemoveAt(0);
+                    lock (_pending) { _pending.RemoveAt(0); _pendingBytes -= SizeOf(item.Bmp); }
                     RaiseChanged();
                 }
             }

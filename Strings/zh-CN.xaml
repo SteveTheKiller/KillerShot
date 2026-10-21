@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">视频</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} 张截图尚未保存到相册。</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} 张截图尚未保存到相册。现在退出将丢弃这些截图。</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">相册未在保存</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">有 {0} 张截图正在等待存入相册，已达上限。此截图未加入相册。请解锁相册或解决存储问题以保存等待中的截图。</sys:String>
     <sys:String x:Key="Str_Lib_Retry">重试</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">无法获取窗口画面。此截图仅显示当时桌面上可见的内容。</sys:String>
     <sys:String x:Key="Str_Album_Title">相册</sys:String>

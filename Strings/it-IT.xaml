@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Video</sys:String>
     <sys:String x:Key="Str_Lib_Pending">Catture non ancora salvate nell'album: {0}.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">Catture non ancora salvate nell'album: {0}. Uscendo ora andranno perse.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">L'album non sta salvando</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} catture attendono l'album, il massimo che può contenere. Questa non è stata aggiunta all'album. Sblocca l'album o risolvi il problema di archiviazione per salvare le catture in attesa.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Riprova</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">La superficie della finestra non era disponibile. Questa cattura mostra solo ciò che era visibile sul desktop.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUM</sys:String>

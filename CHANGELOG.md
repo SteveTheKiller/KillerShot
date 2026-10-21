@@ -7,7 +7,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 ### Data protection and recovery
 
 - Albums recover after interrupted password changes or removal, preserving captures and recovery copies when cleanup fails. Failed setup keeps the album closed until the problem is corrected. (#1) (#4)
-- Captures waiting in memory remain visible after a failed album write, save on retry and warn before exit. (#2)
+- Captures waiting in memory remain visible after a failed album write, save on retry and warn before exit. (#2) Waiting captures are capped at 1 GiB; past that, new captures still copy and save but skip the album with a warning, and nothing already waiting is lost.
 - Unsaved edits require confirmation before another image opens or the app exits, with Save, Discard and Cancel choices. Save As cancels if its image changes while the dialog is open. Retention changes apply only after Save.
 - Saving animated PNG, GIF, TIFF, BMP or mismatched image files offers a separate static PNG or JPEG export to preserve the original. Image edits retain transparency, and reopened files show their latest contents.
 - Fixed concurrent album edits, search recovery, settings writes and output-file collisions. Failed retention preserves search results, missing search entries repair on reopen, and capture IDs remain unique after deletion.

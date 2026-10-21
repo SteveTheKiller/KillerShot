@@ -450,6 +450,8 @@
     <sys:String x:Key="Str_Capture_Video">Videó</sys:String>
     <sys:String x:Key="Str_Lib_Pending">{0} felvétel nincs elmentve az albumba.</sys:String>
     <sys:String x:Key="Str_Lib_PendingExit">{0} felvétel nincs elmentve az albumba. Ha most kilép, ezek elvesznek.</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFullTitle">Az album nem ment</sys:String>
+    <sys:String x:Key="Str_Lib_PendingFull">{0} felvétel vár az albumra, ennyit tud tárolni legfeljebb. Ez nem került az albumba. Oldja fel az albumot, vagy javítsa a tárolási hibát a várakozó felvételek mentéséhez.</sys:String>
     <sys:String x:Key="Str_Lib_Retry">Újra</sys:String>
     <sys:String x:Key="Str_Tray_WindowFallback">Az ablak felülete nem volt elérhető. Ez a felvétel csak az asztalon látható tartalmat mutatja.</sys:String>
     <sys:String x:Key="Str_Album_Title">ALBUMOK</sys:String>
