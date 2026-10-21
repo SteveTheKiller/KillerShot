@@ -730,7 +730,9 @@ internal static partial class CaptureLibrary
                     lock (PendingWriter)
                     {
                         lock (_gate) if (!ReferenceEquals(_db, database) || database == null) return;
-                        string key = "legacy_import:" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file.FullName)));
+                        // The file's name and contents: identical pictures saved at different
+                        // times are separate captures, the same file seen again is not.
+                        string key = "legacy_import:" + file.Name + ":" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file.FullName)));
                         if (!HasMeta(database, key))
                             AddNowCore(ImageOutput.Load(file.FullName), RecentCaptures.TakenFrom(file) ?? file.LastWriteTime, "", null, null, key);
                         file.Delete();

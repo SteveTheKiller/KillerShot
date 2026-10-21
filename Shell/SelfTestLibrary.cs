@@ -591,7 +591,8 @@ internal static partial class SelfTestLibrary
             await Shot("library-folder-collection");
 
             // The folder source must keep its files in the Screenshots group, not Unfiled.
-            view.SetSource("folder");
+            // Choose it in the collection sidebar, as a user does, so every view agrees on it.
+            w.TestNavigationStrip!.SetSource("folder");
             view.TestSet("shelves", "collection", "");
             var rowsList = view.FindName("RowsList") as ItemsControl
                 ?? throw new InvalidOperationException("Library rows are unavailable.");
@@ -609,7 +610,7 @@ internal static partial class SelfTestLibrary
             folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
             if (folderRows.Sum(r => r.Items.Count) != 6)
                 throw new InvalidOperationException("Folder date grouping lost captures.");
-            view.SetSource("all");
+            w.TestNavigationStrip!.SetSource("all");
             view.TestSet("shelves", "collection", "");
 
             // Open a capture, then the library over it (Ctrl+L).
