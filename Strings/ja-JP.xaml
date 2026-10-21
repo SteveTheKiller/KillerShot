@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">開く</sys:String>
     <sys:String x:Key="Str_Lib_Copy">コピー</sys:String>
     <sys:String x:Key="Str_Lib_Copied">クリップボードにコピーしました。</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">先にキャプチャを選択してください。</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">名前を付けて保存...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">移動先</sys:String>
     <sys:String x:Key="Str_Lib_Note">メモ...</sys:String>

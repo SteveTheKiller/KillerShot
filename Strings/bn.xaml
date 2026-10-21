@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">খুলুন</sys:String>
     <sys:String x:Key="Str_Lib_Copy">কপি করুন</sys:String>
     <sys:String x:Key="Str_Lib_Copied">ক্লিপবোর্ডে কপি হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">প্রথমে একটি ক্যাপচার নির্বাচন করুন।</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">এভাবে সংরক্ষণ করুন...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">সরান</sys:String>
     <sys:String x:Key="Str_Lib_Note">নোট...</sys:String>

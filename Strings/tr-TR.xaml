@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Aç</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopyala</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Panoya kopyalandı.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Önce bir yakalama seçin.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Farklı kaydet...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Taşı</sys:String>
     <sys:String x:Key="Str_Lib_Note">Not...</sys:String>

@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Megnyitás</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Másolás</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Vágólapra másolva.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Először jelöljön ki egy felvételt.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Mentés másként...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Áthelyezés ide</sys:String>
     <sys:String x:Key="Str_Lib_Note">Jegyzet...</sys:String>

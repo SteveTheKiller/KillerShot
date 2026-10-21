@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Abrir</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Copiar</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Copiado al portapapeles.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Primero selecciona una captura.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Guardar como...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Mover a</sys:String>
     <sys:String x:Key="Str_Lib_Note">Nota...</sys:String>

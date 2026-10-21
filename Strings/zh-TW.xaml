@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">開啟</sys:String>
     <sys:String x:Key="Str_Lib_Copy">複製</sys:String>
     <sys:String x:Key="Str_Lib_Copied">已複製到剪貼簿。</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">請先選取一張擷取畫面。</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">另存新檔...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">移至</sys:String>
     <sys:String x:Key="Str_Lib_Note">附註...</sys:String>

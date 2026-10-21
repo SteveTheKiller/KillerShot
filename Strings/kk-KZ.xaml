@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Ашу</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Көшіру</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Алмасу буферіне көшірілді.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Алдымен түсірілімді таңдаңыз.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Басқаша сақтау...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Жылжыту</sys:String>
     <sys:String x:Key="Str_Lib_Note">Жазба...</sys:String>

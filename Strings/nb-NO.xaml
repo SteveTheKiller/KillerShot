@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Åpne</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopier</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Kopiert til utklippstavlen.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Velg et skjermbilde først.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Lagre som...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Flytt til</sys:String>
     <sys:String x:Key="Str_Lib_Note">Notat...</sys:String>

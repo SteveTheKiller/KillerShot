@@ -125,6 +125,7 @@ namespace KillerShot.Shell
 
         internal CollectionStrip? TestStrip => Library.IsVisible ? _navigationStrip : _strip;
         internal DockHost TestStripDock => Library.IsVisible ? NavigationDock : StripDock;
+        internal void TestShowLibraryView(string view) => ShowLibraryView(view);
         internal CollectionStrip? TestNavigationStrip => _navigationStrip;
         internal DockHost TestNavigationDock => NavigationDock;
     }

@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Otwórz</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopiuj</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Skopiowano do schowka.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Najpierw wybierz zrzut.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Zapisz jako...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Przenieś do</sys:String>
     <sys:String x:Key="Str_Lib_Note">Notatka...</sys:String>

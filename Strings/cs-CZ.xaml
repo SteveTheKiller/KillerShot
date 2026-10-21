@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Otevřít</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopírovat</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Zkopírováno do schránky.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Nejprve vyberte snímek.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Uložit jako...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Přesunout do</sys:String>
     <sys:String x:Key="Str_Lib_Note">Poznámka...</sys:String>

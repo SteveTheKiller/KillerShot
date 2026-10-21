@@ -70,6 +70,7 @@ public partial class App : Application
         if (SelfTestFlyoutScale.TryRun(e.Args)) return;
         if (SelfTestGifDuration.TryRun(e.Args)) return;
         if (SelfTestRedaction.TryRun(e.Args)) return;
+        if (SelfTestOutputIdentity.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;

@@ -102,8 +102,9 @@ namespace KillerShot.Shell
                     case Key.O: OpenFile(); break;
                     case Key.S when shift: SaveAs(); break;
                     case Key.S: Save(); break;
-                    case Key.C when !TypingInField(): CopyResult(); break;
-                    case Key.P: PrintResult(); break;
+                    // Over the album these act on the capture in view, never the hidden editor image.
+                    case Key.C when !TypingInField(): if (Library.IsVisible) Library.CopyFocused(); else CopyResult(); break;
+                    case Key.P: if (Library.IsVisible) Library.PrintFocused(); else PrintResult(); break;
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;

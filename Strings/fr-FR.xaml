@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Ouvrir</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Copier</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Copié dans le presse-papiers.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Sélectionnez d'abord une capture.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Enregistrer sous...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Déplacer vers</sys:String>
     <sys:String x:Key="Str_Lib_Note">Note...</sys:String>

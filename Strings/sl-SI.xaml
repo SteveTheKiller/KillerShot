@@ -336,6 +336,7 @@
     <sys:String x:Key="Str_Lib_Open">Odpri</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopiraj</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Kopirano v odložišče.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Najprej izberite posnetek.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Shrani kot...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Premakni v</sys:String>
     <sys:String x:Key="Str_Lib_Note">Zapisek...</sys:String>

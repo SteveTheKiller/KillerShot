@@ -555,7 +555,7 @@ namespace KillerShot.Shell
                 content.Children.Add(QrMark.Wrap(image, item.HasQr));
                 content.Children.Add(caption);
                 content.Children.Add(detail);
-                var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content };
+                var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content, Tag = item };
                 tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "ContentPaneBrush");
                 if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
                 {
@@ -977,6 +977,34 @@ namespace KillerShot.Shell
         {
             var dlg = new PromptDialog(Loc("Str_Lib_NoteTitle"), Loc("Str_Lib_NoteDetail"), Loc("Str_Lib_Save"), initialText: item.Note ?? "") { Owner = OwnerWindow };
             if (dlg.ShowDialog() == true) TryChangeAlbum(() => CaptureLibrary.SetNote(item.Id, dlg.Text));
+        }
+
+        /// <summary>The capture the keyboard is on: a focused tile, or the current card of a focused
+        /// carousel. Null when focus is elsewhere, so a shortcut never falls back to another image.</summary>
+        internal CaptureItem? FocusedCapture()
+        {
+            for (var d = Keyboard.FocusedElement as DependencyObject; d != null && d != this; d = VisualTreeHelper.GetParent(d) ?? LogicalTreeHelper.GetParent(d))
+            {
+                if (d is Button { Tag: CaptureItem tile }) return CaptureLibrary.IsCurrent(tile) ? tile : null;
+                if (d is CoverFlow flow) return flow.SelectedItem is { } f && CaptureLibrary.IsCurrent(f) ? f : null;
+                if (d is Rolodex rolodex) return rolodex.SelectedItem is { } r && CaptureLibrary.IsCurrent(r) ? r : null;
+            }
+            return null;
+        }
+
+        /// <summary>Ctrl+C over the album: copies the focused capture, or reports there is none.</summary>
+        internal void CopyFocused()
+        {
+            if (FocusedCapture() is { } item) Copy(item);
+            else StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused"));
+        }
+
+        /// <summary>Ctrl+P over the album: prints the focused capture, or reports there is none.</summary>
+        internal void PrintFocused()
+        {
+            if (FocusedCapture() is not { } item) { StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused")); return; }
+            try { PrintOutput.Print(CaptureLibrary.LoadImage(item), Title(item)); }
+            catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
         }
 
         private void Copy(CaptureItem item)

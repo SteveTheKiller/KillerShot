@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Відкрити</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Копіювати</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Скопійовано до буфера обміну.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Спершу виберіть знімок.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Зберегти як...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Перемістити до</sys:String>
     <sys:String x:Key="Str_Lib_Note">Нотатка...</sys:String>

@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Mở</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Sao chép</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Đã sao chép vào bảng tạm.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Hãy chọn một ảnh chụp trước.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Lưu thành...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Chuyển đến</sys:String>
     <sys:String x:Key="Str_Lib_Note">Ghi chú...</sys:String>

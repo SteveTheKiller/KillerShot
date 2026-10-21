@@ -245,7 +245,8 @@ internal sealed class CaptureController
 
     private void SaveLast()
     {
-        if (Last == null) return;
+        // Hold this capture: a global shortcut can take another one while the dialog is open.
+        if (Last is not { } image) return;
         var dlg = new Controls.FileDialog(Controls.FileDialogMode.Save)
         {
             Title = Loc("Str_Dlg_SaveTitle"),
@@ -257,7 +258,7 @@ internal sealed class CaptureController
         if (dlg.ShowDialog(null) != true) return;
         try
         {
-            ImageOutput.Save(Last, dlg.FileName);
+            ImageOutput.Save(image, dlg.FileName);
             _tray.ShowInfo(Loc("Str_Tray_SavedTitle"), dlg.FileName);
         }
         catch (Exception ex)

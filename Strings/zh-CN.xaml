@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">打开</sys:String>
     <sys:String x:Key="Str_Lib_Copy">复制</sys:String>
     <sys:String x:Key="Str_Lib_Copied">已复制到剪贴板。</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">请先选择一个截图。</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">另存为...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">移动到</sys:String>
     <sys:String x:Key="Str_Lib_Note">备注...</sys:String>

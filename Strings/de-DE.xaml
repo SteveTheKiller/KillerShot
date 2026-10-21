@@ -341,6 +341,7 @@
     <sys:String x:Key="Str_Lib_Open">Öffnen</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Kopieren</sys:String>
     <sys:String x:Key="Str_Lib_Copied">In die Zwischenablage kopiert.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Wählen Sie zuerst eine Aufnahme aus.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Speichern unter...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Verschieben nach</sys:String>
     <sys:String x:Key="Str_Lib_Note">Notiz...</sys:String>

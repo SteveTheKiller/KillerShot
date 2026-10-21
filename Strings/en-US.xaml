@@ -345,6 +345,7 @@
     <sys:String x:Key="Str_Lib_Open">Open</sys:String>
     <sys:String x:Key="Str_Lib_Copy">Copy</sys:String>
     <sys:String x:Key="Str_Lib_Copied">Copied to the clipboard.</sys:String>
+    <sys:String x:Key="Str_Lib_NoCaptureFocused">Select a capture first.</sys:String>
     <sys:String x:Key="Str_Lib_SaveAs">Save as...</sys:String>
     <sys:String x:Key="Str_Lib_MoveTo">Move to</sys:String>
     <sys:String x:Key="Str_Lib_Note">Note...</sys:String>
