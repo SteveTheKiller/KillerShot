@@ -89,6 +89,7 @@ public partial class MainWindow
         var heading = new TextBlock { FontSize = 14, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 10) };
         heading.SetResourceReference(TextBlock.TextProperty, "Str_Ocr_Title");
         heading.SetResourceReference(TextBlock.FontFamilyProperty, "HeadingFont");
+        KillerFamily.Theming.HeadingAccent.SetEnabled(heading, true);
         content.Children.Add(heading);
 
         _textBox = new TextBox

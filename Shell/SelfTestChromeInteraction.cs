@@ -105,6 +105,19 @@ internal static class SelfTestChromeInteraction
                 CheckPaneInset((FrameworkElement)popup.Child, pane, true, theme + " album manager");
                 popup.IsOpen = false;
             }
+
+            // A short window: the album flyout reaches past it toward the taskbar and shows all of
+            // its controls instead of cutting the last ones off.
+            window.Height = 420;
+            await Task.Delay(150);
+            window.UpdateLayout();
+            ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Task.Delay(300);
+            var albumScroll = (ScrollViewer)window.FindName("LibrarySettingsScroll");
+            var albumPopup = (Popup)window.FindName("LibrarySettingsPopup");
+            report.Add($"short window album flyout: viewport={albumScroll.ViewportHeight:F0} extent={albumScroll.ExtentHeight:F0} scrollable={albumScroll.ScrollableHeight:F0}");
+            if (albumScroll.ScrollableHeight > 0.5) failures.Add("In a short window the album flyout cuts off its last controls.");
+            albumPopup.IsOpen = false;
             window.Close();
 
             void CheckPaneInset(FrameworkElement face, FrameworkElement pane, bool right, string name)

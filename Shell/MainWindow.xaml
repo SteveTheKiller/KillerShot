@@ -5,6 +5,7 @@
         xmlns:editor="clr-namespace:KillerShot.Editor"
         xmlns:local="clr-namespace:KillerShot.Shell"
         xmlns:kl="clr-namespace:KillerFamily.Layout"
+        xmlns:theme="clr-namespace:KillerFamily.Theming"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerShot"
         Icon="/Resources/kst-icon.ico"
@@ -669,7 +670,7 @@
                                 <Style x:Key="OverlayVerticalScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource OverlayCloseClearScrollBar}"/>
                             </ScrollViewer.Resources>
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Str_CS_Title}" Foreground="{DynamicResource TextBrush}"
+                                <TextBlock Text="{DynamicResource Str_CS_Title}" theme:HeadingAccent.Enabled="True"
                                            FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
                                 <WrapPanel x:Name="SettingsColumns" Orientation="Horizontal" MaxWidth="900">
                                     <StackPanel Width="420" Margin="0,0,24,0">
@@ -831,7 +832,7 @@
                                 <Style x:Key="OverlayVerticalScrollBar" TargetType="ScrollBar" BasedOn="{StaticResource OverlayCloseClearScrollBar}"/>
                             </ScrollViewer.Resources>
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Str_VS_Title}" Foreground="{DynamicResource TextBrush}"
+                                <TextBlock Text="{DynamicResource Str_VS_Title}" theme:HeadingAccent.Enabled="True"
                                            FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" Margin="0,4,0,12"/>
                                 <WrapPanel Orientation="Horizontal" MaxWidth="900">
                                     <StackPanel Width="420" Margin="0,0,24,0">
@@ -1023,7 +1024,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{DynamicResource Str_KS_Title}" Foreground="{DynamicResource TextBrush}"
+                                <TextBlock Text="{DynamicResource Str_KS_Title}" theme:HeadingAccent.Enabled="True"
                                            FontFamily="{DynamicResource HeadingFont}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0">
                                     <Button x:Name="KsViewList" Style="{StaticResource KsToggle}" Tag="on"
@@ -1278,7 +1279,7 @@
                     <StackPanel x:Name="LibrarySettingsContent"
                                 TextElement.FontFamily="{DynamicResource UiFont}" TextElement.Foreground="{DynamicResource TextBrush}"
                                 KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
-                        <TextBlock Text="{DynamicResource Str_Album_Title}" FontFamily="{DynamicResource HeadingFont}"
+                        <TextBlock Text="{DynamicResource Str_Album_Title}" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
                         <WrapPanel Margin="0,0,0,10">
                             <Button Content="{DynamicResource Str_Album_New}" Style="{StaticResource OutlineButton}"
@@ -1299,7 +1300,7 @@
                         </WrapPanel>
                         <TextBlock Text="{DynamicResource Str_Album_CopyHint}" FontSize="11" Foreground="{DynamicResource DimTextBrush}"
                                    TextWrapping="Wrap" Margin="0,0,0,14"/>
-                        <TextBlock x:Name="ActiveAlbumHeading" FontFamily="{DynamicResource HeadingFont}"
+                        <TextBlock x:Name="ActiveAlbumHeading" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="13" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>

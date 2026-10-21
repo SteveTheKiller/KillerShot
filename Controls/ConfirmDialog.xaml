@@ -6,6 +6,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:icons="clr-namespace:KillerShot.Controls"
         xmlns:kui="clr-namespace:KillerShot.Controls"
+        xmlns:theme="clr-namespace:KillerFamily.Theming"
         Title="KillerShot"
         Width="390" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
@@ -96,7 +97,7 @@
                     </Border>
                     <StackPanel Grid.Column="1">
                     <TextBlock x:Name="HeadingText" Text=""
-                               Foreground="{StaticResource TextBrush}"
+                               theme:HeadingAccent.Enabled="True"
                                FontFamily="{DynamicResource HeadingFont}" FontSize="18"
                                                TextOptions.TextFormattingMode="Ideal" TextWrapping="Wrap"/>
                     <TextBlock x:Name="DetailText" Foreground="{StaticResource MutedTextBrush}"

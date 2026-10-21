@@ -153,6 +153,18 @@ namespace KillerShot.Shell
             return IntPtr.Zero;
         }
 
+        /// <summary>The bottom of this monitor's work area (above the taskbar) as a y position in
+        /// <paramref name="element"/>'s coordinates, or null before the window has a handle.</summary>
+        internal double? WorkAreaBottom(FrameworkElement element)
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (hwnd == IntPtr.Zero || PresentationSource.FromVisual(element) == null) return null;
+            IntPtr monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            var info = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+            if (monitor == IntPtr.Zero || !GetMonitorInfo(monitor, ref info)) return null;
+            return element.PointFromScreen(new Point(info.rcWork.left, info.rcWork.bottom)).Y;
+        }
+
         private void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
         {
             var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);

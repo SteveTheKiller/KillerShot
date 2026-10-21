@@ -29,7 +29,12 @@ namespace KillerShot.Shell
             if (LibrarySettingsPopup.IsOpen) { LibrarySettingsPopup.IsOpen = false; return; }
             RefreshAlbumManager();
             LibrarySettingsCard.Width = Math.Max(200, Math.Min(460, ContentPane.ActualWidth - 16));
-            LibrarySettingsScroll.MaxHeight = Math.Max(100, ContentPane.ActualHeight - 18);
+            // The flyout is a popup, so it may reach past the window down to the taskbar: in a small
+            // window it shows everything rather than cutting its last controls off. It only
+            // scrolls when the screen itself is too short. It opens 8 below the pane's top and keeps
+            // 10 clear at the bottom.
+            double bottom = Math.Max(ContentPane.ActualHeight, WorkAreaBottom(ContentPane) ?? 0);
+            LibrarySettingsScroll.MaxHeight = Math.Max(100, bottom - 18);
             FlyoutPlacement.AttachInsidePane(LibrarySettingsPopup, LibrarySettingsButton, alignRight: true);
             LibrarySettingsPopup.IsOpen = true;
             Dispatcher.BeginInvoke(new Action(() => AlbumList.Focus()));
