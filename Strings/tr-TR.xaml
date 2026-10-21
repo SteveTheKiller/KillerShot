@@ -412,8 +412,6 @@
     <sys:String x:Key="Str_Dock_Restore">Koleksiyon şeridini göster</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Şeridin konumu</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Koleksiyon şeridini yeniden boyutlandır</sys:String>
-    <sys:String x:Key="Str_Strip_ViewList">Küçük resim listesi</sys:String>
-    <sys:String x:Key="Str_Strip_ViewRolodex">Döner kartotek</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Koleksiyon şeridini o tarafa yerleştir veya kendi tarafında küçült</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR kodu okuma</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Şifrelenmemiş HTTP bağlantısı.</sys:String>

@@ -7,17 +7,17 @@ internal static class ViewInfoCards
 {
     internal static event Action? Changed;
 
-    internal static bool Get(bool rolodex) => Settings.GetBool(rolodex ? "RolodexInfoCards" : "CarouselInfoCards", rolodex);
+    internal static bool Get() => Settings.GetBool("CarouselInfoCards", false);
 
-    internal static MenuItem Menu(bool rolodex)
+    internal static MenuItem Menu()
     {
         var item = new MenuItem
         {
-            Header = LocaleManager.Loc("Str_View_ShowInfoCards"), IsCheckable = true, IsChecked = Get(rolodex),
+            Header = LocaleManager.Loc("Str_View_ShowInfoCards"), IsCheckable = true, IsChecked = Get(),
         };
         item.Click += (_, _) =>
         {
-            Settings.SetBool(rolodex ? "RolodexInfoCards" : "CarouselInfoCards", !Get(rolodex));
+            Settings.SetBool("CarouselInfoCards", !Get());
             Changed?.Invoke();
         };
         return item;

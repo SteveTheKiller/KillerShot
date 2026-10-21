@@ -60,7 +60,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         get => _showInfoCards;
         set { if (_showInfoCards == value) return; _showInfoCards = value; RefreshCards(); }
     }
-    private bool _showInfoCards = ViewInfoCards.Get(false);
+    private bool _showInfoCards = ViewInfoCards.Get();
     private double _perspectiveZoom;
     private const double MinViewWidth = 4.6;      // model units always visible across at the front picture
 
@@ -194,7 +194,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         };
     }
 
-    private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get(false);
+    private void SyncInfoCards() => ShowInfoCards = ViewInfoCards.Get();
 
     private void OnThumbnailReady(CaptureItem item) => Dispatcher.BeginInvoke(new Action(() =>
     {

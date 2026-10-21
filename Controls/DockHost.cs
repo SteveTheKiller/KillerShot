@@ -91,6 +91,11 @@ namespace KillerFamily.Layout
 
         public bool IsHorizontal => Side is DockSide.Top or DockSide.Bottom;
 
+        /// <summary>The sides this pane may dock to; others are refused. Null allows every side.</summary>
+        public IReadOnlyCollection<DockSide>? AllowedSides { get; set; }
+
+        private bool Allows(DockSide side) => AllowedSides == null || AllowedSides.Contains(side);
+
         private UIElement? _pane, _body, _rail;
         private readonly GridSplitter _splitter;
         private readonly Grid _inner = new();
@@ -150,7 +155,7 @@ namespace KillerFamily.Layout
                 Key.Right => DockSide.Right, Key.Down => DockSide.Bottom,
                 _ => null,
             };
-            if (side is not DockSide target) return false;
+            if (side is not DockSide target || !Allows(target)) return false;
             if (target == Side) { if (IsMinimized) Restore(); else Minimize(); }
             else DockTo(target);
             e.Handled = true;
@@ -159,6 +164,7 @@ namespace KillerFamily.Layout
 
         public void DockTo(DockSide side)
         {
+            if (!Allows(side)) return;
             IsMinimized = false;
             Side = side;
             LayoutChanged?.Invoke();

@@ -16,9 +16,9 @@ namespace KillerShot.Shell
 {
     /// <summary>
     /// The collection strip: one collection of the library (or the Screenshots folder) beside the
-    /// open picture, so the next one is a click or an arrow key away. Docked at the top or bottom
-    /// it is a carousel; on the left or right it is a column of thumbnails. It lives in a
-    /// DockHost, which moves it between the sides and folds it away behind the rail's chevron.
+    /// open picture, so the next one is a click or an arrow key away: a carousel above or below
+    /// the editor. In the album it is the collection browser beside the workspace. It lives in a
+    /// DockHost, which moves it between its sides and folds it away behind the rail's chevron.
     /// </summary>
     internal sealed class CollectionStrip : Border, IDisposable
     {
@@ -26,17 +26,12 @@ namespace KillerShot.Shell
         public event Action<CaptureItem>? OpenRequested;
         public event Action<CaptureItem, FrameworkElement>? ItemMenuRequested;
 
-        /// <summary>The side view changed between the thumbnail list and the rolodex.</summary>
-        public event Action? SideViewChanged;
         public event Action? SourceChanged;
         public event Action<string>? StatusMessage;
         public string Source => _source;
         public bool AlbumMode => _albumMode;
         public string SourceCaption => _caption.Text;
         public string CountCaption => _count.Text;
-
-        /// <summary>How a left or right strip shows its captures: "list" or "rolodex".</summary>
-        public string SideView => _sideView;
 
         internal FrameworkElement TestCarousel => _flow;
         internal ComboBox CollectionPicker => _picker;
@@ -52,9 +47,6 @@ namespace KillerShot.Shell
         private string _albumSource = "all";
         private readonly CoverFlow _flow;
         private readonly Slider _slider;
-        private readonly ListBox _list;
-        private readonly Rolodex _rolodex;
-        private string _sideView = Settings.Get("StripView") == "rolodex" ? "rolodex" : "list";
         private readonly DispatcherTimer _openDelay = new() { Interval = TimeSpan.FromMilliseconds(180) };
         private string? _pendingSource;
         private IReadOnlyList<CaptureItem> _items = [];
@@ -100,56 +92,6 @@ namespace KillerShot.Shell
             _slider.SetBinding(RangeBase.MaximumProperty, new Binding(nameof(CoverFlow.MaximumIndex)) { Source = _flow });
             _slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(CoverFlow.SelectedIndex)) { Source = _flow, Mode = BindingMode.TwoWay });
 
-            _list = new ListBox
-            {
-                BorderThickness = new Thickness(0), Padding = new Thickness(0), Background = Brushes.Transparent,
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                ItemTemplate = (DataTemplate)System.Windows.Markup.XamlReader.Parse(
-                    "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" " +
-                    "xmlns:s=\"clr-namespace:KillerShot.Shell;assembly=KillerShot\"><s:StripThumb/></DataTemplate>"),
-            };
-            ScrollViewer.SetHorizontalScrollBarVisibility(_list, ScrollBarVisibility.Disabled);
-            SidebarEdgeFade.Attach(_list);
-            VirtualizingPanel.SetIsVirtualizing(_list, true);
-            VirtualizingPanel.SetVirtualizationMode(_list, VirtualizationMode.Recycling);
-            _list.SelectionChanged += (_, _) => { if (!_syncing) QueueOpen(_list.SelectedItem as CaptureItem); };
-            // Cards already supply their own padding. File-picker row insets would double it.
-            _list.ItemContainerStyle = (Style)System.Windows.Markup.XamlReader.Parse("""
-                <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBoxItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="row" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}"><ContentPresenter/></Border>
-                    </ControlTemplate></Setter.Value></Setter>
-                </Style>
-                """);
-            _list.MouseRightButtonUp += (_, e) =>
-            {
-                if (e.OriginalSource is not DependencyObject source || ItemsControl.ContainerFromElement(_list, source) is not ListBoxItem { DataContext: CaptureItem item } row) return;
-                ShowItemMenu(item, row);
-                e.Handled = true;
-            };
-            _list.KeyDown += (_, e) =>
-            {
-                bool contextKey = e.Key == Key.Apps || (Keyboard.Modifiers & ModifierKeys.Shift) != 0
-                    && (e.Key == Key.F10 || e.Key == Key.System && e.SystemKey == Key.F10);
-                if (!contextKey || _list.SelectedItem is not CaptureItem item) return;
-                ShowItemMenu(item, _list.ItemContainerGenerator.ContainerFromItem(item) as FrameworkElement ?? _list);
-                e.Handled = true;
-            };
-
-            _rolodex = new Rolodex
-            {
-                ThumbnailSource = CaptureLibrary.RequestThumb, DeferHiddenLoading = true, Caption = LibraryView.Title, Describe = LibraryView.Describe,
-                CardColor = CardColors.StripCard(), Accent = item => CardColors.Collection(item.CollectionId),
-            };
-            CardColors.Changed += OnCardColorsChanged;
-            if (double.TryParse(Settings.Get("RolodexZoom"), NumberStyles.Float, CultureInfo.InvariantCulture, out double zoom)) _rolodex.Zoom = zoom;
-            _rolodex.ZoomChanged += () => Settings.Set("RolodexZoom", _rolodex.Zoom.ToString("0.###", CultureInfo.InvariantCulture));
-            _rolodex.SelectionChanged += () => { if (!_syncing) QueueOpen(_rolodex.SelectedItem); };
-            _rolodex.ItemActivated += item => Open(item);
-            _rolodex.ItemMenuRequested += ShowItemMenu;
-
             _openDelay.Tick += OpenDelayElapsed;
 
             Child = _root;
@@ -171,21 +113,11 @@ namespace KillerShot.Shell
             _host.SideChanged -= Relayout;
             CaptureLibrary.Changed -= OnLibraryChanged;
             FolderCaptures.Changed -= OnFolderChanged;
-            CardColors.Changed -= OnCardColorsChanged;
             IsVisibleChanged -= OnIsVisibleChanged;
             OpenRequested = null;
             ItemMenuRequested = null;
-            SideViewChanged = null;
             SourceChanged = null;
             StatusMessage = null;
-        }
-
-        private void OnCardColorsChanged()
-        {
-            if (_disposed) return;
-            _rolodex.CardColor = CardColors.StripCard();
-            _rolodex.Refresh();
-            _list.Items.Refresh();
         }
 
         private void OnLibraryChanged()
@@ -208,16 +140,15 @@ namespace KillerShot.Shell
         private void OpenDelayElapsed(object? sender, EventArgs e)
         {
             if (ImageDrag.Active) { CancelPendingOpen(); return; }
-            if (_host.IsHorizontal ? _flow.IsMoving : _sideView == "rolodex" && _rolodex.IsMoving) return;
+            if (_flow.IsMoving) return;
             var item = _openDelay.Tag as CaptureItem;
             string? source = _pendingSource;
-            var selected = _host.IsHorizontal ? _flow.SelectedItem
-                : _sideView == "rolodex" ? _rolodex.SelectedItem : _list.SelectedItem as CaptureItem;
+            var selected = _flow.SelectedItem;
             CancelPendingOpen();
             if (item != null && CaptureLibrary.IsCurrent(item) && source == _source && selected == item) Open(item);
         }
 
-        /// <summary>Carousel across the top or bottom, a thumbnail column down the sides.</summary>
+        /// <summary>The collection browser in the album, a carousel above or below the editor.</summary>
         private void Relayout()
         {
             if (_disposed) return;
@@ -225,7 +156,7 @@ namespace KillerShot.Shell
             _body.Children.Clear();
             _body.RowDefinitions.Clear();
             if (_albumMode) _body.Children.Add(_browser);
-            else if (_host.IsHorizontal)
+            else
             {
                 _body.RowDefinitions.Add(new RowDefinition());
                 _body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -233,7 +164,6 @@ namespace KillerShot.Shell
                 _body.Children.Add(_flow);
                 _body.Children.Add(_slider);
             }
-            else _body.Children.Add(_sideView == "rolodex" ? _rolodex : _list);
 
             _root.Children.Clear();
             _root.Children.Add(_body);
@@ -255,8 +185,6 @@ namespace KillerShot.Shell
         {
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_browser, Loc("Str_Strip_Collection"));
-            AutomationProperties.SetName(_list, Loc("Str_Strip_Collection"));
-            AutomationProperties.SetName(_rolodex, Loc("Str_Strip_Collection"));
             _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
             _host.ResizeText = Loc("Str_Dock_Resize");
@@ -275,16 +203,6 @@ namespace KillerShot.Shell
         {
             DockSide.Left => "Left", DockSide.Top => "Up", DockSide.Right => "Right", _ => "Down",
         };
-
-        /// <summary>Picks the thumbnail list or the rolodex for a left or right strip, and remembers it.</summary>
-        public void SetSideView(string view)
-        {
-            if (view is not ("list" or "rolodex") || view == _sideView) return;
-            _sideView = view;
-            Settings.Set("StripView", view);
-            Relayout();
-            SideViewChanged?.Invoke();
-        }
 
         /// <summary>Follows the picture in the editor: its collection, with it selected.</summary>
         public void Follow(CaptureItem? item, string? filePath)
@@ -392,9 +310,6 @@ namespace KillerShot.Shell
                 if (!_albumMode)
                 {
                     _flow.Items = _items;
-                    _list.ItemsSource = _items;
-                    _rolodex.CardColor = CardColors.StripCard();
-                    _rolodex.Items = _items;
                     Sync();
                 }
             }
@@ -410,14 +325,7 @@ namespace KillerShot.Shell
             try
             {
                 int index = _current is long id ? IndexOf(id) : -1;
-                if (index >= 0)
-                {
-                    _flow.SelectedIndex = index;
-                    _rolodex.SelectedIndex = index;
-                    _list.SelectedIndex = index;
-                    _list.ScrollIntoView(_items[index]);
-                }
-                else _list.SelectedIndex = -1;
+                if (index >= 0) _flow.SelectedIndex = index;
             }
             finally { _syncing = was; }
         }
@@ -511,9 +419,6 @@ namespace KillerShot.Shell
             OpenRequested?.Invoke(item);
         }
 
-        /// <summary>For the self-test: the rolodex at a given zoom, as Ctrl+wheel sets it.</summary>
-        internal void TestRolodexZoom(double zoom) => _rolodex.Zoom = zoom;
-
         /// <summary>For the self-test: show a source by its tag.</summary>
         internal void TestShow(string source)
             => SetSource(source);
@@ -526,79 +431,5 @@ namespace KillerShot.Shell
         }
 
         private static string Loc(string key) => LocaleManager.Loc(key);
-    }
-
-    /// <summary>One thumbnail in the strip's column, on a card in the card color with its
-    /// collection's color around the frame, loaded off the interface thread when the virtualized list
-    /// shows it.</summary>
-    public sealed class StripThumb : PhotoCardBorder
-    {
-        private readonly Image _image = new() { Stretch = Stretch.Uniform, Height = 110, HorizontalAlignment = HorizontalAlignment.Stretch };
-        private readonly TextBlock _caption = new() { FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 5, 0, 0) };
-
-        public StripThumb()
-        {
-            Cursor = Cursors.Hand;
-            Margin = new Thickness(0, 2, 0, 6);
-            Padding = new Thickness(0);
-            Style = (Style)System.Windows.Markup.XamlReader.Parse("""
-                <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
-                    <Setter Property="BorderBrush" Value="Transparent"/>
-                    <Setter Property="BorderThickness" Value="2"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
-                            <Setter Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
-                            <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
-                        </Trigger>
-                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource SelectionAccent}"/>
-                            <Setter Property="RenderTransform"><Setter.Value><TranslateTransform Y="-2"/></Setter.Value></Setter>
-                            <Setter Property="Effect"><Setter.Value><DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="{DynamicResource SelectedTileShadowOpacity}"/></Setter.Value></Setter>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-                """);
-            // The theme's pane gray until a card color is picked: the strip has the window's dark
-            // background behind it, so gray cards stand out there.
-            bool own = !CardColors.CardIsDefault;
-            SetResourceReference(BackgroundProperty, own ? "CaptureCardBrush" : "ContentPaneBrush");
-            SetResourceReference(CornerRadiusProperty, "ControlCornerRadius");
-            _caption.SetResourceReference(TextBlock.ForegroundProperty, own ? "CaptureCardTextBrush" : "TextBrush");
-            RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.HighQuality);
-            var stack = new StackPanel();
-            stack.Children.Add(_image);
-            stack.Children.Add(_caption);
-            var layers = new Grid();
-            var grain = new Border { IsHitTestVisible = false };
-            grain.SetResourceReference(BackgroundProperty, "GrainTileBrush");
-            grain.SetResourceReference(OpacityProperty, "GrainOpacity");
-            grain.SetResourceReference(CornerRadiusProperty, "ControlCornerRadius");
-            layers.Children.Add(grain);
-            stack.Margin = new Thickness(6, 6, 6, 5);
-            layers.Children.Add(stack);
-            Child = layers;
-            Cursor = DragCursors.Open;
-            ImageDrag.Attach(this, _ => DataContext is CaptureItem item ? () => CaptureLibrary.LoadImage(item) : null);
-            DataContextChanged += (_, _) => Load();
-        }
-
-        private void Load()
-        {
-            _image.Source = null;
-            if (DataContext is not CaptureItem item) return;
-            if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
-            {
-                BorderBrush = new SolidColorBrush(own);
-            }
-            else ClearValue(BorderBrushProperty);
-            _caption.Text = LibraryView.Title(item);
-            AutomationProperties.SetName(this, LibraryView.Describe(item));
-            ToolTip = LibraryView.Describe(item);
-            CaptureLibrary.LoadThumbAsync(item).ContinueWith(t =>
-            {
-                if (t.Status == TaskStatus.RanToCompletion && CaptureLibrary.IsCurrent(item) && DataContext is CaptureItem now && now == item) _image.Source = t.Result;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
     }
 }

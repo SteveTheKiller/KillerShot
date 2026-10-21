@@ -853,8 +853,8 @@ namespace KillerShot.Shell
                 return mi;
             }
             Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
-            if (anchor is CoverFlow or Rolodex)
-                menu.Items.Add(ViewInfoCards.Menu(anchor is Rolodex));
+            if (anchor is CoverFlow)
+                menu.Items.Add(ViewInfoCards.Menu());
             Add("Str_Lib_Copy", () => Copy(item));
             Add("Str_Btn_Print", () =>
             {
@@ -987,7 +987,6 @@ namespace KillerShot.Shell
             {
                 if (d is Button { Tag: CaptureItem tile }) return CaptureLibrary.IsCurrent(tile) ? tile : null;
                 if (d is CoverFlow flow) return flow.SelectedItem is { } f && CaptureLibrary.IsCurrent(f) ? f : null;
-                if (d is Rolodex rolodex) return rolodex.SelectedItem is { } r && CaptureLibrary.IsCurrent(r) ? r : null;
             }
             return null;
         }

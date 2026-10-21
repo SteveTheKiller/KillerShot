@@ -416,8 +416,6 @@
     <sys:String x:Key="Str_Dock_Restore">Show the collection strip</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Strip position</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Resize the collection strip</sys:String>
-    <sys:String x:Key="Str_Strip_ViewList">Thumbnail list</sys:String>
-    <sys:String x:Key="Str_Strip_ViewRolodex">Rolodex</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Dock the collection strip on that side, or minimize it on its own side</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR code reading</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Unencrypted HTTP link.</sys:String>

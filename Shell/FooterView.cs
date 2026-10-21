@@ -68,7 +68,6 @@ namespace KillerShot.Shell
             _stripButton.Click += (_, _) => ShowStripMenu();
             RailStack.Children.Insert(0, _stripButton);
 
-            if (_strip != null) _strip.SideViewChanged += SyncFooterView;
             Library.ViewChanged += SyncFooterView;
             StripDock.LayoutChanged += SyncFooterView;
             NavigationDock.LayoutChanged += SyncFooterView;
@@ -166,40 +165,7 @@ namespace KillerShot.Shell
             return icon;
         }
 
-        /// <summary>Three rows of a thumbnail and a line: the thumbnail list.</summary>
-        private static StackPanel ListIcon(Type owner)
-        {
-            var icon = new StackPanel { Width = 14 };
-            for (int i = 0; i < 3; i++)
-            {
-                var row = new DockPanel { Height = 3, Margin = new Thickness(0, i == 0 ? 0 : 1, 0, 0), LastChildFill = true };
-                var thumb = new Rectangle { Width = 4 };
-                thumb.SetBinding(Shape.FillProperty, IconColor(owner));
-                var line = new Rectangle { Height = 1, Margin = new Thickness(2, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-                line.SetBinding(Shape.FillProperty, IconColor(owner));
-                row.Children.Add(thumb);
-                row.Children.Add(line);
-                icon.Children.Add(row);
-            }
-            return icon;
-        }
 
-        /// <summary>Two cards leaning back behind a front card: the rolodex.</summary>
-        private static Grid RolodexIcon(Type owner)
-        {
-            var icon = new Grid { Width = 14, Height = 11 };
-            foreach (var (inset, top, height) in new[] { (3.0, 0.0, 3.0), (1.5, 2.0, 3.0), (0.0, 4.0, 7.0) })
-            {
-                var card = new Border
-                {
-                    Margin = new Thickness(inset, top, inset, 0), Height = height, VerticalAlignment = VerticalAlignment.Top,
-                    BorderThickness = new Thickness(1, 1, 1, inset == 0 ? 1 : 0),
-                };
-                card.SetBinding(Border.BorderBrushProperty, IconColor(owner));
-                icon.Children.Add(card);
-            }
-            return icon;
-        }
 
         /// <summary>The strip's flyout: the four sides with their shortcuts, and Minimize.</summary>
         private void ShowStripMenu()

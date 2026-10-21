@@ -381,7 +381,7 @@ namespace KillerShot.Shell
             };
             Library.CaptureRequested += () => StartCapture(CaptureMode.Region);
             Library.ViewChanged += SyncContentPane;
-            Library.ViewChanged += SyncStripPlacement;
+            Library.ViewChanged += SyncStripPane;
             Library.StatusMessage += text => StatusText.Text = text;
             Library.LinkRequested += (payload, anchor) => ShowPayloadCard(payload, anchor, Loc("Str_Ocr_Links"));
         }

@@ -412,8 +412,6 @@
     <sys:String x:Key="Str_Dock_Restore">显示收藏集栏</sys:String>
     <sys:String x:Key="Str_Dock_Menu">收藏集栏位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">调整收藏集栏大小</sys:String>
-    <sys:String x:Key="Str_Strip_ViewList">缩略图列表</sys:String>
-    <sys:String x:Key="Str_Strip_ViewRolodex">旋转卡片盒</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">将收藏集栏停靠到该侧，或在其所在一侧最小化</sys:String>
     <sys:String x:Key="Str_TT_QrReading">读取二维码</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">未加密的 HTTP 链接。</sys:String>

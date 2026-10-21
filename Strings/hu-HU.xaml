@@ -412,8 +412,6 @@
     <sys:String x:Key="Str_Dock_Restore">A gyűjteménysáv megjelenítése</sys:String>
     <sys:String x:Key="Str_Dock_Menu">A sáv helye</sys:String>
     <sys:String x:Key="Str_Dock_Resize">A gyűjteménysáv átméretezése</sys:String>
-    <sys:String x:Key="Str_Strip_ViewList">Bélyegkép-lista</sys:String>
-    <sys:String x:Key="Str_Strip_ViewRolodex">Forgó kartoték</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">A gyűjteménysáv rögzítése arra az oldalra, vagy kis méretre állítása a saját oldalán</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR-kódok olvasása</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Titkosítatlan HTTP-hivatkozás.</sys:String>

@@ -79,41 +79,13 @@ internal static class SelfTestViewCards
             var stripFlow = Visuals(strip).OfType<CoverFlow>().Single();
             Check(RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-cards.png")) > 100,
                 "The collection carousel did not retain the album carousel's card preference.");
-            dock.DockTo(DockSide.Left);
-            strip.SetSideView("rolodex");
-            window.UpdateLayout();
-            await Task.Delay(80);
-            var rolodex = Visuals(strip).OfType<Rolodex>().Single();
-            long? rolodexSelected = rolodex.SelectedItem?.Id;
-            int rolodexStock = RenderStock(rolodex, Path.Combine(folder, "rolodex-cards.png"));
-            Check(rolodexStock > 100, "Rolodex defaults must retain its info cards.");
-            CheckRolodexFrame(rolodex);
-            report.Add("rolodex_photo_insets_at_most_four_pixels_caption_and_drop_shadow_preserved=True");
             await ToggleMenu(strip, expected: true);
-            Check(RenderStock(rolodex, Path.Combine(folder, "rolodex-plain.png")) == 0,
-                "Turning Rolodex info cards off did not remove card stock.");
-            Check(rolodex.SelectedItem?.Id == rolodexSelected, "Changing Rolodex cards changed selection.");
+            Check(RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-plain.png")) == 0,
+                "Turning the strip carousel's info cards off did not remove card stock.");
             await ToggleMenu(strip, expected: false);
-            Check(RenderStock(rolodex, Path.Combine(folder, "rolodex-cards-restored.png")) > 100,
-                "Turning Rolodex info cards on did not restore its card stock.");
-            await ToggleMenu(strip, expected: true);
-            Check(Settings.GetBool("CarouselInfoCards", false) && !Settings.GetBool("RolodexInfoCards", true),
-                "The carousel and Rolodex card preferences are not independent.");
-            long? activated = null;
-            rolodex.ItemActivated += item => activated = item.Id;
-            rolodex.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(rolodex), 0, Key.Enter)
-                { RoutedEvent = Keyboard.KeyDownEvent });
-            Check(activated == rolodexSelected, "Enter did not open the selected image after hiding Rolodex cards.");
-            report.Add($"rolodex_card_stock_pixels={rolodexStock} plain_pixels=0; reversible=True activation_preserved=True");
-            report.Add("per_view_preferences_independent_and_shared_across_hosts=True");
+            report.Add("per_view_preferences_shared_across_hosts=True");
             ThemeManager.Apply(Theme.SE98);
             await Task.Delay(100);
-            Check(RenderStock(rolodex, Path.Combine(folder, "rolodex-SE98-plain.png")) == 0,
-                "Changing theme restored hidden Rolodex cards.");
-            await ToggleMenu(strip, expected: false);
-            Check(RenderStock(rolodex, Path.Combine(folder, "rolodex-SE98-cards.png")) > 100,
-                "98SE Rolodex cards did not render.");
-            dock.DockTo(DockSide.Bottom);
             window.UpdateLayout();
             await Task.Delay(80);
             Check(RenderStock(stripFlow, Path.Combine(folder, "carousel-SE98-cards.png")) > 100,
@@ -123,13 +95,7 @@ internal static class SelfTestViewCards
             stripFlow.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(stripFlow), 0, Key.Enter)
                 { RoutedEvent = Keyboard.KeyDownEvent });
             Check(flowActivated == selected, "Enter did not open the selected carousel card.");
-            report.Add("98SE_both_views_toggle_and_carousel_activation_preserved=True");
-            dock.DockTo(DockSide.Left);
-            strip.SetSideView("list");
-            window.UpdateLayout();
-            await Task.Delay(80);
-            Check(Visuals(strip).OfType<StripThumb>().First().Cursor == DragCursors.Open,
-                "The draggable strip thumbnail needs the open hand cursor.");
+            report.Add("98SE_carousel_cards_and_activation_preserved=True");
             var narrow = new CoverFlow
             {
                 ShowInfoCards = true, ThumbnailSource = _ => image,
@@ -189,35 +155,6 @@ internal static class SelfTestViewCards
         return stock;
     }
 
-    private static void CheckRolodexFrame(FrameworkElement element)
-    {
-        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth), (int)Math.Ceiling(element.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(element);
-        byte[] pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
-        bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
-        var photo = Rect.Empty;
-        var card = Rect.Empty;
-        for (int y = 0; y < bitmap.PixelHeight; y++)
-        for (int x = 0; x < bitmap.PixelWidth; x++)
-        {
-            int at = (y * bitmap.PixelWidth + x) * 4;
-            bool image = pixels[at] > 170 && pixels[at + 1] > 170 && pixels[at + 2] < 70 && pixels[at + 3] > 200;
-            bool stock = pixels[at] > 170 && pixels[at + 1] < 70 && pixels[at + 2] > 170 && pixels[at + 3] > 200;
-            if (image) photo.Union(new Point(x, y));
-            if (image || stock) card.Union(new Point(x, y));
-        }
-        Check(!photo.IsEmpty && photo.Left - card.Left <= 4 && card.Right - photo.Right <= 4 && photo.Top - card.Top <= 4,
-            "Rolodex photos must have only a few pixels of stock at the top and sides.");
-        Check(card.Bottom - photo.Bottom >= 10, "The Rolodex caption area must remain below the photo.");
-        int shadow = 0;
-        for (int y = Math.Max(0, (int)card.Bottom + 1); y < Math.Min(bitmap.PixelHeight, card.Bottom + 12); y++)
-        for (int x = Math.Max(0, (int)card.Left); x < Math.Min(bitmap.PixelWidth, card.Right); x++)
-        {
-            int at = (y * bitmap.PixelWidth + x) * 4;
-            if (pixels[at] < 30 && pixels[at + 1] < 30 && pixels[at + 2] < 30 && pixels[at + 3] > 5) shadow++;
-        }
-        Check(shadow > 10, "The Rolodex card must retain its visible drop shadow.");
-    }
 
     private static IEnumerable<DependencyObject> Visuals(DependencyObject root)
     {

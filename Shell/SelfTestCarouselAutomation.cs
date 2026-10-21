@@ -9,8 +9,8 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
-/// <summary>Headless check: KillerShot.exe --selftest-carousel-automation &lt;folder&gt;. Cover Flow and
-/// the Rolodex expose their captures as a list: every capture is a named item, the selection is
+/// <summary>Headless check: KillerShot.exe --selftest-carousel-automation &lt;folder&gt;. Cover Flow
+/// exposes its captures as a list: every capture is a named item, the selection is
 /// readable and settable, an offscreen capture can be selected and opened, and the list follows
 /// collection changes.</summary>
 internal static class SelfTestCarouselAutomation
@@ -35,21 +35,13 @@ internal static class SelfTestCarouselAutomation
         {
             var items = Enumerable.Range(0, 80).Select(i => new CaptureItem(i, DateTime.Today, 320, 200, "window", "Picture " + i, null, null, null)).ToArray();
             var flow = new CoverFlow { Describe = i => i.Window ?? "" };
-            var rolodex = new Rolodex { Describe = i => i.Window ?? "" };
-            var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-            Grid.SetColumn(rolodex, 1);
-            grid.Children.Add(flow);
-            grid.Children.Add(rolodex);
-            window = new Window { Content = grid, Width = 900, Height = 400, Left = -20000, Top = -20000, ShowActivated = false, WindowStyle = WindowStyle.None };
+            window = new Window { Content = flow, Width = 900, Height = 400, Left = -20000, Top = -20000, ShowActivated = false, WindowStyle = WindowStyle.None };
             window.Show();
-            foreach (FrameworkElement control in new FrameworkElement[] { flow, rolodex })
+            foreach (FrameworkElement control in new FrameworkElement[] { flow })
             {
                 var carousel = (ICaptureCarousel)control;
                 CaptureItem? opened = null;
                 if (control is CoverFlow f) { f.Items = items; f.ItemActivated += i => opened = i; }
-                else if (control is Rolodex r) { r.Items = items; r.ItemActivated += i => opened = i; }
                 await Task.Delay(100);
                 string kind = control.GetType().Name;
                 var peer = UIElementAutomationPeer.CreatePeerForElement(control);
@@ -71,7 +63,7 @@ internal static class SelfTestCarouselAutomation
 
                 // A collection change keeps the same capture selected and the item list current.
                 var subset = items.Where(i => i.Id % 2 == 0).Reverse().ToArray();
-                if (control is CoverFlow cf) cf.Items = subset; else ((Rolodex)control).Items = subset;
+                flow.Items = subset;
                 await Task.Delay(50);
                 children = peer.GetChildren() ?? [];
                 var now = children[carousel.SelectedIndex];

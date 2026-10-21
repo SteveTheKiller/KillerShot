@@ -54,6 +54,15 @@ internal static class SelfTestWorkspaceAreas
                     if (Descendants(toolbar).OfType<ComboBox>().Count(p => p.IsVisible) != 1
                         || Descendants(carousel.Pane!).OfType<ComboBox>().Any())
                         throw new InvalidOperationException("The collection dropdown must be in the main toolbar, outside the carousel.");
+                    // The large carousel and shelves are carousels already, so the photo strip steps
+                    // aside there; grid and timeline keep all three areas.
+                    if (view is "flow" or "shelves")
+                    {
+                        if (!sidebar.ShowPane || carousel.ShowPane || !library.IsVisible)
+                            throw new InvalidOperationException("The photo strip doubles the album carousel: " + view);
+                        report.Add($"{side}/{edge}/{view}: collection sidebar and main carousel, no second carousel PASS");
+                        continue;
+                    }
                     if (!sidebar.ShowPane || !carousel.ShowPane || !carousel.Pane!.IsVisible || !library.IsVisible)
                         throw new InvalidOperationException("Browsing hides one of the three workspace areas: " + view);
                     var a = ((FrameworkElement)sidebar.Pane!).TransformToAncestor(root).TransformBounds(new Rect(sidebar.Pane.RenderSize));
@@ -84,6 +93,14 @@ internal static class SelfTestWorkspaceAreas
                     bitmap.Render(root); ImageOutput.SavePng(bitmap, Path.Combine(folder, "workspace-" + edge + ".png"));
                 }
             }
+            // Photos run across, collections down the side: neither docks the other way.
+            var carouselSide = carousel.Side;
+            var sidebarSide = sidebar.Side;
+            carousel.DockTo(DockSide.Left);
+            sidebar.DockTo(DockSide.Top);
+            if (carousel.Side != carouselSide || sidebar.Side != sidebarSide || !carousel.IsHorizontal || sidebar.IsHorizontal)
+                throw new InvalidOperationException("The photo carousel or collection sidebar docked to the wrong kind of edge.");
+            report.Add("photo carousel stays top or bottom, collections left or right PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

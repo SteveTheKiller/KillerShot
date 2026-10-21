@@ -23,6 +23,10 @@ namespace KillerShot.Shell
 
         private void InitStrip()
         {
+            // Collections run down the left or right; photos run across the top or bottom. A photo
+            // carousel standing on end beside the collections would make three columns.
+            NavigationDock.AllowedSides = [DockSide.Left, DockSide.Right];
+            StripDock.AllowedSides = [DockSide.Top, DockSide.Bottom];
             NavigationDock.Side = Settings.Get("CollectionSidebarSide") == "Right" ? DockSide.Right : DockSide.Left;
             NavigationDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
             NavigationDock.PaneWidth = double.TryParse(Settings.Get("AlbumStripWidth"), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
@@ -94,16 +98,21 @@ namespace KillerShot.Shell
         private void SyncStripPlacement()
         {
             NavigationDock.ShowPane = true;
-            // Over the album's carousel views the photo strip would be a second carousel of the
-            // same pictures, so only its rail stays.
+            SyncStripPane();
+            if (_navigationStrip != null) SyncSources(_navigationStrip);
+            SyncEditorPaneMargin();
+        }
+
+        /// <summary>Over the album's carousel views the photo strip would be a second carousel of
+        /// the same pictures, so it steps aside there. Only visibility changes here.</summary>
+        private void SyncStripPane()
+        {
             bool showPane = !(Library.IsVisible && Library.CurrentView is "flow" or "shelves");
             bool railChanged = StripDock.RailSize != 24;
             bool paneChanged = StripDock.ShowPane != showPane;
             StripDock.RailSize = 24;
             StripDock.ShowPane = showPane;
             if (railChanged && !paneChanged) StripDock.RefreshLayout();
-            if (_navigationStrip != null) SyncSources(_navigationStrip);
-            SyncEditorPaneMargin();
         }
 
         private void SyncEditorPaneMargin()

@@ -232,7 +232,7 @@ internal static class SelfTestImageMenus
                 window.TestStripDock.DockTo(side);
                 await Task.Delay(150);
                 FrameworkElement browser = Visuals(window.TestStrip!).OfType<FrameworkElement>().First(e => e.IsVisible &&
-                    (view == "flow" ? e is CoverFlow : view == "list" ? e is ListBox : e is Rolodex));
+                    e is CoverFlow);
                 browser.Focus();
                 browser.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(browser), 0, Key.Apps) { RoutedEvent = Keyboard.KeyDownEvent });
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);

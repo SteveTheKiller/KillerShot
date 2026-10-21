@@ -407,8 +407,6 @@
     <sys:String x:Key="Str_Dock_Restore">Prikaži trak zbirk</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Položaj traku</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Spremeni velikost traku zbirk</sys:String>
-    <sys:String x:Key="Str_Strip_ViewList">Seznam sličic</sys:String>
-    <sys:String x:Key="Str_Strip_ViewRolodex">Rolodex</sys:String>
     <sys:String x:Key="Str_KS_DockStrip">Zasidraj trak zbirk na tej strani ali ga pomanjšaj na njegovi strani</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Branje kod QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Nešifrirana povezava HTTP.</sys:String>

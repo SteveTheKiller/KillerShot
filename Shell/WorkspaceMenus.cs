@@ -87,12 +87,10 @@ public partial class MainWindow
                 view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", _ => "F8" });
         }
         bool stripTarget = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock || !Library.IsVisible;
-        bool? rolodex = stripTarget ? StripDock.IsHorizontal ? false : _strip?.SideView == "rolodex" ? true : null
-            : Library.CurrentView is "shelves" or "flow" ? false : null;
-        if (rolodex is bool sideView)
+        if (stripTarget || Library.CurrentView is "shelves" or "flow")
         {
             menu.Items.Add(new Separator());
-            menu.Items.Add(ViewInfoCards.Menu(sideView));
+            menu.Items.Add(ViewInfoCards.Menu());
         }
     }
 }
