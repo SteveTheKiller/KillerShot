@@ -279,9 +279,6 @@ namespace KillerShot.Services
             }
 
             Alias("FooterBackgroundBrush", "BackgroundBrush");
-            // The main content pane takes KillerPDF's content color, which this app carries as
-            // FileDialogPaneBrush. A theme that states ContentPaneBrush keeps its own value.
-            Alias("ContentPaneBrush", "FileDialogPaneBrush");
             Alias("ContentPaneBrush", "PaneBrush");
             Alias("AccentLogo", "PrimaryBrush");   // wordmark bold run; Light/Yellow states its own
             Alias("ChipBrush", "RowHoverBrush");
