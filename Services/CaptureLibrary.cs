@@ -473,7 +473,13 @@ internal static partial class CaptureLibrary
         byte[] sealedKey = ProtectedData.Protect(System.Text.Encoding.UTF8.GetBytes(key), KeyEntropy, DataProtectionScope.CurrentUser);
         path ??= KeyPath;
         string tmp = path + ".tmp";
-        File.WriteAllBytes(tmp, sealedKey);
+        // Flush through the disk cache before the rename, so a power cut cannot publish a key
+        // file whose bytes never reached the disk.
+        using (var file = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            file.Write(sealedKey);
+            file.Flush(true);
+        }
         File.Move(tmp, path, true);
     }
 
