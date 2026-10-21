@@ -448,6 +448,7 @@ internal static partial class CaptureLibrary
             recent = _recentFolder;
             importLegacy = string.Equals(Path.GetFileName(FilePath), "Library.kshot", StringComparison.OrdinalIgnoreCase);
         }
+        lock (_ocrFailed) _ocrFailed.Clear();
         RaiseChanged();
         if (!BackgroundWork) return;
         Task.Run(() =>

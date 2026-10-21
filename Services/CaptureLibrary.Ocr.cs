@@ -58,8 +58,17 @@ internal static partial class CaptureLibrary
 
     private static int _ocrRunning;
 
+    /// <summary>Makes the text recognizer, or null when Windows has no OCR language for this
+    /// user. Tests replace it at this boundary.</summary>
+    internal static Func<Func<byte[], Task<string>>?> OcrEngineFactory { get; set; } = () =>
+        WinOcrEngine.TryCreateFromUserProfileLanguages() is { } engine ? png => RecognizeAsync(engine, png) : null;
+
+    /// <summary>Captures whose recognition failed in this session. They stay unread in the album,
+    /// so the next open tries them again, but are not retried in a loop now.</summary>
+    private static readonly HashSet<long> _ocrFailed = [];
+
     /// <summary>Starts the OCR worker if it is not already running. It reads every capture that
-    /// has no text yet, newest first, then stops.</summary>
+    /// has no text yet, newest first, then stops. Without an OCR engine it leaves them unread.</summary>
     private static void StartOcr()
     {
         if (Interlocked.CompareExchange(ref _ocrRunning, 1, 0) != 0) return;
@@ -68,7 +77,8 @@ internal static partial class CaptureLibrary
             bool completed = true;
             try
             {
-                var engine = WinOcrEngine.TryCreateFromUserProfileLanguages();
+                var recognize = OcrEngineFactory();
+                if (recognize == null) { completed = false; return; }
                 while (true)
                 {
                     long id;
@@ -79,17 +89,21 @@ internal static partial class CaptureLibrary
                         if (_db == null) return;
                         database = _db;
                         using var cmd = _db.CreateCommand();
-                        cmd.CommandText = "SELECT id, image FROM captures WHERE ocr_text IS NULL ORDER BY taken_utc DESC LIMIT 1";
+                        lock (_ocrFailed)
+                            cmd.CommandText = "SELECT id, image FROM captures WHERE ocr_text IS NULL"
+                                + (_ocrFailed.Count > 0 ? " AND id NOT IN (" + string.Join(",", _ocrFailed) + ")" : "")
+                                + " ORDER BY taken_utc DESC LIMIT 1";
                         using var r = cmd.ExecuteReader();
                         if (!r.Read()) return;
                         id = r.GetInt64(0);
                         png = (byte[])r[1];
                     }
-                    string text = "";
-                    if (engine != null)
+                    string text;
+                    try { text = await recognize(png); }
+                    catch
                     {
-                        try { text = await RecognizeAsync(engine, png); }
-                        catch { /* an image OCR cannot read is stored as having no text */ }
+                        lock (_ocrFailed) _ocrFailed.Add(id);
+                        continue;
                     }
                     StoreOcr(id, text, database);
                 }
@@ -103,8 +117,10 @@ internal static partial class CaptureLibrary
                     if (completed && BackgroundWork && _db != null)
                     {
                         using var remaining = _db.CreateCommand();
-                        remaining.CommandText = "SELECT EXISTS(SELECT 1 FROM captures WHERE ocr_text IS NULL)";
-                        if (Convert.ToInt64(remaining.ExecuteScalar()) != 0) StartOcr();
+                        remaining.CommandText = "SELECT COUNT(*) FROM captures WHERE ocr_text IS NULL";
+                        int failed;
+                        lock (_ocrFailed) failed = _ocrFailed.Count;
+                        if (Convert.ToInt64(remaining.ExecuteScalar()) > failed) StartOcr();
                     }
                 }
             }

@@ -38,6 +38,7 @@ internal static class SelfTestStorageSafety
             if (scenario == "pending") await PendingAfterWriteFailure(log);
             else if (scenario == "pending-budget") await PendingBudget(log);
             else if (scenario == "legacy-migration") await LegacyMigration(dir, log);
+            else if (scenario == "ocr-retry") await OcrRetry(log);
             else if (scenario == "identity") CaptureIdentity(log);
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
@@ -234,6 +235,50 @@ internal static class SelfTestStorageSafety
             CaptureLibrary.BackgroundWork = false;
             if (File.Exists(legacy)) File.SetAttributes(legacy, FileAttributes.Normal);
         }
+    }
+
+    /// <summary>OCR that is unavailable, or fails once, leaves captures to read again on a later
+    /// open instead of marking them as having no text. A truly empty result is not retried.</summary>
+    private static async Task OcrRetry(StringBuilder log)
+    {
+        var saved = CaptureLibrary.OcrEngineFactory;
+        int calls = 0;
+        long id = CaptureLibrary.AddNow(Pixel(), DateTime.Now, "region", "Unread", null);
+        long blank = CaptureLibrary.AddNow(Pixel(), DateTime.Now.AddMinutes(-1), "region", "Blank", null);
+        CaptureLibrary.Close();
+        CaptureLibrary.BackgroundWork = true;
+        async Task Reopen(Func<Func<byte[], Task<string>>?> factory)
+        {
+            CaptureLibrary.OcrEngineFactory = factory;
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            await Task.Delay(1500);
+            CaptureLibrary.Close();
+        }
+        try
+        {
+            await Reopen(() => null);   // no OCR language installed
+            await Reopen(() => _ => { calls++; throw new InvalidOperationException("synthetic OCR failure"); });
+            int failedCalls = calls;
+            calls = 0;
+            await Reopen(() => _ => { calls++; return Task.FromResult(calls == 1 ? "invoice 4417 overdue" : ""); });
+            int readCalls = calls;
+            calls = 0;
+            await Reopen(() => _ => { calls++; return Task.FromResult("should not run"); });
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            CaptureLibrary.BackgroundWork = false;
+            var found = CaptureLibrary.Items("4417");
+            log.AppendLine($"failed_attempts={failedCalls} read_calls={readCalls} calls_after_done={calls} found={found.Count} items={CaptureLibrary.Count}");
+            if (failedCalls != 2) throw new InvalidOperationException("A failing OCR engine was retried within one session or not at all.");
+            if (found.Count != 1 || found[0].Id != id || CaptureLibrary.Count != 2)
+                throw new InvalidOperationException("Recovered OCR did not make the stored capture searchable once.");
+            if (calls != 0) throw new InvalidOperationException("Recognized captures, including the empty one, were read again.");
+        }
+        finally
+        {
+            CaptureLibrary.OcrEngineFactory = saved;
+            CaptureLibrary.BackgroundWork = false;
+        }
+        _ = blank;
     }
 
     private static void CaptureIdentity(StringBuilder log)
