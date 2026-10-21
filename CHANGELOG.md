@@ -57,7 +57,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Screen readers receive control and file names. Keyboard users get visible focus, arrow-key navigation in option groups, scrollable menus, and focus that enters and returns from settings, About and shortcut cards.
 - The capture bar supports Tab and Shift+Tab navigation. F2, arrow keys and Enter select regions for screenshots, QR reading and recording without a mouse. (#3)
 - Windows fit the current monitor's work area on small or scaled displays, and the capture bar stays centered across monitors with different scaling. File picking and collection browsing remain responsive during background loading.
-- Thirteen family themes, accent colors, Film Grain and Windows contrast themes cover the interface. Text contrast, themed menus and photo cards, square 98SE controls and Windows 11 snap layouts follow the family style.
+- Thirteen family themes, accent colors, Film Grain and Windows contrast themes cover the interface. File pickers use theme content colors for files and bookmarks. Text contrast, themed menus and photo cards, square 98SE controls and Windows 11 snap layouts follow the family style.
 - Twenty languages, including Slovenian, cover the app and help, with live language changes updating the sidebars and footer. F1 opens the shortcut list and keyboard map; F12 opens About.
 - Optional Start with Windows and Close to system tray settings control background use. The tray reports Print Screen conflicts and links to the relevant Windows setting; About offers hardware or software rendering.
 

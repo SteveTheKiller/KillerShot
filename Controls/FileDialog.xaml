@@ -226,7 +226,7 @@
                         <RowDefinition Height="0"/>
                         <RowDefinition x:Name="PlacesRow" Height="*" MinHeight="56"/>
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="2" Background="{DynamicResource PaneBrush}"
+                    <Border Grid.Row="2" Background="{DynamicResource FileDialogPaneBrush}"
                             BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1"
                             CornerRadius="{DynamicResource PanelCornerRadius}">
                         <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"
@@ -365,7 +365,7 @@
                             </LinearGradientBrush>
                         </Border.OpacityMask>
                         <Grid>
-                            <Border Background="{DynamicResource BackgroundBrush}"/>
+                            <Border Background="{DynamicResource FileDialogPaneBrush}"/>
                             <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                         </Grid>
                     </Border>
@@ -378,19 +378,19 @@
                             </LinearGradientBrush>
                         </Border.OpacityMask>
                         <Grid>
-                            <Border Background="{DynamicResource BackgroundBrush}"/>
+                            <Border Background="{DynamicResource FileDialogPaneBrush}"/>
                             <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                         </Grid>
                     </Border>
                 </Grid>
 
                 <Grid Grid.Column="2">
-                  <Border Background="{DynamicResource PaneBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False">
+                  <Border Background="{DynamicResource FileDialogPaneBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False">
                     <Border.Effect>
                       <DropShadowEffect Color="Black" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="{DynamicResource PaneShadowOpacity}"/>
                     </Border.Effect>
                   </Border>
-                  <Border Background="{DynamicResource PaneBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
+                  <Border Background="{DynamicResource FileDialogPaneBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
                   <Grid>
                     <Border IsHitTestVisible="False" CornerRadius="{DynamicResource ControlCornerRadius}"
                             Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
