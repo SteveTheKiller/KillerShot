@@ -24,7 +24,7 @@ namespace KillerShot.Controls;
 /// wheel to step, right-click for the item menu. Keyboard: Left, Right, Home, End, Page Up and
 /// Page Down move; Enter opens; the context menu key or Shift+F10 opens the item menu.
 /// </summary>
-internal sealed class CoverFlow : FrameworkElement
+internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
 {
     private const int Window = 9;            // models kept on each side of the position
     private const double SideAngle = 62;     // degrees a side picture is turned
@@ -597,14 +597,14 @@ internal sealed class CoverFlow : FrameworkElement
         AutomationProperties.SetName(this, name);
         if (IsKeyboardFocused && UIElementAutomationPeer.FromElement(this) is { } peer)
             peer.RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, "", name);
+        if (UIElementAutomationPeer.FromElement(this) is CarouselAutomationPeer list)
+        {
+            list.ResetChildrenCache();
+            list.RaiseSelected();
+        }
     }
 
-    protected override AutomationPeer OnCreateAutomationPeer() => new CoverFlowPeer(this);
+    protected override AutomationPeer OnCreateAutomationPeer() => new CarouselAutomationPeer(this, nameof(CoverFlow));
 
-    private sealed class CoverFlowPeer(CoverFlow owner) : FrameworkElementAutomationPeer(owner)
-    {
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
-        protected override string GetClassNameCore() => nameof(CoverFlow);
-        protected override bool IsKeyboardFocusableCore() => true;
-    }
+    void ICaptureCarousel.Activate(CaptureItem item) => ItemActivated?.Invoke(item);
 }

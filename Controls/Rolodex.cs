@@ -26,7 +26,7 @@ namespace KillerShot.Controls;
 /// turn, Ctrl+wheel to draw the cards larger or smaller, right-click for the item menu. Keyboard: Up, Down, Home, End, Page Up and Page Down
 /// move; Enter opens; the context menu key or Shift+F10 opens the item menu.
 /// </summary>
-internal sealed class Rolodex : FrameworkElement
+internal sealed class Rolodex : FrameworkElement, ICaptureCarousel
 {
     private const int Window = 30;              // models kept on each side of the position
     private const double CardWidth = 1.0;       // model units
@@ -566,14 +566,14 @@ internal sealed class Rolodex : FrameworkElement
         AutomationProperties.SetName(this, name);
         if (IsKeyboardFocused && UIElementAutomationPeer.FromElement(this) is { } peer)
             peer.RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, "", name);
+        if (UIElementAutomationPeer.FromElement(this) is CarouselAutomationPeer list)
+        {
+            list.ResetChildrenCache();
+            list.RaiseSelected();
+        }
     }
 
-    protected override AutomationPeer OnCreateAutomationPeer() => new RolodexPeer(this);
+    protected override AutomationPeer OnCreateAutomationPeer() => new CarouselAutomationPeer(this, nameof(Rolodex));
 
-    private sealed class RolodexPeer(Rolodex owner) : FrameworkElementAutomationPeer(owner)
-    {
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
-        protected override string GetClassNameCore() => nameof(Rolodex);
-        protected override bool IsKeyboardFocusableCore() => true;
-    }
+    void ICaptureCarousel.Activate(CaptureItem item) => ItemActivated?.Invoke(item);
 }
