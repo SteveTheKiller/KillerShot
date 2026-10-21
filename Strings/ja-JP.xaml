@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">切り抜き</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">楕円</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">蛍光ペン</sys:String>
+    <sys:String x:Key="Str_Tool_Line">直線</sys:String>
     <sys:String x:Key="Str_Tool_Pen">ペン</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">四角形</sys:String>
     <sys:String x:Key="Str_Tool_Redact">黒塗り</sys:String>
     <sys:String x:Key="Str_Tool_Select">選択と移動</sys:String>
     <sys:String x:Key="Str_Tool_Text">テキスト</sys:String>
+    <sys:String x:Key="Str_Tool_Step">番号付きステップ</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">吹き出し</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">図形を塗りつぶす</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">新しい四角形と楕円は塗りつぶされます。</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">新しい四角形と楕円は輪郭のみです。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">別のプログラムがクリップボードを使用中です ({0})。もう一度キャプチャするか、[最後のキャプチャを保存] を使ってください。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">クリップボードが使用中です</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} ピクセル</sys:String>

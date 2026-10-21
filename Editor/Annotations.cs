@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace KillerShot.Editor;
 
-public enum ToolKind { Select, Pen, Highlighter, Arrow, Rectangle, Ellipse, Text, Redact, Crop }
+public enum ToolKind { Select, Pen, Highlighter, Arrow, Line, Rectangle, Ellipse, Text, Step, Callout, Redact, Crop }
 
 /// <summary>One mark on the capture, in image pixel coordinates. Annotations are immutable so an
 /// undo step is just the previous list.</summary>
@@ -83,10 +83,11 @@ public sealed record StrokeAnnotation(ImmutableArray<Point> Points, Color Color,
         Geometry.StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
 }
 
-public enum ShapeKind { Arrow, Rectangle, Ellipse, Redact }
+public enum ShapeKind { Arrow, Rectangle, Ellipse, Redact, Line }
 
-/// <summary>Arrow, rectangle, ellipse or redaction box between two points.</summary>
-public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Color, double Width)
+/// <summary>Arrow, line, rectangle, ellipse or redaction box between two points. Rectangles and
+/// ellipses can be filled with their color.</summary>
+public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Color, double Width, bool Filled = false)
     : Annotation(Color, Width)
 {
     public Rect Box => new(A, B);
@@ -107,11 +108,14 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
         switch (Kind)
         {
             case ShapeKind.Rectangle:
-                dc.DrawRectangle(null, MakePen(Color, Width, PenLineCap.Square), Box);
+                dc.DrawRectangle(Filled ? Frozen(new SolidColorBrush(Color)) : null, MakePen(Color, Width, PenLineCap.Square), Box);
                 break;
             case ShapeKind.Ellipse:
                 var b = Box;
-                dc.DrawEllipse(null, MakePen(Color, Width), new Point(b.X + b.Width / 2, b.Y + b.Height / 2), b.Width / 2, b.Height / 2);
+                dc.DrawEllipse(Filled ? Frozen(new SolidColorBrush(Color)) : null, MakePen(Color, Width), new Point(b.X + b.Width / 2, b.Y + b.Height / 2), b.Width / 2, b.Height / 2);
+                break;
+            case ShapeKind.Line:
+                dc.DrawLine(MakePen(Color, Width), A, B);
                 break;
             case ShapeKind.Redact:
                 // Fully opaque and grown out to whole pixels, so every pixel the box touches is
@@ -167,7 +171,7 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
 
     public override Annotation Resize(Vector d)
     {
-        if (Kind == ShapeKind.Arrow) return this with { B = B + d };
+        if (Kind is ShapeKind.Arrow or ShapeKind.Line) return this with { B = B + d };
         var r = Box;
         return this with { A = r.TopLeft, B = new Point(r.X + Math.Max(2, r.Width + d.X), r.Y + Math.Max(2, r.Height + d.Y)) };
     }
@@ -175,8 +179,15 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
     public override bool Hit(Point p, double tolerance)
     {
         if (Kind == ShapeKind.Redact) return Inflate(Box, tolerance).Contains(p);
+        if (Kind == ShapeKind.Line)
+            return new LineGeometry(A, B).StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
         if (Kind == ShapeKind.Arrow)
             return ArrowGeometry().StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p) || ArrowGeometry().FillContains(p);
+        if (Filled)
+        {
+            var area = Inflate(Box, Width / 2 + tolerance);
+            return Kind == ShapeKind.Rectangle ? area.Contains(p) : InEllipse(area, p);
+        }
         // Outlines are picked by their edge so a click inside a box can reach what is under it.
         var outer = Inflate(Box, Width / 2 + tolerance);
         var inner = Inflate(Box, -(Width / 2 + tolerance));
@@ -228,4 +239,110 @@ public sealed record TextAnnotation(Point Origin, string Text, Color Color, doub
         double height = Bounds.Height;
         return height <= 0 ? this : this with { Width = Math.Max(6, Width * Math.Max(2, height + d.Y) / height) };
     }
+}
+
+/// <summary>A numbered step badge: a filled circle of the mark color with its number. Width is the
+/// badge diameter in image pixels.</summary>
+public sealed record StepAnnotation(Point Center, int Number, Color Color, double Width) : Annotation(Color, Width)
+{
+    public static readonly Typeface Face = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+
+    public override void Render(DrawingContext dc)
+    {
+        double r = Width / 2;
+        dc.DrawEllipse(Frozen(new SolidColorBrush(Color)), MakePen(Color.FromArgb(0xC0, 255, 255, 255), Math.Max(1, Width / 16)), Center, r, r);
+        bool light = Color.R * 0.299 + Color.G * 0.587 + Color.B * 0.114 > 150;
+        var ft = new FormattedText(Number.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+            Face, Width * (Number < 10 ? 0.58 : 0.46), new SolidColorBrush(light ? Colors.Black : Colors.White), 1.0);
+        dc.DrawText(ft, new Point(Center.X - ft.Width / 2, Center.Y - ft.Height / 2));
+    }
+
+    public override Rect Bounds => new(Center.X - Width / 2, Center.Y - Width / 2, Width, Width);
+    public override Annotation Offset(Vector v) => this with { Center = Center + v };
+
+    public override Annotation Resize(Vector d)
+    {
+        double size = Math.Max(12, Width + Math.Max(d.X, d.Y));
+        var b = Bounds;
+        return this with { Width = size, Center = new Point(b.X + size / 2, b.Y + size / 2) };
+    }
+
+    public override bool Hit(Point p, double tolerance) => (p - Center).Length <= Width / 2 + tolerance;
+
+    /// <summary>The number a new step takes: one past the highest on the picture, so deleting a
+    /// step never makes the next one repeat a number still shown.</summary>
+    public static int Next(IEnumerable<Annotation> items) =>
+        items.OfType<StepAnnotation>().Select(s => s.Number).DefaultIfEmpty(0).Max() + 1;
+}
+
+/// <summary>A speech-bubble callout: text in a white rounded box at Origin, with a tail pointing
+/// at Tip. Width is the font size in image pixels.</summary>
+public sealed record CalloutAnnotation(Point Tip, Point Origin, string Text, Color Color, double Width) : Annotation(Color, Width)
+{
+    private FormattedText Format() => new(Text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, TextAnnotation.Face, Width,
+        new SolidColorBrush(Color.FromRgb(0x1A, 0x1A, 0x1A)), 1.0);
+
+    private double Pad => Math.Max(6, Width * 0.45);
+
+    /// <summary>The bubble's rectangle, sized to its text.</summary>
+    public Rect BubbleRect
+    {
+        get
+        {
+            var ft = Format();
+            return new Rect(Origin, new Size(Math.Max(1, ft.WidthIncludingTrailingWhitespace) + Pad * 2, ft.Height + Pad * 2));
+        }
+    }
+
+    private Geometry Shape()
+    {
+        var box = BubbleRect;
+        double radius = Math.Min(Pad, Math.Min(box.Width, box.Height) / 2);
+        Geometry result = new RectangleGeometry(box, radius, radius);
+        var c = new Point(box.X + box.Width / 2, box.Y + box.Height / 2);
+        Vector toTip = Tip - c;
+        if (!box.Contains(Tip) && toTip.Length > 0.5)
+        {
+            var n = new Vector(-toTip.Y, toTip.X);
+            n.Normalize();
+            double half = Math.Min(box.Width, box.Height) * 0.18 + 2;
+            var tail = new StreamGeometry();
+            using (var ctx = tail.Open())
+            {
+                ctx.BeginFigure(c + n * half, true, true);
+                ctx.LineTo(Tip, true, true);
+                ctx.LineTo(c - n * half, true, true);
+            }
+            result = new CombinedGeometry(GeometryCombineMode.Union, result, tail);
+        }
+        result.Freeze();
+        return result;
+    }
+
+    public override void Render(DrawingContext dc)
+    {
+        dc.DrawGeometry(Frozen(new SolidColorBrush(Colors.White)), MakePen(Color, Math.Max(2, Width / 8)), Shape());
+        var box = BubbleRect;
+        dc.DrawText(Format(), new Point(box.X + Pad, box.Y + Pad));
+    }
+
+    public override Rect Bounds
+    {
+        get
+        {
+            var r = BubbleRect;
+            r.Union(Tip);
+            return Inflate(r, Math.Max(2, Width / 8));
+        }
+    }
+
+    public override Annotation Offset(Vector v) => this with { Tip = Tip + v, Origin = Origin + v };
+
+    public override Annotation Resize(Vector d)
+    {
+        double height = BubbleRect.Height;
+        return height <= 0 ? this : this with { Width = Math.Max(6, Width * Math.Max(2, height + d.Y) / height) };
+    }
+
+    public override bool Hit(Point p, double tolerance) => Shape().FillContains(p) || Inflate(BubbleRect, tolerance).Contains(p);
 }

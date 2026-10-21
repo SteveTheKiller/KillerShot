@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Zuschneiden</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Textmarker</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Linie</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Stift</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rechteck</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Schwärzen</sys:String>
     <sys:String x:Key="Str_Tool_Select">Auswählen und verschieben</sys:String>
     <sys:String x:Key="Str_Tool_Text">Text</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Nummerierter Schritt</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Sprechblase</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Formen füllen</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Neue Rechtecke und Ellipsen werden gefüllt.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Neue Rechtecke und Ellipsen sind Umrisse.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Ein anderes Programm blockiert die Zwischenablage ({0}). Nehmen Sie erneut auf oder verwenden Sie Letzte Aufnahme speichern.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Zwischenablage belegt</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} Pixel</sys:String>

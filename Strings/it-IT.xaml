@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Ritaglia</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellisse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Evidenziatore</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Linea</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Penna</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rettangolo</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Oscura</sys:String>
     <sys:String x:Key="Str_Tool_Select">Seleziona e sposta</sys:String>
     <sys:String x:Key="Str_Tool_Text">Testo</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Passo numerato</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Fumetto</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Riempi forme</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">I nuovi rettangoli ed ellissi sono riempiti.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">I nuovi rettangoli ed ellissi sono contorni.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Un altro programma sta usando gli appunti ({0}). Cattura di nuovo o usa Salva l'ultima cattura.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Appunti occupati</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pixel</sys:String>

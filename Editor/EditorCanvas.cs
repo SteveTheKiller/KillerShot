@@ -27,6 +27,10 @@ public sealed partial class EditorCanvas : Canvas
     public Color Color { get; set; } = Color.FromRgb(0xE5, 0x39, 0x35);
     public double StrokeWidth { get; set; } = 4;
     public double TextSize { get; set; } = 24;
+    /// <summary>New rectangles and ellipses are filled with the mark color.</summary>
+    public bool Filled { get; set; }
+    // A callout's tail tip while its text is being typed; null for plain text.
+    private Point? _calloutTip;
 
     /// <summary>Raised when the zoom or the cursor position text should be refreshed.</summary>
     public event Action? ViewChanged;
@@ -61,6 +65,7 @@ public sealed partial class EditorCanvas : Canvas
             SetQrCodes([]);
             _selected = null;
             if (_doc != null) _doc.Changed += OnDocChanged;
+            System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(this)?.ResetChildrenCache();
             InvalidateMeasure();
             InvalidateVisual();
         }
@@ -187,9 +192,9 @@ public sealed partial class EditorCanvas : Canvas
         if (_stroke != null)
             return new StrokeAnnotation(_stroke.ToImmutableArray(), Color, Tool == ToolKind.Highlighter ? HighlighterWidth : StrokeWidth, Tool == ToolKind.Highlighter);
         if (_box is { } b && ShapeFor(Tool) is { } kind)
-            return kind == ShapeKind.Arrow
+            return kind is ShapeKind.Arrow or ShapeKind.Line
                 ? new ShapeAnnotation(kind, _start, _arrowEnd, Color, StrokeWidth)
-                : new ShapeAnnotation(kind, b.TopLeft, b.BottomRight, Color, StrokeWidth);
+                : new ShapeAnnotation(kind, b.TopLeft, b.BottomRight, Color, StrokeWidth, Filled && kind is ShapeKind.Rectangle or ShapeKind.Ellipse);
         return null;
     }
 
@@ -199,6 +204,7 @@ public sealed partial class EditorCanvas : Canvas
     private static ShapeKind? ShapeFor(ToolKind t) => t switch
     {
         ToolKind.Arrow => ShapeKind.Arrow,
+        ToolKind.Line => ShapeKind.Line,
         ToolKind.Rectangle => ShapeKind.Rectangle,
         ToolKind.Ellipse => ShapeKind.Ellipse,
         ToolKind.Redact => ShapeKind.Redact,
@@ -239,6 +245,13 @@ public sealed partial class EditorCanvas : Canvas
             e.Handled = true;
             return;
         }
+        if (Tool == ToolKind.Step)
+        {
+            AddStep(p);
+            e.Handled = true;
+            return;
+        }
+        if (Tool == ToolKind.Callout && _textBox != null) { CommitText(); e.Handled = true; return; }
         if (Tool == ToolKind.Select)
         {
             var hit = HitTest(p);
@@ -324,6 +337,17 @@ public sealed partial class EditorCanvas : Canvas
             return;
         }
 
+        if (Tool == ToolKind.Callout)
+        {
+            // Drag from the point being called out to where the bubble goes, then type.
+            _box = null;
+            var end = _arrowEnd;
+            if ((end - _start).Length < 8) end = _start + new Vector(24, -48);
+            BeginText(end, _start);
+            InvalidateVisual();
+            return;
+        }
+
         _dragging = true;   // so Preview() returns the finished mark
         var mark = Preview();
         _dragging = false;
@@ -335,7 +359,7 @@ public sealed partial class EditorCanvas : Canvas
 
     private static bool IsWorthKeeping(Annotation a) => a switch
     {
-        ShapeAnnotation { Kind: ShapeKind.Arrow } s => (s.B - s.A).Length >= 3,
+        ShapeAnnotation { Kind: ShapeKind.Arrow or ShapeKind.Line } s => (s.B - s.A).Length >= 3,
         ShapeAnnotation s => s.Box.Width >= 2 && s.Box.Height >= 2,
         _ => true,
     };
@@ -371,9 +395,10 @@ public sealed partial class EditorCanvas : Canvas
 
     // ---- text ----
 
-    private void BeginText(Point imagePoint)
+    private void BeginText(Point imagePoint, Point? calloutTip = null)
     {
         _textOrigin = imagePoint;
+        _calloutTip = calloutTip;
         _textBox = new TextBox
         {
             MinWidth = 40,
@@ -414,7 +439,9 @@ public sealed partial class EditorCanvas : Canvas
         if (_doc != null && text.Length > 0)
         {
             // The new text stays selected, so the keyboard can move it straight away.
-            var mark = new TextAnnotation(_textOrigin, text, Color, TextSize);
+            Annotation mark = _calloutTip is Point tip
+                ? new CalloutAnnotation(tip, _textOrigin, text, Color, TextSize)
+                : new TextAnnotation(_textOrigin, text, Color, TextSize);
             _doc.Add(mark);
             _selected = mark;
             NotifySelection();

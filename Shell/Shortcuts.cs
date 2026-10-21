@@ -133,6 +133,10 @@ namespace KillerShot.Shell
                 case Key.P: SelectTool(ToolKind.Pen); break;
                 case Key.H: SelectTool(ToolKind.Highlighter); break;
                 case Key.A: SelectTool(ToolKind.Arrow); break;
+                case Key.L: SelectTool(ToolKind.Line); break;
+                case Key.F: ToggleFill(); break;
+                case Key.N: SelectTool(ToolKind.Step); break;
+                case Key.B: SelectTool(ToolKind.Callout); break;
                 case Key.R: SelectTool(ToolKind.Rectangle); break;
                 case Key.E: SelectTool(ToolKind.Ellipse); break;
                 case Key.T: SelectTool(ToolKind.Text); break;

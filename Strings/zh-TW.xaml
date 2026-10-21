@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">裁剪</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">橢圓</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">螢光筆</sys:String>
+    <sys:String x:Key="Str_Tool_Line">直線</sys:String>
     <sys:String x:Key="Str_Tool_Pen">畫筆</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">矩形</sys:String>
     <sys:String x:Key="Str_Tool_Redact">塗黑</sys:String>
     <sys:String x:Key="Str_Tool_Select">選取與移動</sys:String>
     <sys:String x:Key="Str_Tool_Text">文字</sys:String>
+    <sys:String x:Key="Str_Tool_Step">編號步驟</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">標註泡泡</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">填滿圖形</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">新的矩形與橢圓會填滿。</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">新的矩形與橢圓僅為外框。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">另一個程式正在占用剪貼簿 ({0})。請重新擷取，或使用「儲存上次擷取」。</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">剪貼簿忙碌中</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} 像素</sys:String>

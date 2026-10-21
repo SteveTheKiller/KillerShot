@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Қию</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Эллипс</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Маркер</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Сызық</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Қалам</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Тіктөртбұрыш</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Бояп жасыру</sys:String>
     <sys:String x:Key="Str_Tool_Select">Таңдау және жылжыту</sys:String>
     <sys:String x:Key="Str_Tool_Text">Мәтін</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Нөмірленген қадам</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Сөз бұлты</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Пішіндерді толтыру</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Жаңа тіктөртбұрыштар мен эллипстер толтырылады.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Жаңа тіктөртбұрыштар мен эллипстер тек контур.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Алмасу буферін басқа бағдарлама ұстап тұр ({0}). Қайта түсіріңіз немесе «Соңғы түсірілімді сақтау» пәрменін қолданыңыз.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Алмасу буфері бос емес</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} пиксел</sys:String>

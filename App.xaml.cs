@@ -76,6 +76,7 @@ public partial class App : Application
         if (SelfTestEditorKeyboard.TryRun(e.Args)) return;
         if (SelfTestCarouselAutomation.TryRun(e.Args)) return;
         if (SelfTestAlbumResponsive.TryRun(e.Args)) return;
+        if (SelfTestEditorTools.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;

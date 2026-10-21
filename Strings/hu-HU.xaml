@@ -199,11 +199,17 @@
     <sys:String x:Key="Str_Tool_Crop">Vágás</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellipszis</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Kiemelő</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Vonal</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Toll</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Téglalap</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Kitakarás</sys:String>
     <sys:String x:Key="Str_Tool_Select">Kijelölés és mozgatás</sys:String>
     <sys:String x:Key="Str_Tool_Text">Szöveg</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Számozott lépés</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Szövegbuborék</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Alakzatok kitöltése</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Az új téglalapok és ellipszisek kitöltöttek.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Az új téglalapok és ellipszisek körvonalak.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Egy másik program foglalja a vágólapot ({0}). Rögzítsen újra, vagy használja a Legutóbbi rögzítés mentése parancsot.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">A vágólap foglalt</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} képpont</sys:String>

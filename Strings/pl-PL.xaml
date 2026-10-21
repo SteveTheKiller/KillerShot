@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Przytnij</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Elipsa</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Zakreślacz</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Linia</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Pióro</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Prostokąt</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Zamaskuj</sys:String>
     <sys:String x:Key="Str_Tool_Select">Zaznacz i przesuń</sys:String>
     <sys:String x:Key="Str_Tool_Text">Tekst</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Numerowany krok</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Dymek</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Wypełnij kształty</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Nowe prostokąty i elipsy są wypełniane.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Nowe prostokąty i elipsy są konturami.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Inny program blokuje schowek ({0}). Przechwyć ponownie lub użyj Zapisz ostatni zrzut.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Schowek jest zajęty</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pikseli</sys:String>

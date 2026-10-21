@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Recortar</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Elipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Resaltador</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Línea</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Lápiz</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rectángulo</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Tachar</sys:String>
     <sys:String x:Key="Str_Tool_Select">Seleccionar y mover</sys:String>
     <sys:String x:Key="Str_Tool_Text">Texto</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Paso numerado</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Globo de texto</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Rellenar formas</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Los rectángulos y elipses nuevos se rellenan.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Los rectángulos y elipses nuevos son solo contornos.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Otro programa está usando el portapapeles ({0}). Vuelve a capturar o usa Guardar la última captura.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Portapapeles ocupado</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} píxeles</sys:String>

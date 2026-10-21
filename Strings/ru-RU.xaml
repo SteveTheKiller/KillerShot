@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Обрезка</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Эллипс</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Маркер</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Линия</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Перо</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Прямоугольник</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Закрасить</sys:String>
     <sys:String x:Key="Str_Tool_Select">Выбрать и переместить</sys:String>
     <sys:String x:Key="Str_Tool_Text">Текст</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Нумерованный шаг</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Выноска</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Заливка фигур</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Новые прямоугольники и эллипсы заливаются.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Новые прямоугольники и эллипсы рисуются контуром.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Буфер обмена занят другой программой ({0}). Сделайте снимок снова или используйте «Сохранить последний снимок».</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Буфер обмена занят</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} пикс.</sys:String>

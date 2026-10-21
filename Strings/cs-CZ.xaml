@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Oříznout</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Elipsa</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Zvýrazňovač</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Čára</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Pero</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Obdélník</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Začernit</sys:String>
     <sys:String x:Key="Str_Tool_Select">Vybrat a přesunout</sys:String>
     <sys:String x:Key="Str_Tool_Text">Text</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Číslovaný krok</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Bublina</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Vyplnit tvary</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Nové obdélníky a elipsy budou vyplněné.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Nové obdélníky a elipsy budou jen obrysy.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Schránku drží jiný program ({0}). Zachyťte znovu, nebo použijte Uložit poslední snímek.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Schránka je obsazená</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pixelů</sys:String>

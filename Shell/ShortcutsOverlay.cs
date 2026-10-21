@@ -69,9 +69,13 @@ namespace KillerShot.Shell
             new("P",        "Str_Tool_Pen",         KsCat.Nav, false, "P"),
             new("H",        "Str_Tool_Highlighter", KsCat.Nav, false, "H"),
             new("A",        "Str_Tool_Arrow",       KsCat.Nav, false, "A"),
+            new("L",        "Str_Tool_Line",        KsCat.Nav, false, "L"),
             new("R",        "Str_Tool_Rectangle",   KsCat.Nav, false, "R"),
             new("E",        "Str_Tool_Ellipse",     KsCat.Nav, false, "E"),
+            new("F",        "Str_Btn_Fill",         KsCat.Nav, false, "F"),
             new("T",        "Str_Tool_Text",        KsCat.Nav, false, "T"),
+            new("N",        "Str_Tool_Step",        KsCat.Nav, false, "N"),
+            new("B",        "Str_Tool_Callout",     KsCat.Nav, false, "B"),
             new("X",        "Str_Tool_Redact",      KsCat.Nav, false, "X"),
             new("C",        "Str_Tool_Crop",        KsCat.Nav, false, "C"),
 

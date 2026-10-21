@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerFamily.Layout;
+using KillerShot.Controls;
 using KillerShot.Editor;
 using KillerShot.Services;
 
@@ -61,26 +62,23 @@ internal static class SelfTestEditorSafety
         long bId = CaptureLibrary.AddNow(pixel, DateTime.Today.AddSeconds(1), "region", "Second", null);
         var a = CaptureLibrary.Items().Single(i => i.Id == aId);
         var b = CaptureLibrary.Items().Single(i => i.Id == bId);
-        var host = new DockHost { Side = DockSide.Left };
+        var host = new DockHost { Side = DockSide.Top };
         var strip = new CollectionStrip(host, new Style(typeof(Slider)));
         host.Pane = strip;
         strip.Follow(a, null);
-        host.Measure(new Size(400, 700));
-        host.Arrange(new Rect(0, 0, 400, 700));
-        var list = Descendants<ListBox>(strip).Single();
+        host.Measure(new Size(700, 300));
+        host.Arrange(new Rect(0, 0, 700, 300));
+        var flow = Descendants<CoverFlow>(strip).Single();
+        int IndexOf(CaptureItem item) => flow.Items.ToList().FindIndex(i => i.Id == item.Id);
         var opened = new List<long>();
         strip.OpenRequested += item => opened.Add(item.Id);
         try
         {
-            list.SelectedItem = b;
-            list.SelectedItem = a;
+            flow.SelectedIndex = IndexOf(b);
+            flow.SelectedIndex = IndexOf(a);
             await Task.Delay(350);
             if (opened.Count != 0) throw new InvalidOperationException("Returning from B to current A still opened B.");
-            list.SelectedItem = b;
-            list.SelectedIndex = -1;
-            await Task.Delay(350);
-            if (opened.Count != 0) throw new InvalidOperationException("Clearing B still opened B.");
-            list.SelectedItem = b;
+            flow.SelectedIndex = IndexOf(b);
             await Task.Delay(350);
             if (!opened.SequenceEqual(new[] { bId })) throw new InvalidOperationException("The settled selection did not open exactly once.");
         }

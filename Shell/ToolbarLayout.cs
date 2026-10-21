@@ -34,7 +34,7 @@ namespace KillerShot.Shell
         // File and capture operations on the left, annotation tools on the right.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
             ["capture", "record", "open", "save", "copy", "print"],
-            ["undo", "redo", "select", "pen", "highlighter", "arrow", "rectangle", "ellipse", "text", "redact", "crop", "color", "width"],
+            ["undo", "redo", "select", "pen", "highlighter", "arrow", "line", "rectangle", "ellipse", "fill", "text", "step", "callout", "redact", "crop", "color", "width"],
             []);
 
         // Buttons leave the bar for the More menu in this order as the window narrows, a group at a
@@ -44,7 +44,11 @@ namespace KillerShot.Shell
             ["print"],
             ["open"],
             ["undo", "redo"],
+            ["callout"],
+            ["line"],
+            ["fill"],
             ["ellipse"],
+            ["step"],
             ["highlighter"],
             ["arrow"],
             ["redact"],

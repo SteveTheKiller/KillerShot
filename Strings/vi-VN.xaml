@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Cắt</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Hình elip</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Bút đánh dấu</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Đường thẳng</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Bút</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Hình chữ nhật</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Che đen</sys:String>
     <sys:String x:Key="Str_Tool_Select">Chọn và di chuyển</sys:String>
     <sys:String x:Key="Str_Tool_Text">Văn bản</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Bước đánh số</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Bong bóng chú thích</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Tô kín hình</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Hình chữ nhật và hình elip mới sẽ được tô kín.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Hình chữ nhật và hình elip mới chỉ có đường viền.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Một chương trình khác đang giữ bảng nhớ tạm ({0}). Hãy chụp lại hoặc dùng Lưu ảnh chụp cuối.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Bảng nhớ tạm đang bận</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} điểm ảnh</sys:String>

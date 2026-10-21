@@ -203,11 +203,17 @@
     <sys:String x:Key="Str_Tool_Crop">Crop</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Highlighter</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Line</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Pen</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rectangle</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Redact</sys:String>
     <sys:String x:Key="Str_Tool_Select">Select and move</sys:String>
     <sys:String x:Key="Str_Tool_Text">Text</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Numbered step</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Callout</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Fill shapes</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">New rectangles and ellipses are filled.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">New rectangles and ellipses are outlines.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Another program is holding the clipboard ({0}). Capture again, or use Save last capture.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">The clipboard is busy</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pixels</sys:String>

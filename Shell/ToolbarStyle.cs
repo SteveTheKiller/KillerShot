@@ -46,9 +46,13 @@ namespace KillerShot.Shell
             yield return ("pen",        ToolPenBtn,         0xE70F, "Str_Tool_Pen");        // Edit (pencil)
             yield return ("highlighter", ToolHighlighterBtn, 0xE7E6, "Str_Tool_Highlighter");// Highlight
             yield return ("arrow",      ToolArrowBtn,       0xE72A, "Str_Tool_Arrow");      // Forward
+            yield return ("line",       ToolLineBtn,        0xE738, "Str_Tool_Line");       // Remove (a dash)
             yield return ("rectangle",  ToolRectangleBtn,   0xE739, "Str_Tool_Rectangle");  // Checkbox (square)
             yield return ("ellipse",    ToolEllipseBtn,     0xEA3A, "Str_Tool_Ellipse");    // StatusCircleRing
+            yield return ("fill",       FillBtn,            0,      "Str_Btn_Fill");
             yield return ("text",       ToolTextBtn,        0xE8D2, "Str_Tool_Text");       // Font
+            yield return ("step",       ToolStepBtn,        0,      "Str_Tool_Step");
+            yield return ("callout",    ToolCalloutBtn,     0xE90A, "Str_Tool_Callout");    // Comment
             yield return ("redact",     ToolRedactBtn,      0xE73B, "Str_Tool_Redact");     // CheckboxFill
             yield return ("crop",       ToolCropBtn,        0xE7A8, "Str_Tool_Crop");       // Crop
             yield return ("color",      ColorBtn,           0,      "Str_Btn_Color");

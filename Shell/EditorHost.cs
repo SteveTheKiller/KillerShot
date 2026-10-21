@@ -53,6 +53,7 @@ namespace KillerShot.Shell
             if (double.TryParse(Settings.Get("StrokeWidth"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sw)) Editor.StrokeWidth = sw;
             if (double.TryParse(Settings.Get("TextSize"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ts)) Editor.TextSize = ts;
             if (Enum.TryParse<ToolKind>(Settings.Get("Tool"), out var tool) && tool != ToolKind.Crop) Editor.SetTool(tool);
+            Editor.Filled = Settings.GetBool("FillShapes", false);
 
             Editor.ViewChanged += RefreshFooter;
             Editor.Status += text => StatusText.Text = text;
@@ -110,8 +111,9 @@ namespace KillerShot.Shell
         {
             bool has = _doc != null;
             SyncLibraryVisibility();
-            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn,
-                                      ToolRectangleBtn, ToolEllipseBtn, ToolTextBtn, ToolRedactBtn, ToolCropBtn, ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
+                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn,
+                                      ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
             UndoBtn.IsEnabled = _doc?.CanUndo == true;
             RedoBtn.IsEnabled = _doc?.CanRedo == true;
@@ -144,9 +146,12 @@ namespace KillerShot.Shell
             ToolKind.Pen => ToolPenBtn,
             ToolKind.Highlighter => ToolHighlighterBtn,
             ToolKind.Arrow => ToolArrowBtn,
+            ToolKind.Line => ToolLineBtn,
             ToolKind.Rectangle => ToolRectangleBtn,
             ToolKind.Ellipse => ToolEllipseBtn,
             ToolKind.Text => ToolTextBtn,
+            ToolKind.Step => ToolStepBtn,
+            ToolKind.Callout => ToolCalloutBtn,
             ToolKind.Redact => ToolRedactBtn,
             _ => ToolCropBtn,
         };
@@ -174,6 +179,7 @@ namespace KillerShot.Shell
             }
             // The width button shows the text size while the text tool is active.
             RefreshWidthButton();
+            RefreshFillButton();
             // The active tool stays on the bar however narrow the window is.
             QueueToolbarReflow();
         }
@@ -186,6 +192,24 @@ namespace KillerShot.Shell
             if (on) RecordBtn.SetResourceReference(ForegroundProperty, "SelectionAccent"); else RecordBtn.ClearValue(ForegroundProperty);
             QueueToolbarReflow();
         }
+
+        private void RefreshFillButton()
+        {
+            FillBtn.Content = BuildToolbarContent(_iconSize, _labelMode, 0, Loc("Str_Btn_Fill"), DrawnIcon(FillBtn));
+            if (Editor.Filled && _doc != null) FillBtn.SetResourceReference(ForegroundProperty, "SelectionAccent"); else FillBtn.ClearValue(ForegroundProperty);
+        }
+
+        /// <summary>F: new rectangles and ellipses are filled, or outlines again.</summary>
+        private void ToggleFill()
+        {
+            if (_doc == null) return;
+            Editor.Filled = !Editor.Filled;
+            Settings.SetBool("FillShapes", Editor.Filled);
+            RefreshFillButton();
+            StatusText.Text = Loc(Editor.Filled ? "Str_Status_FillOn" : "Str_Status_FillOff");
+        }
+
+        private void FillBtn_Click(object sender, RoutedEventArgs e) => ToggleFill();
 
         private void RefreshWidthButton() =>
             WidthBtn.Content = BuildToolbarContent(_iconSize, _labelMode, 0, Loc("Str_Btn_Width"), DrawnIcon(WidthBtn));
@@ -214,6 +238,10 @@ namespace KillerShot.Shell
             if (b == ToolPenBtn) return "P";
             if (b == ToolHighlighterBtn) return "H";
             if (b == ToolArrowBtn) return "A";
+            if (b == ToolLineBtn) return "L";
+            if (b == FillBtn) return "F";
+            if (b == ToolStepBtn) return "N";
+            if (b == ToolCalloutBtn) return "B";
             if (b == ToolRectangleBtn) return "R";
             if (b == ToolEllipseBtn) return "E";
             if (b == ToolTextBtn) return "T";
@@ -238,6 +266,26 @@ namespace KillerShot.Shell
                     };
                     swatch.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
                     return swatch;
+                };
+            if (b == FillBtn)
+                return size =>
+                {
+                    // A square: solid in the mark color when fill is on, an outline when off.
+                    var square = new Border { Width = size * 0.72, Height = size * 0.72, BorderThickness = new Thickness(Math.Max(1.5, size / 12)) };
+                    square.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("Foreground") { Source = FillBtn });
+                    if (Editor.Filled) square.Background = new SolidColorBrush(Editor.Color);
+                    return square;
+                };
+            if (b == ToolStepBtn)
+                return size =>
+                {
+                    var badge = new Border { Width = size * 0.86, Height = size * 0.86, CornerRadius = new CornerRadius(size) };
+                    badge.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Foreground") { Source = ToolStepBtn });
+                    var number = new TextBlock { Text = "1", FontSize = size * 0.58, FontWeight = FontWeights.Bold,
+                        HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                    number.SetResourceReference(TextBlock.ForegroundProperty, "BackgroundBrush");
+                    badge.Child = number;
+                    return badge;
                 };
             if (b == WidthBtn)
                 return size =>

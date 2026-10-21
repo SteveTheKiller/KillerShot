@@ -235,9 +235,13 @@
                         <Button x:Name="ToolPenBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Pen"/>
                         <Button x:Name="ToolHighlighterBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Highlighter"/>
                         <Button x:Name="ToolArrowBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Arrow"/>
+                        <Button x:Name="ToolLineBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Line"/>
                         <Button x:Name="ToolRectangleBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Rectangle"/>
                         <Button x:Name="ToolEllipseBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Ellipse"/>
+                        <Button x:Name="FillBtn" Style="{StaticResource ToolbarButton}" Click="FillBtn_Click"/>
                         <Button x:Name="ToolTextBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Text"/>
+                        <Button x:Name="ToolStepBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Step"/>
+                        <Button x:Name="ToolCalloutBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Callout"/>
                         <Button x:Name="ToolRedactBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Redact"/>
                         <Button x:Name="ToolCropBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Crop"/>
                         <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click"/>

@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Beskjær</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Merkepenn</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Linje</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Penn</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rektangel</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Sladd</sys:String>
     <sys:String x:Key="Str_Tool_Select">Velg og flytt</sys:String>
     <sys:String x:Key="Str_Tool_Text">Tekst</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Nummerert trinn</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Snakkeboble</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Fyll figurer</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Nye rektangler og ellipser fylles.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Nye rektangler og ellipser er omriss.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Et annet program holder utklippstavlen ({0}). Ta bilde igjen, eller bruk Lagre siste skjermbilde.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Utklippstavlen er opptatt</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} piksler</sys:String>

@@ -65,19 +65,49 @@ public sealed partial class EditorCanvas
             BeginText(new Point(Math.Round(c.X - s / 2), Math.Round(c.Y - TextSize / 2)));
             return true;
         }
+        if (Tool == ToolKind.Callout)
+        {
+            // The tail points at the middle; the bubble sits above and to the right.
+            BeginText(new Point(Math.Round(c.X + s / 2), Math.Round(c.Y - s)), new Point(Math.Round(c.X), Math.Round(c.Y)));
+            return true;
+        }
+        if (Tool == ToolKind.Step)
+        {
+            // Each new step sits beside the last, so a keyboard sequence reads left to right.
+            double size = StepSize;
+            int placed = _doc.State.Items.OfType<StepAnnotation>().Count();
+            int perRow = Math.Max(1, (int)(view.Width / (size * 1.4)));
+            double x = view.X + size + placed % perRow * size * 1.4, y = c.Y + placed / perRow * size * 1.4;
+            AddStep(new Point(Math.Round(Math.Min(x, view.Right - size / 2)), Math.Round(Math.Min(y, view.Bottom - size / 2))));
+            return true;
+        }
         var a = new Point(Math.Round(c.X - s / 2), Math.Round(c.Y - s / 3));
         var b = new Point(a.X + s, a.Y + Math.Round(s * 2 / 3));
         Annotation mark = Tool switch
         {
             ToolKind.Pen or ToolKind.Highlighter => new StrokeAnnotation([new Point(a.X, c.Y), new Point(b.X, c.Y)], Color,
                 Tool == ToolKind.Highlighter ? HighlighterWidth : StrokeWidth, Tool == ToolKind.Highlighter),
-            _ => new ShapeAnnotation(ShapeFor(Tool)!.Value, a, b, Color, StrokeWidth),
+            ToolKind.Line => new ShapeAnnotation(ShapeKind.Line, new Point(a.X, b.Y), new Point(b.X, a.Y), Color, StrokeWidth),
+            _ => new ShapeAnnotation(ShapeFor(Tool)!.Value, a, b, Color, StrokeWidth, Filled && Tool is ToolKind.Rectangle or ToolKind.Ellipse),
         };
         _doc.Add(mark);
         _selected = mark;
         InvalidateVisual();
         NotifySelection();
         return true;
+    }
+
+    private double StepSize => Math.Max(22, StrokeWidth * 6);
+
+    /// <summary>A numbered step at a point, taking the next number, selected for the keyboard.</summary>
+    private void AddStep(Point at)
+    {
+        if (_doc == null) return;
+        var step = new StepAnnotation(at, StepAnnotation.Next(_doc.State.Items), Color, StepSize);
+        _doc.Add(step);
+        _selected = step;
+        InvalidateVisual();
+        NotifySelection();
     }
 
     /// <summary>Ctrl+arrows: grows or shrinks the selected mark from its bottom right.</summary>
@@ -132,6 +162,9 @@ public sealed partial class EditorCanvas
             StrokeAnnotation { Highlighter: true } => LocaleManager.Loc("Str_Tool_Highlighter"),
             StrokeAnnotation => LocaleManager.Loc("Str_Tool_Pen"),
             ShapeAnnotation { Kind: ShapeKind.Arrow } => LocaleManager.Loc("Str_Tool_Arrow"),
+            ShapeAnnotation { Kind: ShapeKind.Line } => LocaleManager.Loc("Str_Tool_Line"),
+            StepAnnotation s => LocaleManager.Loc("Str_Tool_Step") + " " + s.Number.ToString(CultureInfo.CurrentCulture),
+            CalloutAnnotation c => LocaleManager.Loc("Str_Tool_Callout") + " \u201C" + c.Text + "\u201D",
             ShapeAnnotation { Kind: ShapeKind.Rectangle } => LocaleManager.Loc("Str_Tool_Rectangle"),
             ShapeAnnotation { Kind: ShapeKind.Ellipse } => LocaleManager.Loc("Str_Tool_Ellipse"),
             ShapeAnnotation => LocaleManager.Loc("Str_Tool_Redact"),
@@ -239,7 +272,7 @@ internal sealed class AnnotationAutomationPeer(EditorCanvasAutomationPeer parent
     IRawElementProviderSimple ISelectionItemProvider.SelectionContainer => ProviderFromPeer(parent);
 
     bool ITransformProvider.CanMove => true;
-    bool ITransformProvider.CanResize => Mark is not ShapeAnnotation { Kind: ShapeKind.Arrow };
+    bool ITransformProvider.CanResize => Mark is not ShapeAnnotation { Kind: ShapeKind.Arrow or ShapeKind.Line };
     bool ITransformProvider.CanRotate => false;
 
     /// <summary>Moves the mark's top left corner to (x, y) in image pixels.</summary>

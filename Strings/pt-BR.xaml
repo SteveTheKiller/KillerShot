@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Cortar</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Elipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Marca-texto</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Linha</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Caneta</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Retângulo</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Ocultar</sys:String>
     <sys:String x:Key="Str_Tool_Select">Selecionar e mover</sys:String>
     <sys:String x:Key="Str_Tool_Text">Texto</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Etapa numerada</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Balão de texto</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Preencher formas</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Novos retângulos e elipses são preenchidos.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Novos retângulos e elipses são contornos.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Outro programa está usando a área de transferência ({0}). Capture de novo ou use Salvar a última captura.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Área de transferência ocupada</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pixels</sys:String>

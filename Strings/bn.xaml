@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">ক্রপ</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">উপবৃত্ত</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">হাইলাইটার</sys:String>
+    <sys:String x:Key="Str_Tool_Line">রেখা</sys:String>
     <sys:String x:Key="Str_Tool_Pen">কলম</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">আয়তক্ষেত্র</sys:String>
     <sys:String x:Key="Str_Tool_Redact">কালো করে ঢাকুন</sys:String>
     <sys:String x:Key="Str_Tool_Select">নির্বাচন ও সরানো</sys:String>
     <sys:String x:Key="Str_Tool_Text">লেখা</sys:String>
+    <sys:String x:Key="Str_Tool_Step">নম্বরযুক্ত ধাপ</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">কলআউট</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">আকার ভরাট</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">নতুন আয়তক্ষেত্র ও উপবৃত্ত ভরাট হবে।</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">নতুন আয়তক্ষেত্র ও উপবৃত্ত শুধু রেখায় আঁকা হবে।</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">অন্য একটি প্রোগ্রাম ক্লিপবোর্ড ধরে রেখেছে ({0})। আবার ক্যাপচার করুন, বা শেষ ক্যাপচার সংরক্ষণ ব্যবহার করুন।</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">ক্লিপবোর্ড ব্যস্ত</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} পিক্সেল</sys:String>

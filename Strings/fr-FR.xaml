@@ -200,11 +200,17 @@
     <sys:String x:Key="Str_Tool_Crop">Rogner</sys:String>
     <sys:String x:Key="Str_Tool_Ellipse">Ellipse</sys:String>
     <sys:String x:Key="Str_Tool_Highlighter">Surligneur</sys:String>
+    <sys:String x:Key="Str_Tool_Line">Ligne</sys:String>
     <sys:String x:Key="Str_Tool_Pen">Stylo</sys:String>
     <sys:String x:Key="Str_Tool_Rectangle">Rectangle</sys:String>
     <sys:String x:Key="Str_Tool_Redact">Masquer</sys:String>
     <sys:String x:Key="Str_Tool_Select">Sélectionner et déplacer</sys:String>
     <sys:String x:Key="Str_Tool_Text">Texte</sys:String>
+    <sys:String x:Key="Str_Tool_Step">Étape numérotée</sys:String>
+    <sys:String x:Key="Str_Tool_Callout">Bulle</sys:String>
+    <sys:String x:Key="Str_Btn_Fill">Remplir les formes</sys:String>
+    <sys:String x:Key="Str_Status_FillOn">Les nouveaux rectangles et ellipses sont remplis.</sys:String>
+    <sys:String x:Key="Str_Status_FillOff">Les nouveaux rectangles et ellipses sont des contours.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusy">Un autre programme bloque le presse-papiers ({0}). Capturez à nouveau ou utilisez Enregistrer la dernière capture.</sys:String>
     <sys:String x:Key="Str_Tray_ClipboardBusyTitle">Presse-papiers occupé</sys:String>
     <sys:String x:Key="Str_Tray_Copied">{0} x {1} pixels</sys:String>
