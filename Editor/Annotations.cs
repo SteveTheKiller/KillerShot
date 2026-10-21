@@ -422,7 +422,14 @@ public sealed record ImageAnnotation(BitmapSource Image, Rect Box) : Annotation(
         BitmapSource image = Image;
         if (!turn.IsIdentity)
         {
-            var turned = new TransformedBitmap(Image, new MatrixTransform(turn));
+            // Turns combine with an earlier one, so repeated turns never nest a chain of bitmaps.
+            var source = Image;
+            if (Image is TransformedBitmap { Source: { } inner, Transform: { } earlier })
+            {
+                source = inner;
+                turn = earlier.Value * turn;
+            }
+            var turned = new TransformedBitmap(source, new MatrixTransform(turn));
             turned.Freeze();
             image = turned;
         }

@@ -28,6 +28,7 @@ internal static partial class CaptureLibrary
             if (_db == null) return;
             Exec("UPDATE captures SET ocr_text = NULL");
         }
+        Interlocked.Increment(ref _ocrGeneration);
         lock (_ocrFailed) _ocrFailed.Clear();
         StartOcr();
     }
@@ -62,6 +63,8 @@ internal static partial class CaptureLibrary
     // ============================================================
 
     private static int _ocrRunning;
+    // Bumped by ReindexOcr, so a running worker builds its recognizer again with the new language.
+    private static int _ocrGeneration;
 
     /// <summary>Makes the text recognizer, or null when Windows has no OCR language for this
     /// user. Tests replace it at this boundary.</summary>
@@ -81,10 +84,17 @@ internal static partial class CaptureLibrary
             bool completed = true;
             try
             {
+                int generation = Volatile.Read(ref _ocrGeneration);
                 var recognize = OcrEngineFactory();
                 if (recognize == null) { completed = false; return; }
                 while (true)
                 {
+                    if (Volatile.Read(ref _ocrGeneration) != generation)
+                    {
+                        generation = Volatile.Read(ref _ocrGeneration);
+                        recognize = OcrEngineFactory();
+                        if (recognize == null) { completed = false; return; }
+                    }
                     long id;
                     int revision;
                     byte[] png;
