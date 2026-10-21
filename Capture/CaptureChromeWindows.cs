@@ -45,7 +45,7 @@ internal static class CaptureChromeWindows
         var card = new Border { BorderThickness = new Thickness(1), Child = content };
         card.SetResourceReference(Border.CornerRadiusProperty, "PanelCornerRadius");
         card.SetResourceReference(Border.BackgroundProperty, "OverlayWindowBrush");
-        card.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
+        card.SetResourceReference(Border.BorderBrushProperty, "OverlayEdgeBrush");
         var bar = new Window
         {
             WindowStyle = WindowStyle.None, AllowsTransparency = true, Background = Brushes.Transparent,

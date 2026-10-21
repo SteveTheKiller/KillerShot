@@ -211,6 +211,13 @@ namespace KillerShot.Services
             // About and Keyboard Shortcuts are window surfaces. Resolve this after accent merging
             // so the exact BackgroundBrush object (including gradients) is retained.
             newDict["OverlayWindowBrush"] = newDict["BackgroundBrush"];
+            // Their 1px edges. A single border color over a gradient surface reads as one end's
+            // color stuck to the other end, so a gradient surface gets a gradient edge: the same
+            // stops lifted toward white. A solid surface keeps the border it always had. The
+            // Windows-drawn frame (DwmChrome) still reads AppBorderBrush as a solid color.
+            Brush? gradientEdge = newDict["BackgroundBrush"] is LinearGradientBrush surface ? LiftedEdge(surface) : null;
+            newDict["OverlayEdgeBrush"] = gradientEdge ?? newDict["AppBorderBrush"];
+            newDict["OverlayRuleBrush"] = gradientEdge ?? newDict["PaneBorderBrush"];
             if (!newDict.Contains("WordmarkAccentShadowOpacity")) newDict["WordmarkAccentShadowOpacity"] = 0.0;
             // A palette can fill buttons with a deeper shade than its accent text (PrimaryFillBaseBrush).
             newDict["PrimaryFillBrush"] = ButtonFill(newDict.Contains("PrimaryFillBaseBrush") ? newDict["PrimaryFillBaseBrush"] : newDict["PrimaryBrush"], theme == Theme.SE98);
@@ -219,6 +226,28 @@ namespace KillerShot.Services
                 ? newDict["OutlineHoverBrush"]
                 : ButtonFill(newDict["OutlineBtnBrush"], theme == Theme.SE98);
             Publish(newDict);
+        }
+
+        /// <summary>
+        /// The surface gradient with every stop mixed one fifth of the way to white, which lands
+        /// near each gradient theme's own border tone at that end. KillerShell's rule.
+        /// </summary>
+        internal static LinearGradientBrush LiftedEdge(LinearGradientBrush surface)
+        {
+            var edge = new LinearGradientBrush
+            {
+                StartPoint = surface.StartPoint,
+                EndPoint = surface.EndPoint,
+                MappingMode = surface.MappingMode,
+                SpreadMethod = surface.SpreadMethod,
+                ColorInterpolationMode = surface.ColorInterpolationMode,
+            };
+            static byte Lift(byte channel) => (byte)(channel + (255 - channel) / 5);
+            foreach (var stop in surface.GradientStops)
+                edge.GradientStops.Add(new GradientStop(
+                    Color.FromArgb(255, Lift(stop.Color.R), Lift(stop.Color.G), Lift(stop.Color.B)), stop.Offset));
+            edge.Freeze();
+            return edge;
         }
 
         /// <summary>

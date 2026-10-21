@@ -30,6 +30,9 @@
         </Style>
         <!-- KillerShell's vertical edge cues, with body spacing inside the viewport. -->
         <Style x:Key="OverlayScrollViewer" TargetType="ScrollViewer">
+            <!-- The viewer draws no border of its own; BorderBrush is the top cue's 1px rule, so a
+                 host on a gradient surface can give the rule a gradient (the Shortcuts card). -->
+            <Setter Property="BorderBrush" Value="{DynamicResource PaneBorderBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollViewer">
@@ -41,7 +44,7 @@
                             <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Margin="{TemplateBinding Padding}"
                                                     CanContentScroll="{TemplateBinding CanContentScroll}"/>
                             <Border Grid.ColumnSpan="2" Height="24" VerticalAlignment="Top" IsHitTestVisible="False"
-                                    Opacity="{DynamicResource EdgeFadeOpacity}" BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="0,1,0,0">
+                                    Opacity="{DynamicResource EdgeFadeOpacity}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,1,0,0">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                         <GradientStop Color="#50000000" Offset="0"/>
@@ -635,7 +638,7 @@
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
                     </Border.Effect>
                 </Border>
-                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -801,7 +804,7 @@
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
                     </Border.Effect>
                 </Border>
-                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -985,7 +988,7 @@
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource ShortcutShadowOpacity}"/>
                     </Border.Effect>
                 </Border>
-                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -1042,7 +1045,7 @@
                             </StackPanel>
 
                             <!-- LIST -->
-                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" Padding="24,0,24,18" Style="{StaticResource OverlayScrollViewer}" VerticalScrollBarVisibility="Auto"
+                            <ScrollViewer x:Name="KsListHostScroll" Grid.Row="2" Padding="24,0,24,18" Style="{StaticResource OverlayScrollViewer}" BorderBrush="{DynamicResource OverlayRuleBrush}" VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly" Focusable="False">
                                 <StackPanel x:Name="KsListHost"/>
                             </ScrollViewer>
@@ -1101,7 +1104,7 @@
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
                     </Border.Effect>
                 </Border>
-                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
