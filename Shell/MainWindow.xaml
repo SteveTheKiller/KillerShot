@@ -244,6 +244,7 @@
                         <Button x:Name="ToolCalloutBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Callout"/>
                         <Button x:Name="ToolRedactBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Redact"/>
                         <Button x:Name="ToolCropBtn" Style="{StaticResource ToolbarButton}" Click="Tool_Click" Tag="Crop"/>
+                        <Button x:Name="ImageBtn" Style="{StaticResource ToolbarButton}" Click="ImageBtn_Click"/>
                         <Button x:Name="ColorBtn" Style="{StaticResource ToolbarButton}" Click="ColorBtn_Click"/>
                         <Button x:Name="WidthBtn" Style="{StaticResource ToolbarButton}" Click="WidthBtn_Click">
                             <Button.ContextMenu>

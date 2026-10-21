@@ -72,6 +72,9 @@ public partial class MainWindow
             tools.Items.Add(item);
         }
         menu.Items.Add(tools);
+        var image = new MenuItem { Header = Loc("Str_Btn_Image"), Icon = ToolbarUnitIcon("image"), IsEnabled = _doc != null };
+        foreach (var item in ImageMenuItems()) image.Items.Add(item);
+        menu.Items.Add(image);
         menu.Items.Add(ToolbarAction("color"));
         menu.Items.Add(ToolbarAction("width"));
         var zoom = new MenuItem { Header = Loc("Str_TT_ZoomLevel"), IsEnabled = _doc != null };

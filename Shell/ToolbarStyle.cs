@@ -55,6 +55,7 @@ namespace KillerShot.Shell
             yield return ("callout",    ToolCalloutBtn,     0xE90A, "Str_Tool_Callout");    // Comment
             yield return ("redact",     ToolRedactBtn,      0xE73B, "Str_Tool_Redact");     // CheckboxFill
             yield return ("crop",       ToolCropBtn,        0xE7A8, "Str_Tool_Crop");       // Crop
+            yield return ("image",      ImageBtn,           0xE7AD, "Str_Btn_Image");       // Rotate
             yield return ("color",      ColorBtn,           0,      "Str_Btn_Color");
             yield return ("width",      WidthBtn,           0,      "Str_Btn_Width");
             yield return ("fit",        FitBtn,             0xE9A6, "Str_Btn_Fit");         // FitPage

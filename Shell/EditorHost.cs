@@ -112,7 +112,7 @@ namespace KillerShot.Shell
             bool has = _doc != null;
             SyncLibraryVisibility();
             foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
-                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn,
+                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,
                                       ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
             UndoBtn.IsEnabled = _doc?.CanUndo == true;

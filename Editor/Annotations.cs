@@ -17,6 +17,17 @@ public abstract record Annotation(Color Color, double Width)
     /// <summary>The same mark with its bounds grown or shrunk by d, keeping its top left corner.
     /// Marks stay at least two pixels in each direction.</summary>
     public abstract Annotation Resize(Vector d);
+    /// <summary>The same mark after the picture is rotated, flipped or scaled by m. Widths and
+    /// font sizes scale by <paramref name="scale"/>; text stays upright, centered where it was.</summary>
+    public abstract Annotation Transform(Matrix m, double scale);
+
+    /// <summary>Moves an upright mark so its center lands where m takes it.</summary>
+    protected Vector CenterShift(Matrix m, Rect bounds, Size scaledSize)
+    {
+        var c = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+        var to = m.Transform(c);
+        return new Vector(to.X - scaledSize.Width / 2, to.Y - scaledSize.Height / 2);
+    }
     public virtual bool Hit(Point p, double tolerance) => Inflate(Bounds, tolerance).Contains(p);
 
     protected static Rect Inflate(Rect r, double by)
@@ -70,6 +81,9 @@ public sealed record StrokeAnnotation(ImmutableArray<Point> Points, Color Color,
 
     public override Annotation Offset(Vector v) =>
         this with { Points = Points.Select(p => p + v).ToImmutableArray(), _geometry = null };
+
+    public override Annotation Transform(Matrix m, double scale) =>
+        this with { Points = Points.Select(m.Transform).ToImmutableArray(), Width = Width * scale, _geometry = null };
 
     public override Annotation Resize(Vector d)
     {
@@ -169,6 +183,15 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
 
     public override Annotation Offset(Vector v) => this with { A = A + v, B = B + v };
 
+    public override Annotation Transform(Matrix m, double scale)
+    {
+        Point a = m.Transform(A), b = m.Transform(B);
+        if (Kind is ShapeKind.Arrow or ShapeKind.Line) return this with { A = a, B = b, Width = Width * scale };
+        // Boxes stay axis-aligned: normalize the corners after a turn or a mirror.
+        var box = new Rect(a, b);
+        return this with { A = box.TopLeft, B = box.BottomRight, Width = Width * scale };
+    }
+
     public override Annotation Resize(Vector d)
     {
         if (Kind is ShapeKind.Arrow or ShapeKind.Line) return this with { B = B + d };
@@ -233,6 +256,13 @@ public sealed record TextAnnotation(Point Origin, string Text, Color Color, doub
 
     public override Annotation Offset(Vector v) => this with { Origin = Origin + v };
 
+    public override Annotation Transform(Matrix m, double scale)
+    {
+        var scaled = this with { Width = Width * scale };
+        var size = scaled.Bounds.Size;
+        return scaled with { Origin = (Point)CenterShift(m, Bounds, size) };
+    }
+
     /// <summary>Text grows by its font size; the vertical change sets the new line height.</summary>
     public override Annotation Resize(Vector d)
     {
@@ -268,6 +298,8 @@ public sealed record StepAnnotation(Point Center, int Number, Color Color, doubl
     }
 
     public override bool Hit(Point p, double tolerance) => (p - Center).Length <= Width / 2 + tolerance;
+
+    public override Annotation Transform(Matrix m, double scale) => this with { Center = m.Transform(Center), Width = Width * scale };
 
     /// <summary>The number a new step takes: one past the highest on the picture, so deleting a
     /// step never makes the next one repeat a number still shown.</summary>
@@ -337,6 +369,14 @@ public sealed record CalloutAnnotation(Point Tip, Point Origin, string Text, Col
     }
 
     public override Annotation Offset(Vector v) => this with { Tip = Tip + v, Origin = Origin + v };
+
+    /// <summary>The bubble stays upright, centered where it was; the tail follows its point.</summary>
+    public override Annotation Transform(Matrix m, double scale)
+    {
+        var scaled = this with { Width = Width * scale };
+        var size = scaled.BubbleRect.Size;
+        return scaled with { Tip = m.Transform(Tip), Origin = (Point)CenterShift(m, BubbleRect, size) };
+    }
 
     public override Annotation Resize(Vector d)
     {

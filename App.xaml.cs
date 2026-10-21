@@ -83,6 +83,7 @@ public partial class App : Application
         if (SelfTestEditorTools.TryRun(e.Args)) return;
         if (SelfTestEditorObjects.TryRun(e.Args)) return;
         if (SelfTestAlbumMarks.TryRun(e.Args)) return;
+        if (SelfTestEditorTransforms.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;

@@ -9,7 +9,7 @@ namespace KillerShot.Editor;
 /// immutable, so undo and redo swap whole states and crop keeps the uncropped pixels for undo.</summary>
 public sealed record EditorState(BitmapSource Image, ImmutableList<Annotation> Items);
 
-public sealed class EditorDocument
+public sealed partial class EditorDocument
 {
     public const int UndoLimit = 50;
 
