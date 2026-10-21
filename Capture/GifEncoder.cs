@@ -23,6 +23,9 @@ internal sealed class GifEncoder : IVideoSink
     // The frame waiting for its delay, which is known only when the next frame arrives.
     private byte[]? _pendingBlock;
     private TimeSpan _pendingAt;
+    /// <summary>Centiseconds of delay written so far. Each frame ends on the rounded clock time
+    /// rather than adding its own rounded length, so rounding never accumulates.</summary>
+    private long _writtenCs;
 
     public GifEncoder(string path, int maxColors, double scale, bool loop)
     {
@@ -115,7 +118,9 @@ internal sealed class GifEncoder : IVideoSink
     private void FlushPending(TimeSpan next)
     {
         if (_pendingBlock == null) return;
-        long remaining = Math.Max(2, (long)Math.Round((next - _pendingAt).TotalMilliseconds / 10));
+        long end = (long)Math.Round(next.TotalMilliseconds / 10, MidpointRounding.AwayFromZero);
+        long remaining = Math.Max(2, end - _writtenCs);
+        _writtenCs += remaining;
         // Repeating the same leave-in-place image preserves long static intervals.
         // Avoid a one-centisecond tail, which browsers lengthen to ten.
         while (remaining > 0)
