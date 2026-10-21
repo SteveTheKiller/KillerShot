@@ -80,6 +80,17 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
 {
     public Rect Box => new(A, B);
 
+    /// <summary>The box expanded outward to the image pixel grid.</summary>
+    public Rect PixelCells
+    {
+        get
+        {
+            var b = Box;
+            double l = Math.Floor(b.Left), t = Math.Floor(b.Top);
+            return new Rect(l, t, Math.Ceiling(b.Right) - l, Math.Ceiling(b.Bottom) - t);
+        }
+    }
+
     public override void Render(DrawingContext dc)
     {
         switch (Kind)
@@ -92,8 +103,9 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
                 dc.DrawEllipse(null, MakePen(Color, Width), new Point(b.X + b.Width / 2, b.Y + b.Height / 2), b.Width / 2, b.Height / 2);
                 break;
             case ShapeKind.Redact:
-                // Fully opaque, so the exported pixels underneath are replaced, never tinted.
-                dc.DrawRectangle(Frozen(new SolidColorBrush(Colors.Black)), null, Box);
+                // Fully opaque and grown out to whole pixels, so every pixel the box touches is
+                // replaced, never blended at a fractional edge.
+                dc.DrawRectangle(Frozen(new SolidColorBrush(Colors.Black)), null, PixelCells);
                 break;
             default:
                 dc.DrawGeometry(Frozen(new SolidColorBrush(Color)), MakePen(Color, Width), ArrowGeometry());
@@ -134,7 +146,7 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
     {
         get
         {
-            var r = Box;
+            var r = Kind == ShapeKind.Redact ? PixelCells : Box;
             if (Kind != ShapeKind.Redact) r = Inflate(r, Kind == ShapeKind.Arrow ? Math.Max(10, Width * 4) : Width / 2);
             return r;
         }
