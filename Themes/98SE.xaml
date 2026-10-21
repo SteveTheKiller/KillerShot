@@ -65,6 +65,8 @@
 
     <!-- Calendar and editor/list panes are Win98 client areas, not button faces. -->
     <SolidColorBrush x:Key="PaneBrush" Color="#c0c0c0" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
+    <!-- The main pane is a white client area inside its sunken bevel, as in the other apps. -->
+    <SolidColorBrush x:Key="ContentPaneBrush" Color="#ffffff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
     <SolidColorBrush x:Key="ChipBrush" Color="#d9e5f6" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />
 
     <!-- The PDF canvas needs separation from the classic #c0c0c0 window face without turning
