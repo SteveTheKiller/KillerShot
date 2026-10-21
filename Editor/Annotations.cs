@@ -202,7 +202,7 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
 
     public override bool Hit(Point p, double tolerance)
     {
-        if (Kind == ShapeKind.Redact) return Inflate(Box, tolerance).Contains(p);
+        if (Kind == ShapeKind.Redact) return Inflate(PixelCells, tolerance).Contains(p);   // as drawn
         if (Kind == ShapeKind.Line)
             return new LineGeometry(A, B).StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
         if (Kind == ShapeKind.Arrow)
@@ -293,7 +293,8 @@ public sealed record StepAnnotation(Point Center, int Number, Color Color, doubl
 
     public override Annotation Resize(Vector d)
     {
-        double size = Math.Max(12, Width + Math.Max(d.X, d.Y));
+        // Either arrow resizes a badge, so both directions shrink as well as grow.
+        double size = Math.Max(12, Width + (d.X != 0 ? d.X : d.Y));
         var b = Bounds;
         return this with { Width = size, Center = new Point(b.X + size / 2, b.Y + size / 2) };
     }
@@ -392,7 +393,14 @@ public sealed record CalloutAnnotation(Point Tip, Point Origin, string Text, Col
 /// resized like any mark. Turning or mirroring the capture turns and mirrors it too.</summary>
 public sealed record ImageAnnotation(BitmapSource Image, Rect Box) : Annotation(Colors.Transparent, 1)
 {
-    public override void Render(DrawingContext dc) => dc.DrawImage(Image, Box);
+    public override void Render(DrawingContext dc)
+    {
+        // Smooth scaling in exports as on screen; the capture's own pixels stay nearest neighbour.
+        var group = new DrawingGroup();
+        RenderOptions.SetBitmapScalingMode(group, BitmapScalingMode.HighQuality);
+        using (var inner = group.Open()) inner.DrawImage(Image, Box);
+        dc.DrawDrawing(group);
+    }
 
     public override Rect Bounds => Box;
 

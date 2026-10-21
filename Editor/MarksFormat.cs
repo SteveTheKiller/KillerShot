@@ -33,7 +33,9 @@ public static class MarksFormat
                 if (node is JsonObject o && FromJson(o) is { } mark) result.Add(mark);
             return result.ToImmutable();
         }
-        catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException) { return null; }
+        // A damaged or oversized row opens the original instead of failing the capture.
+        catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException
+            or NullReferenceException or NotSupportedException or ArgumentException or System.IO.IOException) { return null; }
     }
 
     private static JsonObject? ToJson(Annotation mark) => mark switch

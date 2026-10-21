@@ -49,6 +49,7 @@ public sealed partial class EditorDocument
     public int PixelWidth => State.Image.PixelWidth;
     public int PixelHeight => State.Image.PixelHeight;
     public bool CanUndo => _undo.Count > 0;
+    internal int UndoCount => _undo.Count;
     public bool CanRedo => _redo.Count > 0;
 
     public void Apply(EditorState next)
@@ -66,13 +67,15 @@ public sealed partial class EditorDocument
 
     public void Replace(Annotation old, Annotation now)
     {
-        int i = State.Items.IndexOf(old);
+        // By reference: marks placed alike are equal records, and the given one is meant.
+        int i = State.Items.FindIndex(a => ReferenceEquals(a, old));
         if (i >= 0) Apply(State with { Items = State.Items.SetItem(i, now) });
     }
 
     public void Remove(Annotation a)
     {
-        if (State.Items.Contains(a)) Apply(State with { Items = State.Items.Remove(a) });
+        int i = State.Items.FindIndex(m => ReferenceEquals(m, a));
+        if (i >= 0) Apply(State with { Items = State.Items.RemoveAt(i) });
     }
 
     /// <summary>Crops to a rectangle in image pixels. The marks move with the picture; parts

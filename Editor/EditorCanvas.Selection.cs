@@ -60,12 +60,16 @@ public sealed partial class EditorCanvas
         int primaryIndex = items.FindIndex(a => ReferenceEquals(a, _primary));
         var chosen = Enumerable.Range(0, items.Count).Where(i => IsSelectedMark(items[i])).ToList();
         var next = items.Select((a, i) => chosen.Contains(i) ? change(a) : a).ToImmutableList();
+        // A change that changes nothing, such as shrinking a mark already at its smallest, adds
+        // no undo step and leaves the picture saved.
+        if (chosen.All(i => Equals(next[i], items[i]))) return true;
         // Apply first: the document's change handler drops marks it no longer holds.
         _doc.Apply(_doc.State with { Items = next });
         _primary = next[primaryIndex];
         _others.Clear();
         _others.AddRange(chosen.Where(i => i != primaryIndex).Select(i => next[i]));
         InvalidateVisual();
+        NotifySelection();
         return true;
     }
 
@@ -114,6 +118,7 @@ public sealed partial class EditorCanvas
         if (next.SequenceEqual(items, ReferenceEqualityComparer.Instance)) return true;
         _doc.Apply(_doc.State with { Items = next.ToImmutableList() });
         InvalidateVisual();
+        NotifySelection();
         return true;
     }
 
@@ -124,6 +129,7 @@ public sealed partial class EditorCanvas
         if (_doc == null || _textBox != null || _primary is not (TextAnnotation or CalloutAnnotation)) return false;
         var mark = _primary;
         _editing = mark;
+        _toolBeforeEdit = (Color, TextSize);
         Color = mark.Color;
         TextSize = mark.Width;
         if (mark is CalloutAnnotation callout) BeginText(callout.Origin, callout.Tip, callout.Text);
@@ -134,6 +140,16 @@ public sealed partial class EditorCanvas
 
     // The mark being edited again; hidden while its text box is open.
     private Annotation? _editing;
+    // The tool's color and size while a placed mark is edited again, put back when it is cancelled.
+    private (Color Color, double Size)? _toolBeforeEdit;
+
+    private void RestoreToolAfterEdit()
+    {
+        if (_toolBeforeEdit is not { } tool) return;
+        _toolBeforeEdit = null;
+        Color = tool.Color;
+        TextSize = tool.Size;
+    }
 
     // ---- resize grip ----
 

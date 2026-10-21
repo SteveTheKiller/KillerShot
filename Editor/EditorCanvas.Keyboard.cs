@@ -41,7 +41,8 @@ public sealed partial class EditorCanvas
     {
         if (_doc == null || _textBox != null) return false;
         var items = _doc.State.Items;
-        int at = _selected == null ? (back ? items.Count : -1) : items.IndexOf(_selected);
+        // By reference: two marks placed alike are equal records, and value lookup would stick on the first.
+        int at = _selected == null ? (back ? items.Count : -1) : items.FindIndex(a => ReferenceEquals(a, _selected));
         int next = at + (back ? -1 : 1);
         if (next < 0 || next >= items.Count)
         {

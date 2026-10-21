@@ -130,6 +130,36 @@ internal static class SelfTestEditorKeyboard
             output.CopyPixels(new Int32Rect((int)r.X + 2, (int)r.Y + 2, 1, 1), pixel, 4, 0);
             if (pixel[0] != 0 || pixel[1] != 0 || pixel[2] != 0) throw new InvalidOperationException("The exported redaction is not black.");
             report.Add("delete, undo and export without a pointer PASS");
+            // Two marks placed alike are equal records: Tab must still step past the second one.
+            var alike = new EditorDocument(image);
+            App.Instance.SetDocument(alike);
+            await Task.Delay(100);
+            var first = new ShapeAnnotation(ShapeKind.Redact, new Point(10, 10), new Point(60, 40), Colors.Black, 1);
+            alike.Add(first);
+            alike.Add(first with { });
+            canvas.Select(null);
+            bool steps = canvas.SelectNext(false) && canvas.SelectNext(false) && ReferenceEquals(canvas.Selected, alike.State.Items[1]);
+            if (!steps || canvas.SelectNext(false)) throw new InvalidOperationException("Tab stuck on two marks placed alike.");
+            report.Add("Tab passes two marks placed alike PASS");
+
+            // A step badge shrinks from the keyboard, and a resize that changes nothing adds no undo step.
+            var badge = new StepAnnotation(new Point(100, 100), 1, Colors.Red, 30);
+            alike.Add(badge);
+            canvas.Select(badge);
+            int undoBefore = alike.UndoCount;
+            canvas.ResizeSelected(new Vector(-1, 0));
+            if (canvas.Selected is not StepAnnotation { Width: 29 }) throw new InvalidOperationException("Ctrl+Left did not shrink the step badge.");
+            canvas.Select(alike.State.Items[0]);
+            for (int i = 0; i < 100; i++) canvas.ResizeSelected(new Vector(-1, -1));
+            int afterSmallest = alike.UndoCount;
+            canvas.ResizeSelected(new Vector(-1, -1));
+            if (alike.UndoCount != afterSmallest) throw new InvalidOperationException("A resize that changed nothing added an undo step.");
+            report.Add($"step badge shrinks, no-op resize adds no undo ({undoBefore} -> {afterSmallest}) PASS");
+
+            // A damaged marks row opens as no marks instead of failing the capture.
+            if (MarksFormat.Read("""{"v":1,"marks":[{"t":"shape"}]}""") is { Count: > 0 })
+                throw new InvalidOperationException("A mark missing its fields was read.");
+            report.Add("damaged marks row is skipped PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

@@ -39,7 +39,7 @@ public partial class MainWindow
         _textStatus!.Text = Loc("Str_Ocr_Reading");
         string? text;
         try { text = await TextRecognition.ReadAsync(image); }
-        catch (Exception error) { text = null; _textStatus.Text = error.Message; return; }
+        catch (Exception error) { if (read == _textRead) _textStatus.Text = error.Message; return; }
         if (read != _textRead) return;
         if (text == null) { _textBox!.Text = ""; _textStatus.Text = Loc("Str_Ocr_Unavailable"); return; }
         _textBox!.Text = text;

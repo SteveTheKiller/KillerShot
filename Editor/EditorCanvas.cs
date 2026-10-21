@@ -509,11 +509,12 @@ public sealed partial class EditorCanvas : Canvas
         var text = tb.Text.TrimEnd();
         var edited = _editing;
         _editing = null;
-        if (_doc != null && edited != null && _doc.State.Items.Contains(edited))
+        RestoreToolAfterEdit();
+        if (_doc != null && edited != null && _doc.State.Items.FindIndex(a => ReferenceEquals(a, edited)) >= 0)
         {
             // An edited mark is replaced in place, keeping its layer; emptied, it is removed.
             var items = _doc.State.Items;
-            int at = items.IndexOf(edited);
+            int at = items.FindIndex(a => ReferenceEquals(a, edited));
             Annotation? now = text.Length == 0 ? null : edited switch
             {
                 CalloutAnnotation c => c with { Text = text },
@@ -544,6 +545,7 @@ public sealed partial class EditorCanvas : Canvas
         if (_textBox == null) return;
         Children.Remove(_textBox);
         _textBox = null;
+        RestoreToolAfterEdit();
         _editing = null;
         InvalidateVisual();
         Focus();
