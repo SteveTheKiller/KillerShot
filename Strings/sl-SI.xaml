@@ -141,6 +141,7 @@
     <sys:String x:Key="Str_Color_Purple">Vijolična</sys:String>
     <sys:String x:Key="Str_Color_Black">Črna</sys:String>
     <sys:String x:Key="Str_Color_White">Bela</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Šestnajstiška barva</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Slika PNG (*.png)|*.png|Slika JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Slike|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Vse datoteke|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Odpri sliko</sys:String>

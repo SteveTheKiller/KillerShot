@@ -144,6 +144,7 @@
     <sys:String x:Key="Str_Color_Purple">Lila</sys:String>
     <sys:String x:Key="Str_Color_Black">Fekete</sys:String>
     <sys:String x:Key="Str_Color_White">Fehér</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Hexadecimális szín</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-kép (*.png)|*.png|JPEG-kép (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Képek|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Minden fájl|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Kép megnyitása</sys:String>

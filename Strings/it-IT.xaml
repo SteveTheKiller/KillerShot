@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Viola</sys:String>
     <sys:String x:Key="Str_Color_Black">Nero</sys:String>
     <sys:String x:Key="Str_Color_White">Bianco</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Colore esadecimale</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Immagine PNG (*.png)|*.png|Immagine JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Immagini|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tutti i file|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Apri immagine</sys:String>

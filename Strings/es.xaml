@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Morado</sys:String>
     <sys:String x:Key="Str_Color_Black">Negro</sys:String>
     <sys:String x:Key="Str_Color_White">Blanco</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Color hexadecimal</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Imagen PNG (*.png)|*.png|Imagen JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Imágenes|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Todos los archivos|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Abrir imagen</sys:String>

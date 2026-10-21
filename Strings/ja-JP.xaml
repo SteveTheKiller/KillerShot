@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">紫</sys:String>
     <sys:String x:Key="Str_Color_Black">黒</sys:String>
     <sys:String x:Key="Str_Color_White">白</sys:String>
+    <sys:String x:Key="Str_Color_Hex">16 進カラー</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 画像 (*.png)|*.png|JPEG 画像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">画像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|すべてのファイル|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">画像を開く</sys:String>

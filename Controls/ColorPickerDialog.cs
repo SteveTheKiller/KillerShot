@@ -192,9 +192,9 @@ namespace KillerShot.Controls
             _newSwatch.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
             inputRow.Children.Add(_newSwatch);
             _rBox = NumBox(); _gBox = NumBox(); _bBox = NumBox();
-            inputRow.Children.Add(FieldGroup("R", _rBox));
-            inputRow.Children.Add(FieldGroup("G", _gBox));
-            inputRow.Children.Add(FieldGroup("B", _bBox));
+            inputRow.Children.Add(FieldGroup("R", _rBox, L("Str_Color_Red", "Red")));
+            inputRow.Children.Add(FieldGroup("G", _gBox, L("Str_Color_Green", "Green")));
+            inputRow.Children.Add(FieldGroup("B", _bBox, L("Str_Color_Blue", "Blue")));
             var eyedrop = new Button
             {
                 Width = 28, Height = 22, Margin = new Thickness(8, 14, 0, 0),
@@ -211,6 +211,7 @@ namespace KillerShot.Controls
                 VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
             _hexBox = MakeTextBox(96);
             _hexBox.MaxLength = 7;
+            AutomationProperties.SetName(_hexBox, L("Str_Color_Hex", "Hex color"));
             _hexBox.LostFocus += (_, _) => CommitHex();
             _hexBox.KeyDown += (_, e) => { if (e.Key == Key.Enter) CommitHex(); };
             hexRow.Children.Add(_hexBox);
@@ -380,8 +381,10 @@ namespace KillerShot.Controls
 
         // ---- Small themed control builders ----
 
-        private StackPanel FieldGroup(string label, TextBox box)
+        /// <summary>A short visible label over the box; screen readers get the full name.</summary>
+        private StackPanel FieldGroup(string label, TextBox box, string name)
         {
+            AutomationProperties.SetName(box, name);
             var sp = new StackPanel { Margin = new Thickness(0, 0, 6, 0) };
             sp.Children.Add(new TextBlock { Text = label, Foreground = R("MutedTextBrush"), FontSize = 10, HorizontalAlignment = HorizontalAlignment.Center });
             sp.Children.Add(box);

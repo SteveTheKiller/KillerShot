@@ -48,6 +48,8 @@ internal static class SelfTestAccessiblePickers
             report.Add("Dialog Close responds to automation and honors the window closing guard PASS");
             await CheckThemeAccents(folder);
             report.Add("All eight theme accents expose named keyboard selection and selected state in Black and 98SE PASS");
+            CheckColorFieldNames();
+            report.Add("Red, Green, Blue and Hex color fields have distinct names with value editing in every app language PASS");
             code = 0;
         }
         catch (Exception ex) { report.Add(ex.ToString()); }
@@ -57,6 +59,30 @@ internal static class SelfTestAccessiblePickers
             File.WriteAllLines(Path.Combine(folder, "accessible-pickers-report.txt"), report);
             App.Instance.Shutdown(code);
         }
+    }
+
+/// <summary>Screen readers announce each precision field by name, in every app language.</summary>
+    private static void CheckColorFieldNames()
+    {
+        try
+        {
+            foreach (Locale locale in Enum.GetValues<Locale>())
+            {
+                LocaleManager.Apply(locale);
+                var dialog = ShowColorPicker();
+                dialog.UpdateLayout();
+                var boxes = Descendants<TextBox>(dialog).ToArray();
+                var names = boxes.Select(b => UIElementAutomationPeer.CreatePeerForElement(b).GetName()).ToArray();
+                var expected = new[] { "Str_Color_Red", "Str_Color_Green", "Str_Color_Blue", "Str_Color_Hex" }.Select(LocaleManager.Loc).ToArray();
+                if (!names.SequenceEqual(expected) || names.Distinct().Count() != 4 || names.Any(string.IsNullOrWhiteSpace))
+                    throw new InvalidOperationException($"{locale}: color fields are named [{string.Join(", ", names)}].");
+                if (UIElementAutomationPeer.CreatePeerForElement(boxes[0]).GetPattern(PatternInterface.Value) is not IValueProvider value)
+                    throw new InvalidOperationException("The Red field cannot be edited through automation.");
+                value.SetValue("200");
+                dialog.Close();
+            }
+        }
+        finally { LocaleManager.Apply(Locale.EnUS); }
     }
 
     private static ColorPickerDialog ShowColorPicker()

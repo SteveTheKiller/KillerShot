@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Tím</sys:String>
     <sys:String x:Key="Str_Color_Black">Đen</sys:String>
     <sys:String x:Key="Str_Color_White">Trắng</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Màu hex</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Ảnh PNG (*.png)|*.png|Ảnh JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Hình ảnh|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tất cả tệp|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Mở ảnh</sys:String>

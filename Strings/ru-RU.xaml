@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Фиолетовый</sys:String>
     <sys:String x:Key="Str_Color_Black">Чёрный</sys:String>
     <sys:String x:Key="Str_Color_White">Белый</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Шестнадцатеричный цвет</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Изображение PNG (*.png)|*.png|Изображение JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Изображения|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Все файлы|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Открыть изображение</sys:String>

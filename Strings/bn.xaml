@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">বেগুনি</sys:String>
     <sys:String x:Key="Str_Color_Black">কালো</sys:String>
     <sys:String x:Key="Str_Color_White">সাদা</sys:String>
+    <sys:String x:Key="Str_Color_Hex">হেক্স রং</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG ছবি (*.png)|*.png|JPEG ছবি (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">ছবি|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|সব ফাইল|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">ছবি খুলুন</sys:String>

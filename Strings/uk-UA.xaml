@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Фіолетовий</sys:String>
     <sys:String x:Key="Str_Color_Black">Чорний</sys:String>
     <sys:String x:Key="Str_Color_White">Білий</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Шістнадцятковий колір</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Зображення PNG (*.png)|*.png|Зображення JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Зображення|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Усі файли|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Відкрити зображення</sys:String>

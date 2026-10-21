@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Күлгін</sys:String>
     <sys:String x:Key="Str_Color_Black">Қара</sys:String>
     <sys:String x:Key="Str_Color_White">Ақ</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Он алтылық түс</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG суреті (*.png)|*.png|JPEG суреті (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Суреттер|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Барлық файлдар|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Суретті ашу</sys:String>

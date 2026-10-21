@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">紫色</sys:String>
     <sys:String x:Key="Str_Color_Black">黑色</sys:String>
     <sys:String x:Key="Str_Color_White">白色</sys:String>
+    <sys:String x:Key="Str_Color_Hex">十六进制颜色</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 图像 (*.png)|*.png|JPEG 图像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">图像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|所有文件|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">打开图像</sys:String>

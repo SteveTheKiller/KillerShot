@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Mor</sys:String>
     <sys:String x:Key="Str_Color_Black">Siyah</sys:String>
     <sys:String x:Key="Str_Color_White">Beyaz</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Onaltılık renk</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG görüntüsü (*.png)|*.png|JPEG görüntüsü (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Görüntüler|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tüm dosyalar|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Görüntü aç</sys:String>

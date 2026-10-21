@@ -145,6 +145,7 @@
     <sys:String x:Key="Str_Color_Purple">Fialová</sys:String>
     <sys:String x:Key="Str_Color_Black">Černá</sys:String>
     <sys:String x:Key="Str_Color_White">Bílá</sys:String>
+    <sys:String x:Key="Str_Color_Hex">Barva v šestnáctkovém zápisu</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Obrázek PNG (*.png)|*.png|Obrázek JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Obrázky|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Všechny soubory|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Otevřít obrázek</sys:String>
