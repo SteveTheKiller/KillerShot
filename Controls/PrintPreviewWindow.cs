@@ -38,6 +38,9 @@ internal sealed class PrintPreviewWindow : Window
         Width = 940; Height = 720; MinWidth = 700; MinHeight = 480;
         WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent;
         WindowStartupLocation = owner == null ? WindowStartupLocation.CenterScreen : WindowStartupLocation.CenterOwner;
+        SourceInitialized += (_, _) => KillerFamily.Windowing.WorkAreaFit.Fit(this, keepMargin: false);
+        // Owner centering can adjust placement after the HWND is created.
+        Loaded += (_, _) => KillerFamily.Windowing.WorkAreaFit.Fit(this, keepMargin: false);
         ShowInTaskbar = false;
         SetResourceReference(FontFamilyProperty, "UiFont");
         SetResourceReference(ForegroundProperty, "TextBrush");
