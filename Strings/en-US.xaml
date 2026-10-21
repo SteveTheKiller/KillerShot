@@ -470,6 +470,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Unlock {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Opening an external album adds a copy to this album folder.</sys:String>
     <sys:String x:Key="Str_Album_Failed">The album was not changed: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Working on the album…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Save the pending captures before switching or renaming this album.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Enter a file name without folders or reserved characters.</sys:String>
     <sys:String x:Key="Str_Album_Missing">The selected album is missing.</sys:String>

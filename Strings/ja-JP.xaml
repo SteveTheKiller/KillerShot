@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} のロックを解除</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">外部アルバムを開くと、このアルバムフォルダーにコピーが追加されます。</sys:String>
     <sys:String x:Key="Str_Album_Failed">アルバムは変更されませんでした: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">アルバムを処理しています…</sys:String>
     <sys:String x:Key="Str_Album_Pending">このアルバムを切り替えたり名前を変更したりする前に、保存待ちのキャプチャを保存してください。</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">フォルダーや使用できない文字を含まないファイル名を入力してください。</sys:String>
     <sys:String x:Key="Str_Album_Missing">選択したアルバムが見つかりません。</sys:String>

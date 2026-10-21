@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Mở khóa {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Khi mở album bên ngoài, một bản sao sẽ được thêm vào thư mục album này.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Album chưa được thay đổi: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Đang xử lý album…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Hãy lưu các ảnh chụp đang chờ trước khi chuyển hoặc đổi tên album này.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Nhập tên tệp không chứa thư mục hoặc ký tự dành riêng.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Không tìm thấy album đã chọn.</sys:String>

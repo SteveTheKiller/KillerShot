@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Lås opp {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Når du åpner et eksternt album, legges en kopi i denne albummappen.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Albumet ble ikke endret: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Arbeider med albumet…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Lagre ventende opptak før du bytter album eller gir det nytt navn.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Skriv inn et filnavn uten mapper eller reserverte tegn.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Det valgte albumet finnes ikke.</sys:String>

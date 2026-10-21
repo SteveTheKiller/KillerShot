@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Desbloquear {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Al abrir un álbum externo, se añade una copia a esta carpeta de álbumes.</sys:String>
     <sys:String x:Key="Str_Album_Failed">El álbum no se ha cambiado: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Trabajando en el álbum…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Guarda las capturas pendientes antes de cambiar de álbum o de renombrarlo.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Introduce un nombre de archivo sin carpetas ni caracteres reservados.</sys:String>
     <sys:String x:Key="Str_Album_Missing">No se encuentra el álbum seleccionado.</sys:String>

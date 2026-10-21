@@ -104,20 +104,49 @@ namespace KillerShot.Shell
 
         private void AlbumOpen_Click(object sender, RoutedEventArgs e)
         {
-            if ((AlbumList.SelectedItem as ListBoxItem)?.Tag is CaptureLibrary.AlbumInfo album) OpenAlbum(album.Path);
+            if ((AlbumList.SelectedItem as ListBoxItem)?.Tag is CaptureLibrary.AlbumInfo album) _ = OpenAlbumAsync(album.Path);
         }
 
-        private void OpenAlbum(string path, string? password = null)
+        private bool _albumBusy;
+        internal bool TestAlbumBusy => _albumBusy;
+
+        /// <summary>Runs album storage work off the interface thread, so the window keeps painting
+        /// while a large album is copied, re-encrypted or waits for another process's lock. The
+        /// album controls stay disabled until it finishes; confirmations stay on this thread.</summary>
+        private async Task<T> AlbumWorkAsync<T>(Func<T> work)
         {
+            _albumBusy = true;
+            var content = LibrarySettingsPopup.Child;
+            if (content != null) content.IsEnabled = false;
+            RefreshLibraryStatus(Loc("Str_Album_Working"));
+            try
+            {
+                using (new WaitCursorScope()) return await Task.Run(work);
+            }
+            finally
+            {
+                if (content != null) content.IsEnabled = true;
+                _albumBusy = false;
+            }
+        }
+
+        /// <summary>Asks about unsaved edits on the interface thread when album work needs to.</summary>
+        private bool ConfirmReplacementFromWorker() => Dispatcher.Invoke(App.Instance.ConfirmDocumentReplacement);
+
+        internal Task TestOpenAlbumAsync(string path, string? password = null) => OpenAlbumAsync(path, password);
+
+        private async Task OpenAlbumAsync(string path, string? password = null)
+        {
+            if (_albumBusy) return;
             try
             {
                 if (string.Equals(path, CaptureLibrary.FilePath, StringComparison.OrdinalIgnoreCase) && CaptureLibrary.IsOpen) return;
                 while (true)
                 {
-                    bool opened;
-                    bool needsPassword;
-                    using (new WaitCursorScope())
-                        opened = CaptureLibrary.TrySwitchAlbum(path, password, out needsPassword, App.Instance.ConfirmDocumentReplacement);
+                    string? attempt = password;
+                    var (opened, needsPassword) = await AlbumWorkAsync(() =>
+                        (CaptureLibrary.TrySwitchAlbum(path, attempt, out bool locked, ConfirmReplacementFromWorker), locked));
+                    RefreshLibraryStatus();
                     if (opened)
                     {
                         App.Instance.CompleteAlbumSwitch();
@@ -145,7 +174,7 @@ namespace KillerShot.Shell
             {
                 string path = CaptureLibrary.CreateAlbum(dialog.Text);
                 RefreshAlbumManager(path);
-                OpenAlbum(path);
+                _ = OpenAlbumAsync(path);
             }
             catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
         }
@@ -159,8 +188,9 @@ namespace KillerShot.Shell
             catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
         }
 
-        private void AlbumImport_Click(object sender, RoutedEventArgs e)
+        private async void AlbumImport_Click(object sender, RoutedEventArgs e)
         {
+            if (_albumBusy) return;
             var dialog = new FileDialog(FileDialogMode.Open) { Title = Loc("Str_Album_OpenFile"), Filter = Loc("Str_Album_Filter"), DefaultExt = ".kshot" };
             bool? chosen;
             try { chosen = dialog.ShowDialog(this); }
@@ -171,10 +201,11 @@ namespace KillerShot.Shell
             {
                 while (true)
                 {
-                    string? path;
-                    bool needsPassword;
-                    using (new WaitCursorScope()) path = CaptureLibrary.ImportAlbum(dialog.FileName, password, out needsPassword);
-                    if (path != null) { RefreshAlbumManager(path); OpenAlbum(path, password); return; }
+                    string? attempt = password, file = dialog.FileName;
+                    var (path, needsPassword) = await AlbumWorkAsync(() =>
+                        (CaptureLibrary.ImportAlbum(file, attempt, out bool locked), locked));
+                    RefreshLibraryStatus();
+                    if (path != null) { RefreshAlbumManager(path); await OpenAlbumAsync(path, password); return; }
                     if (!needsPassword) return;
                     var unlock = new PromptDialog(string.Format(Loc("Str_Album_UnlockTitle"), Path.GetFileNameWithoutExtension(dialog.FileName)),
                         password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
@@ -281,11 +312,12 @@ namespace KillerShot.Shell
             if (dlg.Confirmed) ApplyLibraryPassword(null);
         }
 
-        private void ApplyLibraryPassword(string? password)
+        private async void ApplyLibraryPassword(string? password)
         {
+            if (_albumBusy) return;
             try
             {
-                using (new WaitCursorScope()) CaptureLibrary.SetPassword(password);
+                await AlbumWorkAsync(() => { CaptureLibrary.SetPassword(password); return true; });
                 RefreshLibraryStatus();
             }
             catch (Exception ex)

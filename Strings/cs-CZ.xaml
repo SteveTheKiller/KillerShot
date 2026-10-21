@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Odemknout {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Otevřením externího alba se do této složky alb přidá jeho kopie.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Album nebylo změněno: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Probíhá práce s albem…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Před přepnutím nebo přejmenováním alba uložte čekající snímky.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Zadejte název souboru bez složek a vyhrazených znaků.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Vybrané album chybí.</sys:String>

@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} entsperren</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Beim Öffnen eines externen Albums wird eine Kopie in diesem Albumordner angelegt.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Das Album wurde nicht geändert: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Album wird bearbeitet…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Speichere die ausstehenden Aufnahmen, bevor du dieses Album wechselst oder umbenennst.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Gib einen Dateinamen ohne Ordner oder reservierte Zeichen ein.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Das ausgewählte Album fehlt.</sys:String>

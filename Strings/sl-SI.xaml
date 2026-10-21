@@ -461,6 +461,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Odkleni {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Ob odprtju zunanjega albuma se kopija doda v to mapo albumov.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Album ni bil spremenjen: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Delo z albumom poteka…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Pred preklopom ali preimenovanjem tega albuma shrani čakajoče posnetke.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Vnesi ime datoteke brez map ali nedovoljenih znakov.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Izbrani album manjka.</sys:String>

@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} আনলক করুন</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">বাইরের অ্যালবাম খুললে এই অ্যালবাম ফোল্ডারে একটি কপি যোগ করা হয়।</sys:String>
     <sys:String x:Key="Str_Album_Failed">অ্যালবাম পরিবর্তন করা হয়নি: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">অ্যালবামে কাজ চলছে…</sys:String>
     <sys:String x:Key="Str_Album_Pending">এই অ্যালবাম বদলানো বা নাম পরিবর্তনের আগে অপেক্ষমাণ ক্যাপচারগুলো সংরক্ষণ করুন।</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">ফোল্ডার বা সংরক্ষিত অক্ষর ছাড়া একটি ফাইলের নাম লিখুন।</sys:String>
     <sys:String x:Key="Str_Album_Missing">নির্বাচিত অ্যালবামটি পাওয়া যাচ্ছে না।</sys:String>

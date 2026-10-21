@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Déverrouiller {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">L’ouverture d’un album externe ajoute une copie dans ce dossier d’albums.</sys:String>
     <sys:String x:Key="Str_Album_Failed">L’album n’a pas été modifié : {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Traitement de l'album…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Enregistrez les captures en attente avant de changer d’album ou de renommer cet album.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Saisissez un nom de fichier sans dossier ni caractères réservés.</sys:String>
     <sys:String x:Key="Str_Album_Missing">L’album sélectionné est introuvable.</sys:String>

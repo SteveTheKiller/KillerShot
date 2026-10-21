@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">解锁 {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">打开外部相册时，会在此相册文件夹中添加一份副本。</sys:String>
     <sys:String x:Key="Str_Album_Failed">相册未更改：{0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">正在处理相册…</sys:String>
     <sys:String x:Key="Str_Album_Pending">切换或重命名此相册前，请保存待处理的截图。</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">请输入不含文件夹或保留字符的文件名。</sys:String>
     <sys:String x:Key="Str_Album_Missing">找不到所选相册。</sys:String>

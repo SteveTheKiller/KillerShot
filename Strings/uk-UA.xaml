@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Розблокувати {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Під час відкриття зовнішнього альбому до цієї папки альбомів додається його копія.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Альбом не змінено: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Триває робота з альбомом…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Збережіть знімки, що очікують, перед перемиканням або перейменуванням цього альбому.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Введіть назву файлу без папок і зарезервованих символів.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Вибраний альбом не знайдено.</sys:String>

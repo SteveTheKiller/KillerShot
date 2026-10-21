@@ -306,16 +306,22 @@ internal static partial class CaptureLibrary
                 path = ManagedAlbumPath(path);
                 if (string.Equals(path, FilePath, StringComparison.OrdinalIgnoreCase) && _db != null) return true;
                 if (PendingCount > 0) throw new InvalidOperationException(Loc("Str_Album_Pending"));
-                using var catalogLock = AcquireCatalogLock();
-                using var transitionLock = AcquireTransitionLock(path);
-                SqliteConnection? destination = PrepareAlbum(path, password, out bool byPassword);
-                if (destination == null) { needsPassword = true; return false; }
-                try
+            }
+            // Waiting for another process's lock, opening the destination and asking about
+            // unsaved edits happen outside the album gate, so the open album stays usable (and
+            // the interface responsive) meanwhile. The gate is held again only for the swap.
+            using var catalogLock = AcquireCatalogLock();
+            using var transitionLock = AcquireTransitionLock(path);
+            SqliteConnection? destination = PrepareAlbum(path, password, out bool byPassword);
+            if (destination == null) { needsPassword = true; return false; }
+            try
+            {
+                if (canActivate != null && !canActivate()) return false;
+                // Confirmation runs a nested dispatcher. Captures accepted there still
+                // belong to the old album, even though this thread owns the writer lock.
+                FlushPending();
+                lock (_gate)
                 {
-                    if (canActivate != null && !canActivate()) return false;
-                    // Confirmation runs a nested dispatcher. Captures accepted there still
-                    // belong to the old album, even though this thread owns the writer lock.
-                    FlushPending();
                     if (PendingCount > 0) throw new InvalidOperationException(Loc("Str_Album_Pending"));
                     Settings.SetRequired("ActiveAlbum", Path.GetFileName(path));
                     Close();
@@ -328,8 +334,8 @@ internal static partial class CaptureLibrary
                     LoadError = null;
                     ObserveExternalChanges();
                 }
-                finally { destination?.Dispose(); }
             }
+            finally { destination?.Dispose(); }
         }
         AfterOpen();
         return true;

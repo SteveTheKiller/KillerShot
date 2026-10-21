@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} kilidini aç</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Harici bir albüm açıldığında bu albüm klasörüne bir kopyası eklenir.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Albüm değiştirilmedi: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Albüm üzerinde çalışılıyor…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Bu albümü değiştirmeden veya yeniden adlandırmadan önce bekleyen yakalamaları kaydedin.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Klasör veya ayrılmış karakter içermeyen bir dosya adı girin.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Seçili albüm bulunamadı.</sys:String>

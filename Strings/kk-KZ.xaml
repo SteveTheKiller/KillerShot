@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} құлпын ашу</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Сыртқы альбомды ашқанда, осы альбомдар қалтасына оның көшірмесі қосылады.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Альбом өзгертілмеді: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Альбоммен жұмыс істелуде…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Альбомды ауыстырмас немесе атауын өзгертпес бұрын, күтіп тұрған түсірілімдерді сақтаңыз.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Қалталар мен сақталған таңбаларсыз файл атауын енгізіңіз.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Таңдалған альбом табылмады.</sys:String>

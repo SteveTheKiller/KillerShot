@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">Odblokuj {0}</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Otwarcie zewnętrznego albumu dodaje jego kopię do tego folderu albumów.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Album nie został zmieniony: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Trwa praca z albumem…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Zapisz oczekujące zrzuty przed przełączeniem albumu lub zmianą jego nazwy.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Wpisz nazwę pliku bez folderów i znaków zastrzeżonych.</sys:String>
     <sys:String x:Key="Str_Album_Missing">Nie znaleziono wybranego albumu.</sys:String>

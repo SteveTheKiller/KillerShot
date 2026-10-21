@@ -467,6 +467,7 @@
     <sys:String x:Key="Str_Album_UnlockTitle">{0} feloldása</sys:String>
     <sys:String x:Key="Str_Album_CopyHint">Külső album megnyitásakor egy másolat kerül ebbe az albummappába.</sys:String>
     <sys:String x:Key="Str_Album_Failed">Az album nem változott: {0}</sys:String>
+    <sys:String x:Key="Str_Album_Working">Az album feldolgozása…</sys:String>
     <sys:String x:Key="Str_Album_Pending">Az albumváltás vagy átnevezés előtt mentse a függőben lévő felvételeket.</sys:String>
     <sys:String x:Key="Str_Album_InvalidName">Adjon meg egy fájlnevet mappák és fenntartott karakterek nélkül.</sys:String>
     <sys:String x:Key="Str_Album_Missing">A kiválasztott album nem található.</sys:String>

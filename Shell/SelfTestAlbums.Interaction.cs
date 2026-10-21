@@ -164,6 +164,10 @@ internal static partial class SelfTestAlbums
         try
         {
             await button.Dispatcher.InvokeAsync(() => button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent))).Task.WaitAsync(TimeSpan.FromSeconds(15));
+            // Album storage work runs in the background, so its dialogs can follow the click.
+            while (DateTime.UtcNow < deadline && failure == null
+                && (answered < responses.Length || App.Instance.Windows.OfType<MainWindow>().Any(w => w.TestAlbumBusy)))
+                await Task.Delay(25);
             if (failure != null) throw failure;
             Check(answered == responses.Length, "The manager did not show every expected dialog.");
             await button.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
