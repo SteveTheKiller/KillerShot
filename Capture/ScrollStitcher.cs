@@ -67,7 +67,7 @@ internal sealed class ScrollStitcher
             return;   // nothing matched yet: keep waiting for a clear first move
         }
         int move = FindShift(_previous, copy, _vertical.Value, _lead, _trail);
-        if (move > 0) Append(copy, move);
+        if (move > 0) { Append(copy, move); LostTrack = false; }
         else if (move < 0) LostTrack = true;
         // move == 0: the user scrolled back or nothing in the band moved; nothing to add.
     }

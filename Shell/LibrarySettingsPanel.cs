@@ -352,8 +352,10 @@ namespace KillerShot.Shell
         /// <summary>Reads every capture's text again, for example after adding a recognition language.</summary>
         private void LibraryReindex_Click(object sender, RoutedEventArgs e)
         {
+            // Without a recognition language nothing could read the text back, so the stored text stays.
+            if (CaptureLibrary.OcrEngineFactory() == null) { RefreshLibraryStatus(Loc("Str_Ocr_Unavailable")); return; }
             CaptureLibrary.ReindexOcr();
-            RefreshLibraryStatus(Loc(TextRecognition.CreateRecognizer() == null ? "Str_Ocr_Unavailable" : "Str_Ocr_Reindexing"));
+            RefreshLibraryStatus(Loc("Str_Ocr_Reindexing"));
         }
 
         /// <summary>Shows the wait cursor while the library file is rewritten.</summary>

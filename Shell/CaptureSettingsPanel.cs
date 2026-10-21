@@ -188,6 +188,13 @@ namespace KillerShot.Shell
                 SyncCaptureOptions();
             };
             menu.Items.Add(add);
+            // Opening in programs with none chosen would do nothing, so the option turns itself off.
+            menu.Closed += (_, _) => Dispatcher.BeginInvoke(() =>
+            {
+                if (Handoff.Apps.Count > 0 || !CaptureSettings.OpenWithApps) return;
+                CaptureSettings.OpenWithApps = false;
+                SyncCaptureOptions();
+            });
             menu.IsOpen = true;
         }
 

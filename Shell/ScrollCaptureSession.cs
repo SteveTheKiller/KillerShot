@@ -49,8 +49,9 @@ internal sealed class ScrollCaptureSession
         }
         catch (Exception error)
         {
-            Finish(keep: false);
+            // Reported, not taken for a cancel: the result is set before Finish completes it.
             _result.TrySetException(error);
+            Finish(keep: false);
         }
         return _result.Task;
     }
@@ -127,6 +128,7 @@ internal sealed class ScrollCaptureSession
         BitmapSource? result = null;
         try { if (keep && _stitcher != null) result = _stitcher.Result(); }
         catch (InvalidOperationException) { }
+        catch (OutOfMemoryException error) { _result.TrySetException(error); }
         _grabber?.Dispose();
         _grabber = null;
         _result.TrySetResult(result);

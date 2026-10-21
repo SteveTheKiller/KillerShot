@@ -107,7 +107,7 @@ namespace KillerShot.Shell
                     case Key.S: Save(); break;
                     // Over the album these act on the capture in view, never the hidden editor image.
                     case Key.C when shift && !TypingInField() && _doc != null && !Library.IsVisible: _ = ReadPictureTextAsync(null, copy: true); break;
-                    case Key.C when !TypingInField(): if (Library.IsVisible) Library.CopyFocused(); else CopyResult(); break;
+                    case Key.C when !shift && !TypingInField(): if (Library.IsVisible) Library.CopyFocused(); else CopyResult(); break;
                     case Key.P: if (Library.IsVisible) Library.PrintFocused(); else PrintResult(); break;
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
@@ -168,7 +168,8 @@ namespace KillerShot.Shell
         }
 
         /// <summary>Editor mark keys apply: the picture is showing and no text field has the keys.</summary>
-        private bool EditorKeysApply() => _doc != null && !Library.IsVisible && !TypingInField() && !Editor.IsEditingText;
+        private bool EditorKeysApply() => _doc != null && !Library.IsVisible && !TypingInField() && !Editor.IsEditingText
+            && _strip?.IsKeyboardFocusWithin != true && _navigationStrip?.IsKeyboardFocusWithin != true;
 
         /// <summary>Windows delivers Print Screen only as a key-up, so the recorder listens here too.</summary>
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e)

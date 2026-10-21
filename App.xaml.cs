@@ -273,7 +273,7 @@ public partial class App : Application
         }
         var bmp = CaptureLibrary.LoadImage(item);
         // A capture edited before opens with its marks, still editable.
-        var restored = CaptureLibrary.LoadMarks(item.Id);
+        var restored = CaptureLibrary.LoadMarks(item.Id, bmp);
         _opening = item;
         SetDocument(restored != null ? EditorDocument.Restore(bmp, restored, item.Taken) : new EditorDocument(bmp, null, item.Taken));
     }

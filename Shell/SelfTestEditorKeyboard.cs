@@ -132,8 +132,9 @@ internal static class SelfTestEditorKeyboard
             report.Add("delete, undo and export without a pointer PASS");
             // Two marks placed alike are equal records: Tab must still step past the second one.
             var alike = new EditorDocument(image);
-            App.Instance.SetDocument(alike);
-            await Task.Delay(100);
+            App.Instance.Document?.MarkSaved();   // no discard prompt for the earlier picture
+            if (!App.Instance.SetDocument(alike) || !ReferenceEquals(canvas.Document, alike))
+                throw new InvalidOperationException("The second picture did not open.");
             var first = new ShapeAnnotation(ShapeKind.Redact, new Point(10, 10), new Point(60, 40), Colors.Black, 1);
             alike.Add(first);
             alike.Add(first with { });

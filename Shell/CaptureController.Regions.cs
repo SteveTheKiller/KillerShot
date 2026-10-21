@@ -85,6 +85,13 @@ internal sealed partial class CaptureController
     {
         // A tick that lands while another capture runs is skipped, never queued.
         if (_interval == null || _busy) return;
+        // A display added, moved or rescaled since the start would make the region stale: stop.
+        if (!RegionMemory.TryLast(FrozenDesktop.EnumerateMonitors(), out var current) || !current.Equals(_intervalRegion))
+        {
+            _tray.ShowInfo(Loc("Str_Region_Interval"), Loc("Str_Region_LayoutChanged"));
+            StopInterval();
+            return;
+        }
         _ = RunAsync(null, CaptureMode.Region, IntPtr.Zero, fixedRegion: _intervalRegion, interval: true);
     }
 

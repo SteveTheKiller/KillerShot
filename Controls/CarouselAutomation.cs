@@ -8,7 +8,7 @@ using KillerShot.Services;
 
 namespace KillerShot.Controls;
 
-/// <summary>What the carousel peers need from Cover Flow and the Rolodex.</summary>
+/// <summary>What the carousel peers need from Cover Flow.</summary>
 internal interface ICaptureCarousel
 {
     IReadOnlyList<CaptureItem> Items { get; }
@@ -83,6 +83,7 @@ internal sealed class CarouselItemAutomationPeer(CarouselAutomationPeer parent, 
     {
         var items = parent.Carousel.Items;
         string text = parent.Carousel.Describe?.Invoke(item) ?? item.Window ?? item.Id.ToString(CultureInfo.InvariantCulture);
+        if (Index < 0) return text;   // a capture that has left the carousel has no position
         return text + ", " + (Index + 1).ToString(CultureInfo.CurrentCulture) + " / " + items.Count.ToString(CultureInfo.CurrentCulture);
     }
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;

@@ -27,7 +27,14 @@ public partial class MainWindow
         MenuItem Item(string key, Action action, string gesture = "")
         {
             var item = new MenuItem { Header = Loc(key), InputGestureText = gesture, IsEnabled = has };
-            item.Click += (_, _) => { if (_doc != null) { Editor.CommitText(); action(); } };
+            item.Click += (_, _) =>
+            {
+                if (_doc == null) return;
+                Editor.CommitText();
+                // A turn or trim of a very large picture can run out of memory; the picture stays as it was.
+                try { action(); }
+                catch (OutOfMemoryException error) { StatusText.Text = error.Message; }
+            };
             return item;
         }
         yield return Item("Str_Img_Paste", PasteIntoPicture, "Ctrl+V");

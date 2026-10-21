@@ -104,6 +104,20 @@ internal static class SelfTestAlbumMarks
                 throw new InvalidOperationException("Removing every mark and the crop did not return to the original.");
             report.Add("plain again forgets marks PASS");
 
+            // Reopened marks sit on the original itself: deleting them one by one returns to plain
+            // too, rather than keeping a second copy of the original as a base picture.
+            long plainId = CaptureLibrary.AddNow(Picture(90), DateTime.Now, "region", "Plain again", null);
+            App.Instance.OpenLibraryCapture(CaptureLibrary.Items().Single(i => i.Id == plainId));
+            App.Instance.Document!.Add(new StepAnnotation(new Point(40, 40), 1, Colors.Red, 30));
+            App.Instance.SetDocument(null);
+            App.Instance.OpenLibraryCapture(CaptureLibrary.Items().Single(i => i.Id == plainId));
+            doc = App.Instance.Document!;
+            foreach (var mark in doc.State.Items.ToList()) doc.Remove(mark);
+            App.Instance.SetDocument(null);
+            if (CaptureLibrary.LoadMarks(plainId) != null)
+                throw new InvalidOperationException("Deleting every reopened mark kept the capture's marks and a copy of its original.");
+            report.Add("reopened marks deleted one by one return to plain PASS");
+
             // A new capture opens before the album stores it; its marks follow once it is stored.
             var fresh = Picture(200);
             App.Instance.SetDocument(new EditorDocument(fresh));

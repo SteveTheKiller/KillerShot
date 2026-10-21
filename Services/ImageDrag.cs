@@ -57,8 +57,10 @@ internal static class ImageDrag
             foreach (string file in files)
             {
                 string name = Path.GetFileName(file);
+                // Drag exports carry a GUID; files handed to other programs carry the capture time.
                 bool png = name.StartsWith("KillerShot ", StringComparison.Ordinal) && name.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
-                    Guid.TryParseExact(name[11..^4], "N", out _);
+                    (Guid.TryParseExact(name[11..^4], "N", out _) || DateTime.TryParseExact(name[11..^4], "yyyy-MM-dd HHmmss",
+                        System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _));
                 if ((name != ".session.lock" && !png) || IsLink(file) || File.GetLastWriteTimeUtc(file) > cutoff) return;
                 // Hold every file before deleting any. A live owner or consumer preserves the session.
                 handles.Add(new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.Delete));

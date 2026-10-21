@@ -99,7 +99,7 @@ internal static partial class CaptureLibrary
 
     /// <summary>The capture as the editor left it: its base picture and marks, or null when it
     /// has none (or they were written by a newer version, in which case the original opens).</summary>
-    public static EditorState? LoadMarks(long id)
+    public static EditorState? LoadMarks(long id, BitmapSource? original = null)
     {
         if (FolderCaptures.IsFolderId(id)) return null;
         byte[]? baseImage;
@@ -118,7 +118,9 @@ internal static partial class CaptureLibrary
             marks = r.GetString(2);
         }
         if (version != MarksFormat.Version || MarksFormat.Read(marks) is not { } items) return null;
-        var image = baseImage != null ? Decode(baseImage, exactPixels: true) : LoadImage(id);
+        // Without a base picture the marks sit on the original itself; the caller's copy is reused so a
+        // later save recognises it and stores no second copy.
+        var image = baseImage != null ? Decode(baseImage, exactPixels: true) : original ?? LoadImage(id);
         return new EditorState(image, items);
     }
 

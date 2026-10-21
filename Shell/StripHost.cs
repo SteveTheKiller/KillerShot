@@ -107,7 +107,8 @@ namespace KillerShot.Shell
         /// the same pictures, so it steps aside there. Only visibility changes here.</summary>
         private void SyncStripPane()
         {
-            bool showPane = !(Library.IsVisible && Library.CurrentView is "flow" or "shelves");
+            // Visibility, not IsVisible: this also runs before the window is shown and while it is in the tray.
+            bool showPane = !(Library.Visibility == Visibility.Visible && Library.CurrentView is "flow" or "shelves");
             bool railChanged = StripDock.RailSize != 24;
             bool paneChanged = StripDock.ShowPane != showPane;
             StripDock.RailSize = 24;
@@ -121,7 +122,6 @@ namespace KillerShot.Shell
             ContentPane.Margin = NavigationDock.Side switch
             {
                 DockSide.Right => new Thickness(margin.Right, margin.Top, margin.Left, margin.Bottom),
-                DockSide.Top or DockSide.Bottom => new Thickness(margin.Right, margin.Top, margin.Right, margin.Bottom),
                 _ => margin,
             };
         }
