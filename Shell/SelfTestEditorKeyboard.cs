@@ -106,12 +106,20 @@ internal static class SelfTestEditorKeyboard
                 throw new InvalidOperationException("The picture does not report its selected mark.");
             var transform = (ITransformProvider)marks[0].GetPattern(PatternInterface.Transform)!;
             if (!transform.CanResize || !transform.CanMove) throw new InvalidOperationException("Marks cannot be moved or resized through automation.");
-            transform.Resize(150, 90);
+            // Automation works in screen pixels: a resize and a move land where the reported bounds say.
+            double perPixel = canvas.ScreenPixelsPerImagePixel;
+            transform.Resize(150 * perPixel, 90 * perPixel);
             var resized = (ShapeAnnotation)canvas.Selected!;
-            if (Math.Abs(resized.Box.Width - 150) > 0.01 || Math.Abs(resized.Box.Height - 90) > 0.01) throw new InvalidOperationException("Automation resize did not size the mark.");
+            if (Math.Abs(resized.Bounds.Width - 150) > 1 || Math.Abs(resized.Bounds.Height - 90) > 1) throw new InvalidOperationException("Automation resize did not size the mark.");
+            var target = marks[0].GetBoundingRectangle().TopLeft + new Vector(30, 20);
+            transform.Move(target.X, target.Y);
+            var landed = marks[0].GetBoundingRectangle().TopLeft;
+            if (Math.Abs(landed.X - target.X) > 1.5 || Math.Abs(landed.Y - target.Y) > 1.5)
+                throw new InvalidOperationException($"Automation move put the mark at {landed}, not {target}.");
+            var sized = ((ShapeAnnotation)canvas.Selected!).Box;
             canvas.ResizeSelected(new Vector(10, -5));
             resized = (ShapeAnnotation)canvas.Selected!;
-            if (Math.Abs(resized.Box.Width - 160) > 0.01 || Math.Abs(resized.Box.Height - 85) > 0.01) throw new InvalidOperationException("Keyboard resize did not size the mark.");
+            if (Math.Abs(resized.Box.Width - sized.Width - 10) > 0.01 || Math.Abs(resized.Box.Height - sized.Height + 5) > 0.01) throw new InvalidOperationException("Keyboard resize did not size the mark.");
             ((ISelectionItemProvider)marks[1].GetPattern(PatternInterface.SelectionItem)!).Select();
             if (canvas.Selected is not TextAnnotation) throw new InvalidOperationException("Automation could not select the text mark.");
             report.Add("tab, automation names, selection, move and resize PASS");

@@ -152,6 +152,12 @@ public sealed partial class EditorCanvas
 
     internal Rect ViewBounds(Annotation mark) => new(ToView(mark.Bounds.TopLeft), ToView(mark.Bounds.BottomRight));
 
+    /// <summary>A screen point as an image point, for automation, which works in screen pixels.</summary>
+    internal Point ScreenToImage(Point screen) => ToImage(PointFromScreen(screen));
+
+    /// <summary>Screen pixels one image pixel covers at the current zoom and display scaling.</summary>
+    internal double ScreenPixelsPerImagePixel => (PointToScreen(ToView(new Point(1, 0))) - PointToScreen(ToView(new Point(0, 0)))).X;
+
     /// <summary>Replaces a mark with a changed copy and returns what is now on the picture.</summary>
     internal Annotation ChangeMark(Annotation mark, Func<Annotation, Annotation> change)
     {
@@ -290,20 +296,26 @@ internal sealed class AnnotationAutomationPeer(EditorCanvasAutomationPeer parent
     bool ITransformProvider.CanResize => Mark is not ShapeAnnotation { Kind: ShapeKind.Arrow or ShapeKind.Line };
     bool ITransformProvider.CanRotate => false;
 
-    /// <summary>Moves the mark's top left corner to (x, y) in image pixels.</summary>
+    /// <summary>Moves the mark so the top left corner of its bounding rectangle is at (x, y) on
+    /// the screen, the coordinates automation uses and this peer reports.</summary>
     void ITransformProvider.Move(double x, double y)
     {
+        if (PresentationSource.FromVisual(Canvas) == null) return;
         var b = Mark.Bounds;
+        var to = Canvas.ScreenToImage(new Point(x, y));
         Canvas.Select(Mark);
-        _mark = Canvas.ChangeMark(Mark, m => m.Offset(new Vector(x - b.X, y - b.Y)));
+        _mark = Canvas.ChangeMark(Mark, m => m.Offset(to - b.TopLeft));
     }
 
-    /// <summary>Sets the mark's size in image pixels.</summary>
+    /// <summary>Sizes the mark's bounding rectangle to (width, height) screen pixels, as reported.</summary>
     void ITransformProvider.Resize(double width, double height)
     {
-        var b = Mark is ShapeAnnotation s ? s.Box : Mark.Bounds;
+        if (PresentationSource.FromVisual(Canvas) == null) return;
+        double perPixel = Canvas.ScreenPixelsPerImagePixel;
+        if (perPixel <= 0) return;
+        var b = Mark.Bounds;
         Canvas.Select(Mark);
-        _mark = Canvas.ChangeMark(Mark, m => m.Resize(new Vector(width - b.Width, height - b.Height)));
+        _mark = Canvas.ChangeMark(Mark, m => m.Resize(new Vector(width / perPixel - b.Width, height / perPixel - b.Height)));
     }
 
     void ITransformProvider.Rotate(double degrees) => throw new InvalidOperationException();
