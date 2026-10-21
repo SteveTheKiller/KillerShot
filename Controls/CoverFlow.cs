@@ -157,7 +157,8 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         {
             if (IndexAt(point) is not int index || index >= _items.Count) return null;
             var item = _items[index];
-            return () => CaptureLibrary.LoadImage(item);
+            // The flattened result, as from every other album view, so a redaction is never bypassed.
+            return () => CaptureLibrary.LoadOutput(item);
         }, verticalNavigation: false);
         Focusable = true;
         FocusVisualStyle = KillerFamily.Accessibility.AccessibleControls.FocusStyleFor(this);

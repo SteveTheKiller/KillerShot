@@ -119,6 +119,7 @@ public partial class App : Application
         if (SelfTestDragCleanup.TryRun(e.Args)) return;
         if (SelfTestWorkspaceAreas.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
+        if (SelfTestReviewFixes.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
 
         // Install switches. /silent installs without UI (machine-wide with admin rights, for the

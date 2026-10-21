@@ -983,13 +983,18 @@ namespace KillerShot.Shell
         /// carousel. Null when focus is elsewhere, so a shortcut never falls back to another image.</summary>
         internal CaptureItem? FocusedCapture()
         {
-            for (var d = Keyboard.FocusedElement as DependencyObject; d != null && d != this; d = VisualTreeHelper.GetParent(d) ?? LogicalTreeHelper.GetParent(d))
+            for (var d = Keyboard.FocusedElement as DependencyObject; d != null && d != this; d = UiParent(d))
             {
                 if (d is Button { Tag: CaptureItem tile }) return CaptureLibrary.IsCurrent(tile) ? tile : null;
                 if (d is CoverFlow flow) return flow.SelectedItem is { } f && CaptureLibrary.IsCurrent(f) ? f : null;
             }
             return null;
         }
+
+        /// <summary>The visual parent, or the logical one for a content element such as a focused Hyperlink,
+        /// which VisualTreeHelper refuses.</summary>
+        internal static DependencyObject? UiParent(DependencyObject d) =>
+            d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) ?? LogicalTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d);
 
         /// <summary>Ctrl+C over the album: copies the focused capture, or reports there is none.</summary>
         internal void CopyFocused()

@@ -41,7 +41,12 @@ internal static class ClipboardImages
             return Normalize(bitmap);
         if (data.GetDataPresent(DataFormats.FileDrop) && data.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } files
             && File.Exists(files[0]) && ImageExtensions.Contains(Path.GetExtension(files[0])))
-            return ImageOutput.Load(files[0]);
+        {
+            // A damaged or unreadable file is reported like any other failed read, never thrown past the paste.
+            try { return ImageOutput.Load(files[0]); }
+            catch (Exception error) when (error is FormatException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException or ArgumentException)
+            { throw new IOException(error.Message, error); }
+        }
         return null;
     }
 

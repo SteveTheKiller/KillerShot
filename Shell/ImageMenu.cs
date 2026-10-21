@@ -107,16 +107,25 @@ public partial class MainWindow
         string current = $"{_doc.PixelWidth} x {_doc.PixelHeight}";
         var dialog = new PromptDialog(Loc("Str_Img_ResizeCustom"), Loc("Str_Img_ResizeDetail"), Loc("Str_Img_Resize"), current) { Owner = this };
         if (dialog.ShowDialog() != true) return;
-        string text = dialog.Text.Trim();
-        // "50%" keeps the shape; "1280 x 720" sets both; "1280" alone keeps the shape too.
+        if (ParseResize(dialog.Text, _doc.PixelWidth, _doc.PixelHeight) is { } size) ResizeTo(size.Width, size.Height);
+        else StatusText.Text = Loc("Str_Img_Invalid");
+    }
+
+    /// <summary>"50%" keeps the shape; "1280 x 720" sets both; "1280" alone keeps the shape too. A number
+    /// too big for an int becomes int.MaxValue, so Scale refuses it as too large rather than crashing.</summary>
+    internal static (int Width, int Height)? ParseResize(string input, int width, int height)
+    {
+        string text = input.Trim();
+        static int Whole(string digits) => int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out int n) ? n : int.MaxValue;
+        static int Scaled(double value) => (int)Math.Clamp(Math.Round(value), 1, int.MaxValue);
         if (Regex.Match(text, @"^(\d+(?:[.,]\d+)?)\s*%$") is { Success: true } pct
             && double.TryParse(pct.Groups[1].Value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out double percent) && percent > 0)
-            ResizeTo(Math.Max(1, (int)Math.Round(_doc.PixelWidth * percent / 100)), Math.Max(1, (int)Math.Round(_doc.PixelHeight * percent / 100)));
-        else if (Regex.Match(text, @"^(\d+)\s*[xX×*,]\s*(\d+)$") is { Success: true } size)
-            ResizeTo(int.Parse(size.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(size.Groups[2].Value, CultureInfo.InvariantCulture));
-        else if (int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out int width) && width > 0)
-            ResizeTo(width, Math.Max(1, (int)Math.Round((double)_doc.PixelHeight * width / _doc.PixelWidth)));
-        else StatusText.Text = Loc("Str_Img_Invalid");
+            return (Scaled(width * percent / 100), Scaled(height * percent / 100));
+        if (Regex.Match(text, @"^(\d+)\s*[xX×*,]\s*(\d+)$") is { Success: true } size)
+            return (Whole(size.Groups[1].Value), Whole(size.Groups[2].Value));
+        if (Regex.IsMatch(text, @"^\d+$") && Whole(text) is > 0 and int w)
+            return (w, Scaled((double)height * w / width));
+        return null;
     }
 
     private void PromptMargin()
