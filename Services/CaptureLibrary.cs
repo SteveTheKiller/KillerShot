@@ -585,7 +585,7 @@ internal static partial class CaptureLibrary
         lock (PendingWriter) return AddNowCore(bmp, taken, mode, window, process);
     }
 
-    private static long AddNowCore(BitmapSource bmp, DateTime taken, string mode, string? window, string? process)
+    private static long AddNowCore(BitmapSource bmp, DateTime taken, string mode, string? window, string? process, string? importKey = null)
     {
         if (!bmp.IsFrozen) bmp.Freeze();
         byte[] image = ImageOutput.EncodePng(bmp);
@@ -626,6 +626,17 @@ internal static partial class CaptureLibrary
             cmd.Parameters.AddWithValue("$image", image);
             cmd.ExecuteNonQuery();
             IndexText(id, transaction);
+            if (importKey != null)
+            {
+                // Recorded with the capture, so an import whose source cannot be removed is
+                // never stored twice.
+                using var mark = album.CreateCommand();
+                mark.Transaction = transaction;
+                mark.CommandText = "INSERT INTO meta(key, value) VALUES ($k, $id);";
+                mark.Parameters.AddWithValue("$k", importKey);
+                mark.Parameters.AddWithValue("$id", id);
+                mark.ExecuteNonQuery();
+            }
             transaction.Commit();
         }
         // The capture is committed. Later indexing, pruning or listeners cannot turn it back
@@ -712,8 +723,9 @@ internal static partial class CaptureLibrary
                     lock (PendingWriter)
                     {
                         lock (_gate) if (!ReferenceEquals(_db, database) || database == null) return;
-                        var bmp = ImageOutput.Load(file.FullName);
-                        AddNow(bmp, RecentCaptures.TakenFrom(file) ?? file.LastWriteTime, "", null, null);
+                        string key = "legacy_import:" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file.FullName)));
+                        if (!HasMeta(database, key))
+                            AddNowCore(ImageOutput.Load(file.FullName), RecentCaptures.TakenFrom(file) ?? file.LastWriteTime, "", null, null, key);
                         file.Delete();
                     }
                 }
@@ -722,6 +734,17 @@ internal static partial class CaptureLibrary
             if (!dir.EnumerateFileSystemInfos().Any()) dir.Delete();
         }
         catch { }
+    }
+
+    private static bool HasMeta(SqliteConnection database, string key)
+    {
+        lock (_gate)
+        {
+            using var cmd = database.CreateCommand();
+            cmd.CommandText = "SELECT 1 FROM meta WHERE key = $k;";
+            cmd.Parameters.AddWithValue("$k", key);
+            return cmd.ExecuteScalar() != null;
+        }
     }
 
     // ============================================================

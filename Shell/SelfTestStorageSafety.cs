@@ -37,6 +37,7 @@ internal static class SelfTestStorageSafety
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
             if (scenario == "pending") await PendingAfterWriteFailure(log);
             else if (scenario == "pending-budget") await PendingBudget(log);
+            else if (scenario == "legacy-migration") await LegacyMigration(dir, log);
             else if (scenario == "identity") CaptureIdentity(log);
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
@@ -196,6 +197,43 @@ internal static class SelfTestStorageSafety
             log.AppendLine("pending_budget_recovered=True");
         }
         finally { CaptureLibrary.PendingBudgetBytes = saved; }
+    }
+
+    /// <summary>An old Recent PNG that cannot be deleted is imported once, however often the
+    /// album reopens, and is cleaned up once deletion is allowed again.</summary>
+    private static async Task LegacyMigration(string dir, StringBuilder log)
+    {
+        CaptureLibrary.Close();
+        string recent = Path.Combine(dir, "library", "Recent");
+        Directory.CreateDirectory(recent);
+        string legacy = Path.Combine(recent, "KillerShot 2026-01-02 030405.png");
+        ImageOutput.SavePng(Pixel(), legacy);
+        File.SetAttributes(legacy, FileAttributes.ReadOnly);
+        CaptureLibrary.BackgroundWork = true;
+        try
+        {
+            for (int open = 1; open <= 4; open++)
+            {
+                if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+                await WaitUntil(() => CaptureLibrary.Count >= 1);
+                await Task.Delay(500);
+                int count = CaptureLibrary.Count;
+                log.AppendLine($"open={open} captures={count} legacy_present={File.Exists(legacy)}");
+                if (count != 1) throw new InvalidOperationException($"Reopen {open} imported the undeletable legacy capture again.");
+                CaptureLibrary.Close();
+            }
+            File.SetAttributes(legacy, FileAttributes.Normal);
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            for (int attempt = 0; attempt < 100 && File.Exists(legacy); attempt++) await Task.Delay(20);
+            await Task.Delay(300);
+            log.AppendLine($"after_unlock captures={CaptureLibrary.Count} legacy_present={File.Exists(legacy)}");
+            if (File.Exists(legacy) || CaptureLibrary.Count != 1) throw new InvalidOperationException("Cleanup did not remove the legacy file exactly once.");
+        }
+        finally
+        {
+            CaptureLibrary.BackgroundWork = false;
+            if (File.Exists(legacy)) File.SetAttributes(legacy, FileAttributes.Normal);
+        }
     }
 
     private static void CaptureIdentity(StringBuilder log)
