@@ -406,6 +406,41 @@
          keyed as well for explicit references. -->
     <Style TargetType="TextBox" BasedOn="{StaticResource DarkTextBox}"/>
 
+    <Style TargetType="PasswordBox">
+        <Setter Property="Tag" Value="{DynamicResource UseDialogCaption}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="PasswordBox">
+                            <Grid>
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                        SnapsToDevicePixels="True">
+                                    <ScrollViewer x:Name="PART_ContentHost" HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Hidden" Focusable="False"/>
+                                </Border>
+                                <Border IsHitTestVisible="False" BorderBrush="{DynamicResource BevelDarkBrush}"
+                                        BorderThickness="{DynamicResource CheckSunkenDarkThickness}"/>
+                                <Border IsHitTestVisible="False" BorderBrush="{DynamicResource BevelLightBrush}"
+                                        BorderThickness="{DynamicResource CheckSunkenLightThickness}"/>
+                                <Border IsHitTestVisible="False" Margin="1" BorderBrush="{DynamicResource FrameOuterDarkBrush}"
+                                        BorderThickness="{DynamicResource CheckSunkenDarkThickness}"/>
+                                <Border IsHitTestVisible="False" Margin="1" BorderBrush="{DynamicResource FrameOuterLightBrush}"
+                                        BorderThickness="{DynamicResource CheckSunkenLightThickness}"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.56"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- One outline around a date and its calendar affordance. The calendar glyph is part of the
          field, not a second rounded button glued to its right edge. -->
     <Style x:Key="DateFieldShell" TargetType="Border">
