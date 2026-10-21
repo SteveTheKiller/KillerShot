@@ -22,7 +22,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - After-capture choices include copying to the clipboard, saving to a folder, asking where to save and opening the editor. Set a filename pattern, PNG or JPEG format, JPEG quality and notifications. Clipboard captures include both PNG and a standard bitmap.
 - Record a region, window or monitor to MP4 with system sound, microphone or both, or to animated GIF. Frame rate and quality are configurable; multichannel audio keeps center and surround content in stereo.
 - Start recording with Ctrl+R or the global Ctrl+Shift+Print Screen shortcut. A countdown, capture frame and Pause, Resume, Stop and Discard controls stay out of the recording, with keyboard and tray access while the editor stays hidden.
-- Stop and app exit wait for the recording to finish saving. Capture or encoder errors stop the timer and retain recoverable video; GIFs preserve long static intervals and play at their recorded speed at every frame rate.
+- Stop and app exit wait for the recording to finish saving. Capture, encoder or audio device errors stop the recording right away and retain recoverable video; GIFs preserve long static intervals and play at their recorded speed at every frame rate.
 
 ### Albums and collections
 

@@ -31,7 +31,9 @@ internal sealed class Recorder
     public int Frames { get; private set; }
     public int Dropped { get; private set; }
     public bool IsPaused => _paused;
-    public bool HasFailed => Volatile.Read(ref _error) != null;
+    /// <summary>A capture, encoder or audio error. Audio counts, so a lost microphone stops the
+    /// recording at once instead of recording silence until Stop.</summary>
+    public bool HasFailed => Volatile.Read(ref _error) != null || _audio?.Error != null;
     /// <summary>The encoder completed the file, even if a capture source reported an error.</summary>
     public bool IsFinalized { get; private set; }
 

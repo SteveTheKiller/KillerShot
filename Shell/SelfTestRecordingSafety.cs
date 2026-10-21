@@ -12,7 +12,7 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands")) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands" or "--selftest-audio-fault")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
@@ -23,6 +23,7 @@ internal static class SelfTestRecordingSafety
             "--selftest-recording-restore" => RunRestoreAsync(dir),
             "--selftest-audio-downmix" => RunDownmixAsync(dir),
             "--selftest-recording-commands" => RunCommandsAsync(dir),
+            "--selftest-audio-fault" => RunAudioFaultAsync(dir),
             _ => RunAsync(dir)
         };
         return true;
@@ -262,6 +263,40 @@ internal static class SelfTestRecordingSafety
         Application.Current.Shutdown(code);
     }
 
+    /// <summary>An audio device that fails mid-recording marks the recording failed within a
+    /// status tick, instead of only at Stop, and the video recorded so far is still finalized.</summary>
+    private static async Task RunAudioFaultAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        try
+        {
+            using var sink = new DelayedEncoder();
+            sink.Release.Set();
+            var audio = new TestAudioDevice();
+            var recorder = new Recorder(new Win32.RECT(0, 0, 64, 64), sink, 30, false, audioSources: [audio]);
+            await recorder.StartAsync();
+            await sink.FirstAudio.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            if (recorder.HasFailed) throw new InvalidOperationException("The recording failed before the audio fault.");
+            audio.Fail();
+            var seen = System.Diagnostics.Stopwatch.StartNew();
+            while (!recorder.HasFailed && seen.ElapsedMilliseconds < 2000) await Task.Delay(10);
+            report.Add($"Audio fault visible after {seen.ElapsedMilliseconds} ms; failed={recorder.HasFailed}.");
+            if (!recorder.HasFailed || seen.ElapsedMilliseconds > 250)
+                throw new InvalidOperationException("An audio device failure stayed hidden while recording continued.");
+            Exception? failure = null;
+            try { await recorder.StopAsync(); }
+            catch (Exception ex) { failure = ex; }
+            if (failure == null || !recorder.IsFinalized)
+                throw new InvalidOperationException("The audio fault was not reported, or the recorded prefix was not finalized.");
+            report.Add("Audio fault stops promptly and keeps the recorded part: PASS");
+            code = 0;
+        }
+        catch (Exception ex) { report.Add(ex.ToString()); }
+        File.WriteAllLines(Path.Combine(dir, "audio-fault-report.txt"), report);
+        Application.Current.Shutdown(code);
+    }
+
     private static async Task StopCutsOffAudioAsync(List<string> report, bool paused = false)
     {
         using var sink = new DelayedEncoder();
@@ -428,6 +463,7 @@ internal static class SelfTestRecordingSafety
             if (FailOnStop) Error ??= new IOException("The synthetic audio device disconnected.");
         }
         public void Drain(int frames, float[]? mix) { }
+        public void Fail() => Error ??= new IOException("The synthetic audio device was unplugged.");
         public void Dispose() => Stop();
     }
 
