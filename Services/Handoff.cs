@@ -74,14 +74,14 @@ internal static class Handoff
 
     private static string? SendMail(string file)
     {
-        var attachment = new MapiFileDesc { Position = -1, PathName = file, FileName = Path.GetFileName(file) };
-        int size = Marshal.SizeOf<MapiFileDesc>();
-        IntPtr files = Marshal.AllocHGlobal(size);
         try
         {
-            Marshal.StructureToPtr(attachment, files, false);
-            var message = new MapiMessage { Subject = Path.GetFileNameWithoutExtension(file), FileCount = 1, Files = files };
-            int result = MAPISendMail(IntPtr.Zero, IntPtr.Zero, message, MapiLogonUi | MapiDialog, 0);
+            // The Unicode entry point keeps paths outside the system code page intact, such as a
+            // Polish, Russian or Chinese user name in the temporary folder. Mail programs that only
+            // offer the older one get the ANSI call.
+            int result;
+            try { result = Send<MapiFileDescW, MapiMessageW>(file, MAPISendMailW); }
+            catch (EntryPointNotFoundException) { result = Send<MapiFileDesc, MapiMessage>(file, MAPISendMail); }
             return result switch
             {
                 0 or MapiUserAbort => null,
@@ -90,9 +90,28 @@ internal static class Handoff
         }
         catch (DllNotFoundException) { return LocaleManager.Loc("Str_Handoff_NoMail"); }
         catch (EntryPointNotFoundException) { return LocaleManager.Loc("Str_Handoff_NoMail"); }
+    }
+
+    private interface IMapiFile { string? PathName { set; } string? FileName { set; } int Position { set; } }
+    private interface IMapiMessage { string? Subject { set; } int FileCount { set; } IntPtr Files { set; } }
+
+    private static int Send<TFile, TMessage>(string file, Func<IntPtr, IntPtr, TMessage, int, int, int> send)
+        where TFile : struct, IMapiFile where TMessage : class, IMapiMessage, new()
+    {
+        TFile attachment = default;
+        attachment.Position = -1;
+        attachment.PathName = file;
+        attachment.FileName = Path.GetFileName(file);
+        IntPtr files = Marshal.AllocHGlobal(Marshal.SizeOf<TFile>());
+        try
+        {
+            Marshal.StructureToPtr(attachment, files, false);
+            var message = new TMessage { Subject = Path.GetFileNameWithoutExtension(file), FileCount = 1, Files = files };
+            return send(IntPtr.Zero, IntPtr.Zero, message, MapiLogonUi | MapiDialog, 0);
+        }
         finally
         {
-            Marshal.DestroyStructure<MapiFileDesc>(files);
+            Marshal.DestroyStructure<TFile>(files);
             Marshal.FreeHGlobal(files);
         }
     }
@@ -100,10 +119,10 @@ internal static class Handoff
     private const int MapiLogonUi = 0x1, MapiDialog = 0x8, MapiUserAbort = 1;
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    private sealed class MapiMessage
+    private sealed class MapiMessage : IMapiMessage
     {
         public int Reserved;
-        public string? Subject;
+        public string? subject;
         public string? NoteText;
         public string? MessageType;
         public string? DateReceived;
@@ -112,21 +131,64 @@ internal static class Handoff
         public IntPtr Originator;
         public int RecipientCount;
         public IntPtr Recipients;
-        public int FileCount;
-        public IntPtr Files;
+        public int fileCount;
+        public IntPtr files;
+        public string? Subject { set => subject = value; }
+        public int FileCount { set => fileCount = value; }
+        public IntPtr Files { set => files = value; }
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    private struct MapiFileDesc
+    private struct MapiFileDesc : IMapiFile
     {
         public int Reserved;
         public int Flags;
-        public int Position;
-        public string? PathName;
-        public string? FileName;
+        public int position;
+        public string? pathName;
+        public string? fileName;
         public IntPtr FileType;
+        public string? PathName { set => pathName = value; }
+        public string? FileName { set => fileName = value; }
+        public int Position { set => position = value; }
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private sealed class MapiMessageW : IMapiMessage
+    {
+        public int Reserved;
+        public string? subject;
+        public string? NoteText;
+        public string? MessageType;
+        public string? DateReceived;
+        public string? ConversationId;
+        public int Flags;
+        public IntPtr Originator;
+        public int RecipientCount;
+        public IntPtr Recipients;
+        public int fileCount;
+        public IntPtr files;
+        public string? Subject { set => subject = value; }
+        public int FileCount { set => fileCount = value; }
+        public IntPtr Files { set => files = value; }
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct MapiFileDescW : IMapiFile
+    {
+        public int Reserved;
+        public int Flags;
+        public int position;
+        public string? pathName;
+        public string? fileName;
+        public IntPtr FileType;
+        public string? PathName { set => pathName = value; }
+        public string? FileName { set => fileName = value; }
+        public int Position { set => position = value; }
     }
 
     [DllImport("mapi32.dll", CharSet = CharSet.Ansi)]
     private static extern int MAPISendMail(IntPtr session, IntPtr uiParam, MapiMessage message, int flags, int reserved);
+
+    [DllImport("mapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern int MAPISendMailW(IntPtr session, IntPtr uiParam, MapiMessageW message, int flags, int reserved);
 }

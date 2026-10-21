@@ -14,13 +14,15 @@ public sealed partial class EditorDocument
     {
         var (px, w, h) = Pixels(State.Image);
         var turned = new byte[px.Length];
-        // The turned picture is h wide and w tall.
+        // The turned picture is h wide and w tall. Whole pixels move as one 32-bit value each.
+        var from = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(px);
+        var to = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(turned.AsSpan());
         for (int y = 0; y < h; y++)
+        {
+            int row = y * w, dx = clockwise ? h - 1 - y : y;
             for (int x = 0; x < w; x++)
-            {
-                int dx = clockwise ? h - 1 - y : y, dy = clockwise ? x : w - 1 - x;
-                Buffer.BlockCopy(px, (y * w + x) * 4, turned, (dy * h + dx) * 4, 4);
-            }
+                to[(clockwise ? x : w - 1 - x) * h + dx] = from[row + x];
+        }
         var m = clockwise ? new Matrix(0, 1, -1, 0, h, 0) : new Matrix(0, -1, 1, 0, 0, w);
         return Replace(Bitmap(turned, h, w), m, 1);
     }
@@ -30,12 +32,19 @@ public sealed partial class EditorDocument
     {
         var (px, w, h) = Pixels(State.Image);
         var flipped = new byte[px.Length];
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
+        if (horizontal)
+        {
+            var from = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(px);
+            var to = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, uint>(flipped.AsSpan());
+            for (int y = 0; y < h; y++)
             {
-                int dx = horizontal ? w - 1 - x : x, dy = horizontal ? y : h - 1 - y;
-                Buffer.BlockCopy(px, (y * w + x) * 4, flipped, (dy * w + dx) * 4, 4);
+                from.Slice(y * w, w).CopyTo(to.Slice(y * w, w));
+                to.Slice(y * w, w).Reverse();
             }
+        }
+        else
+            for (int y = 0; y < h; y++)
+                Buffer.BlockCopy(px, y * w * 4, flipped, (h - 1 - y) * w * 4, w * 4);   // whole rows
         var m = horizontal ? new Matrix(-1, 0, 0, 1, w, 0) : new Matrix(1, 0, 0, -1, 0, h);
         return Replace(Bitmap(flipped, w, h), m, 1);
     }
@@ -46,9 +55,28 @@ public sealed partial class EditorDocument
         int w = PixelWidth, h = PixelHeight;
         if (width < 1 || height < 1 || (width == w && height == h)) return false;
         if ((long)width * height > Services.ImageOutput.MaxPixels) throw new Services.ImageTooLargeException(width, height);
+        // Smooth resampling blends each output pixel from several source pixels, so pixels under
+        // a redaction would bleed into the edge just outside the scaled box. They are blacked out
+        // in the source first, so only the redaction's own color can bleed.
+        BitmapSource source = State.Image;
+        var redactions = State.Items.OfType<ShapeAnnotation>().Where(s => s.Kind == ShapeKind.Redact).ToList();
+        if (redactions.Count > 0)
+        {
+            var covered = new DrawingVisual();
+            RenderOptions.SetBitmapScalingMode(covered, BitmapScalingMode.NearestNeighbor);
+            using (var dc = covered.RenderOpen())
+            {
+                dc.DrawImage(State.Image, new Rect(0, 0, w, h));
+                foreach (var r in redactions) dc.DrawRectangle(new SolidColorBrush(r.Color), null, r.PixelCells);
+            }
+            var flat = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
+            flat.Render(covered);
+            flat.Freeze();
+            source = flat;
+        }
         var visual = new DrawingVisual();
         RenderOptions.SetBitmapScalingMode(visual, BitmapScalingMode.HighQuality);
-        using (var dc = visual.RenderOpen()) dc.DrawImage(State.Image, new Rect(0, 0, width, height));
+        using (var dc = visual.RenderOpen()) dc.DrawImage(source, new Rect(0, 0, width, height));
         var rtb = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
         rtb.Render(visual);
         var (px, _, _) = Pixels(new FormatConvertedBitmap(rtb, PixelFormats.Bgra32, null, 0));

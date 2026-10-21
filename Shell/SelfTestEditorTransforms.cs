@@ -25,6 +25,7 @@ internal static class SelfTestEditorTransforms
         try
         {
             Run(report);
+            UpscaleKeepsRedaction(report);
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -65,6 +66,33 @@ internal static class SelfTestEditorTransforms
         new FormatConvertedBitmap(a, PixelFormats.Bgra32, null, 0).CopyPixels(pa, w * 4, 0);
         new FormatConvertedBitmap(b, PixelFormats.Bgra32, null, 0).CopyPixels(pb, w * 4, 0);
         return pa.AsSpan().SequenceEqual(pb);
+    }
+
+    /// <summary>Enlarging blends neighbouring pixels. The secret under a redaction must not bleed
+    /// into the pixels just outside the scaled box.</summary>
+    private static void UpscaleKeepsRedaction(List<string> report)
+    {
+        const int size = 40;
+        var px = new byte[size * size * 4];
+        for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                byte v = x >= 15 && x < 25 && y >= 15 && y < 25 ? (byte)255 : (byte)128;   // white secret on gray
+                int i = (y * size + x) * 4;
+                px[i] = px[i + 1] = px[i + 2] = v; px[i + 3] = 255;
+            }
+        var image = BitmapSource.Create(size, size, 96, 96, PixelFormats.Bgra32, null, px, size * 4);
+        image.Freeze();
+        var doc = new EditorDocument(image);
+        doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(15, 15), new Point(25, 25), Colors.Black, 1));
+        doc.Scale(size * 3, size * 3);
+        var output = new FormatConvertedBitmap(doc.Render(), PixelFormats.Bgra32, null, 0);
+        var all = new byte[size * 3 * size * 3 * 4];
+        output.CopyPixels(all, size * 3 * 4, 0);
+        int brightest = 0;
+        for (int i = 0; i < all.Length; i += 4) brightest = Math.Max(brightest, Math.Max(all[i], Math.Max(all[i + 1], all[i + 2])));
+        report.Add($"upscaled redaction: brightest pixel {brightest} (gray is 128)");
+        Expect(brightest <= 130, "Enlarging let the redacted pixels bleed past the redaction.");
     }
 
     private static void Run(List<string> report)
