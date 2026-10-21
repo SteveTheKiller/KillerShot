@@ -53,12 +53,20 @@ internal static class SelfTestOutputIdentity
             window.Show();
             await Task.Delay(200);
 
-            foreach (var view in new[] { "grid", "timeline", "flow" })
+            foreach (var view in new[] { "grid", "timeline", "shelves", "flow" })
             {
                 window.TestShowLibraryView(view);
                 await Task.Delay(300);
                 window.UpdateLayout();
                 if (!window.Library.IsVisible) throw new InvalidOperationException(view + ": the album is not over the image.");
+                bool carousel = view is "flow" or "shelves";
+                if (window.StripDock.ShowPane == carousel)
+                    throw new InvalidOperationException(view + ": the photo strip " + (carousel ? "doubles the album carousel." : "is missing."));
+                var shot = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+                shot.Render((Visual)window.Content);
+                ImageOutput.SavePng(shot, Path.Combine(folder, "album-" + view + ".png"));
+                report.Add(view + ": photo strip " + (carousel ? "hidden" : "shown") + " PASS");
+                if (view == "shelves") continue;
                 var target = Visuals(window.Library).OfType<FrameworkElement>()
                     .FirstOrDefault(e => e.IsVisible && (e is Button { Tag: CaptureItem } || e is CoverFlow { MainView: true }))
                     ?? throw new InvalidOperationException(view + ": no capture control is showing.");

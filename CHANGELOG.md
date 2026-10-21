@@ -31,7 +31,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Browse albums as shelves of carousels, one large carousel, a grid or a timeline, grouped by date or collection. Ctrl+L shows the album over an open image.
 - Add local or network folders as saved collections, including subfolders, while keeping images in their original locations. Background scans refresh changed images, retry unavailable folders and locked files, and retain accessible images with an availability warning.
 - The Windows Screenshots folder appears as a live collection with Open, Copy, Show in File Explorer and Add to the library actions. It can be hidden in album settings and stays under its own heading when grouped by collection. (#6)
-- The collection sidebar, photo carousel and main view have independent placement, sizing and collapse controls. Collection filters apply to the album and editor carousel; preview styles include compact photo piles.
+- The collection sidebar, photo carousel and main view have independent placement, sizing and collapse controls. Over the album's large carousel and shelves views the editor's photo carousel steps aside, so pictures never appear in two carousels at once. Collection filters apply to the album and editor carousel; preview styles include compact photo piles.
 
 ### Editing and output
 

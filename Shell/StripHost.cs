@@ -94,10 +94,13 @@ namespace KillerShot.Shell
         private void SyncStripPlacement()
         {
             NavigationDock.ShowPane = true;
+            // Over the album's carousel views the photo strip would be a second carousel of the
+            // same pictures, so only its rail stays.
+            bool showPane = !(Library.IsVisible && Library.CurrentView is "flow" or "shelves");
             bool railChanged = StripDock.RailSize != 24;
-            bool paneChanged = !StripDock.ShowPane;
+            bool paneChanged = StripDock.ShowPane != showPane;
             StripDock.RailSize = 24;
-            StripDock.ShowPane = true;
+            StripDock.ShowPane = showPane;
             if (railChanged && !paneChanged) StripDock.RefreshLayout();
             if (_navigationStrip != null) SyncSources(_navigationStrip);
             SyncEditorPaneMargin();
