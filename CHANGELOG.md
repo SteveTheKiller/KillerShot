@@ -1,75 +1,67 @@
 # Changelog
 
 ## [1.0.0] - Unreleased
-- Fixed album recovery and concurrency, partial album edits, failed password changes, native cache recovery, settings writes, and output file collisions. Failed password swaps preserve complete recovery copies and report temporary copies that cannot be removed. Password recovery removes obsolete account keys and backups before opening; cleanup failures can be retried. Retention preserves search results on failure and missing search entries repair on reopen. Capture IDs stay unique after deletion.
-- The album recovers after an interrupted password removal without losing captures. (#1)
-- Captures waiting in memory remain visible after a failed album write, save on retry, and warn before exit. (#2)
-- Unsaved edits require confirmation before another image opens. Save As cancels if another image opens during the dialog. Exit offers Save, Discard or Cancel while keeping the editor open until the decision completes. Capture retention changes apply only after Save.
-- Save preserves animated PNG, GIF, TIFF, BMP and mismatched image files by offering a separate static PNG or JPEG export. Save protection messages are translated in every app language.
-- Image edits preserve transparency and reopened files show their latest contents. Closed editors release subscriptions and restore shortcuts; delayed thumbnail actions follow the current selection.
-- QR and image-text links now use a private local scanner for hidden destinations, encoded download names and disguised executable extensions. Invisible address characters block opening. Result cards explain each finding and state that the destination was not visited; links are never submitted to a third party. The shared QR reader rejects invalid dimensions and mismatched image buffers.
-- Updated the encrypted album engine to SQLCipher 4.19.0 and SQLite bindings to 10.0.13 with upstream security and reliability fixes.
-- Recording keeps the editor hidden until completion. Pause, Resume and Discard are available from the keyboard and tray menu. Multichannel audio retains center and surround content in stereo. Audio stops when Stop is pressed, repeated Stop and application exit wait for finalization and publication, and terminal capture or encoder errors stop the timer and retain recoverable video. Failed graphics or GDI initialization releases its resources. GIFs preserve static intervals longer than 655 seconds. Fixed folder cache pruning and capture outline redraws.
-- Command-line captures refresh the open album and search, report when nothing was saved, and explain the password-protected album limit. Closing a selection overlay cancels the command and its other overlays. Concurrent image-open requests queue in order, survive listener startup and confirm delivery. Window captures honor explicit cursor flags. Editor requests include their album so delayed requests cannot open another album's image. Completed command-line recordings survive audio errors and report the warning.
-- The album stays closed when setup fails and can be opened after the problem is corrected. (#4)
-- Added the capture library: every capture is kept in one encrypted file (SQLCipher, AES-256) that opens with your Windows account, or with a password set from the title bar. With no image open the window shows it as shelves of carousels, one big carousel, a grid or a timeline, by date or by collection, with search across window titles, program names, notes and the text in each picture. Ctrl+L shows it over an open image. Captures can be moved into collections, noted, copied, saved as files or deleted, and Keep captures limits the history by count or age. The old Recent folder is imported into it on first start.
-- Create, open, rename and switch encrypted albums from the title bar. Each album keeps its own retention and QR settings; opening an external album adds a managed copy. New collections do not inherit deleted collections' colors.
-- Add local or network folders as saved collections, including subfolders. Images stay in their original locations; background scans refresh the browser and editor and retry unavailable folders and temporarily locked images. The built-in Screenshots collection also loads in the background and keeps cached results during refresh and search. Unreadable folders keep accessible images visible and show an unavailable warning. Thumbnails fit within 512 pixels without enlarging small images, load in separate local/network queues and share a 64 MiB cache. Hidden carousels defer loading. Folder snapshots stay readable during settings writes. Removal reclaims unused metadata with linear membership checks and preserves shared paths; failed removal preserves selection.
-- Added local QR reading from image files or a selected region with killershot qr, JSON output and link warnings. A rail toggle, off by default, reads new captures and the existing album in the background; the Read QR code capture mode also works while it is off. Decoded text stays in the encrypted album and is searchable, with a QR mark on album cards. Each code has an outline and a result card with Copy, Open for web links, confirmation for warnings, and Copy password for Wi-Fi. Web links in image text use the same checks and card from the album menu. Links never open automatically.
-- Added screen recording to MP4 (H.264, through the encoder built into Windows) with optional system sound, microphone or both, or animated GIF, with frame rate and quality settings for each, a video settings card on the rail, a Record button (Ctrl+R) and a global shortcut (Ctrl+Shift+Print Screen) that starts and stops it.
-- Recording picks a region, window or monitor, counts down, and shows a frame and a control bar with Pause, Stop and Discard that never appear in the video. GIFs store only what changed between frames, with a palette per frame.
-- Added the editor with pen, highlighter, arrow, rectangle, ellipse, text, opaque redaction and crop, plus select and move, undo and redo, Fit and 100% zoom, and exports at the capture's exact pixel size.
-- Printing from the editor, album or tray opens a themed preview of the edited screenshot, with printer, paper, orientation, scale, color and copies controls. The preview fits smaller and scaled work areas.
-- Added a tray app that captures with Print Screen. Plain Print Screen starts a region rectangle, Alt+Print Screen captures the active window, Ctrl+Print Screen captures the monitor under the pointer, and Shift+Print Screen captures every monitor.
-- Print Screen preserves open menus in the captured desktop and immediately shows the active border and a movable capture bar near the top of the main monitor, with Photo, Video, capture mode, output folder, Capture and Cancel. Region capture selects only a dragged rectangle and captures on release; Escape or a right-click cancels without output.
-- Added window capture through Windows Graphics Capture, including covered windows, with rounded corners filled from the desktop behind them.
-- Picking a window captures its covered areas and warns if only visible desktop pixels are available. (#5)
-- Added after-capture choices to copy to the clipboard, save straight to an output folder (Windows' Screenshots folder by default), ask where to save, or open the editor, with a file name pattern, PNG or JPEG with a quality setting, and a capture delay.
-- Captures go straight to the clipboard as PNG and as a standard bitmap, and the last capture can be saved as a PNG from the tray menu.
-- Added options to include the mouse pointer, play a camera sound, and pick the window to capture with a click. Window mode highlights a window and captures it with a click.
-- Added a command line (killershot followed by a command, with --cli and KillerShot.Cli.exe still supported) that captures a region, rectangle, window, monitor or every monitor, records MP4 or GIF for a set time, lists, searches, copies, exports and opens captures in the library, lists monitors and windows, and shows the settings in use, with JSON output and exit codes for scripts and KillerMCP. killershot --help lists the commands; portable copies run from their folder or full path.
-- KillerShot.exe --open opens an image in the editor, handing it to a running KillerShot when one is open.
-- The library shows Windows' Screenshots folder as a collection read live from its files, with Open, Copy, Show in File Explorer and Add to the library. The title bar's library settings can turn it off.
-- Selecting Screenshots keeps its images under the Screenshots heading when grouped by collection. (#6)
-- Drag images into the album or editor and drag full-size PNG copies into other apps with a thumbnail and grab cursor. Abandoned temporary exports expire after 24 hours; live sessions and locked consumers stay intact.
-- Keep three independent workspace areas: a collection sidebar, a photo carousel above or below the main pane, and a large main view for the editor, Grid, Timeline, or carousels. Sidebar and photo-carousel placement, sizing, and collapse stay independent in every main view.
-- Browse collections with four preview styles, including 12 dense scattered arrangements with thin frames and overlapping edges beneath the scrollbar. Selecting a collection keeps loaded previews in place. The larger main carousel loads a sharper selected photo without converting full-size folder images, Multiple carousels is easier to find, and resizing gaps are tighter.
-- File picker navigation stays responsive on slow folders. Long collection menus and submenus scroll to every command. Expanded website guide sections fit after resizing or font changes. Saved colors, accents, print preview Close, collection menus and website dialogs support keyboard access.
-- The compact single-row toolbar groups Open with recent captures and Save with Save as, alongside Capture, Record, Copy, Print and the annotation tools. Zoom choices stay in the footer. Icon size, label placement, order and overflow remain customizable; Alt+M replaces the toolbar with a title-bar menu.
-- The collection picker and count filter the album and editor carousel. Horizontal carousels also have a picker inside their frame.
-- Carousel menus toggle photo info cards. Ctrl+wheel brings the center photo forward while side photos recede. Vertical Rolodex cards no longer taper at the top and bottom. Draggable photo previews use a grab hand.
-- Drag along a carousel to coast and settle on a picture. A new click stops it, long jumps animate smoothly, and the editor opens the selected image after motion settles.
-- Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
-- Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
-- Added Slovenian across the app, website, help and MCP guide.
-- The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
-- The title bar shows the active album name on the right and an open image's name after the wordmark. Database names use the shared Notes and Calendar font, size and icon-bottom alignment. Text buttons, context menus, the shortcut list and the keyboard map use the embedded interface font. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
-- Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
-- Added a Close to system tray option to the About card. With it off, closing the window quits KillerShot.
-- KillerShot.exe --demo opens a scratch library filled with screenshots of the Killer Tools apps from code\Demo\KillerShot, with its own settings and Screenshots folder, beside a running KillerShot.
-- Window resize minimums stay within the current monitor's work area on small or scaled displays.
-- Collection and thumbnail sidebar fades disappear at the scroll limits, leave scrollbars clear, and stay off in 98SE.
-- Collection selection matches the KillerNotes fill and hover states, with an 8px inset and visible rounded corners. Selected pile captions stay readable over photos. Live language changes update both sidebars and the footer while keeping loaded previews. Collection filters hide unrelated empty Screenshots groups. The collection dropdown sits in the main toolbar, and the carousel slider stays above its resize grabber on a separate line.
-- Icon-only buttons give screen readers the name from their tooltip, including card and file-picker Close buttons. File-picker rows announce folder and file names. Toolbar, menu and title bar icons no longer read as unreadable symbols, and controls reached with the keyboard show a thin one-pixel dotted focus ring in the theme accent. Keyboard focus moves into the shortcuts, About and settings cards when they open, stays there until they close, and then returns. Tab skips hidden links. Empty text and the hidden parts of scroll bars no longer read as items on screen. Each group of option buttons is one Tab stop that lands on the selected option, and the arrow keys move between its options.
-- The capture bar starts with keyboard focus on Photo, with Tab and Shift+Tab through its controls. F2, arrow keys and Enter select regions for screenshots, QR reading and recording without a mouse. (#3)
-- Windows contrast themes now use system colors for text, icons, panels, the outer window border and selections, without decorative grain or shadows.
-- The main window opens inside the work area of the monitor it starts on, so a small or high-scaling display, or a size saved on a bigger monitor, shows all of it, and changing the app size keeps it on its own monitor.
-- Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 20 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
-- The bottom window edge resizes reliably, while footer controls stay clickable and mark the displayed album or strip view. Collection grouping uses a folder icon, distinct from the title-bar database settings.
-- Album mode keeps its left sidebar and collapse chevron, with a tighter timeline gutter and separate Search and New collection rail buttons. The editor keeps its own dock position and collapsed state.
-- Capture, Search and album flyouts open 8px inside the content pane, including at larger app sizes. Settings and Help keep scrollbars at the panel edge and show shadows where more content remains. Printing settings use the left column.
-- Gray, menu and accent text reads at 4.5:1 contrast or better in every theme and accent, as in the other apps. Light Orange and Light Yellow keep their color with a thin gray outline, dark Red buttons fill with a deeper red, 98SE panes use the classic gray, and the footer's version and copyright are slightly dimmed.
-- Single and multiple carousels use the main content pane background. Grid, timeline and the collection strip sit on the window background, with each capture on a pane-gray card. Capture and collection menus offer card colors; collection colors also mark headings.
-- Photo cards use a full 2px frame with accent and darker edges, and rise with a shadow when hovered or active. Annotation colors use the full family color picker, and active Dark Red icons use the deeper red accent.
-- Primary headings use Lacquer in settings, shortcuts, dialogs and the library, with script fallbacks and the family 98SE font.
-- The maximize button opens the Windows 11 snap layouts menu.
-- Added the KillerShot app icon to the exe, taskbar, title bar, dialogs, About card and tray.
-- Menus show action icons and visible separator lines.
-- Removed the option to move rail icons to the opposite end. Horizontal rails keep icons on the right and vertical rails keep them at the bottom.
-- Expanded rails keep equal spacing beside the splitter line and content pane.
-- The capture bar stays centered when moving between monitors with different scaling.
-- Album help points to the current settings location, and capture fallback warnings cover all 20 languages.
-- 98SE controls and native window corners stay square, including after theme changes.
-- Restored film grain on the file picker sidebar. Grain has crisper specks and fades midtones across app and website themes without dimming bright highlights.
-- The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.
-- The website's More button uses the selected language for its accessible name.
+
+KillerShot combines screenshot and screen recording tools with an encrypted capture album, image editing and local QR reading.
+
+### Data protection and recovery
+
+- Albums recover after interrupted password changes or removal, preserving captures and recovery copies when cleanup fails. Failed setup keeps the album closed until the problem is corrected. (#1) (#4)
+- Captures waiting in memory remain visible after a failed album write, save on retry and warn before exit. (#2)
+- Unsaved edits require confirmation before another image opens or the app exits, with Save, Discard and Cancel choices. Save As cancels if its image changes while the dialog is open. Retention changes apply only after Save.
+- Saving animated PNG, GIF, TIFF, BMP or mismatched image files offers a separate static PNG or JPEG export to preserve the original. Image edits retain transparency, and reopened files show their latest contents.
+- Fixed concurrent album edits, search recovery, settings writes and output-file collisions. Failed retention preserves search results, missing search entries repair on reopen, and capture IDs remain unique after deletion.
+- QR and image-text links are checked locally for hidden destinations, disguised downloads and invisible address characters. Checks do not visit destinations or submit links to a third party. Links never open automatically, and warnings explain each finding.
+- Updated the encrypted album engine to SQLCipher 4.19.0 and SQLite bindings to 10.0.13 for upstream security and reliability fixes.
+
+### Capture and recording
+
+- Print Screen captures a region, Alt+Print Screen the active window, Ctrl+Print Screen the monitor under the pointer, and Shift+Print Screen every monitor. These global shortcuts are configurable, and capture preserves open menus.
+- Window capture includes covered areas through Windows Graphics Capture and warns when only visible desktop pixels are available. (#5)
+- A movable capture bar selects Photo or Video, capture mode and output folder. Regions capture on release; Escape or right-click cancels without output. Options include capture delay, mouse pointer and camera sound.
+- After-capture choices include copying to the clipboard, saving to a folder, asking where to save and opening the editor. Set a filename pattern, PNG or JPEG format, JPEG quality and notifications. Clipboard captures include both PNG and a standard bitmap.
+- Record a region, window or monitor to MP4 with system sound, microphone or both, or to animated GIF. Frame rate and quality are configurable; multichannel audio keeps center and surround content in stereo.
+- Start recording with Ctrl+R or the global Ctrl+Shift+Print Screen shortcut. A countdown, capture frame and Pause, Resume, Stop and Discard controls stay out of the recording, with keyboard and tray access while the editor stays hidden.
+- Stop and app exit wait for the recording to finish saving. Capture or encoder errors stop the timer and retain recoverable video; GIFs preserve long static intervals.
+
+### Albums and collections
+
+- Captures are stored in an encrypted SQLCipher album with AES-256 encryption, opened through the Windows account or an optional password. Create, open, rename and switch albums from the title bar; each keeps its own retention and QR settings. External albums open as managed copies.
+- Search window titles, program names, notes and recognized image text. Organize captures into collections, add notes and limit history by count or age. Existing Recent captures import on first start.
+- Browse albums as shelves of carousels, one large carousel, a grid or a timeline, grouped by date or collection. Ctrl+L shows the album over an open image.
+- Add local or network folders as saved collections, including subfolders, while keeping images in their original locations. Background scans refresh changed images, retry unavailable folders and locked files, and retain accessible images with an availability warning.
+- The Windows Screenshots folder appears as a live collection with Open, Copy, Show in File Explorer and Add to the library actions. It can be hidden in album settings and stays under its own heading when grouped by collection. (#6)
+- The collection sidebar, photo carousel and main view have independent placement, sizing and collapse controls. Collection filters apply to the album and editor carousel; preview styles include compact photo piles.
+
+### Editing and output
+
+- Annotate with pen, highlighter, arrows, shapes, text and opaque redaction. Crop, select and move annotations, undo and redo, and use Fit or 100% zoom. Exports keep the capture's exact pixel size.
+- Print from the editor, album or tray through a themed preview with printer, paper, orientation, scale, color and copies controls. The preview fits smaller and scaled work areas.
+- Drag images into the album or editor and full-size PNG copies into other apps. Abandoned temporary exports expire after 24 hours while active sessions and locked files remain intact.
+
+### QR reading
+
+- Read QR codes locally from images or a selected region, even with background scanning off. Optional background scanning covers new captures and the existing album and is off by default. Decoded text stays encrypted and searchable, with a QR marker on album cards.
+- Code outlines and result cards offer Copy, Open with warning confirmation, and Copy password for Wi-Fi codes. Image-text web links use the same result cards and local checks.
+
+### Command line and integration
+
+- The `killershot` command captures regions, rectangles, windows or monitors; records timed MP4 or GIF video; lists, searches, copies, exports and opens album captures; and reports monitors, windows and settings. JSON output and exit codes support scripts and KillerMCP.
+- `killershot qr` reads QR codes with JSON output and link warnings. `killershot --help` lists commands; `--cli` and `KillerShot.Cli.exe` remain supported, and portable copies run from their folder or full path.
+- `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
+
+### Desktop, accessibility and localization
+
+- The compact toolbar groups capture, recording, editing and output actions, with configurable icons, labels, order and overflow. Alt+M replaces it with a title-bar menu. Context menus provide image, collection and workspace actions.
+- Carousels coast and settle after dragging, stop on a new click and open the selected image after motion ends. Photo information and depth are adjustable; vertical Rolodex cards keep straight top and bottom edges.
+- Screen readers receive control and file names. Keyboard users get visible focus, arrow-key navigation in option groups, scrollable menus, and focus that enters and returns from settings, About and shortcut cards.
+- The capture bar supports Tab and Shift+Tab navigation. F2, arrow keys and Enter select regions for screenshots, QR reading and recording without a mouse. (#3)
+- Windows fit the current monitor's work area on small or scaled displays, and the capture bar stays centered across monitors with different scaling. File picking and collection browsing remain responsive during background loading.
+- Thirteen family themes, accent colors, Film Grain and Windows contrast themes cover the interface. Text contrast, themed menus and photo cards, square 98SE controls and Windows 11 snap layouts follow the family style.
+- Twenty languages, including Slovenian, cover the app and help, with live language changes updating the sidebars and footer. F1 opens the shortcut list and keyboard map; F12 opens About.
+- Optional Start with Windows and Close to system tray settings control background use. The tray reports Print Screen conflicts and links to the relevant Windows setting; About offers hardware or software rendering.
+
+### Help and website
+
+- The website, Help, Technical and About pages explain the encrypted screenshot album and its protection limits. The website and MCP guide include Slovenian, and navigation labels follow the selected language.
+- Website guides and dialogs support keyboard access and adjust to resizing and font changes. Album help points to the current settings location.
