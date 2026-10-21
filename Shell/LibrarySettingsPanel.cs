@@ -130,8 +130,27 @@ namespace KillerShot.Shell
             }
         }
 
-        /// <summary>Asks about unsaved edits on the interface thread when album work needs to.</summary>
-        private bool ConfirmReplacementFromWorker() => Dispatcher.Invoke(App.Instance.ConfirmDocumentReplacement);
+        /// <summary>True from the moment the user lets the album switch replace the picture until the
+        /// switch ends: the window takes no input, so no edit is made that the switch would drop.</summary>
+        private bool _albumSwitchFrozen;
+        internal bool TestAlbumSwitchFrozen => _albumSwitchFrozen;
+
+        /// <summary>Asks about unsaved edits on the interface thread when album work needs to, then
+        /// freezes the window for the short flush and swap that follow.</summary>
+        private bool ConfirmReplacementFromWorker() => Dispatcher.Invoke(() =>
+        {
+            if (!App.Instance.ConfirmDocumentReplacement()) return false;
+            _albumSwitchFrozen = true;
+            if (Content is UIElement root) root.IsEnabled = false;
+            return true;
+        });
+
+        private void ThawAfterAlbumSwitch()
+        {
+            if (!_albumSwitchFrozen) return;
+            _albumSwitchFrozen = false;
+            if (Content is UIElement root) root.IsEnabled = true;
+        }
 
         internal Task TestOpenAlbumAsync(string path, string? password = null) => OpenAlbumAsync(path, password);
 
@@ -163,7 +182,11 @@ namespace KillerShot.Shell
                 }
             }
             catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
-            finally { LibrarySettingsPopup.IsOpen = true; }
+            finally
+            {
+                ThawAfterAlbumSwitch();
+                LibrarySettingsPopup.IsOpen = true;
+            }
         }
 
         private void AlbumNew_Click(object sender, RoutedEventArgs e)

@@ -25,6 +25,8 @@ namespace KillerShot.Shell
         {
             // A shortcut recorder owns every key while it is listening.
             if (_recording != null) { RecorderKey(e); return; }
+            // An album switch is replacing the picture: no shortcut may change it meanwhile.
+            if (_albumSwitchFrozen) { e.Handled = true; return; }
             // Alt+Shift+arrow docks the collection strip, or folds it on its own side.
             var dockKey = e.Key == Key.System ? e.SystemKey : e.Key;
             if (!AnyOverlayOpen && (dockKey is Key.Left or Key.Right ? NavigationDock.HandleKey(e)

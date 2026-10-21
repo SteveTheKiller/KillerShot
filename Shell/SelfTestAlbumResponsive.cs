@@ -57,9 +57,25 @@ internal static class SelfTestAlbumResponsive
                 last = now;
             }, window.Dispatcher);
             heartbeat.Start();
+            // Halfway through the wait, the interface thread adds a capture, as an image drop does.
+            // It must not wait on the switch, which later asks this thread to confirm.
+            long dropTook = -1;
+            var drop = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromMilliseconds(500) };
+            drop.Tick += (_, _) =>
+            {
+                drop.Stop();
+                var addTimer = Stopwatch.StartNew();
+                CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Dropped", null);
+                dropTook = addTimer.ElapsedMilliseconds;
+            };
+            drop.Start();
             var took = Stopwatch.StartNew();
             await window.TestOpenAlbumAsync(second);
             heartbeat.Stop();
+            report.Add($"capture added during the wait in {dropTook} ms; window frozen after switch: {window.TestAlbumSwitchFrozen}");
+            if (dropTook < 0 || dropTook > 250) throw new InvalidOperationException("Adding a capture waited on the album switch.");
+            if (window.TestAlbumSwitchFrozen || window.Content is UIElement { IsEnabled: false })
+                throw new InvalidOperationException("The window stayed frozen after the album switch.");
             report.Add($"switch took {took.ElapsedMilliseconds} ms; longest interface pause {worst} ms");
             if (!string.Equals(CaptureLibrary.FilePath, second, StringComparison.OrdinalIgnoreCase) || !CaptureLibrary.IsOpen)
                 throw new InvalidOperationException("The album did not open once the lock was released.");
@@ -67,8 +83,8 @@ internal static class SelfTestAlbumResponsive
             if (worst > 250) throw new InvalidOperationException($"The interface froze for {worst} ms while the album switch waited.");
 
             await window.TestOpenAlbumAsync(first);
-            if (CaptureLibrary.Count != 1 || CaptureLibrary.Items()[0].Window != "Kept")
-                throw new InvalidOperationException("Switching albums lost the first album's capture.");
+            if (CaptureLibrary.Count != 2 || !CaptureLibrary.Items().Select(i => i.Window).OrderBy(w => w).SequenceEqual(["Dropped", "Kept"]))
+                throw new InvalidOperationException("Switching albums lost a capture of the first album.");
             report.Add("album switch waits for the lock without freezing the window, and data is intact PASS");
             code = 0;
         }
