@@ -28,6 +28,10 @@ internal sealed class ScrollCaptureSession
     private Window? _frame, _bar;
     private TextBlock? _status;
     private HwndSource? _keys;
+    // Stitching runs on a worker, one frame at a time, so a large region never stalls the
+    // interface; a finish asked for meanwhile waits for that frame.
+    private Task? _adding;
+    private bool? _finishRequested;
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
@@ -58,9 +62,20 @@ internal sealed class ScrollCaptureSession
 
     private void Tick()
     {
-        if (_grabber == null || _stitcher == null || _buffer == null) return;
+        if (_grabber == null || _stitcher == null || _buffer == null || _adding is { IsCompleted: false }) return;
         if (!_grabber.Grab(_buffer)) return;
-        _stitcher.Add(_buffer);
+        // The buffer is not grabbed into again until this frame is added, and Add copies it.
+        var stitcher = _stitcher;
+        var frame = _buffer;
+        _adding = Task.Run(() => stitcher.Add(frame));
+        _adding.ContinueWith(AfterAdd, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void AfterAdd(Task added)
+    {
+        if (_result.Task.IsCompleted || _stitcher == null) return;
+        if (added.Exception is { } error) { _result.TrySetException(error.InnerException ?? error); Finish(keep: false); return; }
+        if (_finishRequested is bool keep) { Finish(keep); return; }
         if (_stitcher.Full) { SetStatus(Loc("Str_Scroll_Full")); Finish(keep: true); return; }
         SetStatus(_stitcher.LostTrack ? Loc("Str_Scroll_Lost")
             : !_stitcher.Moved ? Loc("Str_Scroll_Start")
@@ -116,6 +131,11 @@ internal sealed class ScrollCaptureSession
     {
         if (_result.Task.IsCompleted) return;
         _timer?.Stop();
+        if (_adding is { IsCompleted: false })
+        {
+            _finishRequested = keep;   // AfterAdd finishes once the frame in hand is stitched
+            return;
+        }
         if (_keys != null)
         {
             Win32.UnregisterHotKey(_keys.Handle, HotkeyDone);
