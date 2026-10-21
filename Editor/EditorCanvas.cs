@@ -55,6 +55,8 @@ public sealed partial class EditorCanvas : Canvas
         {
             if (_doc != null) _doc.Changed -= OnDocChanged;
             CommitText();
+            // A drag belongs to the picture it started on; its release must not reach the next.
+            CancelGesture();
             _doc = value;
             SetQrCodes([]);
             _selected = null;
