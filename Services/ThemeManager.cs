@@ -32,7 +32,7 @@ namespace KillerShot.Services
     public static class ThemeManager
     {
         /// <summary>Killer Sans UI (Killer Sans scaled to Segoe UI proportions) with the Segoe fallback stack.</summary>
-        internal static readonly FontFamily KillerSansUiStack = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#Killer Sans UI, Segoe UI, Microsoft JhengHei UI, Nirmala UI");
+        internal static readonly FontFamily KillerSansUiStack = new FontFamily(new Uri("pack://application:,,,/KillerShot;component/"), "./Fonts/#Killer Sans UI, Segoe UI, Microsoft JhengHei UI, Nirmala UI");
         internal static readonly FontFamily KillerSansFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#Killer Sans");
         internal static readonly FontFamily LacquerHeadingStack = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#Lacquer, ./Fonts/#Killer Sans UI, Segoe UI, Microsoft JhengHei UI, Nirmala UI");
         // ---- Persistence hooks (optional). Default: in-memory only. ----
@@ -339,8 +339,10 @@ namespace KillerShot.Services
             // The UI face (98SE declares its own) and the titlebar file name, which sits on the
             // wordmark baseline in Killer Sans like KillerPDF's filename.
             if (!d.Contains("UiFont")) d["UiFont"] = KillerSansUiStack;
+            if (!d.Contains("MenuFontFamily")) d["MenuFontFamily"] = KillerSansUiStack;
             if (!d.Contains("HeadingFont")) d["HeadingFont"] = square ? KillerSansFont : LacquerHeadingStack;
-            if (!d.Contains("FileNameFont")) d["FileNameFont"] = square ? d["UiFont"] : KillerSansFont;
+            if (!d.Contains("FileNameFont")) d["FileNameFont"] = square ? d["UiFont"] :
+                new FontFamily(new Uri("pack://application:,,,/KillerShot;component/"), "./Fonts/#Killer Sans");
             if (!d.Contains("FileNameFontSize")) d["FileNameFontSize"] = square ? 11d : 18d;
             if (!d.Contains("FileNameTransform"))
             {

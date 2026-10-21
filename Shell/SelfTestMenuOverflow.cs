@@ -67,8 +67,12 @@ internal static class SelfTestMenuOverflow
     {
         var scroll = Descendants(root).OfType<ScrollViewer>().FirstOrDefault(view => view.ScrollableHeight > 0);
         if (scroll == null) throw new InvalidOperationException("An overflowing menu has no scrollable viewport.");
-        scroll.ScrollToEnd();
+        // Keyboard focus entering the menu settles its rows (98SE's menu face lays out a little
+        // taller), so focus first and let layout finish before scrolling, as a keyboard user's
+        // End or arrow keys would.
         last.Focus();
+        await root.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+        scroll.ScrollToEnd();
         last.BringIntoView();
         await root.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
         Point center = last.TranslatePoint(new Point(0, last.ActualHeight / 2), scroll);

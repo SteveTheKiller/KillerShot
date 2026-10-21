@@ -161,11 +161,10 @@
                 <Button x:Name="ToolbarOverflowButton" Style="{StaticResource ChromeButton}" Content="&#xE712;"
                         Visibility="Collapsed" ToolTip="{DynamicResource Str_CustomizeToolbar_More}"
                         Click="TitleToolbarOverflow_Click"/>
-                <!-- The library's name on the right, where Killendar and KillerNotes show their open
-                     database, in the file name face. No baseline shift: that lines a name up with
-                     the wordmark, and this one centers on the caption buttons. A click opens its
-                     database settings. -->
+                <!-- The database name shares Notes and Calendar's filename face and size,
+                     with no downward shift, aligned to the library icon. -->
                 <TextBlock x:Name="TitleLibraryLabel"
+                           RenderTransform="{x:Static Transform.Identity}"
                            Foreground="{DynamicResource FilenameBrush}" FontFamily="{DynamicResource FileNameFont}"
                            FontSize="{DynamicResource FileNameFontSize}"
                            TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center" Margin="12,0,12,0"
