@@ -4,12 +4,12 @@ using System.Windows;
 
 namespace KillerShot.Services
 {
-    // 16 UI languages. en-US is always the base layer so any locale that omits a key falls back to
+    // 20 UI languages. en-US is always the base layer so any locale that omits a key falls back to
     // English; the chosen locale's file layers on top.
     //
     // Append new members at the END: the value is persisted by NAME, not by ordinal, but keeping
     // the order stable also keeps the language menu's order stable.
-    public enum Locale { EnUS, Es, ZhTW, ZhCN, Bn, TrTR, De, Fr, Ja, Cs, PlPL, HuHU, It, RuRU, KkKZ, ViVN, UkUA, NbNO, PtBR }
+    public enum Locale { EnUS, Es, ZhTW, ZhCN, Bn, TrTR, De, Fr, Ja, Cs, PlPL, HuHU, It, RuRU, KkKZ, ViVN, UkUA, NbNO, PtBR, SlSI }
 
     public static class LocaleManager
     {
@@ -71,6 +71,7 @@ namespace KillerShot.Services
                 "uk" => Locale.UkUA,
                 "nb" or "no" or "nn" => Locale.NbNO,
                 "pt" => Locale.PtBR,
+                "sl" => Locale.SlSI,
                 _ => Locale.EnUS,
             };
         }
@@ -120,6 +121,7 @@ namespace KillerShot.Services
                 Locale.UkUA => new Uri("pack://application:,,,/Strings/uk-UA.xaml"),
                 Locale.NbNO => new Uri("pack://application:,,,/Strings/nb-NO.xaml"),
                 Locale.PtBR => new Uri("pack://application:,,,/Strings/pt-BR.xaml"),
+                Locale.SlSI => new Uri("pack://application:,,,/Strings/sl-SI.xaml"),
                 _           => null,   // English: base only
             };
 
@@ -163,6 +165,7 @@ namespace KillerShot.Services
             Locale.UkUA => "uk-UA",
             Locale.NbNO => "nb-NO",
             Locale.PtBR => "pt-BR",
+            Locale.SlSI => "sl-SI",
             _           => "en-US",
         });
     }

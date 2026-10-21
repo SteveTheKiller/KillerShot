@@ -41,6 +41,7 @@
 - Drag along a carousel to coast and settle on a picture. A new click stops it, long jumps animate smoothly, and the editor opens the selected image after motion settles.
 - Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.
+- Added Slovenian across the app, website, help and MCP guide.
 - The tray icon reports when another program or a Windows setting already owns Print Screen and links to that setting.
 - The title bar shows the active album name on the right and an open image's name after the wordmark. Database names use the shared Notes and Calendar font, size and icon-bottom alignment. Text buttons, context menus, the shortcut list and the keyboard map use the embedded interface font. Clicking the album name or Library button opens the album manager and its retention, folder and password settings.
 - Added Start with Windows to the About card. It starts KillerShot in the notification area when you sign in, and stays off until you turn it on.
@@ -53,7 +54,7 @@
 - The capture bar starts with keyboard focus on Photo, with Tab and Shift+Tab through its controls. F2, arrow keys and Enter select regions for screenshots, QR reading and recording without a mouse. (#3)
 - Windows contrast themes now use system colors for text, icons, panels, the outer window border and selections, without decorative grain or shadows.
 - The main window opens inside the work area of the monitor it starts on, so a small or high-scaling display, or a size saved on a bigger monitor, shows all of it, and changing the app size keeps it on its own monitor.
-- Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 19 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
+- Added the family window, rail, toolbar styles, all 13 themes with Dark and Teal as the default, Film Grain on Alt+Shift+G, 20 languages, the F1 shortcuts card with a keyboard map, and the F12 About card with a hardware or software rendering choice.
 - The bottom window edge resizes reliably, while footer controls stay clickable and mark the displayed album or strip view. Collection grouping uses a folder icon, distinct from the title-bar database settings.
 - Album mode keeps its left sidebar and collapse chevron, with a tighter timeline gutter and separate Search and New collection rail buttons. The editor keeps its own dock position and collapsed state.
 - Capture, Search and album flyouts open 8px inside the content pane, including at larger app sizes. Settings and Help keep scrollbars at the panel edge and show shadows where more content remains. Printing settings use the left column.
@@ -67,7 +68,7 @@
 - Removed the option to move rail icons to the opposite end. Horizontal rails keep icons on the right and vertical rails keep them at the bottom.
 - Expanded rails keep equal spacing beside the splitter line and content pane.
 - The capture bar stays centered when moving between monitors with different scaling.
-- Album help points to the current settings location, and capture fallback warnings cover all 19 languages.
+- Album help points to the current settings location, and capture fallback warnings cover all 20 languages.
 - 98SE controls and native window corners stay square, including after theme changes.
 - Restored film grain on the file picker sidebar. Grain has crisper specks and fades midtones across app and website themes without dimming bright highlights.
 - The website leads with the encrypted screenshot album and explains what its encryption protects across the home, Help, Technical and About pages.
