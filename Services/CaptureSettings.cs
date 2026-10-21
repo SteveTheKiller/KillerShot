@@ -17,6 +17,35 @@ internal static class CaptureSettings
         [ShortcutAction.Interval] = "",
     };
 
+    /// <summary>Review first: a capture opens for review and nothing is copied, saved or handed on
+    /// until it is accepted. Off by default.</summary>
+    public static bool ReviewFirst
+    {
+        get => Settings.GetBool("ReviewFirst", false);
+        set => Settings.SetBool("ReviewFirst", value);
+    }
+
+    /// <summary>Also put the saved file's path on the clipboard.</summary>
+    public static bool CopyFilePath
+    {
+        get => Settings.GetBool("CopyFilePath", false);
+        set => Settings.SetBool("CopyFilePath", value);
+    }
+
+    /// <summary>Open each capture in the chosen programs.</summary>
+    public static bool OpenWithApps
+    {
+        get => Settings.GetBool("OpenWithApps", false);
+        set => Settings.SetBool("OpenWithApps", value);
+    }
+
+    /// <summary>Start a new email with each capture attached.</summary>
+    public static bool EmailCapture
+    {
+        get => Settings.GetBool("EmailCapture", false);
+        set => Settings.SetBool("EmailCapture", value);
+    }
+
     /// <summary>Seconds between interval captures, 1 to 3600.</summary>
     public static int IntervalSeconds
     {

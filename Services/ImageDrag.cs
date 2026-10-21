@@ -107,6 +107,21 @@ internal static class ImageDrag
         }
     }
 
+    /// <summary>A PNG copy for handing to another program, in this session's export folder, so it
+    /// is cleaned up with the drag exports when it expires.</summary>
+    internal static string ExportFile(BitmapSource image)
+    {
+        Directory.CreateDirectory(ExportRoot);
+        if (IsLink(ExportRoot)) throw new IOException("The drag export folder cannot be a link.");
+        Directory.CreateDirectory(ExportFolder);
+        if (IsLink(ExportFolder)) throw new IOException("The drag session folder cannot be a link.");
+        _owner ??= new FileStream(Path.Combine(ExportFolder, ".session.lock"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read);
+        string path = Path.Combine(ExportFolder, "KillerShot " + DateTime.Now.ToString("yyyy-MM-dd HHmmss", System.Globalization.CultureInfo.InvariantCulture) + ".png");
+        if (File.Exists(path)) path = Path.Combine(ExportFolder, "KillerShot " + Guid.NewGuid().ToString("N") + ".png");
+        ImageOutput.SavePng(image, path);
+        return path;
+    }
+
     internal static ImageTransfer CreateTransfer(BitmapSource image)
     {
         Directory.CreateDirectory(ExportRoot);

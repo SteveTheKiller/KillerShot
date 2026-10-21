@@ -110,6 +110,7 @@ namespace KillerShot.Shell
         private void RefreshDocumentUi()
         {
             bool has = _doc != null;
+            SyncReview();
             SyncLibraryVisibility();
             foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, CopyTextBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,

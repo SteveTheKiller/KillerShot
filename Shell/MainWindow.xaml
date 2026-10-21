@@ -673,10 +673,20 @@
                                                    Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
 
                                         <TextBlock Text="{DynamicResource Str_CS_AfterCapture}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <CheckBox x:Name="ReviewFirstToggle" Content="{DynamicResource Str_CS_ReviewFirst}" Style="{StaticResource CsCheck}"/>
+                                        <TextBlock Text="{DynamicResource Str_CS_ReviewFirstHint}" Foreground="{DynamicResource DimTextBrush}"
+                                                   FontSize="10" TextWrapping="Wrap" Margin="24,0,0,6"/>
                                         <CheckBox x:Name="CopyToggle" Content="{DynamicResource Str_CS_Copy}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="SaveToFolderToggle" Content="{DynamicResource Str_CS_SaveToFolder}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="AskToSaveToggle" Content="{DynamicResource Str_CS_AskToSave}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="OpenEditorToggle" Content="{DynamicResource Str_CS_OpenEditor}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="CopyPathToggle" Content="{DynamicResource Str_CS_CopyPath}" Style="{StaticResource CsCheck}"/>
+                                        <DockPanel>
+                                            <Button x:Name="OpenWithAppsBtn" DockPanel.Dock="Right" Content="{DynamicResource Str_CS_ChooseApps}" Style="{StaticResource OutlineButton}"
+                                                    Padding="8,2" VerticalAlignment="Top" Click="OpenWithApps_Click"/>
+                                            <CheckBox x:Name="OpenWithToggle" Content="{DynamicResource Str_CS_OpenWith}" Style="{StaticResource CsCheck}"/>
+                                        </DockPanel>
+                                        <CheckBox x:Name="EmailToggle" Content="{DynamicResource Str_CS_Email}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
 
                                         <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>

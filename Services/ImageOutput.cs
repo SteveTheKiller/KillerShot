@@ -20,7 +20,11 @@ internal static class ImageOutput
     /// <summary>Puts the image on the clipboard as PNG for apps that read it and as a standard
     /// bitmap for everything else. Another app holding the clipboard is retried briefly, then
     /// reported instead of swallowed.</summary>
-    public static bool TryCopy(BitmapSource bmp, out string? error)
+    public static bool TryCopy(BitmapSource bmp, out string? error) => TryCopy(bmp, null, out error);
+
+    /// <summary>The picture, plus the saved file's path as text and as a file, when one is given,
+    /// in one clipboard item so neither replaces the other.</summary>
+    public static bool TryCopy(BitmapSource bmp, string? filePath, out string? error)
     {
         byte[] png = EncodePng(bmp);
         error = null;
@@ -31,6 +35,11 @@ internal static class ImageOutput
                 var data = new DataObject();
                 data.SetData("PNG", new MemoryStream(png), false);
                 data.SetImage(bmp);
+                if (filePath != null)
+                {
+                    data.SetText(filePath);
+                    data.SetFileDropList(new System.Collections.Specialized.StringCollection { filePath });
+                }
                 Clipboard.SetDataObject(data, true);
                 return true;
             }

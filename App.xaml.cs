@@ -17,6 +17,15 @@ public partial class App : Application
     internal static App Instance => (App)Current;
     internal TrayHost? Tray { get; private set; }
     internal CaptureController? Capture { get; private set; }
+
+    /// <summary>For the self-test: a capture controller wired like the app's own.</summary>
+    internal CaptureController TestUseCapture(CaptureController capture)
+    {
+        Capture = capture;
+        capture.Captured += OnCaptured;
+        capture.ReviewRequested += OnReviewRequested;
+        return capture;
+    }
     internal VideoController? Video { get; private set; }
 
     /// <summary>The picture in the editor. It lives here rather than in the window, so closing the
@@ -87,6 +96,7 @@ public partial class App : Application
         if (SelfTestPasteImages.TryRun(e.Args)) return;
         if (SelfTestRegions.TryRun(e.Args)) return;
         if (SelfTestTextRecognition.TryRun(e.Args)) return;
+        if (SelfTestReviewFirst.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;
@@ -131,6 +141,7 @@ public partial class App : Application
             Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_SaveFailedTitle"), error)));
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };
         Capture.Captured += OnCaptured;
+        Capture.ReviewRequested += OnReviewRequested;
         Video = new VideoController(Tray);
         Tray.RecordRequested += () => Video.Toggle();
         Tray.OpenEditorRequested += ShowEditor;
@@ -270,6 +281,15 @@ public partial class App : Application
         // A capture saved to the folder opens as that file, so Save in the editor updates it.
         SetDocument(new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr });
         if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
+    }
+
+    /// <summary>Review first: the capture opens in the editor and waits there to be accepted.</summary>
+    private void OnReviewRequested(BitmapSource bmp, DateTime taken, KillerShot.Capture.CaptureMode mode)
+    {
+        var doc = new EditorDocument(bmp, null, taken) { ReadQr = mode == KillerShot.Capture.CaptureMode.Qr };
+        if (!SetDocument(doc)) return;
+        ShowEditor();
+        _editor?.BeginReview(doc, taken, mode);
     }
 
     internal bool SetDocument(EditorDocument? doc)

@@ -161,47 +161,13 @@ internal sealed partial class CaptureController
                 source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
                 _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
 
-            // Interval captures go to the album and folder only: no clipboard churn, editor or prompts.
-            bool wantCopy = CaptureSettings.CopyToClipboard && !interval;
-            bool copied = false;
-            string? error = null;
-            if (wantCopy) copied = ImageOutput.TryCopy(result, out error);
-
-            string? saved = null;
-            if (CaptureSettings.SaveToFolder)
+            if (CaptureSettings.ReviewFirst && !interval)
             {
-                try
-                {
-                    string ext = CaptureSettings.Format;
-                    string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, result.PixelWidth, result.PixelHeight, ext);
-                    saved = ImageOutput.SaveUnique(result, CaptureSettings.OutputFolder, name, CaptureSettings.JpegQuality);
-                    LastSavedPath = saved;
-                }
-                catch (Exception ex)
-                {
-                    saved = null;
-                    _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), ex.Message);
-                }
+                // Nothing leaves KillerShot until the reviewed picture is accepted.
+                ReviewRequested?.Invoke(result, taken, mode);
+                return;
             }
-
-            if (interval) { IntervalCaptured(); return; }
-            if (CaptureSettings.AskToSave)
-            {
-                var asked = AskAndSave(result, taken, mode);
-                if (asked != null) saved = asked;
-            }
-
-            Captured?.Invoke(result, taken, saved, mode == CaptureMode.Qr);
-            if (wantCopy && !copied)
-                _tray.ShowWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
-            else if (CaptureSettings.Notify && (copied || saved != null))
-            {
-                string title = copied && saved != null ? Loc("Str_Tray_CopiedSavedTitle")
-                    : copied ? Loc("Str_Tray_CopiedTitle") : Loc("Str_Tray_SavedTitle");
-                string body = string.Format(Loc("Str_Tray_Copied"), result.PixelWidth, result.PixelHeight);
-                if (saved != null) body += "\n" + Path.GetFileName(saved);
-                _tray.ShowInfo(title, body);
-            }
+            Publish(result, taken, mode, interval);
         }
         catch (Exception ex)
         {
@@ -212,6 +178,78 @@ internal sealed partial class CaptureController
             _busy = false;
             restore?.Invoke();
         }
+    }
+
+    /// <summary>A capture opened for review; <see cref="Publish"/> runs when it is accepted.</summary>
+    public event Action<BitmapSource, DateTime, CaptureMode>? ReviewRequested;
+
+    /// <summary>Sends a finished capture to the chosen places, in order: the folder, the save
+    /// dialog, the clipboard (with the file's path when chosen), then programs and email. A
+    /// reviewed capture comes back here with <paramref name="openEditor"/> off, since it is open.</summary>
+    public string? Publish(BitmapSource result, DateTime taken, CaptureMode mode, bool interval = false, bool openEditor = true)
+    {
+        // Interval captures go to the album and folder only: no clipboard churn, editor or prompts.
+        bool wantCopy = CaptureSettings.CopyToClipboard && !interval;
+        bool copied = false;
+        string? error = null;
+
+        string? saved = null;
+        if (CaptureSettings.SaveToFolder)
+        {
+            try
+            {
+                string ext = CaptureSettings.Format;
+                string name = OutputFiles.FileName(CaptureSettings.FileNamePattern, taken, mode, result.PixelWidth, result.PixelHeight, ext);
+                saved = ImageOutput.SaveUnique(result, CaptureSettings.OutputFolder, name, CaptureSettings.JpegQuality);
+                LastSavedPath = saved;
+            }
+            catch (Exception ex)
+            {
+                saved = null;
+                _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), ex.Message);
+            }
+        }
+
+        if (interval) { IntervalCaptured(); return saved; }
+        if (CaptureSettings.AskToSave)
+        {
+            var asked = AskAndSave(result, taken, mode);
+            if (asked != null) saved = asked;
+        }
+
+        // The picture goes to the clipboard after saving, so the saved path can ride along.
+        if (wantCopy) copied = ImageOutput.TryCopy(result, CaptureSettings.CopyFilePath ? saved : null, out error);
+        HandOn(result, saved);
+        if (openEditor) Captured?.Invoke(result, taken, saved, mode == CaptureMode.Qr);
+        if (wantCopy && !copied)
+            _tray.ShowWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
+        else if (CaptureSettings.Notify && (copied || saved != null))
+        {
+            string title = copied && saved != null ? Loc("Str_Tray_CopiedSavedTitle")
+                : copied ? Loc("Str_Tray_CopiedTitle") : Loc("Str_Tray_SavedTitle");
+            string body = string.Format(Loc("Str_Tray_Copied"), result.PixelWidth, result.PixelHeight);
+            if (saved != null) body += "\n" + Path.GetFileName(saved);
+            _tray.ShowInfo(title, body);
+        }
+        return saved;
+    }
+
+    /// <summary>Open with and email, for a capture that just finished.</summary>
+    private void HandOn(BitmapSource result, string? saved)
+    {
+        bool apps = CaptureSettings.OpenWithApps && Handoff.Apps.Count > 0, mail = CaptureSettings.EmailCapture;
+        if (!apps && !mail) return;
+        string file;
+        try { file = Handoff.FileFor(result, saved); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _tray.ShowWarning(Loc("Str_Handoff_Title"), ex.Message); return; }
+        if (apps)
+            foreach (var app in Handoff.Apps)
+                if (Handoff.OpenWith(app, file) is { } failed) _tray.ShowWarning(Loc("Str_Handoff_Title"), failed);
+        if (mail)
+            _ = Handoff.EmailAsync(file).ContinueWith(t =>
+            {
+                if (t.Result is { } failed) _tray.ShowWarning(Loc("Str_Handoff_Title"), failed);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private static Win32.POINT Center(Win32.RECT r) => new() { X = r.Left + r.Width / 2, Y = r.Top + r.Height / 2 };

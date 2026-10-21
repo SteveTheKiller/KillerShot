@@ -52,6 +52,11 @@ namespace KillerShot.Shell
             SaveToFolderToggle.IsChecked = CaptureSettings.SaveToFolder;
             AskToSaveToggle.IsChecked = CaptureSettings.AskToSave;
             OpenEditorToggle.IsChecked = CaptureSettings.OpenEditorAfterCapture;
+            ReviewFirstToggle.IsChecked = CaptureSettings.ReviewFirst;
+            CopyPathToggle.IsChecked = CaptureSettings.CopyFilePath;
+            OpenWithToggle.IsChecked = CaptureSettings.OpenWithApps;
+            EmailToggle.IsChecked = CaptureSettings.EmailCapture;
+            SyncOpenWithLabel();
             NotifyToggle.IsChecked = CaptureSettings.Notify;
             CursorToggle.IsChecked = CaptureSettings.IncludeCursor;
             SoundToggle.IsChecked = CaptureSettings.PlaySound;
@@ -150,6 +155,42 @@ namespace KillerShot.Shell
 
         private void PrintScreenSetting_Click(object sender, RoutedEventArgs e) => TrayHost.OpenPrintScreenSetting();
 
+        /// <summary>Shows the chosen programs on the Open with option.</summary>
+        private void SyncOpenWithLabel()
+        {
+            var names = Handoff.Apps.Select(Handoff.AppName).ToList();
+            OpenWithToggle.Content = names.Count == 0 ? Loc("Str_CS_OpenWith")
+                : Loc("Str_CS_OpenWith") + " (" + string.Join(", ", names) + ")";
+        }
+
+        /// <summary>The programs Open with starts: each can be removed, and up to three added.</summary>
+        private void OpenWithApps_Click(object sender, RoutedEventArgs e)
+        {
+            var menu = new ContextMenu { PlacementTarget = OpenWithAppsBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+            foreach (string app in Handoff.Apps)
+            {
+                string path = app;
+                var item = new MenuItem { Header = string.Format(Loc("Str_CS_RemoveApp"), Handoff.AppName(path)), ToolTip = path };
+                item.Click += (_, _) => { Handoff.Apps = Handoff.Apps.Where(a => a != path).ToList(); SyncOpenWithLabel(); };
+                menu.Items.Add(item);
+            }
+            var add = new MenuItem { Header = Loc("Str_CS_AddApp"), IsEnabled = Handoff.Apps.Count < Handoff.MaxApps };
+            add.Click += (_, _) =>
+            {
+                var dialog = new KillerShot.Controls.FileDialog(KillerShot.Controls.FileDialogMode.Open)
+                {
+                    Title = Loc("Str_CS_AddApp"), Filter = Loc("Str_CS_AppFilter"),
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                };
+                if (dialog.ShowDialog(this) != true || !Handoff.IsProgram(dialog.FileName)) return;
+                Handoff.Apps = [.. Handoff.Apps, dialog.FileName];
+                CaptureSettings.OpenWithApps = true;
+                SyncCaptureOptions();
+            };
+            menu.Items.Add(add);
+            menu.IsOpen = true;
+        }
+
         private void CaptureOption_Changed(object sender, RoutedEventArgs e)
         {
             if (_syncingOptions || sender is not CheckBox box) return;
@@ -158,6 +199,10 @@ namespace KillerShot.Shell
             else if (box == SaveToFolderToggle) CaptureSettings.SaveToFolder = on;
             else if (box == AskToSaveToggle) CaptureSettings.AskToSave = on;
             else if (box == OpenEditorToggle) CaptureSettings.OpenEditorAfterCapture = on;
+            else if (box == ReviewFirstToggle) CaptureSettings.ReviewFirst = on;
+            else if (box == CopyPathToggle) CaptureSettings.CopyFilePath = on;
+            else if (box == OpenWithToggle) { CaptureSettings.OpenWithApps = on; if (on && Handoff.Apps.Count == 0) OpenWithApps_Click(OpenWithAppsBtn, e); }
+            else if (box == EmailToggle) CaptureSettings.EmailCapture = on;
             else if (box == NotifyToggle) CaptureSettings.Notify = on;
             else if (box == CursorToggle) CaptureSettings.IncludeCursor = on;
             else if (box == SoundToggle) CaptureSettings.PlaySound = on;

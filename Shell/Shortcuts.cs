@@ -92,6 +92,7 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.Enter when InReview && !TypingInField(): AcceptReview(); break;
                     case Key.L: ToggleLibrary(); break;
                     case Key.F when Library.IsVisible: Library.FocusSearch(); break;
                     case Key.R when shift: if (!e.IsRepeat) App.Instance.Video?.TogglePause(); break;
