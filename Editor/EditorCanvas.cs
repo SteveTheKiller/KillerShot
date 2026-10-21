@@ -72,6 +72,8 @@ public sealed partial class EditorCanvas : Canvas
     {
         // A selection that no longer exists (undo, delete) is dropped.
         if (_selected != null && _doc != null && !_doc.State.Items.Contains(_selected)) _selected = null;
+        // Screen readers see marks come and go.
+        System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(this)?.ResetChildrenCache();
         InvalidateMeasure();
         InvalidateVisual();
     }
@@ -239,7 +241,8 @@ public sealed partial class EditorCanvas : Canvas
         }
         if (Tool == ToolKind.Select)
         {
-            _selected = HitTest(p);
+            var hit = HitTest(p);
+            if (!ReferenceEquals(hit, _selected)) { _selected = hit; NotifySelection(); }
             _moveBy = default;
             _start = p;
             _dragging = _selected != null;
@@ -409,7 +412,14 @@ public sealed partial class EditorCanvas : Canvas
         Children.Remove(tb);
         var text = tb.Text.TrimEnd();
         if (_doc != null && text.Length > 0)
-            _doc.Add(new TextAnnotation(_textOrigin, text, Color, TextSize));
+        {
+            // The new text stays selected, so the keyboard can move it straight away.
+            var mark = new TextAnnotation(_textOrigin, text, Color, TextSize);
+            _doc.Add(mark);
+            _selected = mark;
+            NotifySelection();
+            InvalidateVisual();
+        }
     }
 
     private void CancelText()

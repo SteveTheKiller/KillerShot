@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Қара</sys:String>
     <sys:String x:Key="Str_Color_White">Ақ</sys:String>
     <sys:String x:Key="Str_Color_Hex">Он алтылық түс</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} пиксель, орны {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Суреттегі белгілер</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG суреті (*.png)|*.png|JPEG суреті (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Суреттер|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Барлық файлдар|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Суретті ашу</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">КӨРІНІС</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Аймақты түсіру</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Таңдалған белгіні жылжыту (Shift 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Терілген мәтінді аяқтау</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Таңдалған белгінің өлшемін өзгерту (10 px үшін Shift)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Келесі немесе алдыңғы белгіні таңдау</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Ағымдағы құралмен белгі қою немесе мәтінді аяқтау</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Мәтіннің жаңа жолын бастау</sys:String>
     <sys:String x:Key="Str_KS_Open">Суретті ашу</sys:String>
     <sys:String x:Key="Str_KS_Redo">Қайталау</sys:String>

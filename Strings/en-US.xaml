@@ -149,6 +149,8 @@
     <sys:String x:Key="Str_Color_Black">Black</sys:String>
     <sys:String x:Key="Str_Color_White">White</sys:String>
     <sys:String x:Key="Str_Color_Hex">Hex color</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} by {2} pixels at {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Picture marks</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG image (*.png)|*.png|JPEG image (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|All files|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Open image</sys:String>
@@ -169,7 +171,9 @@
     <sys:String x:Key="Str_KS_GrpView">VIEW</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Capture a region</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Move the selected mark (Shift for 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Finish the text you are typing</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Resize the selected mark (Shift for 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Select the next or previous mark</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Place a mark with the current tool, or finish text</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Start a new line of text</sys:String>
     <sys:String x:Key="Str_KS_Open">Open an image</sys:String>
     <sys:String x:Key="Str_KS_Redo">Redo</sys:String>

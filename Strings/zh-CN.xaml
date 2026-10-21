@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">黑色</sys:String>
     <sys:String x:Key="Str_Color_White">白色</sys:String>
     <sys:String x:Key="Str_Color_Hex">十六进制颜色</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}，{1} × {2} 像素，位于 {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">图片标注</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 图像 (*.png)|*.png|JPEG 图像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">图像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|所有文件|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">打开图像</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">视图</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">截取区域</sys:String>
     <sys:String x:Key="Str_KS_Nudge">移动所选标注 (按住 Shift 移动 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">完成正在输入的文本</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">调整所选标注的大小（按 Shift 每次 10 像素）</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">选择下一个或上一个标注</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">用当前工具放置标注，或完成文字</sys:String>
     <sys:String x:Key="Str_KS_NewLine">开始新的一行文本</sys:String>
     <sys:String x:Key="Str_KS_Open">打开图像</sys:String>
     <sys:String x:Key="Str_KS_Redo">重做</sys:String>

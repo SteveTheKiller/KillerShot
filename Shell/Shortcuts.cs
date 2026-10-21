@@ -108,6 +108,10 @@ namespace KillerShot.Shell
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;
+                    case Key.Left when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(shift ? -10 : -1, 0))) handled = false; break;
+                    case Key.Right when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(shift ? 10 : 1, 0))) handled = false; break;
+                    case Key.Up when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(0, shift ? -10 : -1))) handled = false; break;
+                    case Key.Down when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(0, shift ? 10 : 1))) handled = false; break;
                     case Key.D0 or Key.NumPad0: ZoomToFit(); break;
                     case Key.D1 or Key.NumPad1: SetZoom(1.0); break;
                     case Key.OemPlus or Key.Add: ZoomStep(+1); break;
@@ -135,6 +139,9 @@ namespace KillerShot.Shell
                 case Key.X: SelectTool(ToolKind.Redact); break;
                 case Key.C: SelectTool(ToolKind.Crop); break;
                 case Key.Delete or Key.Back: if (!Editor.DeleteSelected()) return; break;
+                // On the picture itself: Enter places the tool's mark, Tab moves between marks.
+                case Key.Enter when Editor.IsKeyboardFocused: if (!Editor.PlaceMark()) return; break;
+                case Key.Tab when Editor.IsKeyboardFocused && !ctrl: if (!Editor.SelectNext(shift)) return; break;
                 case Key.Left: if (!Editor.Nudge(new Vector(-step, 0))) return; break;
                 case Key.Right: if (!Editor.Nudge(new Vector(step, 0))) return; break;
                 case Key.Up: if (!Editor.Nudge(new Vector(0, -step))) return; break;
@@ -143,6 +150,9 @@ namespace KillerShot.Shell
             }
             e.Handled = true;
         }
+
+        /// <summary>Editor mark keys apply: the picture is showing and no text field has the keys.</summary>
+        private bool EditorKeysApply() => _doc != null && !Library.IsVisible && !TypingInField() && !Editor.IsEditingText;
 
         /// <summary>Windows delivers Print Screen only as a key-up, so the recorder listens here too.</summary>
         private void Window_PreviewKeyUp(object sender, KeyEventArgs e)

@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Schwarz</sys:String>
     <sys:String x:Key="Str_Color_White">Weiß</sys:String>
     <sys:String x:Key="Str_Color_Hex">Hex-Farbe</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} Pixel bei {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Markierungen im Bild</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-Bild (*.png)|*.png|JPEG-Bild (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Bilder|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Alle Dateien|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Bild öffnen</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">ANSICHT</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Bereich aufnehmen</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Ausgewählte Markierung verschieben (Umschalt für 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Eingegebenen Text abschließen</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Größe der ausgewählten Markierung ändern (Umschalt für 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Nächste oder vorherige Markierung auswählen</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Markierung mit dem aktuellen Werkzeug setzen oder Text abschließen</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Neue Textzeile beginnen</sys:String>
     <sys:String x:Key="Str_KS_Open">Bild öffnen</sys:String>
     <sys:String x:Key="Str_KS_Redo">Wiederholen</sys:String>

@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Siyah</sys:String>
     <sys:String x:Key="Str_Color_White">Beyaz</sys:String>
     <sys:String x:Key="Str_Color_Hex">Onaltılık renk</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} piksel, konum {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Resim işaretleri</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG görüntüsü (*.png)|*.png|JPEG görüntüsü (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Görüntüler|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tüm dosyalar|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Görüntü aç</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">GÖRÜNÜM</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Bölge yakala</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Seçili işareti taşı (10 px için Shift)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Yazdığınız metni bitirin</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Seçili işareti yeniden boyutlandır (10 px için Shift)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Sonraki veya önceki işareti seç</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Geçerli araçla işaret yerleştir veya metni bitir</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Yeni bir metin satırı başlatın</sys:String>
     <sys:String x:Key="Str_KS_Open">Görüntü aç</sys:String>
     <sys:String x:Key="Str_KS_Redo">Yinele</sys:String>

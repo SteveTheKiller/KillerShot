@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Чорний</sys:String>
     <sys:String x:Key="Str_Color_White">Білий</sys:String>
     <sys:String x:Key="Str_Color_Hex">Шістнадцятковий колір</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} на {2} пікселів у точці {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Позначки на зображенні</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Зображення PNG (*.png)|*.png|Зображення JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Зображення|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Усі файли|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Відкрити зображення</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">ВИГЛЯД</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Зняти область</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Зсунути вибрану позначку (Shift на 10 пікс.)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Завершити введений текст</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Змінити розмір вибраної позначки (Shift — на 10 пікселів)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Вибрати наступну або попередню позначку</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Поставити позначку поточним інструментом або завершити текст</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Почати новий рядок тексту</sys:String>
     <sys:String x:Key="Str_KS_Open">Відкрити зображення</sys:String>
     <sys:String x:Key="Str_KS_Redo">Повторити</sys:String>

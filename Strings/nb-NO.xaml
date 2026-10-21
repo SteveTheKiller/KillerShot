@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Svart</sys:String>
     <sys:String x:Key="Str_Color_White">Hvit</sys:String>
     <sys:String x:Key="Str_Color_Hex">Heksfarge</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} ganger {2} piksler ved {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Merker i bildet</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG-bilde (*.png)|*.png|JPEG-bilde (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Bilder|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Alle filer|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Åpne bilde</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">VISNING</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Ta bilde av et område</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Flytt den valgte markeringen (Shift for 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Fullfør teksten du skriver</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Endre størrelse på valgt merke (Skift for 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Velg neste eller forrige merke</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Plasser et merke med gjeldende verktøy, eller fullfør teksten</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Start en ny tekstlinje</sys:String>
     <sys:String x:Key="Str_KS_Open">Åpne et bilde</sys:String>
     <sys:String x:Key="Str_KS_Redo">Gjør om</sys:String>

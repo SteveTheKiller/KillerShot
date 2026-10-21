@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">কালো</sys:String>
     <sys:String x:Key="Str_Color_White">সাদা</sys:String>
     <sys:String x:Key="Str_Color_Hex">হেক্স রং</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} পিক্সেল, অবস্থান {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">ছবির চিহ্ন</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG ছবি (*.png)|*.png|JPEG ছবি (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">ছবি|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|সব ফাইল|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">ছবি খুলুন</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">দৃশ্য</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">একটি অংশ ক্যাপচার</sys:String>
     <sys:String x:Key="Str_KS_Nudge">নির্বাচিত চিহ্ন সরান (10 px-এর জন্য Shift)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">যে লেখা টাইপ করছেন তা শেষ করুন</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">নির্বাচিত চিহ্নের আকার বদলান (১০ পিক্সেলের জন্য Shift)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">পরের বা আগের চিহ্ন নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">বর্তমান টুল দিয়ে একটি চিহ্ন বসান, বা লেখা শেষ করুন</sys:String>
     <sys:String x:Key="Str_KS_NewLine">লেখার নতুন লাইন শুরু করুন</sys:String>
     <sys:String x:Key="Str_KS_Open">একটি ছবি খুলুন</sys:String>
     <sys:String x:Key="Str_KS_Redo">আবার করুন</sys:String>

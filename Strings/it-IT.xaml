@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Nero</sys:String>
     <sys:String x:Key="Str_Color_White">Bianco</sys:String>
     <sys:String x:Key="Str_Color_Hex">Colore esadecimale</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} per {2} pixel in {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Segni sull'immagine</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Immagine PNG (*.png)|*.png|Immagine JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Immagini|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tutti i file|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Apri immagine</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">VISUALIZZA</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Cattura un'area</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Sposta il segno selezionato (Maiusc per 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Termina il testo che stai scrivendo</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Ridimensiona il segno selezionato (Maiusc per 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Seleziona il segno successivo o precedente</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Posiziona un segno con lo strumento attuale o termina il testo</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Inizia una nuova riga di testo</sys:String>
     <sys:String x:Key="Str_KS_Open">Apri un'immagine</sys:String>
     <sys:String x:Key="Str_KS_Redo">Ripeti</sys:String>

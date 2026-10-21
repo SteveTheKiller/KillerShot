@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">黒</sys:String>
     <sys:String x:Key="Str_Color_White">白</sys:String>
     <sys:String x:Key="Str_Color_Hex">16 進カラー</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}、{1} × {2} ピクセル、位置 {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">画像の注釈</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">PNG 画像 (*.png)|*.png|JPEG 画像 (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">画像|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|すべてのファイル|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">画像を開く</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">表示</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">範囲をキャプチャ</sys:String>
     <sys:String x:Key="Str_KS_Nudge">選択した注釈を移動 (Shift で 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">入力中のテキストを確定</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">選択した注釈のサイズを変更 (Shift で 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">次または前の注釈を選択</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">現在のツールで注釈を配置、またはテキストを確定</sys:String>
     <sys:String x:Key="Str_KS_NewLine">テキストを改行</sys:String>
     <sys:String x:Key="Str_KS_Open">画像を開く</sys:String>
     <sys:String x:Key="Str_KS_Redo">やり直し</sys:String>

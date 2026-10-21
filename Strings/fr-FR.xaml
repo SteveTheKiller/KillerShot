@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Noir</sys:String>
     <sys:String x:Key="Str_Color_White">Blanc</sys:String>
     <sys:String x:Key="Str_Color_Hex">Couleur hexadécimale</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} sur {2} pixels à {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Annotations de l'image</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Image PNG (*.png)|*.png|Image JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tous les fichiers|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Ouvrir une image</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">AFFICHAGE</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Capturer une zone</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Déplacer l'annotation sélectionnée (Maj pour 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Terminer le texte en cours de saisie</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Redimensionner l'annotation sélectionnée (Maj pour 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Sélectionner l'annotation suivante ou précédente</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Placer une annotation avec l'outil actuel ou terminer le texte</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Commencer une nouvelle ligne de texte</sys:String>
     <sys:String x:Key="Str_KS_Open">Ouvrir une image</sys:String>
     <sys:String x:Key="Str_KS_Redo">Rétablir</sys:String>

@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Černá</sys:String>
     <sys:String x:Key="Str_Color_White">Bílá</sys:String>
     <sys:String x:Key="Str_Color_Hex">Barva v šestnáctkovém zápisu</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} pixelů na {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Značky v obrázku</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Obrázek PNG (*.png)|*.png|Obrázek JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Obrázky|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Všechny soubory|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Otevřít obrázek</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">ZOBRAZENÍ</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Zachytit oblast</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Posunout vybranou značku (Shift o 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Dokončit psaný text</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Změnit velikost vybrané značky (Shift po 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Vybrat další nebo předchozí značku</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Umístit značku aktuálním nástrojem nebo dokončit text</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Začít nový řádek textu</sys:String>
     <sys:String x:Key="Str_KS_Open">Otevřít obrázek</sys:String>
     <sys:String x:Key="Str_KS_Redo">Znovu</sys:String>

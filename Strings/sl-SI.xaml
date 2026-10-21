@@ -142,6 +142,8 @@
     <sys:String x:Key="Str_Color_Black">Črna</sys:String>
     <sys:String x:Key="Str_Color_White">Bela</sys:String>
     <sys:String x:Key="Str_Color_Hex">Šestnajstiška barva</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} × {2} slikovnih pik na {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Oznake na sliki</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Slika PNG (*.png)|*.png|Slika JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Slike|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Vse datoteke|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Odpri sliko</sys:String>
@@ -162,7 +164,9 @@
     <sys:String x:Key="Str_KS_GrpView">POGLED</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Zajemi območje</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Premakni izbrano oznako (Shift za 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Dokončaj vnos besedila</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Spremeni velikost izbrane oznake (Shift za 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Izberi naslednjo ali prejšnjo oznako</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Postavi oznako s trenutnim orodjem ali dokončaj besedilo</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Začni novo vrstico besedila</sys:String>
     <sys:String x:Key="Str_KS_Open">Odpri sliko</sys:String>
     <sys:String x:Key="Str_KS_Redo">Uveljavi</sys:String>

@@ -81,7 +81,9 @@ namespace KillerShot.Shell
             new("Ctrl+C",   "Str_KS_Copy",      KsCat.Appt, true,  "C"),
             new("Del or Backspace", "Str_KS_Delete", KsCat.Appt, false, "Del", "Back"),
             new("Arrows",   "Str_KS_Nudge",     KsCat.Appt, false, "Left", "Up", "Right", "Down"),
-            new("Enter",    "Str_KS_FinishText", KsCat.Appt, false, "Enter"),
+            new("Ctrl+Arrows", "Str_KS_ResizeMark", KsCat.Appt, true, "Left", "Up", "Right", "Down"),
+            new("Tab or Shift+Tab", "Str_KS_NextMark", KsCat.Appt, false, "Tab"),
+            new("Enter",    "Str_KS_PlaceMark", KsCat.Appt, false, "Enter"),
             new("Shift+Enter", "Str_KS_NewLine", KsCat.Appt, false),
 
             new("Ctrl+N",   "Str_KS_NewCapture", KsCat.File, true, "N"),

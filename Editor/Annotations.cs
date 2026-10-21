@@ -14,6 +14,9 @@ public abstract record Annotation(Color Color, double Width)
     public abstract void Render(DrawingContext dc);
     public abstract Rect Bounds { get; }
     public abstract Annotation Offset(Vector v);
+    /// <summary>The same mark with its bounds grown or shrunk by d, keeping its top left corner.
+    /// Marks stay at least two pixels in each direction.</summary>
+    public abstract Annotation Resize(Vector d);
     public virtual bool Hit(Point p, double tolerance) => Inflate(Bounds, tolerance).Contains(p);
 
     protected static Rect Inflate(Rect r, double by)
@@ -67,6 +70,14 @@ public sealed record StrokeAnnotation(ImmutableArray<Point> Points, Color Color,
 
     public override Annotation Offset(Vector v) =>
         this with { Points = Points.Select(p => p + v).ToImmutableArray(), _geometry = null };
+
+    public override Annotation Resize(Vector d)
+    {
+        var b = Geometry.Bounds;
+        double sx = b.Width > 0 ? Math.Max(2, b.Width + d.X) / b.Width : 1;
+        double sy = b.Height > 0 ? Math.Max(2, b.Height + d.Y) / b.Height : 1;
+        return this with { Points = Points.Select(p => new Point(b.X + (p.X - b.X) * sx, b.Y + (p.Y - b.Y) * sy)).ToImmutableArray(), _geometry = null };
+    }
 
     public override bool Hit(Point p, double tolerance) =>
         Geometry.StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
@@ -154,6 +165,13 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
 
     public override Annotation Offset(Vector v) => this with { A = A + v, B = B + v };
 
+    public override Annotation Resize(Vector d)
+    {
+        if (Kind == ShapeKind.Arrow) return this with { B = B + d };
+        var r = Box;
+        return this with { A = r.TopLeft, B = new Point(r.X + Math.Max(2, r.Width + d.X), r.Y + Math.Max(2, r.Height + d.Y)) };
+    }
+
     public override bool Hit(Point p, double tolerance)
     {
         if (Kind == ShapeKind.Redact) return Inflate(Box, tolerance).Contains(p);
@@ -203,4 +221,11 @@ public sealed record TextAnnotation(Point Origin, string Text, Color Color, doub
     }
 
     public override Annotation Offset(Vector v) => this with { Origin = Origin + v };
+
+    /// <summary>Text grows by its font size; the vertical change sets the new line height.</summary>
+    public override Annotation Resize(Vector d)
+    {
+        double height = Bounds.Height;
+        return height <= 0 ? this : this with { Width = Math.Max(6, Width * Math.Max(2, height + d.Y) / height) };
+    }
 }

@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Чёрный</sys:String>
     <sys:String x:Key="Str_Color_White">Белый</sys:String>
     <sys:String x:Key="Str_Color_Hex">Шестнадцатеричный цвет</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} на {2} пикселей в точке {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Пометки на изображении</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Изображение PNG (*.png)|*.png|Изображение JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Изображения|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Все файлы|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Открыть изображение</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">ВИД</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Снять область</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Сдвинуть выбранную пометку (Shift на 10 пикс.)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Завершить вводимый текст</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Изменить размер выбранной пометки (Shift — на 10 пикселей)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Выбрать следующую или предыдущую пометку</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Поставить пометку текущим инструментом или завершить текст</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Начать новую строку текста</sys:String>
     <sys:String x:Key="Str_KS_Open">Открыть изображение</sys:String>
     <sys:String x:Key="Str_KS_Redo">Повторить</sys:String>

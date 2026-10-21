@@ -146,6 +146,8 @@
     <sys:String x:Key="Str_Color_Black">Đen</sys:String>
     <sys:String x:Key="Str_Color_White">Trắng</sys:String>
     <sys:String x:Key="Str_Color_Hex">Màu hex</sys:String>
+    <sys:String x:Key="Str_Mark_Name">{0}, {1} x {2} điểm ảnh tại {3}, {4}</sys:String>
+    <sys:String x:Key="Str_Mark_List">Các đánh dấu trên ảnh</sys:String>
     <sys:String x:Key="Str_Dlg_ImageFilter">Ảnh PNG (*.png)|*.png|Ảnh JPEG (*.jpg)|*.jpg</sys:String>
     <sys:String x:Key="Str_Dlg_OpenFilter">Hình ảnh|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|Tất cả tệp|*.*</sys:String>
     <sys:String x:Key="Str_Dlg_OpenTitle">Mở ảnh</sys:String>
@@ -166,7 +168,9 @@
     <sys:String x:Key="Str_KS_GrpView">XEM</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Chụp một vùng</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Di chuyển nét đánh dấu đã chọn (Shift để đi 10 px)</sys:String>
-    <sys:String x:Key="Str_KS_FinishText">Hoàn tất văn bản đang nhập</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Đổi kích thước đánh dấu đã chọn (Shift để đổi 10 px)</sys:String>
+    <sys:String x:Key="Str_KS_NextMark">Chọn đánh dấu tiếp theo hoặc trước đó</sys:String>
+    <sys:String x:Key="Str_KS_PlaceMark">Đặt đánh dấu bằng công cụ hiện tại, hoặc hoàn tất văn bản</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Bắt đầu dòng văn bản mới</sys:String>
     <sys:String x:Key="Str_KS_Open">Mở ảnh</sys:String>
     <sys:String x:Key="Str_KS_Redo">Làm lại</sys:String>
