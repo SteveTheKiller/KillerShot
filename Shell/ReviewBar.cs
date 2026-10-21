@@ -41,7 +41,13 @@ public partial class MainWindow
         _review = null;
         SyncReview();
         string? saved = capture.Publish(output, taken, mode, openEditor: false);
-        if (saved != null && doc.FilePath == null) doc.FilePath = saved;
+        // The saved file now holds exactly these edits.
+        if (saved != null)
+        {
+            if (doc.FilePath == null) doc.FilePath = saved;
+            doc.MarkSaved();
+            RefreshDocumentUi();
+        }
         StatusText.Text = Loc("Str_Review_Sent");
         return true;
     }
