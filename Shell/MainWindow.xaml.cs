@@ -56,6 +56,7 @@ namespace KillerShot.Shell
             InitFooterView();
             InitWorkspaceMenus();
             InitImageDrop();
+            RefreshPortableBadge();
 
             _about = new AboutController(this);
             VersionLabel.Text = "v" + Services.AppInfo.Version;

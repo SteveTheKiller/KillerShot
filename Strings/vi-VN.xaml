@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Chọn tên tệp khác để xuất ảnh tĩnh và giữ nguyên bản gốc.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Ảnh đang mở đã thay đổi. Hãy lưu lại ảnh hiện tại.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 đặt một góc. Dùng các phím mũi tên để đổi kích thước (Shift để đổi 10 pixel), rồi nhấn Enter để chụp. Escape hủy thao tác.</sys:String>
+    <sys:String x:Key="Str_Portable">DI ĐỘNG</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Cài đặt KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Cài đặt KillerShot trên máy tính này?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot sẽ được sao chép vào thư mục chương trình và một mục sẽ được thêm vào menu Bắt đầu.&#x0a;Album và cài đặt của bạn sẽ không bị thay đổi và bản sao tệp exe này vẫn được giữ nguyên tại vị trí hiện tại.&#x0a;KillerShot sẽ khởi động lại từ vị trí đã cài đặt.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Cài đặt</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Thêm lối tắt trên màn hình nền</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Cài đặt cho mọi người dùng trên máy tính này (cần quyền quản trị viên)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Cài đặt chưa hoàn tất. KillerShot vẫn đang chạy ở chế độ di động.</sys:String>
 </ResourceDictionary>

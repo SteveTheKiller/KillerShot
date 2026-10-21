@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Scegli un nome file diverso per esportare un’immagine statica e conservare l’originale.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">L’immagine aperta è cambiata. Salva di nuovo l’immagine corrente.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 imposta un angolo. Usa i tasti freccia per ridimensionare (Shift per 10 pixel), quindi Enter per acquisire. Escape annulla.</sys:String>
+    <sys:String x:Key="Str_Portable">PORTATILE</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Installa KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Installare KillerShot su questo computer?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot viene copiato nella cartella dei programmi e viene aggiunta una voce al menu Start.&#x0a;I tuoi album e le impostazioni non vengono toccati e questa copia dell'exe resta dov'è.&#x0a;KillerShot si riavvia dalla posizione installata.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Installa</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Aggiungi un collegamento sul desktop</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Installa per tutti gli utenti di questo computer (richiede l'amministratore)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">L'installazione non è stata completata - KillerShot continua in modalità portatile.</sys:String>
 </ResourceDictionary>

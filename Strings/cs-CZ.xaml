@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Chcete-li exportovat statický obrázek a zachovat originál, zvolte jiný název souboru.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Otevřený obrázek se změnil. Uložte aktuální obrázek znovu.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 nastaví roh. Velikost upravte šipkami (se Shiftem po 10 pixelech), poté stiskněte Enter pro zachycení. Escape akci zruší.</sys:String>
+    <sys:String x:Key="Str_Portable">PŘENOSNÁ</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Nainstalovat KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Nainstalovat KillerShot do tohoto počítače?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot se zkopíruje do složky s programy a přidá se zástupce do nabídky Start.&#x0a;Vaše alba a nastavení zůstanou nedotčené a tato kopie souboru exe zůstane tam, kde je.&#x0a;KillerShot se restartuje z nainstalovaného umístění.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Nainstalovat</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Přidat zástupce na plochu</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Nainstalovat pro všechny uživatele tohoto počítače (vyžaduje správce)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Instalace nebyla dokončena - KillerShot běží dál přenosně.</sys:String>
 </ResourceDictionary>

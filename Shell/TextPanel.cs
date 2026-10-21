@@ -31,7 +31,7 @@ public partial class MainWindow
         BitmapSource image = _doc.Render();
         if (area is { } a)
         {
-            var cropped = new CroppedBitmap(image, Clip(a, image));
+            var cropped = new CroppedBitmap(image, ClipToImage(a, image));
             cropped.Freeze();
             image = cropped;
         }
@@ -48,7 +48,7 @@ public partial class MainWindow
         if (copy) CopyRecognizedText();
     }
 
-    private static Int32Rect Clip(Int32Rect a, BitmapSource image)
+    private static Int32Rect ClipToImage(Int32Rect a, BitmapSource image)
     {
         int x = Math.Clamp(a.X, 0, image.PixelWidth - 1), y = Math.Clamp(a.Y, 0, image.PixelHeight - 1);
         return new Int32Rect(x, y, Math.Clamp(a.Width, 1, image.PixelWidth - x), Math.Clamp(a.Height, 1, image.PixelHeight - y));

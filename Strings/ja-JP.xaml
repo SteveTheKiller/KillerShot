@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">静止画像を書き出して元のファイルを保持するには、別のファイル名を選んでください。</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">開いている画像が変更されました。現在の画像をもう一度保存してください。</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 で角を設定します。矢印キーでサイズを変更し（Shift で 10 ピクセルずつ）、Enter でキャプチャします。Escape でキャンセルします。</sys:String>
+    <sys:String x:Key="Str_Portable">ポータブル</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerShot をインストール</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">KillerShot をこのコンピューターにインストールしますか？</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot がプログラムフォルダーにコピーされ、スタートメニューに項目が追加されます。&#x0a;アルバムと設定には手を加えず、この exe のコピーもそのまま残ります。&#x0a;KillerShot はインストール先から再起動します。</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">インストール</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">デスクトップショートカットを追加</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">このコンピューターのすべてのユーザーにインストール（管理者権限が必要）</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">インストールは完了しませんでした。KillerShot はポータブルのまま動作しています。</sys:String>
 </ResourceDictionary>

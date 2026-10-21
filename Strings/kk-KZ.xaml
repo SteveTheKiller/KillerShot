@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Қозғалыссыз кескінді экспорттап, түпнұсқаны сақтау үшін басқа файл атауын таңдаңыз.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Ашық кескін өзгерді. Ағымдағы кескінді қайта сақтаңыз.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 бұрышты белгілейді. Өлшемді өзгерту үшін көрсеткі пернелерін (10 пиксель үшін Shift), содан кейін түсіру үшін Enter пернесін басыңыз. Escape әрекетті тоқтатады.</sys:String>
+    <sys:String x:Key="Str_Portable">ПОРТАТИВТІ</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerShot орнату</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">KillerShot осы компьютерге орнатылсын ба?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot бағдарламалар қалтасына көшіріліп, Бастау мәзіріне жазба қосылады.&#x0a;Альбомдарыңыз бен параметрлеріңіз өзгермейді, ал exe файлының осы көшірмесі тұрған жерінде қалады.&#x0a;KillerShot орнатылған орыннан қайта іске қосылады.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Орнату</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Жұмыс үстеліне таңбаша қосу</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Осы компьютердегі барлығына орнату (әкімші құқығы керек)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Орнату аяқталмады - KillerShot әлі де портативті режимде жұмыс істеп тұр.</sys:String>
 </ResourceDictionary>

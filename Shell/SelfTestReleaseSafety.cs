@@ -149,6 +149,10 @@ internal static class SelfTestReleaseSafety
             Check(shortcuts == 1, "The synthetic shortcut must reach the live tray host.");
             var shortcutWindow = new MainWindow(tray) { Left = -30000, Top = -30000, ShowInTaskbar = false };
             shortcutWindow.Show();
+            // This build runs from the scratch folder, so it is a portable copy and offers to install.
+            Check(App.IsPortable() && shortcutWindow.FindName("PortableBadge") is Button { Visibility: Visibility.Visible },
+                "A portable copy must show the install badge.");
+            report.Add("portable_badge=True");
             ((Button)shortcutWindow.FindName("CaptureSettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var recorder = ((Grid)shortcutWindow.FindName("ShortcutRows")).Children.OfType<Button>()
                 .Single(b => Equals(b.Tag, ShortcutAction.LastMode));

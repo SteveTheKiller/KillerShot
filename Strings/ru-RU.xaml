@@ -183,7 +183,7 @@
     <sys:String x:Key="Str_KS_SelectAllMarks">Выбрать все пометки</sys:String>
     <sys:String x:Key="Str_KS_AddToSelection">Добавить пометку в выделение или убрать её</sys:String>
     <sys:String x:Key="Str_KS_Duplicate">Дублировать выбранные пометки</sys:String>
-    <sys:String x:Key="Str_KS_Layer">Переместить выделение на слой вперёд или назад (Shift — до конца)</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Переместить выделение на слой вперёд или назад (Shift: до конца)</sys:String>
     <sys:String x:Key="Str_KS_EditText">Изменить выбранный текст или выноску</sys:String>
     <sys:String x:Key="Str_KS_LayerMenu">Порядок</sys:String>
     <sys:String x:Key="Str_KS_BringToFront">На передний план</sys:String>
@@ -196,7 +196,7 @@
     <sys:String x:Key="Str_KS_GrpView">ВИД</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Снять область</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Сдвинуть выбранную пометку (Shift на 10 пикс.)</sys:String>
-    <sys:String x:Key="Str_KS_ResizeMark">Изменить размер выбранной пометки (Shift — на 10 пикселей)</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Изменить размер выбранной пометки (Shift: на 10 пикселей)</sys:String>
     <sys:String x:Key="Str_KS_NextMark">Выбрать следующую или предыдущую пометку</sys:String>
     <sys:String x:Key="Str_KS_PlaceMark">Поставить пометку текущим инструментом или завершить текст</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Начать новую строку текста</sys:String>
@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Выберите другое имя файла, чтобы экспортировать статичное изображение и сохранить оригинал.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Открытое изображение изменилось. Сохраните текущее изображение еще раз.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 задает угол. Используйте клавиши со стрелками для изменения размера (с Shift на 10 пикселей), затем Enter для захвата. Escape отменяет действие.</sys:String>
+    <sys:String x:Key="Str_Portable">ПОРТАТИВНЫЙ</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Установить KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Установить KillerShot на этот компьютер?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot копируется в папку программ, и добавляется пункт в меню Пуск.&#x0a;Ваши альбомы и настройки не затрагиваются, а эта копия exe остаётся на месте.&#x0a;KillerShot перезапускается из установленного расположения.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Установить</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Добавить ярлык на рабочий стол</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Установить для всех на этом компьютере (нужны права администратора)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Установка не завершилась - KillerShot по-прежнему работает портативно.</sys:String>
 </ResourceDictionary>

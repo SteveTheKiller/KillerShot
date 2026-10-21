@@ -183,7 +183,7 @@
     <sys:String x:Key="Str_KS_SelectAllMarks">Вибрати всі позначки</sys:String>
     <sys:String x:Key="Str_KS_AddToSelection">Додати позначку до вибору або прибрати її</sys:String>
     <sys:String x:Key="Str_KS_Duplicate">Дублювати вибрані позначки</sys:String>
-    <sys:String x:Key="Str_KS_Layer">Перемістити вибір на шар уперед або назад (Shift — до кінця)</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Перемістити вибір на шар уперед або назад (Shift: до кінця)</sys:String>
     <sys:String x:Key="Str_KS_EditText">Редагувати вибраний текст або виноску</sys:String>
     <sys:String x:Key="Str_KS_LayerMenu">Упорядкувати</sys:String>
     <sys:String x:Key="Str_KS_BringToFront">На передній план</sys:String>
@@ -196,7 +196,7 @@
     <sys:String x:Key="Str_KS_GrpView">ВИГЛЯД</sys:String>
     <sys:String x:Key="Str_KS_NewCapture">Зняти область</sys:String>
     <sys:String x:Key="Str_KS_Nudge">Зсунути вибрану позначку (Shift на 10 пікс.)</sys:String>
-    <sys:String x:Key="Str_KS_ResizeMark">Змінити розмір вибраної позначки (Shift — на 10 пікселів)</sys:String>
+    <sys:String x:Key="Str_KS_ResizeMark">Змінити розмір вибраної позначки (Shift: на 10 пікселів)</sys:String>
     <sys:String x:Key="Str_KS_NextMark">Вибрати наступну або попередню позначку</sys:String>
     <sys:String x:Key="Str_KS_PlaceMark">Поставити позначку поточним інструментом або завершити текст</sys:String>
     <sys:String x:Key="Str_KS_NewLine">Почати новий рядок тексту</sys:String>
@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Виберіть інше ім’я файлу, щоб експортувати статичне зображення та зберегти оригінал.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Відкрите зображення змінилося. Збережіть поточне зображення ще раз.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 задає кут. Використовуйте клавіші зі стрілками для зміни розміру (із Shift на 10 пікселів), потім Enter для захоплення. Escape скасовує дію.</sys:String>
+    <sys:String x:Key="Str_Portable">ПОРТАТИВНА</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Установити KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Установити KillerShot на цей комп'ютер?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot буде скопійовано до папки програм і додано до меню «Пуск».&#x0a;Ваші альбоми й налаштування залишаться без змін, а ця копія exe-файлу лишиться на місці.&#x0a;KillerShot перезапуститься зі встановленого розташування.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Установити</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Додати ярлик на робочий стіл</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Установити для всіх користувачів цього комп'ютера (потрібні права адміністратора)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Установлення не завершено - KillerShot і далі працює як портативний.</sys:String>
 </ResourceDictionary>

@@ -569,4 +569,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Za izvoz statične slike izberi drugo ime datoteke, da ohraniš izvirnik.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Odprta slika se je spremenila. Znova shrani trenutno sliko.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 določi vogal. S puščičnimi tipkami spremeni velikost (Shift za 10 slikovnih pik), nato pritisni Enter za zajem. Escape prekliče.</sys:String>
+    <sys:String x:Key="Str_Portable">PRENOSNO</sys:String>
+    <sys:String x:Key="Str_Btn_Install">Namesti KillerShot</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">Namestim KillerShot v ta računalnik?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot bo kopiran v mapo s programi in dodan v meni Start.&#x0a;Vaši albumi in nastavitve ostanejo nedotaknjeni, ta kopija datoteke exe pa ostane na svojem mestu.&#x0a;KillerShot se bo ponovno zagnal z namestitvenega mesta.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Namesti</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Dodaj bližnjico na namizje</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Namesti za vse uporabnike tega računalnika (zahteva skrbniške pravice)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Namestitev ni bila dokončana. KillerShot še vedno deluje v prenosnem načinu.</sys:String>
 </ResourceDictionary>

@@ -47,6 +47,21 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // The deferred uninstall helper and the install relaunch helper run before anything else,
+        // so neither touches settings, the album or the single-instance claim.
+        string runningExe = Environment.ProcessPath ?? "";
+        if (DeferredUninstall.IsHelperRequest(e.Args, runningExe, MachineInstallDir, UninstallStagingRoot(false)))
+        {
+            Shutdown(e.Args.Length > 0 && e.Args[0] == DeferredUninstall.HelperArgument
+                ? RunUninstallHelper(e.Args) : KillerFamily.Deployment.InstallerExitCodes.SecurityRejected);
+            return;
+        }
+        if (new InstallRelaunch().TryRunHelper(e.Args, runningExe, out int helperExit))
+        {
+            Shutdown(helperExit);
+            return;
+        }
+
         KillerFamily.Accessibility.AccessibleControls.Initialize();
         KillerFamily.Theming.AccentShadow.Initialize();
         base.OnStartup(e);
@@ -105,6 +120,16 @@ public partial class App : Application
         if (SelfTestWorkspaceAreas.TryRun(e.Args)) return;
         if (SelfTestFileDialog.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
+
+        // Install switches. /silent installs without UI (machine-wide with admin rights, for the
+        // current user without); Add/Remove Programs runs /uninstall and package managers
+        // /uninstall-silent. These run beside a live KillerShot, so they come before the
+        // single-instance claim.
+        if (e.Args.Length > 0 && TryRunInstallSwitch(e.Args, out int installExit))
+        {
+            Shutdown(installExit);
+            return;
+        }
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
         bool demo = DemoMode.TryEnter(e.Args);
 
@@ -131,6 +156,7 @@ public partial class App : Application
         }
 
         InitializeKit();
+        if (!demo) OfferInstallConflictRepair();
         ImageDrag.Initialize();
         // The encrypted library opens with the Windows-account key without a prompt, off this
         // thread so the editor paints first. With a password set it stays locked until the

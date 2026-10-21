@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">স্থির ছবি রপ্তানি করতে এবং মূল ফাইলটি অক্ষত রাখতে অন্য একটি ফাইলের নাম বেছে নিন।</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">খোলা ছবিটি পরিবর্তিত হয়েছে। বর্তমান ছবিটি আবার সংরক্ষণ করুন।</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 দিয়ে একটি কোণা নির্ধারণ করুন। আকার বদলাতে তীরচিহ্নের কীগুলো ব্যবহার করুন (10 পিক্সেলের জন্য Shift), তারপর ক্যাপচার করতে Enter চাপুন। Escape বাতিল করে।</sys:String>
+    <sys:String x:Key="Str_Portable">পোর্টেবল</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerShot ইনস্টল করুন</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">এই কম্পিউটারে KillerShot ইনস্টল করবেন?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot আপনার প্রোগ্রাম ফোল্ডারে কপি হবে এবং স্টার্ট মেনুতে একটি এন্ট্রি যোগ হবে।&#x0a;আপনার অ্যালবাম ও সেটিংসে হাত দেওয়া হবে না, এবং exe-র এই কপিটিও যেখানে আছে সেখানেই থাকবে।&#x0a;KillerShot ইনস্টল করা জায়গা থেকে আবার চালু হবে।</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">ইনস্টল</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">ডেস্কটপ শর্টকাট যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">এই কম্পিউটারের সব ব্যবহারকারীর জন্য ইনস্টল করুন (অ্যাডমিন লাগবে)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">ইনস্টল সম্পূর্ণ হয়নি - KillerShot এখনও পোর্টেবল হিসেবে চলছে।</sys:String>
 </ResourceDictionary>

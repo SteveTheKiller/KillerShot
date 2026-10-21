@@ -576,4 +576,12 @@
     <sys:String x:Key="Str_Save_StaticOriginal">Sabit bir görüntü dışa aktarmak ve özgün dosyayı korumak için farklı bir dosya adı seçin.</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">Açık görüntü değişti. Geçerli görüntüyü yeniden kaydedin.</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 bir köşe belirler. Boyutlandırmak için ok tuşlarını (10 piksel için Shift), ardından yakalamak için Enter tuşunu kullanın. Escape iptal eder.</sys:String>
+    <sys:String x:Key="Str_Portable">TAŞINABİLİR</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerShot'u yükle</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">KillerShot bu bilgisayara yüklensin mi?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">KillerShot programlar klasörünüze kopyalanır ve Başlat menüsüne bir kısayol eklenir.&#x0a;Albümlerinize ve ayarlarınıza dokunulmaz ve exe'nin bu kopyası olduğu yerde kalır.&#x0a;KillerShot yüklendiği konumdan yeniden başlar.</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Yükle</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Masaüstü kısayolu ekle</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Bu bilgisayardaki herkes için yükle (yönetici gerekir)</sys:String>
+    <sys:String x:Key="Str_Status_InstallFailed">Yükleme tamamlanmadı - KillerShot taşınabilir olarak çalışmaya devam ediyor.</sys:String>
 </ResourceDictionary>
