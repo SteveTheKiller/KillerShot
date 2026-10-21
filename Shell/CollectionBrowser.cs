@@ -90,6 +90,7 @@ public sealed class CollectionPreview : StackPanel
     private readonly TextBlock _name = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 0) };
     private readonly TextBlock _count = new() { FontSize = 11 };
     private readonly Border _label = new() { HorizontalAlignment = HorizontalAlignment.Left };
+    private readonly StackPanel _captions = new();
     private int _generation;
     private readonly List<(Border Frame, CaptureItem Item, int Index)> _scattered = [];
     private uint _scatterSeed;
@@ -112,9 +113,8 @@ public sealed class CollectionPreview : StackPanel
     public CollectionPreview()
     {
         Children.Add(_photos);
-        var captions = new StackPanel();
-        captions.Children.Add(_name);
-        captions.Children.Add(_count);
+        _captions.Children.Add(_name);
+        _captions.Children.Add(_count);
         var labelContent = new Grid();
         var selectionWash = new Border();
         selectionWash.Style = (Style)System.Windows.Markup.XamlReader.Parse("""
@@ -128,14 +128,16 @@ public sealed class CollectionPreview : StackPanel
             </Style>
             """);
         labelContent.Children.Add(selectionWash);
-        labelContent.Children.Add(captions);
+        labelContent.Children.Add(_captions);
         _label.Child = labelContent;
         _label.Style = (Style)System.Windows.Markup.XamlReader.Parse("""
             <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Border">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Style}" Value="pile">
                         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
-                        <Setter Property="Padding" Value="3,0,3,1"/>
+                        <!-- A 1px ring of the background around the selection wash; the text keeps its
+                             room inside the wash (Refresh pads the captions). -->
+                        <Setter Property="Padding" Value="1"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -173,6 +175,7 @@ public sealed class CollectionPreview : StackPanel
         _count.Text = choice.Detail;
         _photos.Visibility = choice.Preview.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         _photos.Height = choice.Style == "pile" ? 112 : 78;
+        _captions.Margin = choice.Style == "pile" ? new Thickness(2, 0, 2, 0) : default;
         _photos.ClipToBounds = choice.Style != "pile";
         if (choice.Style == "pile") _photos.Children.Add(_pile);
         ToolTip = choice.Path is { } path ? path + "\n" + choice.Detail : choice.AccessibleName;
