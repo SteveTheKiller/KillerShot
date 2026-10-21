@@ -201,7 +201,7 @@
                      menu never opens. The order below is only the default: ApplyToolbarLayout
                      (ToolbarLayout.cs) arranges both sides from the saved layout at startup and after
                      Customize toolbar, and adds the separators, so neither side declares any. -->
-                <Grid x:Name="ToolbarGrid" Grid.Row="0" Margin="0,2,18,6" Background="Transparent"
+                <Grid x:Name="ToolbarGrid" Grid.Row="0" Margin="0,2,18,2" Background="Transparent"
                       MouseLeftButtonDown="Toolbar_MouseDown">
                     <Grid.ContextMenu>
                         <ContextMenu x:Name="ToolbarMenu"/>

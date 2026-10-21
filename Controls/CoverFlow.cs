@@ -50,6 +50,9 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     /// <summary>Model units visible top to bottom at the front picture. Smaller draws the
     /// pictures larger; the collection strip, which is short, uses a smaller value.</summary>
     public double ViewHeight { get; set; } = 1.60;
+    /// <summary>Frames the front picture's top edge at the top of the view, for the short strip
+    /// under the toolbar, so no empty band sits between the toolbar and the pictures.</summary>
+    public bool AlignTop { get; set; }
     /// <summary>Enables Ctrl+wheel depth changes for album carousels.</summary>
     public bool PerspectiveZoomEnabled { get; set; }
     /// <summary>Responsive framing for the album's primary photo, independent of compact strips.</summary>
@@ -264,6 +267,12 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         {
             double aspect = size.Width / size.Height;
             double height = Math.Max(ViewHeight, MinViewWidth / aspect) * (1 + .12 * _perspectiveZoom);
+            if (AlignTop && !MainView)
+            {
+                // A sliver of room above the front picture's top edge, the rest below it.
+                aim = pictureHeight + height * .03 - height / 2;
+                camera.Position = new Point3D(0, aim, CameraDistance);
+            }
             if (MainView)
             {
                 double projection = CameraDistance / (CameraDistance - .9 * _perspectiveZoom);

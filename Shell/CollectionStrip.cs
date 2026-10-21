@@ -63,7 +63,7 @@ namespace KillerShot.Shell
             // No pane of its own: the strip sits on the window's own background and grain, as
             // KillerPDF's sidebar does, so its cards are the only surface in it.
             Background = Brushes.Transparent;
-            Padding = new Thickness(8, 6, 8, 6);
+            Padding = new Thickness(8, 2, 8, 6);
             Focusable = false;
             Panel.SetZIndex(this, 1);
 
@@ -83,7 +83,7 @@ namespace KillerShot.Shell
                 _source = tag;
                 Load(keepCurrent: true);
             };
-            _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.RequestThumb, DeferHiddenLoading = true, Describe = LibraryView.Describe, ViewHeight = 1.2 };
+            _flow = new CoverFlow { ThumbnailSource = CaptureLibrary.RequestThumb, DeferHiddenLoading = true, Describe = LibraryView.Describe, ViewHeight = 1.2, AlignTop = true };
             _flow.SelectionChanged += () => { if (!_syncing) QueueOpen(_flow.SelectedItem); };
             _flow.ItemActivated += item => Open(item);
             _flow.ItemMenuRequested += ShowItemMenu;
@@ -176,7 +176,7 @@ namespace KillerShot.Shell
             if (_albumMode) _albumSource = _source;
             _albumMode = album;
             if (album) _source = _albumSource;
-            Padding = album ? new Thickness(0, 6, 0, 6) : new Thickness(8, 6, 8, 6);
+            Padding = album ? new Thickness(0, 6, 0, 6) : new Thickness(8, 2, 8, 6);
             Relayout();
             Load(keepCurrent: true);
         }
