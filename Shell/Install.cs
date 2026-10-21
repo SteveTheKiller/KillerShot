@@ -12,6 +12,9 @@ public partial class MainWindow
     private void RefreshPortableBadge()
     {
         PortableBadge.Visibility = App.IsPortable() && !DemoMode.IsDemo ? Visibility.Visible : Visibility.Collapsed;
+        // The spoken name starts with the visible word, so "click Portable" finds it by voice.
+        System.Windows.Automation.AutomationProperties.SetName(PortableBadge,
+            LocaleManager.Loc("Str_Portable") + ", " + LocaleManager.Loc("Str_Btn_Install"));
     }
 
     private async void Install_Click(object sender, RoutedEventArgs e)

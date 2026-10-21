@@ -152,6 +152,9 @@ internal static class SelfTestReleaseSafety
             // This build runs from the scratch folder, so it is a portable copy and offers to install.
             Check(App.IsPortable() && shortcutWindow.FindName("PortableBadge") is Button { Visibility: Visibility.Visible },
                 "A portable copy must show the install badge.");
+            Check(System.Windows.Automation.AutomationProperties.GetName((Button)shortcutWindow.FindName("PortableBadge"))
+                    .StartsWith(LocaleManager.Loc("Str_Portable"), StringComparison.Ordinal),
+                "The install badge's spoken name must start with its visible text.");
             report.Add("portable_badge=True");
             ((Button)shortcutWindow.FindName("CaptureSettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var recorder = ((Grid)shortcutWindow.FindName("ShortcutRows")).Children.OfType<Button>()

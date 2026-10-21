@@ -25,6 +25,7 @@ namespace KillerShot.Shell
         private void RelocalizeDynamicUi()
         {
             RelocalizeToolbar();
+            RefreshPortableBadge();
             BuildCaptureMenu();
             RefreshDocumentUi();
             if (CaptureSettingsOverlay.Visibility == Visibility.Visible) { SyncCaptureOptions(); BuildShortcutRows(); }
