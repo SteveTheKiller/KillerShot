@@ -37,7 +37,7 @@
 - File picker navigation stays responsive on slow folders. Long collection menus and submenus scroll to every command. Expanded website guide sections fit after resizing or font changes. Saved colors, accents, print preview Close, collection menus and website dialogs support keyboard access.
 - The compact single-row toolbar groups Open with recent captures and Save with Save as, alongside Capture, Record, Copy, Print and the annotation tools. Zoom choices stay in the footer. Icon size, label placement, order and overflow remain customizable; Alt+M replaces the toolbar with a title-bar menu.
 - The collection picker and count filter the album and editor carousel. Horizontal carousels also have a picker inside their frame.
-- Carousel menus toggle photo info cards. Ctrl+wheel brings the center photo forward while side photos recede. Draggable photo previews use a grab hand.
+- Carousel menus toggle photo info cards. Ctrl+wheel brings the center photo forward while side photos recede. Vertical Rolodex cards no longer taper at the top and bottom. Draggable photo previews use a grab hand.
 - Drag along a carousel to coast and settle on a picture. A new click stops it, long jumps animate smoothly, and the editor opens the selected image after motion settles.
 - Right-click an open image for file actions, Undo, Redo, annotation tools, color, size and zoom. Album and strip cards offer Open, Copy, Print, export, collections, notes, card color and deletion. Workspace menus also cover the rail, strip, library and footer.
 - Added capture settings with recorders for the four global shortcuts, and options to open the editor after each capture and show a notification.

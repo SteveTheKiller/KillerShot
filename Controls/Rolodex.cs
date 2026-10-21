@@ -15,8 +15,8 @@ namespace KillerShot.Controls;
 /// A rolodex of captures for a narrow column: every capture is a card on a drum that turns
 /// about a level axis. The current card faces the viewer; the ones before it lean back over the
 /// top of the drum and the ones after it under the bottom, each overlapping the next, so the
-/// column flips through cards the way a desk rolodex does. Drawn with real perspective in a
-/// Viewport3D, the same way as <see cref="CoverFlow"/>.
+/// column flips through cards the way a desk rolodex does. Orthographic projection keeps the
+/// cards' sides parallel as they turn over the top and bottom of the drum.
 ///
 /// Position is a double that eases toward SelectedIndex, so a jump of any distance turns the
 /// drum through the cards in between. Only the cards on the visible half of the drum exist as
@@ -169,12 +169,12 @@ internal sealed class Rolodex : FrameworkElement
         Focusable = true;
         FocusVisualStyle = KillerFamily.Accessibility.AccessibleControls.FocusStyleFor(this);
         ClipToBounds = true;
-        _viewport.Camera = new PerspectiveCamera
+        _viewport.Camera = new OrthographicCamera
         {
             Position = new Point3D(0, 0, CameraDistance),
             LookDirection = new Vector3D(0, 0, -1),
             UpDirection = new Vector3D(0, 1, 0),
-            FieldOfView = 30,
+            Width = ViewWidth,
         };
         _scene.Children.Add(new AmbientLight(Colors.White));
         _root.Content = _scene;
@@ -240,14 +240,15 @@ internal sealed class Rolodex : FrameworkElement
     protected override Size ArrangeOverride(Size finalSize)
     {
         _viewport.Arrange(new Rect(finalSize));
-        if (finalSize.Width > 0 && finalSize.Height > 0 && _viewport.Camera is PerspectiveCamera camera)
+        if (finalSize.Width > 0 && finalSize.Height > 0 && _viewport.Camera is OrthographicCamera camera)
         {
             // The front card fills the width; the drum is sized to the height, so a taller column
             // shows more cards and the spacing between them stays the same.
-            double viewWidth = ViewWidth / _zoom;
-            camera.FieldOfView = 2 * Math.Atan(viewWidth / 2 / CameraDistance) * 180 / Math.PI;
+            // Retain the raised front card's scale when removing perspective.
+            double viewWidth = ViewWidth / _zoom * (CameraDistance - Lift) / CameraDistance;
+            camera.Width = viewWidth;
             double halfHeight = viewWidth * finalSize.Height / finalSize.Width / 2;
-            // Grow the drum until its farthest card, seen in perspective, reaches the column's edge.
+            // Grow the drum until its farthest card reaches the column's edge.
             double radius = 0.5;
             while (radius < 20 && Extent(radius * 1.05) < halfHeight * 0.97) radius *= 1.05;
             _radius = radius;
@@ -266,8 +267,7 @@ internal sealed class Rolodex : FrameworkElement
         {
             double t = deg * Math.PI / 180;
             double y = radius * Math.Sin(t) + CardHeight / 2 * Math.Cos(t);
-            double z = radius * (Math.Cos(t) - 1) - CardHeight / 2 * Math.Sin(t);
-            max = Math.Max(max, y * CameraDistance / (CameraDistance - z));
+            max = Math.Max(max, y);
         }
         return max;
     }

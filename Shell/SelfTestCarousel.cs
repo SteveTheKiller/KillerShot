@@ -61,6 +61,13 @@ internal static class SelfTestCarousel
                 report.Add(control.GetType().Name + ": a missed button-up cannot leave the carousel stuck to the mouse PASS");
                 if (drum != null)
                 {
+                    foreach (double zoom in new[] { drum.Zoom, Rolodex.MinZoom, Rolodex.MaxZoom })
+                    {
+                        drum.Zoom = zoom;
+                        window.UpdateLayout();
+                        await Task.Delay(150);
+                        CheckStraightCards(drum, Path.Combine(folder, $"rolodex-zoom-{zoom:F2}.png"), report);
+                    }
                     drum.Zoom = 2;
                     if (drum.Zoom < 1.11) throw new InvalidOperationException("The Rolodex cannot zoom the front picture to the sidebar width.");
                     await Task.Delay(150);
@@ -86,5 +93,38 @@ internal static class SelfTestCarousel
             File.WriteAllLines(Path.Combine(folder, "carousel-report.txt"), report);
             App.Instance.Shutdown(code);
         }
+    }
+
+    private static void CheckStraightCards(Rolodex drum, string path, List<string> report)
+    {
+        var image = new RenderTargetBitmap((int)drum.ActualWidth, (int)drum.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        image.Render(drum);
+        ImageOutput.SavePng(image, path);
+        var pixels = new byte[image.PixelWidth * image.PixelHeight * 4];
+        image.CopyPixels(pixels, image.PixelWidth * 4, 0);
+        var runs = new List<List<int>>();
+        List<int>? run = null;
+        for (int y = 0; y < image.PixelHeight; y++)
+        {
+            int first = image.PixelWidth, last = -1;
+            for (int x = 0; x < image.PixelWidth; x++)
+            {
+                int at = (y * image.PixelWidth + x) * 4;
+                if (pixels[at] is >= 168 and <= 172 && pixels[at + 1] is >= 108 and <= 112
+                    && pixels[at + 2] is >= 58 and <= 62 && pixels[at + 3] > 250)
+                {
+                    first = Math.Min(first, x);
+                    last = x;
+                }
+            }
+            if (last - first < 30) { run = null; continue; }
+            if (run == null) { run = []; runs.Add(run); }
+            run.Add(last - first + 1);
+        }
+        var cards = runs.Where(rows => rows.Count >= 6).Select(rows => rows.Skip(1).SkipLast(1).ToArray()).ToArray();
+        if (cards.Length < 3) throw new InvalidOperationException("The Rolodex check needs visible cards above and below the front card.");
+        int taper = cards.Max(rows => rows.Max() - rows.Min());
+        report.Add($"Rolodex: zoom {drum.Zoom:F2}, visible image bands {cards.Length}, largest width variation {taper}px");
+        if (taper > 2) throw new InvalidOperationException("The top and bottom Rolodex cards taper instead of keeping straight sides.");
     }
 }
