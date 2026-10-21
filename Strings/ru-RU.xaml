@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} скопировано в буфер обмена</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Перетащите, чтобы обрезать. Ctrl+Z отменяет.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Не удалось открыть изображение: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Это изображение размером {0} x {1} пикселей превышает предел в {2} мегапикселей, который KillerShot может безопасно открыть.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Не удалось сохранить: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">О KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Параметры снимков</sys:String>

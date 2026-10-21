@@ -186,6 +186,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} a vágólapra másolva</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Húzással vághat. A Ctrl+Z visszavonja.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">A kép nem nyitható meg: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Ez a kép {0} x {1} képpont, nagyobb a {2} megapixeles korlátnál, amelyet a KillerShot biztonságosan meg tud nyitni.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">A mentés nem sikerült: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">A KillerShot névjegye (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Rögzítési beállítások</sys:String>

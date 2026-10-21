@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} copiato negli appunti</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Trascina per ritagliare. Ctrl+Z annulla.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Impossibile aprire l'immagine: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Questa immagine misura {0} x {1} pixel, oltre il limite di {2} megapixel che KillerShot può aprire in sicurezza.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Impossibile salvare: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Informazioni su KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Impostazioni di cattura</sys:String>

@@ -183,6 +183,7 @@
     <sys:String x:Key="Str_Status_Copied">Slika {0} x {1} je kopirana v odložišče</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Povleci za obrezovanje. Ctrl+Z ga razveljavi.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Slike ni bilo mogoče odpreti: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Ta slika ima {0} x {1} slikovnih pik, kar presega omejitev {2} milijonov slikovnih pik, ki jo KillerShot varno odpre.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Shranjevanje ni uspelo: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">O programu KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Nastavitve zajema</sys:String>

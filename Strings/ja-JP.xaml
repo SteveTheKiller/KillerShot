@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} をクリップボードにコピーしました</sys:String>
     <sys:String x:Key="Str_Status_CropHint">ドラッグして切り抜きます。Ctrl+Z で元に戻せます。</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">画像を開けませんでした: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">この画像は {0} x {1} ピクセルで、KillerShot が安全に開ける {2} メガピクセルの上限を超えています。</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">保存できませんでした: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">KillerShot について (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">キャプチャ設定</sys:String>

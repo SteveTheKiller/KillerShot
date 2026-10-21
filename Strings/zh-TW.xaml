@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">已將 {0} x {1} 複製到剪貼簿</sys:String>
     <sys:String x:Key="Str_Status_CropHint">拖曳以裁剪。Ctrl+Z 可復原。</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">無法開啟影像：{0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">此影像為 {0} x {1} 像素，超過 KillerShot 可安全開啟的 {2} 百萬像素上限。</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">無法儲存：{0}</sys:String>
     <sys:String x:Key="Str_TT_About">關於 KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">擷取設定</sys:String>

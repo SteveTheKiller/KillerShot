@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">Đã sao chép {0} x {1} vào bảng nhớ tạm</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Kéo để cắt. Ctrl+Z để hoàn tác.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Không mở được ảnh: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Ảnh này có kích thước {0} x {1} điểm ảnh, lớn hơn giới hạn {2} megapixel mà KillerShot có thể mở an toàn.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Không lưu được: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Giới thiệu KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Cài đặt chụp</sys:String>

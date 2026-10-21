@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} скопійовано до буфера обміну</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Перетягніть, щоб обрізати. Ctrl+Z скасовує.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Не вдалося відкрити зображення: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Це зображення має {0} x {1} пікселів, що перевищує межу в {2} мегапікселів, яку KillerShot може безпечно відкрити.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Не вдалося зберегти: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Про KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Параметри знімків</sys:String>

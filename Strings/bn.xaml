@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} ক্লিপবোর্ডে কপি হয়েছে</sys:String>
     <sys:String x:Key="Str_Status_CropHint">ক্রপ করতে টানুন। Ctrl+Z পূর্বাবস্থায় ফেরায়।</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">ছবি খোলা যায়নি: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">এই ছবিটি {0} x {1} পিক্সেল, যা KillerShot নিরাপদে খুলতে পারে এমন {2} মেগাপিক্সেল সীমার চেয়ে বড়।</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">সংরক্ষণ করা যায়নি: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">KillerShot সম্পর্কে (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">ক্যাপচার সেটিংস</sys:String>

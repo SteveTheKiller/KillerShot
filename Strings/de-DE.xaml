@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} in die Zwischenablage kopiert</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Ziehen zum Zuschneiden. Strg+Z macht es rückgängig.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Bild konnte nicht geöffnet werden: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Dieses Bild hat {0} x {1} Pixel und überschreitet die Grenze von {2} Megapixeln, die KillerShot sicher öffnen kann.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Speichern fehlgeschlagen: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Über KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Aufnahmeeinstellungen</sys:String>

@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} алмасу буферіне көшірілді</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Қию үшін сүйреңіз. Ctrl+Z болдырмайды.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Суретті ашу мүмкін болмады: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Бұл сурет {0} x {1} пиксель, KillerShot қауіпсіз аша алатын {2} мегапиксель шегінен үлкен.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Сақтау мүмкін болмады: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">KillerShot туралы (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Түсіру параметрлері</sys:String>

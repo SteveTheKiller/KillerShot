@@ -190,6 +190,7 @@
     <sys:String x:Key="Str_Status_Copied">Copied {0} x {1} to the clipboard</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Drag to crop. Ctrl+Z undoes it.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Could not open the image: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">This image is {0} x {1} pixels, larger than the {2} megapixel limit KillerShot can open safely.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Could not save: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">About KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Capture settings</sys:String>

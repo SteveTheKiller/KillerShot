@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">Skopiowano {0} x {1} do schowka</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Przeciągnij, aby przyciąć. Ctrl+Z cofa.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Nie można otworzyć obrazu: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Ten obraz ma {0} x {1} pikseli, więcej niż limit {2} megapikseli, który KillerShot może bezpiecznie otworzyć.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Nie można zapisać: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">O programie KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Ustawienia przechwytywania</sys:String>

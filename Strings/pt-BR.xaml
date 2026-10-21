@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} copiado para a área de transferência</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Arraste para cortar. Ctrl+Z desfaz.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Não foi possível abrir a imagem: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Esta imagem tem {0} x {1} pixels, acima do limite de {2} megapixels que o KillerShot abre com segurança.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Não foi possível salvar: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Sobre o KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Configurações de captura</sys:String>

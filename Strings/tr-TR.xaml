@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} panoya kopyalandı</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Kırpmak için sürükleyin. Ctrl+Z geri alır.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Görüntü açılamadı: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Bu görüntü {0} x {1} piksel; KillerShot'un güvenle açabildiği {2} megapiksel sınırından büyük.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Kaydedilemedi: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">KillerShot hakkında (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Yakalama ayarları</sys:String>

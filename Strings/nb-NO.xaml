@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">Kopierte {0} x {1} til utklippstavlen</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Dra for å beskjære. Ctrl+Z angrer.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Kunne ikke åpne bildet: {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Dette bildet er {0} x {1} piksler, større enn grensen på {2} megapiksler som KillerShot trygt kan åpne.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Kunne ikke lagre: {0}</sys:String>
     <sys:String x:Key="Str_TT_About">Om KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Innstillinger for skjermbilder</sys:String>

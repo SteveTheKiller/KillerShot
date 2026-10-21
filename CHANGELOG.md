@@ -37,6 +37,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 - Annotate with pen, highlighter, arrows, shapes, text and opaque redaction that replaces every pixel it touches, at any zoom and after moves or crops. Crop, select and move annotations, undo and redo, and use Fit or 100% zoom. Exports keep the capture's exact pixel size.
 - Print from the editor, album or tray through a themed preview with printer, paper, orientation, scale, color and copies controls. The preview fits smaller and scaled work areas. Over the album, Ctrl+C and Ctrl+P use the selected capture, and the tray's Save Last keeps the capture it opened with.
+- Opened and dropped images appear upright using their camera orientation, convert embedded color profiles to sRGB, and are refused with a clear message above 100 megapixels instead of exhausting memory.
 - Drag images into the album or editor and full-size PNG copies into other apps. Abandoned temporary exports expire after 24 hours while active sessions and locked files remain intact.
 
 ### QR reading

@@ -187,6 +187,7 @@
     <sys:String x:Key="Str_Status_Copied">{0} x {1} copié dans le presse-papiers</sys:String>
     <sys:String x:Key="Str_Status_CropHint">Faites glisser pour rogner. Ctrl+Z annule.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Impossible d'ouvrir l'image : {0}</sys:String>
+    <sys:String x:Key="Str_Err_ImageTooLarge">Cette image mesure {0} x {1} pixels, au-delà de la limite de {2} mégapixels que KillerShot peut ouvrir en toute sécurité.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Impossible d'enregistrer : {0}</sys:String>
     <sys:String x:Key="Str_TT_About">À propos de KillerShot (F12)</sys:String>
     <sys:String x:Key="Str_TT_CaptureSettings">Réglages de capture</sys:String>
