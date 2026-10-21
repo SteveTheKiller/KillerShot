@@ -45,6 +45,8 @@ internal sealed class TrayHost : IDisposable
     /// <summary>The user clicked the last notification.</summary>
     public event Action? BalloonClicked;
     public Func<bool>? HasLastCapture { get; set; }
+    /// <summary>Repeat, saved region and interval commands, supplied by the capture controller.</summary>
+    public Func<Func<ShortcutAction, string>, IEnumerable<object>>? RegionItems { get; set; }
 
     public IReadOnlyList<string> FailedShortcuts => _failed;
     public bool IsFailed(ShortcutAction action) => _failedActions.Contains(action);
@@ -192,6 +194,11 @@ internal sealed class TrayHost : IDisposable
         Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
         Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
         Item(Loc("Str_Mode_Qr"), "", () => DeferCapture(null, CaptureMode.Qr));
+        if (RegionItems != null)
+        {
+            menu.Items.Add(new Separator());
+            foreach (var item in RegionItems(Gesture)) menu.Items.Add(item);
+        }
         menu.Items.Add(new Separator());
         Item(Loc(_recording ? "Str_Tray_StopRecording" : "Str_Tray_Record"), Gesture(ShortcutAction.Video), () =>
         {

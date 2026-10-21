@@ -127,6 +127,8 @@ namespace KillerShot.Shell
                     (KillerShot.Capture.ShortcutAction.Monitor, "Str_KS_CaptureMonitor"),
                     (KillerShot.Capture.ShortcutAction.AllMonitors, "Str_KS_CaptureAll"),
                     (KillerShot.Capture.ShortcutAction.Video, "Str_KS_Record"),
+                    (KillerShot.Capture.ShortcutAction.RepeatRegion, "Str_Region_Repeat"),
+                    (KillerShot.Capture.ShortcutAction.Interval, "Str_Region_IntervalToggle"),
                 })
                 {
                     var text = CaptureSettings.ShortcutText(action);

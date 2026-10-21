@@ -8,7 +8,7 @@ namespace KillerShot.Shell;
 
 /// <summary>Runs one capture at a time: freeze the desktop, pick the pixels for the mode,
 /// then copy to the clipboard. A cancelled capture produces no output and no clipboard change.</summary>
-internal sealed class CaptureController
+internal sealed partial class CaptureController
 {
     private readonly TrayHost _tray;
     private readonly VideoController? _video;
@@ -34,12 +34,15 @@ internal sealed class CaptureController
         _tray.CaptureRequested += (action, mode, fg) =>
         {
             if (action == ShortcutAction.Video) App.Instance.Video?.Toggle(fromShortcut: true);
+            else if (action == ShortcutAction.RepeatRegion) _ = RepeatRegion(fromShortcut: true);
+            else if (action == ShortcutAction.Interval) ToggleInterval();
             else if (action is { } shortcut) _ = StartFromShortcut(shortcut, fg);
             else _ = RunAsync(null, mode, fg);
         };
         _tray.SaveLastRequested += SaveLast;
         _tray.PrintLastRequested += PrintLast;
         _tray.HasLastCapture = () => Last != null;
+        _tray.RegionItems = RegionMenuItems;
     }
 
     /// <summary>Starts a capture from the editor or the tray menu.</summary>
@@ -57,7 +60,8 @@ internal sealed class CaptureController
         _ => CaptureMode.Region,
     };
 
-    private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false)
+    private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false,
+        Win32.RECT? fixedRegion = null, bool interval = false)
     {
         if (_busy || (_video ?? App.Instance.Video)?.IsRecording == true) return;
         _busy = true;
@@ -67,15 +71,24 @@ internal sealed class CaptureController
             var mode = Resolve(action, requested);
             // A global shortcut preserves the desktop, including the editor's open menus.
             // Commands started inside the editor hide it before capturing other applications.
-            if (action == null && HideEditor != null) restore = await HideEditor();
-            int delay = CaptureSettings.DelaySeconds;
+            if (action == null && !interval && HideEditor != null) restore = await HideEditor();
+            int delay = interval ? 0 : CaptureSettings.DelaySeconds;
             if (delay > 0) await Task.Delay(delay * 1000);
             var frozen = FrozenDesktop.Capture(CaptureSettings.IncludeCursor);
             BitmapSource? result;
             // The window the picture came from, for the library's search: the picked or active
             // window, or the topmost window under the middle of a region or under the pointer.
             IntPtr source = IntPtr.Zero;
-            if (video || action == ShortcutAction.LastMode || mode is CaptureMode.Region or CaptureMode.Qr
+            if (fixedRegion is { } region)
+            {
+                // A repeated or saved region: the same pixels again, no selector.
+                var clipped = Win32.RECT.Intersect(region, frozen.Bounds);
+                if (clipped.IsEmpty) return;
+                mode = CaptureMode.Region;
+                result = frozen.Crop(clipped);
+                source = frozen.WindowAt(Center(clipped))?.Handle ?? IntPtr.Zero;
+            }
+            else if (video || action == ShortcutAction.LastMode || mode is CaptureMode.Region or CaptureMode.Qr
                 || mode == CaptureMode.Window && (CaptureSettings.PickWindow || foreground == IntPtr.Zero))
             {
                 var picker = new RegionSelector(frozen, showBar: true, mode: mode, video: video);
@@ -105,6 +118,7 @@ internal sealed class CaptureController
                 {
                     // A region keeps the visible desktop, including menus and overlaps.
                     result = frozen.Crop(picked.Value);
+                    if (mode == CaptureMode.Region) RegionMemory.Remember(picked.Value, frozen.Monitors);
                 }
             }
             else switch (mode)
@@ -147,7 +161,8 @@ internal sealed class CaptureController
                 source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
                 _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
 
-            bool wantCopy = CaptureSettings.CopyToClipboard;
+            // Interval captures go to the album and folder only: no clipboard churn, editor or prompts.
+            bool wantCopy = CaptureSettings.CopyToClipboard && !interval;
             bool copied = false;
             string? error = null;
             if (wantCopy) copied = ImageOutput.TryCopy(result, out error);
@@ -169,6 +184,7 @@ internal sealed class CaptureController
                 }
             }
 
+            if (interval) { IntervalCaptured(); return; }
             if (CaptureSettings.AskToSave)
             {
                 var asked = AskAndSave(result, taken, mode);

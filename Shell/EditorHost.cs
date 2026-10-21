@@ -395,6 +395,12 @@ namespace KillerShot.Shell
                 mi.Click += (_, _) => StartCapture(m);
                 CaptureMenu.Items.Add(mi);
             }
+            if (App.Instance.Capture is { } capture)
+            {
+                CaptureMenu.Items.Add(new Separator());
+                foreach (var item in capture.RegionMenuItems(a => Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var s) ? s.Short : ""))
+                    CaptureMenu.Items.Add(item);
+            }
         }
 
         private void CaptureBtn_Click(object sender, RoutedEventArgs e)

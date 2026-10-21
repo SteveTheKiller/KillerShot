@@ -21,6 +21,8 @@ namespace KillerShot.Shell
             (ShortcutAction.Window, "Str_Mode_Window"),
             (ShortcutAction.Monitor, "Str_Mode_Monitor"),
             (ShortcutAction.AllMonitors, "Str_Mode_AllMonitors"),
+            (ShortcutAction.RepeatRegion, "Str_Region_Repeat"),
+            (ShortcutAction.Interval, "Str_Region_IntervalToggle"),
         ];
 
         private Button? _recording;

@@ -154,14 +154,39 @@ public static class Program
     // capture
     // ------------------------------------------------------------------------------------------
 
-    private static readonly string[] CaptureValues = ["mode", "monitor", "window", "rect", "out", "format", "quality", "delay"];
+    private static readonly string[] CaptureValues = ["mode", "monitor", "window", "rect", "out", "format", "quality", "delay", "preset", "interval", "count"];
     private static readonly string[] CaptureFlags = ["json", "clipboard", "no-clipboard", "save", "no-save", "cursor", "no-cursor",
-        "shutter", "no-shutter", "pick", "editor", "no-recent", "overwrite"];
+        "shutter", "no-shutter", "pick", "editor", "no-recent", "overwrite", "repeat"];
 
     private static async Task<int> CaptureAsync(string[] args)
     {
         var o = Options.Parse(args, CaptureValues, CaptureFlags);
         o.NoPositionals();
+        if (o.Int("interval", 1, 3600) is int interval)
+        {
+            // The same capture --count times, --interval seconds apart; each one is a full capture.
+            int count = o.Int("count", 1, 1000) ?? throw new CliException("--interval needs --count so it ends.");
+            if (count > 1 && o.Value("out") is { } outPath && Path.HasExtension(outPath) && !Directory.Exists(outPath))
+                throw new CliException("--interval with --count above 1 needs --out to be a folder, not a file.");
+            if (o.Has("editor") || o.Has("pick"))
+                throw new CliException("--interval cannot be combined with --editor or --pick.");
+            var once = new List<string>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] is "--interval" or "--count") { i++; continue; }
+                once.Add(args[i]);
+            }
+            int last = ExitOk;
+            for (int n = 0; n < count; n++)
+            {
+                if (n > 0) await Task.Delay(TimeSpan.FromSeconds(interval));
+                last = await CaptureAsync([.. once]);
+                if (last != ExitOk) return last;
+            }
+            return last;
+        }
+        if (o.Has("count")) throw new CliException("--count is only used with --interval.");
+        if (o.Has("repeat") && o.Value("preset") != null) throw new CliException("--repeat and --preset cannot be combined.");
         var mode = ModeFor(o, CaptureSettings.LastMode == CaptureMode.Qr ? CaptureMode.Region : CaptureSettings.LastMode);
         int delay = o.Int("delay", 0, 30) ?? CaptureSettings.DelaySeconds;
         bool cursor = o.Switch("cursor", "no-cursor") ?? CaptureSettings.IncludeCursor;
@@ -183,6 +208,26 @@ public static class Program
         var target = outArg != null ? OutputTarget.ForImage(outArg, formatArg, o.Has("overwrite")) : null;
         string format = target?.Format ?? formatArg ?? CaptureSettings.Format;
         Win32.RECT? rect = o.Value("rect") is { } r ? ParseRect(r) : null;
+        if (o.Has("repeat") || o.Value("preset") != null)
+        {
+            if (rect != null || mode != CaptureMode.Region && o.Value("mode") != null)
+                throw new CliException("--repeat and --preset capture a region; drop --rect and --mode.");
+            mode = CaptureMode.Region;
+            var monitors = FrozenDesktop.EnumerateMonitors();
+            if (o.Value("preset") is { } presetName)
+            {
+                var preset = RegionMemory.Presets.FirstOrDefault(p => p.Name.Equals(presetName, StringComparison.CurrentCultureIgnoreCase))
+                    ?? throw new CliException($"No saved region is called \"{presetName}\".");
+                Win32.GetCursorPos(out var pointer);
+                if (!RegionMemory.Resolve(preset, pointer, monitors, out var placed))
+                    throw new CliException($"The saved region \"{preset.Name}\" is no longer on the screen.", ExitFailed);
+                rect = placed;
+            }
+            else if (RegionMemory.TryLast(monitors, out var last)) rect = last;
+            else throw new CliException(RegionMemory.HasLast
+                ? "The monitors changed since the last region. Select it again with capture --mode region."
+                : "No region has been captured yet. Capture one with capture --mode region first.", ExitFailed);
+        }
         IntPtr window = mode == CaptureMode.Window && o.Value("window") is { } w ? ResolveWindow(w) : IntPtr.Zero;
         var monitor = mode == CaptureMode.Monitor ? ResolveMonitor(o.Value("monitor")) : null;
         bool pick = o.Has("pick");
@@ -214,7 +259,11 @@ public static class Program
                 else
                 {
                     var selected = await new RegionSelector(frozen).RunAsync();
-                    if (selected != null) bmp = frozen.Crop(selected.Value);
+                    if (selected != null)
+                    {
+                        bmp = frozen.Crop(selected.Value);
+                        RegionMemory.Remember(selected.Value, frozen.Monitors);
+                    }
                 }
                 break;
             case CaptureMode.Window:
@@ -1109,6 +1158,10 @@ public static class Program
         capture options:
           --mode region|window|monitor|all  What to capture. Default: the last mode used.
           --rect <x,y,width,height>       Capture this rectangle without the selector.
+          --repeat                        Capture the last selected region again.
+          --preset <name>                 Capture a saved region from the app's Saved regions.
+          --interval <1-3600>             Seconds between captures; needs --count.
+          --count <1-1000>                How many captures --interval takes.
           --monitor <n|primary|pointer>   Monitor number from the monitors command.
                                           Default: the monitor under the pointer.
           --window <handle|title>         Handle from the windows command, or part of a title.

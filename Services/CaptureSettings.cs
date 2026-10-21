@@ -13,7 +13,16 @@ internal static class CaptureSettings
         [ShortcutAction.Monitor] = "Ctrl+Print Screen",
         [ShortcutAction.AllMonitors] = "Shift+Print Screen",
         [ShortcutAction.Video] = "Ctrl+Shift+Print Screen",
+        [ShortcutAction.RepeatRegion] = "Ctrl+Alt+Print Screen",
+        [ShortcutAction.Interval] = "",
     };
+
+    /// <summary>Seconds between interval captures, 1 to 3600.</summary>
+    public static int IntervalSeconds
+    {
+        get => int.TryParse(Settings.Get("IntervalSeconds"), out int s) ? Math.Clamp(s, 1, 3600) : 10;
+        set => Settings.Set("IntervalSeconds", Math.Clamp(value, 1, 3600).ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
 
     public static CaptureMode LastMode
     {
