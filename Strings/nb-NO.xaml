@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Lukk et kort eller avbryt gjeldende markering</sys:String>
     <sys:String x:Key="Str_KS_Copy">Kopier det ferdige bildet</sys:String>
     <sys:String x:Key="Str_KS_Delete">Slett den valgte markeringen</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Velg alle merker</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Legg et merke til utvalget, eller fjern det</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Dupliser de valgte merkene</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Flytt utvalget ett lag frem eller tilbake (Skift for helt)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Rediger valgt tekst eller snakkeboble</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Ordne</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Flytt fremst</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Flytt fremover</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Flytt bakover</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Flytt bakerst</sys:String>
     <sys:String x:Key="Str_KS_Fit">Tilpass til vinduet</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">REDIGER</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">VERKTØY</sys:String>

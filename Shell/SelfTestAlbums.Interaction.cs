@@ -35,6 +35,7 @@ internal static partial class SelfTestAlbums
         window.UpdateLayout();
         await Task.Delay(150);
         var document = App.Instance.Document!;
+        long editedId = App.Instance.CurrentItem!.Id;
         document.Crop(new Int32Rect(0, 0, 1, 1));
         var popup = (Popup)window.FindName("LibrarySettingsPopup");
         var list = (ListBox)window.FindName("AlbumList");
@@ -55,7 +56,7 @@ internal static partial class SelfTestAlbums
             list.ScrollIntoView(list.SelectedItem);
         }
         void Preserved(string context) => Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1
-            && ReferenceEquals(App.Instance.Document, document) && document.Dirty
+            && ReferenceEquals(App.Instance.Document, document)
             && App.Instance.CurrentItem != null, context);
 
         await ShowManager();
@@ -64,20 +65,15 @@ internal static partial class SelfTestAlbums
         Check(CaptureLibrary.Albums().Count == 1 && popup.IsOpen, "Canceling New must not create a file or hide the manager.");
         report.Add("New dialog Cancel preserves album, files, unsaved editor, and manager: PASS");
 
-        await ManagerClickAsync(NewButton(), dialog => ManagerText(dialog, "Work"), dialog => ManagerCancel<ConfirmDialog>(dialog));
+        // An album capture keeps its edits in its album, so a new album opens without asking to
+        // discard them.
+        await ManagerClickAsync(NewButton(), dialog => ManagerText(dialog, "Work"));
         string work = CaptureLibrary.Albums().Single(album => album.Name == "Work").Path;
-        Preserved("Canceling discard after New must preserve the original editor and active album.");
-        Check(File.Exists(work) && popup.IsOpen, "The requested new album must exist without replacing the canceled editor.");
-        await ShowManager();
-        Select(work);
-        await ManagerClickAsync(Named("AlbumOpenBtn"), dialog => ManagerCancel<ConfirmDialog>(dialog));
-        Preserved("Canceling Open must preserve the original editor and active album.");
-        await ManagerClickAsync(Named("AlbumOpenBtn"), dialog => ManagerAccept<ConfirmDialog>(dialog));
         Check(CaptureLibrary.FilePath == work && CaptureLibrary.Count == 0 && App.Instance.Document == null
             && App.Instance.CurrentItem == null && ((TextBlock)window.FindName("TitleLibraryLabel")).Text == "Work",
-            "Accepted Open must activate Work and clear the old editor context.");
-        Check(popup.IsOpen, "Accepted Open must leave the manager visible.");
-        report.Add("New creates separately; Open Cancel preserves edits and accepted discard clears old editor context: PASS");
+            "New must activate Work and clear the old editor context.");
+        Check(popup.IsOpen, "Creating an album must leave the manager visible.");
+        report.Add("New activates the album without a discard prompt; the album capture's edits stay in its album: PASS");
 
         await ManagerClickAsync(NewButton(), dialog => ManagerText(dialog, "Personal"));
         string personal = CaptureLibrary.FilePath;
@@ -116,6 +112,7 @@ internal static partial class SelfTestAlbums
         Select(original);
         await ManagerClickAsync(Named("AlbumOpenBtn"));
         Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1, "The account-protected original must reopen.");
+        Check(CaptureLibrary.LoadMarks(editedId)?.Image.PixelWidth == 1, "The original album lost the edits made before switching.");
         Select(project);
         await ManagerClickAsync(Named("AlbumOpenBtn"), dialog => ManagerCancel<PromptDialog>(dialog));
         Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1 && popup.IsOpen,

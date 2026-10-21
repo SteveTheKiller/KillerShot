@@ -518,6 +518,7 @@ internal static partial class CaptureLibrary
                 capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
                 results TEXT NOT NULL,
                 text TEXT NOT NULL);
+            """ + MarksSchema + """
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
             INSERT INTO capture_search(rowid, title, process, note, ocr, collection)
@@ -648,6 +649,7 @@ internal static partial class CaptureLibrary
         }
         // The capture is committed. Later indexing, pruning or listeners cannot turn it back
         // into a pending capture and create a duplicate on retry.
+        RaiseCaptureStored(bmp, id);
         try
         {
             if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
@@ -894,7 +896,7 @@ internal static partial class CaptureLibrary
         using Stream stream = FolderCaptures.IsFolderId(item.Id)
             ? new FileStream(FolderCaptures.PathOf(item.Id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")),
                 FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)
-            : new MemoryStream(LoadPng(item));
+            : new MemoryStream(EditedPng(item.Id) ?? LoadPng(item));
         var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.DelayCreation | BitmapCreateOptions.IgnoreColorProfile,
             BitmapCacheOption.None);
         var frame = decoder.Frames[0];

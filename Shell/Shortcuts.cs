@@ -108,6 +108,10 @@ namespace KillerShot.Shell
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;
+                    case Key.A when EditorKeysApply(): if (!Editor.SelectAll()) handled = false; break;
+                    case Key.D when !shift && EditorKeysApply(): if (!Editor.DuplicateSelected()) handled = false; break;
+                    case Key.OemCloseBrackets when EditorKeysApply(): if (!Editor.Reorder(+1, shift)) handled = false; break;
+                    case Key.OemOpenBrackets when EditorKeysApply(): if (!Editor.Reorder(-1, shift)) handled = false; break;
                     case Key.Left when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(shift ? -10 : -1, 0))) handled = false; break;
                     case Key.Right when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(shift ? 10 : 1, 0))) handled = false; break;
                     case Key.Up when EditorKeysApply(): if (!Editor.ResizeSelected(new Vector(0, shift ? -10 : -1))) handled = false; break;
@@ -143,6 +147,7 @@ namespace KillerShot.Shell
                 case Key.X: SelectTool(ToolKind.Redact); break;
                 case Key.C: SelectTool(ToolKind.Crop); break;
                 case Key.Delete or Key.Back: if (!Editor.DeleteSelected()) return; break;
+                case Key.F2: if (!Editor.EditSelectedText()) return; break;
                 // On the picture itself: Enter places the tool's mark, Tab moves between marks.
                 case Key.Enter when Editor.IsKeyboardFocused: if (!Editor.PlaceMark()) return; break;
                 case Key.Tab when Editor.IsKeyboardFocused && !ctrl: if (!Editor.SelectNext(shift)) return; break;

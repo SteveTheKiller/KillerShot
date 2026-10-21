@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">關閉卡片或取消目前的標註</sys:String>
     <sys:String x:Key="Str_KS_Copy">複製完成的圖片</sys:String>
     <sys:String x:Key="Str_KS_Delete">刪除選取的標註</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">選取所有標註</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">將標註加入選取或移出</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">複製所選標註</sys:String>
+    <sys:String x:Key="Str_KS_Layer">將所選內容上移或下移一層（按 Shift 移到最上或最下）</sys:String>
+    <sys:String x:Key="Str_KS_EditText">編輯所選文字或標註泡泡</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">排列</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">移到最上層</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">上移一層</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">下移一層</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">移到最下層</sys:String>
     <sys:String x:Key="Str_KS_Fit">符合視窗</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">編輯</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">工具</sys:String>

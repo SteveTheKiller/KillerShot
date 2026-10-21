@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Đóng thẻ hoặc hủy nét đánh dấu hiện tại</sys:String>
     <sys:String x:Key="Str_KS_Copy">Sao chép ảnh hoàn chỉnh</sys:String>
     <sys:String x:Key="Str_KS_Delete">Xóa nét đánh dấu đã chọn</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Chọn mọi đánh dấu</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Thêm đánh dấu vào vùng chọn hoặc bỏ ra</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Nhân đôi các đánh dấu đã chọn</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Đưa vùng chọn lên hoặc xuống một lớp (Shift để đưa hết cỡ)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Sửa văn bản hoặc bong bóng đã chọn</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Sắp xếp</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Đưa lên trên cùng</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Đưa lên một lớp</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Đưa xuống một lớp</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Đưa xuống dưới cùng</sys:String>
     <sys:String x:Key="Str_KS_Fit">Vừa cửa sổ</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">CHỈNH SỬA</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">CÔNG CỤ</sys:String>

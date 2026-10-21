@@ -161,6 +161,16 @@
     <sys:String x:Key="Str_KS_Close">Kártya bezárása vagy az aktuális jelölés elvetése</sys:String>
     <sys:String x:Key="Str_KS_Copy">A kész kép másolása</sys:String>
     <sys:String x:Key="Str_KS_Delete">A kijelölt jelölés törlése</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Minden jelölés kijelölése</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Jelölés hozzáadása a kijelöléshez vagy eltávolítása</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">A kijelölt jelölések megkettőzése</sys:String>
+    <sys:String x:Key="Str_KS_Layer">A kijelölés egy réteggel előre vagy hátra (Shift: teljesen)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">A kijelölt szöveg vagy szövegbuborék szerkesztése</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Elrendezés</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Előrehozás legfelülre</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Előrébb hozás</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Hátrébb küldés</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Hátraküldés legalulra</sys:String>
     <sys:String x:Key="Str_KS_Fit">Illesztés az ablakhoz</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">SZERKESZTÉS</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ESZKÖZÖK</sys:String>

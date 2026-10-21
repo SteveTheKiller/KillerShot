@@ -22,6 +22,10 @@ public partial class App : Application
     /// <summary>The picture in the editor. It lives here rather than in the window, so closing the
     /// editor keeps the work and its undo history until the next capture replaces it.</summary>
     internal EditorDocument? Document { get; private set; }
+
+    private AlbumMarks? _marks;
+    /// <summary>Keeps the open capture's marks in the album; null in self-tests that never show a document.</summary>
+    private AlbumMarks Marks => _marks ??= new AlbumMarks(Dispatcher);
     internal event Action? DocumentChanged;
 
     /// <summary>Set by KillerShot.Cli.exe before it runs the application, so the console build
@@ -77,6 +81,8 @@ public partial class App : Application
         if (SelfTestCarouselAutomation.TryRun(e.Args)) return;
         if (SelfTestAlbumResponsive.TryRun(e.Args)) return;
         if (SelfTestEditorTools.TryRun(e.Args)) return;
+        if (SelfTestEditorObjects.TryRun(e.Args)) return;
+        if (SelfTestAlbumMarks.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
         if (SelfTestCursorOverride.TryRun(e.Args)) return;
         if (SelfTestDragCleanup.TryRun(e.Args)) return;
@@ -222,8 +228,10 @@ public partial class App : Application
             return;
         }
         var bmp = CaptureLibrary.LoadImage(item);
+        // A capture edited before opens with its marks, still editable.
+        var restored = CaptureLibrary.LoadMarks(item.Id);
         _opening = item;
-        SetDocument(new EditorDocument(bmp, null, item.Taken));
+        SetDocument(restored != null ? EditorDocument.Restore(bmp, restored, item.Taken) : new EditorDocument(bmp, null, item.Taken));
     }
 
     /// <summary>The library or Screenshots folder picture in the editor, or null for a new
@@ -265,8 +273,10 @@ public partial class App : Application
         var opening = _opening;
         _opening = null;
         if (!ReferenceEquals(Document, doc) && !ConfirmDocumentReplacement()) return false;
+        Marks.Flush();
         CurrentItem = doc != null ? opening : null;
         Document = doc;
+        Marks.Attach(doc, opening != null && doc != null && !FolderCaptures.IsFolderId(opening.Id) ? opening.Id : null);
         DocumentChanged?.Invoke();
         return true;
     }
@@ -275,6 +285,8 @@ public partial class App : Application
     {
         _editor?.CommitPendingText();
         if (Document?.Dirty != true) return true;
+        // An album capture keeps its marks in the album, so replacing it loses nothing.
+        if (Document.FilePath == null && Marks.CaptureId != null) { Marks.Flush(); return true; }
         var expectedDocument = Document;
         ShowEditor();
         var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
@@ -288,6 +300,7 @@ public partial class App : Application
     {
         CurrentItem = null;
         _opening = null;
+        Marks.Attach(null, null);
         Document = null;
         DocumentChanged?.Invoke();
     }
@@ -358,7 +371,8 @@ public partial class App : Application
     internal async Task<bool> CanExitAsync()
     {
         _editor?.CommitPendingText();
-        if (Document?.Dirty == true)
+        if (Document is { Dirty: true, FilePath: null } && Marks.CaptureId != null) Marks.Flush();
+        if (Document?.Dirty == true && !(Document.FilePath == null && Marks.CaptureId != null))
         {
             var expected = Document;
             ShowEditor();

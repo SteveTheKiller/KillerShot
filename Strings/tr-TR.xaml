@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Bir kartı kapat veya geçerli işareti iptal et</sys:String>
     <sys:String x:Key="Str_KS_Copy">Bitmiş resmi kopyala</sys:String>
     <sys:String x:Key="Str_KS_Delete">Seçili işareti sil</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Tüm işaretleri seç</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Bir işareti seçime ekle veya çıkar</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Seçili işaretleri çoğalt</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Seçimi bir katman öne veya arkaya taşı (en uca için Shift)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Seçili metni veya konuşma balonunu düzenle</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Düzenle</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">En öne getir</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Bir öne getir</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Bir arkaya gönder</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">En arkaya gönder</sys:String>
     <sys:String x:Key="Str_KS_Fit">Pencereye sığdır</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">DÜZENLE</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ARAÇLAR</sys:String>

@@ -29,9 +29,21 @@ public sealed class EditorDocument
     {
         if (!image.IsFrozen && image.CanFreeze) image.Freeze();
         State = new EditorState(image, ImmutableList<Annotation>.Empty);
+        Original = image;
         FilePath = path;
         Taken = taken ?? DateTime.Now;
     }
+
+    /// <summary>A capture reopened from the album as the editor left it: its original pixels, and
+    /// the cropped picture and marks it was saved with. Nothing is unsaved yet.</summary>
+    public static EditorDocument Restore(BitmapSource original, EditorState restored, DateTime taken)
+    {
+        if (!restored.Image.IsFrozen && restored.Image.CanFreeze) restored.Image.Freeze();
+        return new EditorDocument(original, null, taken) { State = restored };
+    }
+
+    /// <summary>The picture as captured or opened, before any crop.</summary>
+    public BitmapSource Original { get; }
 
     public BitmapSource Image => State.Image;
     public int PixelWidth => State.Image.PixelWidth;

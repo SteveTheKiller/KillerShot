@@ -37,9 +37,30 @@ public partial class MainWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(ToolbarAction("undo"));
         menu.Items.Add(ToolbarAction("redo"));
-        var delete = new MenuItem { Tag = "delete", Header = Loc("Str_KS_Delete"), InputGestureText = "Del", IsEnabled = Editor.Selected != null };
-        delete.Click += (_, _) => Editor.DeleteSelected();
-        menu.Items.Add(delete);
+        bool any = Editor.Selected != null;
+        MenuItem Mark(string tag, string key, string gesture, bool enabled, Action action)
+        {
+            var item = new MenuItem { Tag = tag, Header = Loc(key), InputGestureText = gesture, IsEnabled = enabled };
+            item.Click += (_, _) => action();
+            menu.Items.Add(item);
+            return item;
+        }
+        Mark("delete", "Str_KS_Delete", "Del", any, () => Editor.DeleteSelected());
+        Mark("duplicate", "Str_KS_Duplicate", "Ctrl+D", any, () => Editor.DuplicateSelected());
+        Mark("edittext", "Str_KS_EditText", "F2", Editor.Selected is TextAnnotation or CalloutAnnotation, () => Editor.EditSelectedText());
+        Mark("selectall", "Str_KS_SelectAllMarks", "Ctrl+A", _doc?.State.Items.IsEmpty == false, () => Editor.SelectAll());
+        var layer = new MenuItem { Header = Loc("Str_KS_LayerMenu"), IsEnabled = any };
+        foreach (var (tag, key, gesture, direction, all) in new[]
+        {
+            ("front", "Str_KS_BringToFront", "Ctrl+Shift+]", 1, true), ("forward", "Str_KS_BringForward", "Ctrl+]", 1, false),
+            ("backward", "Str_KS_SendBackward", "Ctrl+[", -1, false), ("back", "Str_KS_SendToBack", "Ctrl+Shift+[", -1, true),
+        })
+        {
+            var item = new MenuItem { Tag = tag, Header = Loc(key), InputGestureText = gesture };
+            item.Click += (_, _) => Editor.Reorder(direction, all);
+            layer.Items.Add(item);
+        }
+        menu.Items.Add(layer);
         menu.Items.Add(new Separator());
         var tools = new MenuItem { Header = Loc("Str_KS_GrpTools"), IsEnabled = _doc != null };
         foreach (ToolKind tool in Enum.GetValues<ToolKind>())

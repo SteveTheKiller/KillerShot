@@ -121,7 +121,8 @@ internal static class SelfTestEditorKeyboard
             if (doc.State.Items.Count != 1) throw new InvalidOperationException("Delete did not remove the selected mark.");
             var undo = (Button)window.FindName("UndoBtn");
             ((IInvokeProvider)UIElementAutomationPeer.CreatePeerForElement(undo).GetPattern(PatternInterface.Invoke)!).Invoke();
-            await Task.Delay(50);
+            // An automation click is queued; give it a moment.
+            for (int wait = 0; wait < 40 && doc.State.Items.Count != 2; wait++) await Task.Delay(25);
             if (doc.State.Items.Count != 2) throw new InvalidOperationException("Undo did not restore the deleted mark.");
             var output = new FormatConvertedBitmap(doc.Render(), PixelFormats.Bgra32, null, 0);
             var r = resized.PixelCells;

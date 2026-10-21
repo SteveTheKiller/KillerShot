@@ -225,7 +225,7 @@ public sealed class CollectionPreview : StackPanel
             else _photos.Children.Add(frame);
             var item = preview[i];
             frame.Cursor = Controls.DragCursors.Open;
-            ImageDrag.Attach(frame, _ => () => CaptureLibrary.LoadImage(item));
+            ImageDrag.Attach(frame, _ => () => CaptureLibrary.LoadOutput(item));
             try
             {
                 if (generation != _generation || !CaptureLibrary.IsCurrent(item)) return;
@@ -243,7 +243,7 @@ public sealed class CollectionPreview : StackPanel
             var left = new Image { Width = 52, Height = 42, Opacity = .55, HorizontalAlignment = HorizontalAlignment.Left, IsHitTestVisible = false };
             var right = new Image { Width = 52, Height = 42, Opacity = .55, HorizontalAlignment = HorizontalAlignment.Right, IsHitTestVisible = false };
             var center = new Image { Width = 108, Height = 66, Cursor = Controls.DragCursors.Open };
-            ImageDrag.Attach(center, _ => { var item = preview[current]; return () => CaptureLibrary.LoadImage(item); });
+            ImageDrag.Attach(center, _ => { var item = preview[current]; return () => CaptureLibrary.LoadOutput(item); });
             void Show()
             {
                 center.Source = bitmaps[current];

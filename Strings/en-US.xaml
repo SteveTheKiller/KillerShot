@@ -165,6 +165,16 @@
     <sys:String x:Key="Str_KS_Close">Close a card or cancel the current mark</sys:String>
     <sys:String x:Key="Str_KS_Copy">Copy the finished picture</sys:String>
     <sys:String x:Key="Str_KS_Delete">Delete the selected mark</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Select every mark</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Add a mark to the selection, or remove it</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Duplicate the selected marks</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Move the selection forward or back a layer (Shift for all the way)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Edit the selected text or callout</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Arrange</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Bring to front</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Bring forward</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Send backward</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Send to back</sys:String>
     <sys:String x:Key="Str_KS_Fit">Fit to the window</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">EDIT</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">TOOLS</sys:String>

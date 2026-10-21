@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Zavřít kartu nebo zrušit aktuální značku</sys:String>
     <sys:String x:Key="Str_KS_Copy">Zkopírovat hotový obrázek</sys:String>
     <sys:String x:Key="Str_KS_Delete">Smazat vybranou značku</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Vybrat všechny značky</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Přidat značku do výběru nebo ji odebrat</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Duplikovat vybrané značky</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Posunout výběr o vrstvu dopředu nebo dozadu (Shift úplně)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Upravit vybraný text nebo bublinu</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Uspořádat</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Přenést do popředí</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Přenést o úroveň výš</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Přesunout o úroveň níž</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Přesunout do pozadí</sys:String>
     <sys:String x:Key="Str_KS_Fit">Přizpůsobit oknu</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">ÚPRAVY</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">NÁSTROJE</sys:String>

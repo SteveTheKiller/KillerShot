@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Закрити картку або скасувати поточну позначку</sys:String>
     <sys:String x:Key="Str_KS_Copy">Скопіювати готове зображення</sys:String>
     <sys:String x:Key="Str_KS_Delete">Видалити вибрану позначку</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Вибрати всі позначки</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Додати позначку до вибору або прибрати її</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Дублювати вибрані позначки</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Перемістити вибір на шар уперед або назад (Shift — до кінця)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Редагувати вибраний текст або виноску</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Упорядкувати</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">На передній план</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Перемістити вперед</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Перемістити назад</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">На задній план</sys:String>
     <sys:String x:Key="Str_KS_Fit">Умістити у вікно</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">РЕДАГУВАННЯ</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ІНСТРУМЕНТИ</sys:String>

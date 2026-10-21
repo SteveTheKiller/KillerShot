@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Karte schließen oder aktuelle Markierung abbrechen</sys:String>
     <sys:String x:Key="Str_KS_Copy">Fertiges Bild kopieren</sys:String>
     <sys:String x:Key="Str_KS_Delete">Ausgewählte Markierung löschen</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Alle Markierungen auswählen</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Markierung zur Auswahl hinzufügen oder entfernen</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Ausgewählte Markierungen duplizieren</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Auswahl eine Ebene nach vorn oder hinten (Umschalt ganz nach vorn oder hinten)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Ausgewählten Text oder Sprechblase bearbeiten</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Anordnen</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">In den Vordergrund</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Eine Ebene nach vorn</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Eine Ebene nach hinten</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">In den Hintergrund</sys:String>
     <sys:String x:Key="Str_KS_Fit">An Fenster anpassen</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">BEARBEITEN</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">WERKZEUGE</sys:String>

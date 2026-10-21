@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Fermer une carte ou annuler l'annotation en cours</sys:String>
     <sys:String x:Key="Str_KS_Copy">Copier l'image finale</sys:String>
     <sys:String x:Key="Str_KS_Delete">Supprimer l'annotation sélectionnée</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Sélectionner toutes les annotations</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Ajouter une annotation à la sélection ou l'en retirer</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Dupliquer les annotations sélectionnées</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Avancer ou reculer la sélection d'un plan (Maj pour aller au bout)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Modifier le texte ou la bulle sélectionnés</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Organiser</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Mettre au premier plan</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Avancer</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Reculer</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Mettre à l'arrière-plan</sys:String>
     <sys:String x:Key="Str_KS_Fit">Ajuster à la fenêtre</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">ÉDITION</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">OUTILS</sys:String>

@@ -534,8 +534,9 @@ public static class Program
                 throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
             selected = items[index - 1];
             selectedReference = CaptureLibrary.CaptureReference(selected.Id);
-            if (action == "copy" || imageExport) image = CaptureLibrary.LoadImage(selected.Id);
-            else if (action == "export") png = CaptureLibrary.LoadPng(selected.Id);
+            // Edited captures leave the album flattened, as they do from the app.
+            if (action == "copy" || imageExport) image = CaptureLibrary.LoadOutput(selected.Id);
+            else if (action == "export") png = CaptureLibrary.LoadOutputPng(selected.Id);
         })) throw new CliException(LibraryClosedReason(), ExitFailed);
 
         if (action == null)

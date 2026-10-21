@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">カードを閉じるか、描画中の注釈を取り消す</sys:String>
     <sys:String x:Key="Str_KS_Copy">仕上がった画像をコピー</sys:String>
     <sys:String x:Key="Str_KS_Delete">選択した注釈を削除</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">すべての注釈を選択</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">注釈を選択に追加、または選択から外す</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">選択した注釈を複製</sys:String>
+    <sys:String x:Key="Str_KS_Layer">選択を 1 層前面または背面へ (Shift で最前面・最背面)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">選択したテキストまたは吹き出しを編集</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">整列</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">最前面へ移動</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">前面へ移動</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">背面へ移動</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">最背面へ移動</sys:String>
     <sys:String x:Key="Str_KS_Fit">ウィンドウに合わせる</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">編集</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ツール</sys:String>

@@ -158,6 +158,16 @@
     <sys:String x:Key="Str_KS_Close">Zapri kartico ali prekliči trenutno oznako</sys:String>
     <sys:String x:Key="Str_KS_Copy">Kopiraj dokončano sliko</sys:String>
     <sys:String x:Key="Str_KS_Delete">Izbriši izbrano oznako</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Izberi vse oznake</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Dodaj oznako v izbor ali jo odstrani</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Podvoji izbrane oznake</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Premakni izbor za plast naprej ali nazaj (Shift do konca)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Uredi izbrano besedilo ali oblaček</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Razporedi</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Postavi v ospredje</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Premakni naprej</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Premakni nazaj</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Pošlji v ozadje</sys:String>
     <sys:String x:Key="Str_KS_Fit">Prilagodi oknu</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">UREJANJE</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ORODJA</sys:String>

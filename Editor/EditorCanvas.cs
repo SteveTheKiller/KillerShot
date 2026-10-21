@@ -18,7 +18,6 @@ public sealed partial class EditorCanvas : Canvas
     private bool _dragging;
     private List<Point>? _stroke;
     private Rect? _box;
-    private Annotation? _selected;
     private Vector _moveBy;
     private TextBox? _textBox;
     private Point _textOrigin;
@@ -77,6 +76,7 @@ public sealed partial class EditorCanvas : Canvas
     {
         // A selection that no longer exists (undo, delete) is dropped.
         if (_selected != null && _doc != null && !_doc.State.Items.Contains(_selected)) _selected = null;
+        if (_doc != null) _others.RemoveAll(o => !_doc.State.Items.Contains(o));
         // Screen readers see marks come and go.
         System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(this)?.ResetChildrenCache();
         InvalidateMeasure();
@@ -157,8 +157,11 @@ public sealed partial class EditorCanvas : Canvas
         dc.DrawImage(st.Image, bounds);
         foreach (var a in st.Items)
         {
-            if (ReferenceEquals(a, _selected) && _moveBy != default)
+            if (ReferenceEquals(a, _editing)) continue;   // its text box stands in while it is edited
+            if (_moveBy != default && IsSelectedMark(a))
                 a.Offset(_moveBy).Render(dc);
+            else if (_resizeBy != default && ReferenceEquals(a, _selected))
+                a.Resize(_resizeBy).Render(dc);
             else
                 a.Render(dc);
         }
@@ -170,11 +173,12 @@ public sealed partial class EditorCanvas : Canvas
         var accent = TryFindResource("PrimaryBrush") as Brush ?? Brushes.Teal;
         DrawQrOutlines(dc);
         var dash = new Pen(accent, 1) { DashStyle = new DashStyle([4, 3], 0) };
-        if (_selected != null)
+        foreach (var mark in SelectedMarks)
         {
-            var r = (_moveBy != default ? _selected.Offset(_moveBy) : _selected).Bounds;
+            var r = (_moveBy != default ? mark.Offset(_moveBy) : _resizeBy != default && ReferenceEquals(mark, _selected) ? mark.Resize(_resizeBy) : mark).Bounds;
             dc.DrawRectangle(null, dash, new Rect(ToView(r.TopLeft), ToView(r.BottomRight)));
         }
+        DrawGrip(dc, accent);
         if (Tool == ToolKind.Crop && _box is { } box)
         {
             var v = new Rect(ToView(box.TopLeft), ToView(box.BottomRight));
@@ -254,10 +258,31 @@ public sealed partial class EditorCanvas : Canvas
         if (Tool == ToolKind.Callout && _textBox != null) { CommitText(); e.Handled = true; return; }
         if (Tool == ToolKind.Select)
         {
-            var hit = HitTest(p);
-            if (!ReferenceEquals(hit, _selected)) { _selected = hit; NotifySelection(); }
-            _moveBy = default;
+            _moveBy = _resizeBy = default;
             _start = p;
+            if (GripRect() is { } grip && grip.Contains(e.GetPosition(this)))
+            {
+                _resizing = _dragging = true;
+                CaptureMouse();
+                e.Handled = true;
+                return;
+            }
+            var hit = HitTest(p);
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                if (hit != null) ToggleSelection(hit);
+                e.Handled = true;
+                return;
+            }
+            // A click on a mark already selected keeps the group, so it can be dragged together.
+            if (hit == null || !IsSelectedMark(hit)) { if (!ReferenceEquals(hit, _selected) || _others.Count > 0) { _selected = hit; NotifySelection(); } }
+            if (e.ClickCount == 2 && hit is TextAnnotation or CalloutAnnotation)
+            {
+                _selected = hit;
+                EditSelectedText();
+                e.Handled = true;
+                return;
+            }
             _dragging = _selected != null;
             if (_dragging) CaptureMouse();
             InvalidateVisual();
@@ -285,7 +310,11 @@ public sealed partial class EditorCanvas : Canvas
             return;
         }
         bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
-        if (Tool == ToolKind.Select && _selected != null)
+        if (Tool == ToolKind.Select && _resizing)
+        {
+            _resizeBy = p - _start;
+        }
+        else if (Tool == ToolKind.Select && _selected != null)
         {
             _moveBy = p - _start;
         }
@@ -314,13 +343,11 @@ public sealed partial class EditorCanvas : Canvas
 
         if (Tool == ToolKind.Select)
         {
-            if (_selected != null && _moveBy.Length > 0.25)
-            {
-                var moved = _selected.Offset(_moveBy);
-                _doc.Replace(_selected, moved);
-                _selected = moved;
-            }
-            _moveBy = default;
+            var by = _moveBy;
+            var size = _resizeBy;
+            _moveBy = _resizeBy = default;
+            if (_resizing) { _resizing = false; if (size.Length > 0.25) ChangeSelected(a => a.Resize(size)); }
+            else if (_selected != null && by.Length > 0.25) ChangeSelected(a => a.Offset(by));
             InvalidateVisual();
             return;
         }
@@ -376,8 +403,9 @@ public sealed partial class EditorCanvas : Canvas
     public bool DeleteSelected()
     {
         if (_doc == null || _selected == null) return false;
-        _doc.Remove(_selected);
+        var keep = _doc.State.Items.Where(a => !IsSelectedMark(a)).ToImmutableList();
         _selected = null;
+        _doc.Apply(_doc.State with { Items = keep });
         InvalidateVisual();
         return true;
     }
@@ -385,17 +413,12 @@ public sealed partial class EditorCanvas : Canvas
     /// <summary>Arrow keys nudge the selection one pixel, ten with Shift.</summary>
     public bool Nudge(Vector v)
     {
-        if (_doc == null || _selected == null) return false;
-        var moved = _selected.Offset(v);
-        _doc.Replace(_selected, moved);
-        _selected = moved;
-        InvalidateVisual();
-        return true;
+        return ChangeSelected(a => a.Offset(v));
     }
 
     // ---- text ----
 
-    private void BeginText(Point imagePoint, Point? calloutTip = null)
+    private void BeginText(Point imagePoint, Point? calloutTip = null, string initial = "")
     {
         _textOrigin = imagePoint;
         _calloutTip = calloutTip;
@@ -412,6 +435,7 @@ public sealed partial class EditorCanvas : Canvas
             BorderBrush = TryFindResource("PrimaryBrush") as Brush ?? Brushes.Teal,
             Padding = new Thickness(0),
             CaretBrush = new SolidColorBrush(Color),
+            Text = initial,
         };
         var v = ToView(imagePoint);
         SetLeft(_textBox, v.X - 1);
@@ -423,6 +447,7 @@ public sealed partial class EditorCanvas : Canvas
         };
         _textBox.LostKeyboardFocus += (_, _) => Dispatcher.BeginInvoke(CommitText);
         Children.Add(_textBox);
+        _textBox.CaretIndex = initial.Length;
         _textBox.Focus();
         Keyboard.Focus(_textBox);
     }
@@ -436,7 +461,26 @@ public sealed partial class EditorCanvas : Canvas
         _textBox = null;
         Children.Remove(tb);
         var text = tb.Text.TrimEnd();
-        if (_doc != null && text.Length > 0)
+        var edited = _editing;
+        _editing = null;
+        if (_doc != null && edited != null && _doc.State.Items.Contains(edited))
+        {
+            // An edited mark is replaced in place, keeping its layer; emptied, it is removed.
+            var items = _doc.State.Items;
+            int at = items.IndexOf(edited);
+            Annotation? now = text.Length == 0 ? null : edited switch
+            {
+                CalloutAnnotation c => c with { Text = text },
+                TextAnnotation t => t with { Text = text },
+                _ => edited,
+            };
+            _selected = null;
+            _doc.Apply(_doc.State with { Items = now == null ? items.RemoveAt(at) : items.SetItem(at, now) });
+            _selected = now;
+            NotifySelection();
+            InvalidateVisual();
+        }
+        else if (_doc != null && text.Length > 0)
         {
             // The new text stays selected, so the keyboard can move it straight away.
             Annotation mark = _calloutTip is Point tip
@@ -454,6 +498,8 @@ public sealed partial class EditorCanvas : Canvas
         if (_textBox == null) return;
         Children.Remove(_textBox);
         _textBox = null;
+        _editing = null;
+        InvalidateVisual();
         Focus();
     }
 
@@ -466,7 +512,8 @@ public sealed partial class EditorCanvas : Canvas
             _dragging = false;
             _stroke = null;
             _box = null;
-            _moveBy = default;
+            _moveBy = _resizeBy = default;
+            _resizing = false;
             ReleaseMouseCapture();
             InvalidateVisual();
             return true;

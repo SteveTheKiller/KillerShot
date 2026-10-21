@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Zamknij kartę lub anuluj bieżący znacznik</sys:String>
     <sys:String x:Key="Str_KS_Copy">Kopiuj gotowy obraz</sys:String>
     <sys:String x:Key="Str_KS_Delete">Usuń zaznaczony znacznik</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Zaznacz wszystkie oznaczenia</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Dodaj oznaczenie do zaznaczenia lub je usuń</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Duplikuj zaznaczone oznaczenia</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Przesuń zaznaczenie o warstwę do przodu lub do tyłu (Shift na sam koniec)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Edytuj zaznaczony tekst lub dymek</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Kolejność</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Przenieś na wierzch</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Przesuń do przodu</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Przesuń do tyłu</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Przenieś na spód</sys:String>
     <sys:String x:Key="Str_KS_Fit">Dopasuj do okna</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">EDYCJA</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">NARZĘDZIA</sys:String>

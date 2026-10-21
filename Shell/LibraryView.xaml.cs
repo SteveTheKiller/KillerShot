@@ -564,7 +564,7 @@ namespace KillerShot.Shell
                 AutomationProperties.SetName(tile, Describe(item));
                 tile.ToolTip = Describe(item);
                 tile.Cursor = DragCursors.Open;
-                ImageDrag.Attach(tile, _ => () => CaptureLibrary.LoadImage(item));
+                ImageDrag.Attach(tile, _ => () => CaptureLibrary.LoadOutput(item));
                 tile.Click += (_, _) => OpenRequested?.Invoke(item);
                 tile.MouseRightButtonUp += (_, e) => { e.Handled = true; ShowItemMenu(item, tile); };
                 tile.KeyDown += (_, e) =>
@@ -858,7 +858,7 @@ namespace KillerShot.Shell
             Add("Str_Lib_Copy", () => Copy(item));
             Add("Str_Btn_Print", () =>
             {
-                try { PrintOutput.Print(CaptureLibrary.LoadImage(item), Title(item)); }
+                try { PrintOutput.Print(CaptureLibrary.LoadOutput(item), Title(item)); }
                 catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
             });
             if (FolderCaptures.IsFolderId(item.Id))
@@ -1002,7 +1002,7 @@ namespace KillerShot.Shell
         internal void PrintFocused()
         {
             if (FocusedCapture() is not { } item) { StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused")); return; }
-            try { PrintOutput.Print(CaptureLibrary.LoadImage(item), Title(item)); }
+            try { PrintOutput.Print(CaptureLibrary.LoadOutput(item), Title(item)); }
             catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
         }
 
@@ -1010,7 +1010,7 @@ namespace KillerShot.Shell
         {
             try
             {
-                StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadImage(item), out var error)
+                StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadOutput(item), out var error)
                     ? Loc("Str_Lib_Copied")
                     : string.Format(Loc("Str_Tray_ClipboardBusy"), error));
             }
@@ -1034,11 +1034,11 @@ namespace KillerShot.Shell
             {
                 if (Path.GetExtension(dlg.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    byte[] png = CaptureLibrary.LoadPng(item);
+                    byte[] png = CaptureLibrary.LoadOutputPng(item.Id);
                     OutputFiles.WriteAtomic(dlg.FileName, true, stream => stream.Write(png));
                 }
                 else
-                    ImageOutput.Save(CaptureLibrary.LoadImage(item), dlg.FileName, CaptureSettings.JpegQuality);
+                    ImageOutput.Save(CaptureLibrary.LoadOutput(item), dlg.FileName, CaptureSettings.JpegQuality);
                 StatusMessage?.Invoke(dlg.FileName);
             }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }

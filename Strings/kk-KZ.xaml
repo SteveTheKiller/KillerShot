@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Картаны жабу немесе ағымдағы белгіні болдырмау</sys:String>
     <sys:String x:Key="Str_KS_Copy">Дайын суретті көшіру</sys:String>
     <sys:String x:Key="Str_KS_Delete">Таңдалған белгіні жою</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Барлық белгілерді таңдау</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Белгіні таңдауға қосу немесе алып тастау</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Таңдалған белгілерді көшіру</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Таңдауды бір қабат алға не артқа жылжыту (толық үшін Shift)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Таңдалған мәтінді не сөз бұлтын өңдеу</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Реттеу</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Ең алдыңғы қабатқа</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Бір қабат алға</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Бір қабат артқа</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Ең артқы қабатқа</sys:String>
     <sys:String x:Key="Str_KS_Fit">Терезеге сыйдыру</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">ӨҢДЕУ</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ҚҰРАЛДАР</sys:String>

@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Chiudi una scheda o annulla il segno corrente</sys:String>
     <sys:String x:Key="Str_KS_Copy">Copia l'immagine finita</sys:String>
     <sys:String x:Key="Str_KS_Delete">Elimina il segno selezionato</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Seleziona tutti i segni</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Aggiungi un segno alla selezione o rimuovilo</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Duplica i segni selezionati</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Sposta la selezione avanti o indietro di un livello (Maiusc fino in fondo)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Modifica il testo o il fumetto selezionato</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Disponi</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Porta in primo piano</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Porta avanti</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Porta indietro</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Porta in fondo</sys:String>
     <sys:String x:Key="Str_KS_Fit">Adatta alla finestra</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">MODIFICA</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">STRUMENTI</sys:String>

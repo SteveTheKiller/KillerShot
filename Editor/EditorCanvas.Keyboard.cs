@@ -113,12 +113,7 @@ public sealed partial class EditorCanvas
     /// <summary>Ctrl+arrows: grows or shrinks the selected mark from its bottom right.</summary>
     public bool ResizeSelected(Vector d)
     {
-        if (_doc == null || _selected == null) return false;
-        var resized = _selected.Resize(d);
-        _doc.Replace(_selected, resized);
-        _selected = resized;
-        InvalidateVisual();
-        return true;
+        return ChangeSelected(a => a.Resize(d));
     }
 
     /// <summary>The part of the picture showing in the editor's scroller, in image pixels.</summary>
@@ -215,8 +210,8 @@ internal sealed class EditorCanvasAutomationPeer(EditorCanvas owner) : Framework
     internal EditorCanvas Owned => Canvas;
 
     IRawElementProviderSimple[] ISelectionProvider.GetSelection() =>
-        Canvas.Selected is { } s ? [ProviderFromPeer(PeerFor(s))] : [];
-    bool ISelectionProvider.CanSelectMultiple => false;
+        [.. Canvas.SelectedMarks.Select(s => ProviderFromPeer(PeerFor(s)))];
+    bool ISelectionProvider.CanSelectMultiple => true;
     bool ISelectionProvider.IsSelectionRequired => false;
 }
 
@@ -266,9 +261,9 @@ internal sealed class AnnotationAutomationPeer(EditorCanvasAutomationPeer parent
         pattern is PatternInterface.SelectionItem or PatternInterface.Transform ? this : null;
 
     void ISelectionItemProvider.Select() => Canvas.Select(Mark);
-    void ISelectionItemProvider.AddToSelection() => Canvas.Select(Mark);
-    void ISelectionItemProvider.RemoveFromSelection() { if (ReferenceEquals(Canvas.Selected, Mark)) Canvas.Select(null); }
-    bool ISelectionItemProvider.IsSelected => ReferenceEquals(Canvas.Selected, Mark);
+    void ISelectionItemProvider.AddToSelection() { if (!Canvas.SelectedMarks.Any(m => ReferenceEquals(m, Mark))) Canvas.ToggleSelection(Mark); }
+    void ISelectionItemProvider.RemoveFromSelection() { if (Canvas.SelectedMarks.Any(m => ReferenceEquals(m, Mark))) Canvas.ToggleSelection(Mark); }
+    bool ISelectionItemProvider.IsSelected => Canvas.SelectedMarks.Any(m => ReferenceEquals(m, Mark));
     IRawElementProviderSimple ISelectionItemProvider.SelectionContainer => ProviderFromPeer(parent);
 
     bool ITransformProvider.CanMove => true;

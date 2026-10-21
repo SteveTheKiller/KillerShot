@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">একটি কার্ড বন্ধ করুন বা বর্তমান চিহ্ন বাতিল করুন</sys:String>
     <sys:String x:Key="Str_KS_Copy">তৈরি ছবি কপি করুন</sys:String>
     <sys:String x:Key="Str_KS_Delete">নির্বাচিত চিহ্ন মুছুন</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">সব চিহ্ন নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">নির্বাচনে একটি চিহ্ন যোগ করুন বা সরান</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">নির্বাচিত চিহ্ন অনুলিপি করুন</sys:String>
+    <sys:String x:Key="Str_KS_Layer">নির্বাচন এক স্তর সামনে বা পিছনে নিন (পুরোটা যেতে Shift)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">নির্বাচিত লেখা বা কলআউট সম্পাদনা করুন</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">সাজান</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">সবার সামনে আনুন</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">এক স্তর সামনে আনুন</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">এক স্তর পিছনে পাঠান</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">সবার পিছনে পাঠান</sys:String>
     <sys:String x:Key="Str_KS_Fit">উইন্ডোতে মানানসই</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">সম্পাদনা</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">টুল</sys:String>

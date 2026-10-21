@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Cerrar una tarjeta o cancelar la marca actual</sys:String>
     <sys:String x:Key="Str_KS_Copy">Copiar la imagen terminada</sys:String>
     <sys:String x:Key="Str_KS_Delete">Eliminar la marca seleccionada</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Seleccionar todas las marcas</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Añadir una marca a la selección o quitarla</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Duplicar las marcas seleccionadas</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Mover la selección una capa adelante o atrás (Mayús para llevarla al extremo)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Editar el texto o globo seleccionado</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Organizar</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">Traer al frente</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Traer adelante</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Enviar atrás</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">Enviar al fondo</sys:String>
     <sys:String x:Key="Str_KS_Fit">Ajustar a la ventana</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">EDICIÓN</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">HERRAMIENTAS</sys:String>

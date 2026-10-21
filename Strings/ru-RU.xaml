@@ -162,6 +162,16 @@
     <sys:String x:Key="Str_KS_Close">Закрыть карточку или отменить текущую пометку</sys:String>
     <sys:String x:Key="Str_KS_Copy">Скопировать готовое изображение</sys:String>
     <sys:String x:Key="Str_KS_Delete">Удалить выбранную пометку</sys:String>
+    <sys:String x:Key="Str_KS_SelectAllMarks">Выбрать все пометки</sys:String>
+    <sys:String x:Key="Str_KS_AddToSelection">Добавить пометку в выделение или убрать её</sys:String>
+    <sys:String x:Key="Str_KS_Duplicate">Дублировать выбранные пометки</sys:String>
+    <sys:String x:Key="Str_KS_Layer">Переместить выделение на слой вперёд или назад (Shift — до конца)</sys:String>
+    <sys:String x:Key="Str_KS_EditText">Изменить выбранный текст или выноску</sys:String>
+    <sys:String x:Key="Str_KS_LayerMenu">Порядок</sys:String>
+    <sys:String x:Key="Str_KS_BringToFront">На передний план</sys:String>
+    <sys:String x:Key="Str_KS_BringForward">Переместить вперёд</sys:String>
+    <sys:String x:Key="Str_KS_SendBackward">Переместить назад</sys:String>
+    <sys:String x:Key="Str_KS_SendToBack">На задний план</sys:String>
     <sys:String x:Key="Str_KS_Fit">Вписать в окно</sys:String>
     <sys:String x:Key="Str_KS_GrpEdit">ПРАВКА</sys:String>
     <sys:String x:Key="Str_KS_GrpTools">ИНСТРУМЕНТЫ</sys:String>

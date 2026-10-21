@@ -75,7 +75,7 @@ internal static class SelfTestWindowLifetime
             report.Add("closed_window_collected_with_live_document=True");
             report.Add("reopened_editor_tracks_document_edits=True");
 
-            long targetId = CaptureLibrary.AddNow(image, DateTime.Now, "region", "Cancellation target", null);
+            long targetId = CaptureLibrary.AddNow(image.Clone(), DateTime.Now, "region", "Cancellation target", null);
             active.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(active), 0, Key.F7)
                 { RoutedEvent = Keyboard.PreviewKeyDownEvent });
             await Task.Delay(150);
