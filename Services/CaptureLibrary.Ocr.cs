@@ -1,14 +1,5 @@
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Data.Sqlite;
 using KillerTools.Qr;
-using WinBitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
-using WinBitmapPixelFormat = Windows.Graphics.Imaging.BitmapPixelFormat;
-using WinBitmapAlphaMode = Windows.Graphics.Imaging.BitmapAlphaMode;
-using WinBitmapTransform = Windows.Graphics.Imaging.BitmapTransform;
-using WinExifOrientationMode = Windows.Graphics.Imaging.ExifOrientationMode;
-using WinColorManagementMode = Windows.Graphics.Imaging.ColorManagementMode;
-using WinOcrEngine = Windows.Media.Ocr.OcrEngine;
-using WinMemoryStream = Windows.Storage.Streams.InMemoryRandomAccessStream;
 
 namespace KillerShot.Services;
 
@@ -27,6 +18,19 @@ internal static partial class CaptureLibrary
     }
 
     public static void StoreOcr(long id, string text) => StoreOcr(id, text, null);
+
+    /// <summary>Forgets every stored text and reads the album again, for example after adding a
+    /// recognition language. Captures stay searchable by title, program and notes meanwhile.</summary>
+    public static void ReindexOcr()
+    {
+        lock (_gate)
+        {
+            if (_db == null) return;
+            Exec("UPDATE captures SET ocr_text = NULL");
+        }
+        lock (_ocrFailed) _ocrFailed.Clear();
+        StartOcr();
+    }
 
     public static void StoreOcr(CaptureItem item, string text)
     {
@@ -60,8 +64,7 @@ internal static partial class CaptureLibrary
 
     /// <summary>Makes the text recognizer, or null when Windows has no OCR language for this
     /// user. Tests replace it at this boundary.</summary>
-    internal static Func<Func<byte[], Task<string>>?> OcrEngineFactory { get; set; } = () =>
-        WinOcrEngine.TryCreateFromUserProfileLanguages() is { } engine ? png => RecognizeAsync(engine, png) : null;
+    internal static Func<Func<byte[], Task<string>>?> OcrEngineFactory { get; set; } = TextRecognition.CreateRecognizer;
 
     /// <summary>Captures whose recognition failed in this session. They stay unread in the album,
     /// so the next open tries them again, but are not retried in a loop now.</summary>
@@ -127,24 +130,4 @@ internal static partial class CaptureLibrary
         });
     }
 
-    private static async Task<string> RecognizeAsync(WinOcrEngine engine, byte[] png)
-    {
-        using var stream = new WinMemoryStream();
-        await stream.WriteAsync(png.AsBuffer());
-        stream.Seek(0);
-        var decoder = await WinBitmapDecoder.CreateAsync(stream);
-        uint max = WinOcrEngine.MaxImageDimension;
-        var transform = new WinBitmapTransform();
-        uint w = decoder.PixelWidth, h = decoder.PixelHeight;
-        if (w > max || h > max)
-        {
-            double scale = Math.Min((double)max / w, (double)max / h);
-            transform.ScaledWidth = Math.Max(1, (uint)(w * scale));
-            transform.ScaledHeight = Math.Max(1, (uint)(h * scale));
-        }
-        using var bitmap = await decoder.GetSoftwareBitmapAsync(WinBitmapPixelFormat.Bgra8, WinBitmapAlphaMode.Premultiplied,
-            transform, WinExifOrientationMode.IgnoreExifOrientation, WinColorManagementMode.DoNotColorManage);
-        var result = await engine.RecognizeAsync(bitmap);
-        return result.Text ?? "";
-    }
 }

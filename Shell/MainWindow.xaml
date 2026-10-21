@@ -228,6 +228,7 @@
                         <Button x:Name="SaveBtn" Style="{StaticResource ToolbarButton}" Click="SaveBtn_Click"/>
                         <Button x:Name="SaveAsBtn" Style="{StaticResource ToolbarButton}" Click="SaveAsBtn_Click"/>
                         <Button x:Name="CopyBtn" Style="{StaticResource ToolbarButton}" Click="CopyBtn_Click"/>
+                        <Button x:Name="CopyTextBtn" Style="{StaticResource ToolbarButton}" Click="CopyTextBtn_Click"/>
                         <Button x:Name="PrintBtn" Style="{StaticResource ToolbarButton}" Click="PrintBtn_Click"/>
                         <Button x:Name="UndoBtn" Style="{StaticResource ToolbarButton}" Click="UndoBtn_Click"/>
                         <Button x:Name="RedoBtn" Style="{StaticResource ToolbarButton}" Click="RedoBtn_Click"/>
@@ -1301,6 +1302,8 @@
                             <Button x:Name="LibraryRemovePasswordBtn" Content="{DynamicResource Str_CS_RemovePassword}" Style="{StaticResource OutlineButton}"
                                     Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
                         </WrapPanel>
+                        <Button x:Name="LibraryReindexBtn" Content="{DynamicResource Str_Ocr_Reindex}" Style="{StaticResource OutlineButton}"
+                                HorizontalAlignment="Left" Padding="10,3" Margin="0,8,0,0" Click="LibraryReindex_Click"/>
                     </StackPanel>
                     </ScrollViewer>
                     <Border Style="{StaticResource FlyoutGrain}"/>

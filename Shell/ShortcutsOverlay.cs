@@ -84,6 +84,7 @@ namespace KillerShot.Shell
             new("Ctrl+Shift+Z", "Str_KS_Redo",  KsCat.Appt, true,  "Z"),
             new("Ctrl+C",   "Str_KS_Copy",      KsCat.Appt, true,  "C"),
             new("Ctrl+V",   "Str_Img_Paste",    KsCat.Appt, true,  "V"),
+            new("Ctrl+Shift+C", "Str_Btn_CopyText", KsCat.Appt, true, "C"),
             new("Ctrl+Shift+V", "Str_Img_PasteNew", KsCat.File, true, "V"),
             new("Del or Backspace", "Str_KS_Delete", KsCat.Appt, false, "Del", "Back"),
             new("Ctrl+A",   "Str_KS_SelectAllMarks", KsCat.Appt, true, "A"),

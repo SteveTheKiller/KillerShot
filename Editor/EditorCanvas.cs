@@ -179,7 +179,7 @@ public sealed partial class EditorCanvas : Canvas
             dc.DrawRectangle(null, dash, new Rect(ToView(r.TopLeft), ToView(r.BottomRight)));
         }
         DrawGrip(dc, accent);
-        if (Tool == ToolKind.Crop && _box is { } box)
+        if ((Tool == ToolKind.Crop || _regionPick != null) && _box is { } box)
         {
             var v = new Rect(ToView(box.TopLeft), ToView(box.BottomRight));
             var all = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight));
@@ -189,10 +189,33 @@ public sealed partial class EditorCanvas : Canvas
         }
     }
 
+    // Set while the next drag picks an area for something else, such as reading its text.
+    private Action<Int32Rect?>? _regionPick;
+
+    /// <summary>The next drag on the picture picks an area instead of drawing; <paramref name="done"/>
+    /// gets it in image pixels, or null when cancelled with Escape or a click without a drag.</summary>
+    public void BeginRegionPick(Action<Int32Rect?> done)
+    {
+        CommitText();
+        CancelRegionPick();
+        _regionPick = done;
+        Cursor = Cursors.Cross;
+    }
+
+    private bool CancelRegionPick()
+    {
+        if (_regionPick is not { } pick) return false;
+        _regionPick = null;
+        _box = null;
+        SetTool(Tool);   // restores the tool's cursor
+        pick(null);
+        return true;
+    }
+
     /// <summary>The mark being drawn right now, if any.</summary>
     private Annotation? Preview()
     {
-        if (!_dragging) return null;
+        if (!_dragging || _regionPick != null) return null;
         if (_stroke != null)
             return new StrokeAnnotation(_stroke.ToImmutableArray(), Color, Tool == ToolKind.Highlighter ? HighlighterWidth : StrokeWidth, Tool == ToolKind.Highlighter);
         if (_box is { } b && ShapeFor(Tool) is { } kind)
@@ -242,6 +265,17 @@ public sealed partial class EditorCanvas : Canvas
         if (_doc == null || e.OriginalSource is TextBox) return;
         Focus();
         var p = ToImage(e.GetPosition(this));
+        if (_regionPick != null)
+        {
+            _start = Clamp(p);
+            _box = new Rect(_start, _start);
+            _stroke = null;
+            _dragging = true;
+            CaptureMouse();
+            e.Handled = true;
+            InvalidateVisual();
+            return;
+        }
         if (Tool == ToolKind.Text)
         {
             if (_textBox != null) { CommitText(); e.Handled = true; return; }
@@ -324,8 +358,8 @@ public sealed partial class EditorCanvas : Canvas
         }
         else
         {
-            if (Tool == ToolKind.Crop) p = Clamp(p);
-            _box = BoxFrom(_start, p, shift && Tool != ToolKind.Crop && Tool != ToolKind.Redact);
+            if (Tool == ToolKind.Crop || _regionPick != null) p = Clamp(p);
+            _box = BoxFrom(_start, p, shift && Tool != ToolKind.Crop && Tool != ToolKind.Redact && _regionPick == null);
             _arrowEnd = shift ? Snap45(_start, p) : p;
             if (Tool == ToolKind.Crop && _box is { } b)
                 Status?.Invoke($"{(int)Math.Round(b.Width)} x {(int)Math.Round(b.Height)}");
@@ -340,6 +374,18 @@ public sealed partial class EditorCanvas : Canvas
         _dragging = false;
         ReleaseMouseCapture();
         e.Handled = true;
+
+        if (_regionPick is { } pick)
+        {
+            var area = _box;
+            _box = null;
+            _regionPick = null;
+            SetTool(Tool);
+            InvalidateVisual();
+            pick(area is { Width: >= 4, Height: >= 4 } r
+                ? new Int32Rect((int)Math.Floor(r.X), (int)Math.Floor(r.Y), (int)Math.Ceiling(r.Width), (int)Math.Ceiling(r.Height)) : null);
+            return;
+        }
 
         if (Tool == ToolKind.Select)
         {
@@ -506,6 +552,7 @@ public sealed partial class EditorCanvas : Canvas
     /// <summary>Cancels a drag in progress. Returns false when there was nothing to cancel.</summary>
     public bool CancelGesture()
     {
+        if (CancelRegionPick()) return true;
         if (_textBox != null) { CancelText(); return true; }
         if (_dragging)
         {

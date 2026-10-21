@@ -39,6 +39,7 @@ namespace KillerShot.Shell
             yield return ("save",       SaveBtn,            0xE74E, "Str_Btn_Save");        // Save
             yield return ("saveas",     SaveAsBtn,          0xE792, "Str_Btn_SaveAs");      // SaveAs
             yield return ("copy",       CopyBtn,            0xE8C8, "Str_Btn_Copy");        // Copy
+            yield return ("copytext",   CopyTextBtn,        0xE8C1, "Str_Btn_CopyText");    // Characters
             yield return ("print",      PrintBtn,           0xE749, "Str_Btn_Print");       // Print
             yield return ("undo",       UndoBtn,            0xE7A7, "Str_Btn_Undo");        // Undo
             yield return ("redo",       RedoBtn,            0xE7A6, "Str_Btn_Redo");        // Redo

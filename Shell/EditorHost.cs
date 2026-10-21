@@ -111,7 +111,7 @@ namespace KillerShot.Shell
         {
             bool has = _doc != null;
             SyncLibraryVisibility();
-            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, CopyTextBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
                                       ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,
                                       ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = has;
@@ -229,6 +229,7 @@ namespace KillerShot.Shell
             if (b == SaveBtn) return "Ctrl+S";
             if (b == SaveAsBtn) return "Ctrl+Shift+S";
             if (b == CopyBtn) return "Ctrl+C";
+            if (b == CopyTextBtn) return "Ctrl+Shift+C";
             if (b == PrintBtn) return "Ctrl+P";
             if (b == UndoBtn) return "Ctrl+Z";
             if (b == RedoBtn) return "Ctrl+Y";
