@@ -67,16 +67,35 @@ internal static partial class CaptureLibrary
             using (var cmd = _db.CreateCommand())
             {
                 cmd.Transaction = transaction;
-                cmd.CommandText = "UPDATE captures SET thumb = $thumb WHERE id = $id";
+                // Text and codes read from the picture before this edit may be under a redaction now:
+                // forget them, so search and the QR marker follow the edited result once it is read again.
+                cmd.CommandText = """
+                    UPDATE captures SET thumb = $thumb, ocr_text = NULL WHERE id = $id;
+                    DELETE FROM capture_qr WHERE capture_id = $id;
+                    """;
                 cmd.Parameters.AddWithValue("$thumb", thumb);
                 cmd.Parameters.AddWithValue("$id", id);
                 if (cmd.ExecuteNonQuery() == 0) return;   // deleted meanwhile; roll back
             }
+            IndexText(id, transaction);
             transaction.Commit();
+            _marksRevision[id] = MarksRevision(id) + 1;
+            lock (_ocrFailed) _ocrFailed.Remove(id);
             ClearThumbCache();
         }
         RaiseChanged();
+        if (BackgroundWork)
+        {
+            StartOcr();
+            StartQrReading();
+        }
     }
+
+    /// <summary>Bumped under the gate whenever a capture's marks change, so a background reader that
+    /// read the picture before the edit drops its result instead of storing text the edit hid.</summary>
+    private static readonly Dictionary<long, int> _marksRevision = [];
+
+    private static int MarksRevision(long id) => _marksRevision.TryGetValue(id, out int revision) ? revision : 0;
 
     /// <summary>The capture as the editor left it: its base picture and marks, or null when it
     /// has none (or they were written by a newer version, in which case the original opens).</summary>

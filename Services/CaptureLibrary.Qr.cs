@@ -67,20 +67,23 @@ internal static partial class CaptureLibrary
             {
                 SqliteConnection database;
                 long id;
+                int revision;
                 byte[] image;
                 lock (_gate)
                 {
                     if (_db == null) return;
                     database = _db;
                     using var command = database.CreateCommand();
-                    command.CommandText = "SELECT id, image FROM captures c WHERE NOT EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id = c.id) ORDER BY taken_utc DESC LIMIT 1";
+                    // The edited result when the capture has marks, so a redacted code is never decoded.
+                    command.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image) FROM captures c WHERE NOT EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id = c.id) ORDER BY c.taken_utc DESC LIMIT 1";
                     using var reader = command.ExecuteReader();
                     if (!reader.Read()) return;
                     id = reader.GetInt64(0);
                     image = (byte[])reader[1];
+                    revision = MarksRevision(id);
                 }
                 var results = await Task.Run(() => QrImages.Read(QrImages.Load(image))).ConfigureAwait(false);
-                StoreQr(id, results, database);
+                StoreQr(id, results, database, revision);
             }
         }
         finally { QrWorker.Release(); }
@@ -93,13 +96,14 @@ internal static partial class CaptureLibrary
         lock (_gate) if (IsCurrent(item)) StoreQr(item.Id, results, _db);
     }
 
-    private static void StoreQr(long id, IReadOnlyList<QrResult> results, SqliteConnection? expectedDatabase)
+    private static void StoreQr(long id, IReadOnlyList<QrResult> results, SqliteConnection? expectedDatabase, int? revision = null)
     {
         string json = JsonSerializer.Serialize(results);
         string text = string.Join('\n', results.Select(result => result.Text));
         lock (_gate)
         {
             if (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase)) return;
+            if (revision is int read && read != MarksRevision(id)) return;   // read before an edit
             using var transaction = Db.BeginTransaction();
             using var command = Db.CreateCommand();
             command.Transaction = transaction;

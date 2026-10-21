@@ -37,11 +37,12 @@ internal static partial class CaptureLibrary
         lock (_gate) if (IsCurrent(item)) StoreOcr(item.Id, text, _db);
     }
 
-    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase)
+    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase, int? revision = null)
     {
         lock (_gate)
         {
             if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
+            if (revision is int read && read != MarksRevision(id)) return;   // read before an edit
             using var transaction = _db.BeginTransaction();
             using var command = _db.CreateCommand();
             command.Transaction = transaction;
@@ -85,6 +86,7 @@ internal static partial class CaptureLibrary
                 while (true)
                 {
                     long id;
+                    int revision;
                     byte[] png;
                     SqliteConnection database;
                     lock (_gate)
@@ -93,13 +95,15 @@ internal static partial class CaptureLibrary
                         database = _db;
                         using var cmd = _db.CreateCommand();
                         lock (_ocrFailed)
-                            cmd.CommandText = "SELECT id, image FROM captures WHERE ocr_text IS NULL"
-                                + (_ocrFailed.Count > 0 ? " AND id NOT IN (" + string.Join(",", _ocrFailed) + ")" : "")
-                                + " ORDER BY taken_utc DESC LIMIT 1";
+                            // The edited result when the capture has marks, so text under a redaction is never read.
+                            cmd.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image) FROM captures c WHERE c.ocr_text IS NULL"
+                                + (_ocrFailed.Count > 0 ? " AND c.id NOT IN (" + string.Join(",", _ocrFailed) + ")" : "")
+                                + " ORDER BY c.taken_utc DESC LIMIT 1";
                         using var r = cmd.ExecuteReader();
                         if (!r.Read()) return;
                         id = r.GetInt64(0);
                         png = (byte[])r[1];
+                        revision = MarksRevision(id);
                     }
                     string text;
                     try { text = await recognize(png); }
@@ -108,7 +112,7 @@ internal static partial class CaptureLibrary
                         lock (_ocrFailed) _ocrFailed.Add(id);
                         continue;
                     }
-                    StoreOcr(id, text, database);
+                    StoreOcr(id, text, database, revision);
                 }
             }
             catch { completed = false; /* search still works on titles, programs, notes and collections */ }

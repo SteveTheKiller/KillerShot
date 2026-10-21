@@ -44,6 +44,7 @@ internal static class SelfTestStorageSafety
             else if (scenario == "mutations") MutationRollback(log);
             else if (scenario == "retention") await RetentionRollback(log);
             else if (scenario == "collection-color") CollectionColorReuse(log);
+            else if (scenario == "redacted-text") await RedactedText(log);
             else throw new ArgumentException("Unknown storage scenario.");
             log.AppendLine("result=ok");
         }
@@ -239,6 +240,53 @@ internal static class SelfTestStorageSafety
 
     /// <summary>OCR that is unavailable, or fails once, leaves captures to read again on a later
     /// open instead of marking them as having no text. A truly empty result is not retried.</summary>
+    /// <summary>Text the user redacts in the album stops being searchable at once, and the background
+    /// reader reads the edited result afterwards, never the original under the redaction.</summary>
+    private static async Task RedactedText(StringBuilder log)
+    {
+        var saved = CaptureLibrary.OcrEngineFactory;
+        var reads = new List<string>();
+        // A stand-in engine: the red pixel reads as the secret, a blacked-out one as nothing.
+        CaptureLibrary.OcrEngineFactory = () => png =>
+        {
+            var frame = BitmapFrame.Create(new MemoryStream(png), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            var px = new byte[4];
+            new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0).CopyPixels(px, 4, 0);
+            string text = px[2] > 200 ? "secret 4417" : "";
+            lock (reads) reads.Add(text);
+            return Task.FromResult(text);
+        };
+        try
+        {
+            var original = Pixel();
+            long id = CaptureLibrary.AddNow(original, DateTime.Now, "region", "Ticket", null);
+            CaptureLibrary.BackgroundWork = true;
+            CaptureLibrary.ReindexOcr();
+            await WaitUntil(() => CaptureLibrary.Items("4417").Count == 1);
+            if (CaptureLibrary.Items("4417").Count != 1) throw new InvalidOperationException("The unedited capture was not searchable by its text.");
+
+            var redact = new Editor.ShapeAnnotation(Editor.ShapeKind.Redact, new Point(0, 0), new Point(1, 1), Colors.Black, 1);
+            var state = new Editor.EditorState(original, System.Collections.Immutable.ImmutableList.Create<Editor.Annotation>(redact));
+            var black = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgra32, null, new byte[] { 0, 0, 0, 255 }, 4);
+            black.Freeze();
+            CaptureLibrary.SaveMarks(id, state, original, black);
+            int rightAfter = CaptureLibrary.Items("4417").Count;
+            await WaitUntil(() => { lock (reads) return reads.Count >= 2; });
+            await Task.Delay(300);
+            int later = CaptureLibrary.Items("4417").Count;
+            string lastRead;
+            lock (reads) lastRead = reads[^1];
+            log.AppendLine($"right_after_save={rightAfter} after_reread={later} reads={reads.Count} last_read='{lastRead}'");
+            if (rightAfter != 0) throw new InvalidOperationException("Redacted text stayed searchable after the marks were saved.");
+            if (later != 0 || lastRead.Length != 0) throw new InvalidOperationException("The reader read the original under the redaction.");
+        }
+        finally
+        {
+            CaptureLibrary.BackgroundWork = false;
+            CaptureLibrary.OcrEngineFactory = saved;
+        }
+    }
+
     private static async Task OcrRetry(StringBuilder log)
     {
         var saved = CaptureLibrary.OcrEngineFactory;
