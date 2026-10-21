@@ -28,6 +28,8 @@ namespace KillerShot
         private static readonly string StartMenuLnk = Path.Combine(StartMenuDir, AppName + ".lnk");
         private static readonly string DesktopLnk = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), AppName + ".lnk");
+        private static readonly string CommonDesktopLnk = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), AppName + ".lnk");
 
         /// <summary>Runs /silent, /uninstall, /uninstall-silent or /remove-machine-conflict.
         /// False for any other first argument.</summary>
@@ -37,7 +39,7 @@ namespace KillerShot
             string first = args[0];
             if (string.Equals(first, "/silent", StringComparison.OrdinalIgnoreCase))
             {
-                exitCode = DoSilentInstall();
+                exitCode = DoSilentInstall(args.Skip(1).Contains("/desktop", StringComparer.OrdinalIgnoreCase));
                 return true;
             }
             bool uninstall = string.Equals(first, "/uninstall", StringComparison.OrdinalIgnoreCase);
@@ -78,6 +80,9 @@ namespace KillerShot
 
         private static bool ShowInstallDialog(string message, bool confirmation = false, string? heading = null)
         {
+            // The badge's install runs off the interface thread; its dialogs still open on it.
+            if (!Current.Dispatcher.CheckAccess())
+                return Current.Dispatcher.Invoke(() => ShowInstallDialog(message, confirmation, heading));
             var dialog = new Controls.ConfirmDialog(heading ?? AppName, message,
                 confirmation ? "Yes" : "OK", confirmation ? "No" : "");
             if (Current.MainWindow?.IsVisible == true)
@@ -99,9 +104,15 @@ namespace KillerShot
             bool runningUser = string.Equals(current, InstallExe, StringComparison.OrdinalIgnoreCase);
             if (!runningMachine && !runningUser) return;
 
+            // Asked once: a decline is remembered, so the question does not open every start.
+            if (Settings.GetBool("InstallConflictDeclined", false)) return;
             string other = runningMachine ? "per-user" : "all-users";
             if (!ShowInstallDialog($"KillerShot is installed twice. Remove the other {other} copy now?\n\nYour albums and settings will not be removed.",
-                true, AppName + " installation conflict")) return;
+                true, AppName + " installation conflict"))
+            {
+                Settings.SetBool("InstallConflictDeclined", true);
+                return;
+            }
 
             if (runningMachine) RemovePerUserInstall();
             else
@@ -122,6 +133,7 @@ namespace KillerShot
             try { Registry.LocalMachine.DeleteSubKeyTree(RegKey, false); } catch { }
             try { Registry.LocalMachine.DeleteSubKeyTree(UninstallKey, false); } catch { }
             try { File.Delete(Path.Combine(common, AppName + ".lnk")); } catch { }
+            try { File.Delete(CommonDesktopLnk); } catch { }
             try { if (Directory.Exists(common)) Directory.Delete(common, false); } catch { }
             KillerFamily.Deployment.InstalledFileCleanup.Remove(MachineInstallDir, InstalledFiles);
             Services.CommandLinePath.Unregister(MachineInstallDir, machine: true);
@@ -136,7 +148,7 @@ namespace KillerShot
         {
             if (allUsers)
             {
-                if (!RunElevatedSilentInstall()) return false;
+                if (!RunElevatedSilentInstall(wantDesktop)) return false;
 
                 // Only ever one install: drop the per-user copy so there is a single Start Menu
                 // entry and a single uninstall entry. Settings are deliberately left alone.
@@ -150,18 +162,18 @@ namespace KillerShot
         }
 
         /// <summary>The installed copy starts once this process is gone; the exit checks already ran.</summary>
-        private static void ShutdownForRelaunch()
+        private static void ShutdownForRelaunch() => Current.Dispatcher.Invoke(() =>
         {
             Instance.IsExiting = true;
             Current.Shutdown();
-        }
+        });
 
         /// <summary>Re-run this exe elevated with /silent and wait for it to finish.</summary>
-        private static bool RunElevatedSilentInstall()
+        private static bool RunElevatedSilentInstall(bool wantDesktop)
         {
             try
             {
-                var psi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule!.FileName, "/silent")
+                var psi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule!.FileName, wantDesktop ? "/silent /desktop" : "/silent")
                 {
                     UseShellExecute = true,
                     Verb = "runas",          // triggers the UAC prompt
@@ -202,8 +214,9 @@ namespace KillerShot
         // Silent install - winget / choco / RMM and the Microsoft Store
         // ============================================================
 
-        private static int DoSilentInstall()
+        private static int DoSilentInstall(bool wantDesktop = false)
         {
+            string? verified = null;
             try
             {
                 using var installLease = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName);
@@ -228,14 +241,25 @@ namespace KillerShot
                 RegistryKey hive = machine ? Registry.LocalMachine : Registry.CurrentUser;
 
                 Directory.CreateDirectory(installDir);
+                // The signature is checked again on a private copy inside the install folder, and that
+                // copy is what gets published, so replacing the downloaded file after the first check
+                // (it may sit in a folder other programs can write) cannot slip an unsigned one in.
+                verified = Path.Combine(installDir, "." + Guid.NewGuid().ToString("N") + ".verify");
+                File.Copy(src, verified);
+                if (!CodeSignature.GetSignerInfo(verified).valid)
+                {
+                    Console.Error.WriteLine("Silent install refused: the copied EXE has no valid Authenticode signature.");
+                    return KillerFamily.Deployment.InstallerExitCodes.SecurityRejected;
+                }
                 if (File.Exists(installExe))
                 {
                     try { File.SetAttributes(installExe, FileAttributes.Normal); } catch { }
                 }
-                KillerFamily.Deployment.InstalledImagePublication.Publish(src, installExe, () =>
+                KillerFamily.Deployment.InstalledImagePublication.Publish(verified, installExe, () =>
                 {
                     Directory.CreateDirectory(startMenuDir);
                     CreateShortcut(startMenuLnk, installExe);
+                    if (wantDesktop) CreateShortcut(machine ? CommonDesktopLnk : DesktopLnk, installExe);
                     WriteInstallKeys(hive, installDir, installExe);
                     Services.CommandLinePath.Register(installDir, machine);
                 });
@@ -247,6 +271,10 @@ namespace KillerShot
                 // deployment tool gets.
                 Console.Error.WriteLine("Silent install failed: " + ex.Message);
                 return KillerFamily.Deployment.InstallerExitCodes.FromException(ex);
+            }
+            finally
+            {
+                if (verified != null) try { File.Delete(verified); } catch { }
             }
         }
 
@@ -420,6 +448,15 @@ namespace KillerShot
                 return elevatedResult.Value;
             }
 
+            // KillerShot often runs in the tray, and its exe cannot be removed while it does.
+            if (OtherCopyRunning(machine ? MachineInstallExe : InstallExe))
+            {
+                const string running = "KillerShot is still running. Exit it from its tray icon, then uninstall again.";
+                if (silent) Console.Error.WriteLine(running);
+                else ShowInstallDialog(running);
+                return KillerFamily.Deployment.InstallerExitCodes.Busy;
+            }
+
             if (!silent)
             {
                 var confirm = new Controls.ConfirmDialog(
@@ -440,6 +477,21 @@ namespace KillerShot
             return result;
         }
 
+        /// <summary>True when another KillerShot process runs from this exe. One that cannot be
+        /// inspected, such as another account's, counts as not running.</summary>
+        private static bool OtherCopyRunning(string exe)
+        {
+            int self = Environment.ProcessId;
+            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(ExeName)))
+                using (process)
+                {
+                    if (process.Id == self) continue;
+                    try { if (string.Equals(process.MainModule?.FileName, exe, StringComparison.OrdinalIgnoreCase)) return true; }
+                    catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+                }
+            return false;
+        }
+
         private static void RemoveUninstallMetadata(bool machine)
         {
             string startMenuDir = machine
@@ -448,9 +500,10 @@ namespace KillerShot
             string targetDir = machine ? MachineInstallDir : InstallDir;
 
             string shortcut = Path.Combine(startMenuDir, AppName + ".lnk");
+            string desktop = machine ? CommonDesktopLnk : DesktopLnk;
             UninstallWorkflow.DeleteLiteral(shortcut);
-            UninstallWorkflow.DeleteLiteral(DesktopLnk);
-            if (!UninstallWorkflow.Absent(shortcut) || !UninstallWorkflow.Absent(DesktopLnk))
+            UninstallWorkflow.DeleteLiteral(desktop);
+            if (!UninstallWorkflow.Absent(shortcut) || !UninstallWorkflow.Absent(desktop))
                 throw new IOException("An installed shortcut remains.");
             if (Directory.Exists(startMenuDir) && Directory.GetFileSystemEntries(startMenuDir).Length == 0)
                 Directory.Delete(startMenuDir, recursive: false);

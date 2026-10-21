@@ -31,7 +31,12 @@ public partial class MainWindow
         // waiting for the album go through the same checks as Exit first.
         if (!await App.Instance.CanExitAsync()) return;
         PortableBadge.Visibility = Visibility.Collapsed;
-        if (!App.InstallAndRelaunch(wantDesktop: dialog.Check1Checked, allUsers: dialog.Check2Checked))
+        bool desktop = dialog.Check1Checked, allUsers = dialog.Check2Checked;
+        // The copy and the wait for the elevated install run off the interface thread, so the
+        // window keeps painting; their dialogs and the restart come back to it.
+        bool installed;
+        using (new WaitCursorScope()) installed = await Task.Run(() => App.InstallAndRelaunch(wantDesktop: desktop, allUsers: allUsers));
+        if (!installed)
         {
             RefreshPortableBadge();
             StatusText.Text = LocaleManager.Loc("Str_Status_InstallFailed");

@@ -226,6 +226,9 @@ if (-not $SkipSign) {
     $signer = $signature.SignerCertificate
     $actualCN = $signer.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
     $actualThumb = $signer.Thumbprint
+    # /n matches a subject substring, so confirm the certificate that signed is the one intended.
+    if ($CertThumbprint -and $actualThumb -ne $CertThumbprint.ToUpperInvariant()) { throw "Signed with $actualThumb, expected $CertThumbprint." }
+    if (-not $CertThumbprint -and $actualCN -ne $CertName) { throw "Signed by '$actualCN', expected '$CertName'." }
 } else {
     Write-Host "`n  WARNING: -SkipSign is set. KillerShot.exe IS NOT SIGNED. Do not distribute it." -ForegroundColor Red
     $actualCN = "(not signed)"; $actualThumb = "(not signed)"
@@ -249,7 +252,8 @@ try {
 # --- 11. SHA256SUMS.txt ---
 $assets = @($exe, $licenseOut) + $thirdPartyLicenses + @($srcZip)
 $sumsPath = Join-Path $releaseDir "SHA256SUMS.txt"
-$lines = foreach ($a in $assets) { "$(([IO.Path]::GetFileName($a)).PadRight(32)) $((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash)" }
+# The standard "hash  name" form, so sha256sum -c can check a download.
+$lines = foreach ($a in $assets) { "$((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($a))" }
 [IO.File]::WriteAllLines($sumsPath, [string[]]$lines, [Text.UTF8Encoding]::new($false))
 
 Write-Host "`n==============================================================" -ForegroundColor Cyan
@@ -283,6 +287,7 @@ try {
     $null = Assert-CleanSyncedBranch
     if ((git rev-parse HEAD).Trim() -ne $releaseCommit) { throw "HEAD changed during the build. Rerun the release." }
     git tag -a $Tag -m "KillerShot $Tag"
+    if ($LASTEXITCODE -ne 0) { throw "git tag failed" }
     git push origin $Tag
     if ($LASTEXITCODE -ne 0) { throw "Tag push failed" }
     gh release create $Tag @($assets + $sumsPath) --title "KillerShot $Tag" --notes-file $notesFile --verify-tag
