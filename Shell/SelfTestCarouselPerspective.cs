@@ -37,6 +37,9 @@ internal static class SelfTestCarouselPerspective
             strip.HandleWheel(120, ModifierKeys.Control);
             Check(strip.SelectedIndex == selected - 1, "The collection strip's existing wheel behavior changed.");
             report.Add("Collection-strip wheel behavior unchanged PASS");
+            CheckStripTops(folder, report);
+            CheckShallowDepth(folder, report, false);
+            CheckShallowDepth(folder, report, true);
             CheckAlbumHosts(report);
             var main = (CoverFlow)new LibraryView().FindName("BigFlow");
             main.ThumbnailSource = item => Thumbnail((int)item.Id);
@@ -81,6 +84,57 @@ internal static class SelfTestCarouselPerspective
         File.WriteAllLines(Path.Combine(folder, "carousel-perspective-report.txt"), report);
         App.Instance.Shutdown(code);
         return true;
+    }
+
+    /// <summary>The editor's strip frames its pictures from the top. A portrait picture beside a wide
+    /// front one stands taller, and its top must still show below the toolbar, not be cut off.</summary>
+    private static void CheckStripTops(string folder, List<string> report)
+    {
+        foreach (bool cards in new[] { false, true })
+        foreach (int selected in new[] { 0, 4 })
+            CheckStripTops(folder, report, cards, selected);
+    }
+
+    private static void CheckStripTops(string folder, List<string> report, bool cards, int selected)
+    {
+        var items = Enumerable.Range(0, 9).Select(i => new CaptureItem(i, DateTime.Today, i % 2 == 0 ? 320 : 120, i % 2 == 0 ? 200 : 240,
+            "region", "Strip " + i, null, null, null)).ToArray();
+        var flow = new CoverFlow { ViewHeight = 1.2, AlignTop = true, ShowInfoCards = cards, ThumbnailSource = item => Thumbnail((int)item.Id), Items = items, SelectedIndex = selected };
+        flow.Items = items;
+        flow.Measure(new Size(1000, 150));
+        flow.Arrange(new Rect(0, 0, 1000, 150));
+        flow.UpdateLayout();
+        string path = Path.Combine(folder, $"strip-tops-{(cards ? "cards" : "photos")}-{selected}.png");
+        Render(flow, path);
+        var shot = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        var row = new byte[1000 * 4];
+        new FormatConvertedBitmap(shot, PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(0, 0, 1000, 1), row, 1000 * 4, 0);
+        int touched = 0;
+        for (int x = 0; x < 1000; x++)
+            if (Math.Abs(row[x * 4] - 30) > 6 || Math.Abs(row[x * 4 + 1] - 30) > 6 || Math.Abs(row[x * 4 + 2] - 30) > 6) touched++;
+        report.Add($"strip top row pixels covered ({(cards ? "cards" : "photos")}, front {selected}): {touched}");
+        Check(touched == 0, "A taller picture in the editor's strip is cut off at the top.");
+        report.Add("Strip pictures of mixed shapes all show their top edge PASS");
+    }
+
+    /// <summary>Less depth brings the side pictures nearer, so they draw taller than the front one.
+    /// At the shallowest depth they must still fit inside the carousel, top edges included.</summary>
+    private static void CheckShallowDepth(string folder, List<string> report, bool shelf)
+    {
+        var flow = CreateFlow(shelf);
+        for (int i = 0; i < 30; i++) flow.HandleWheel(-120, ModifierKeys.Control);
+        flow.UpdateLayout();
+        string path = Path.Combine(folder, (shelf ? "shelf" : "album") + "-shallow.png");
+        Render(flow, path);
+        var shot = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        int w = shot.PixelWidth;
+        var row = new byte[w * 4];
+        new FormatConvertedBitmap(shot, PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(0, 0, w, 1), row, w * 4, 0);
+        int touched = 0;
+        for (int x = 0; x < w; x++)
+            if (Math.Abs(row[x * 4] - 30) > 6 || Math.Abs(row[x * 4 + 1] - 30) > 6 || Math.Abs(row[x * 4 + 2] - 30) > 6) touched++;
+        report.Add($"{(shelf ? "shelf" : "album")} at the shallowest depth, top row pixels covered: {touched}");
+        Check(touched == 0, "At the shallowest depth the side pictures are cut off at the top.");
     }
 
     private static CoverFlow CreateFlow(bool shelf)

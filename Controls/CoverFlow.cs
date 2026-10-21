@@ -270,8 +270,25 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
             double height = Math.Max(ViewHeight, MinViewWidth / aspect) * (1 + .12 * _perspectiveZoom);
             if (AlignTop && !MainView)
             {
-                // A sliver of room above the front picture's top edge, the rest below it.
-                aim = pictureHeight + height * .03 - height / 2;
+                // A sliver of room above the tallest picture's top edge, the rest below it. Framed
+                // from the tallest a picture can be, not the front one, so a taller neighbour is
+                // never cut off and the view does not jump while scrolling.
+                aim = MaxPictureHeight + height * .03 - height / 2;
+                camera.Position = new Point3D(0, aim, CameraDistance);
+            }
+            if (!MainView)
+            {
+                // Depth moves pictures toward the camera, where they draw taller: the front one
+                // when deeper, the side ones (nearest at their inner edge) when shallower. Widen
+                // the view, or for a top-aligned strip lower the aim, until the nearest picture's
+                // top edge still fits inside the carousel.
+                double sideNear = -SideDepth - 1.2 * _perspectiveZoom + MaxPictureWidth / 2 * Math.Sin(SideAngle * Math.PI / 180);
+                double frontNear = .9 * _perspectiveZoom;
+                double Scale(double z) => CameraDistance / (CameraDistance - Math.Max(0, z));
+                if (AlignTop)
+                    aim = Math.Min(aim, Math.Min(MaxPictureHeight - height * .47 / Scale(sideNear), pictureHeight - height * .47 / Scale(frontNear)));
+                else
+                    height = Math.Max(height, Math.Max((MaxPictureHeight - aim) * Scale(sideNear), (pictureHeight - aim) * Scale(frontNear)) * 2 / .94);
                 camera.Position = new Point3D(0, aim, CameraDistance);
             }
             if (MainView)
