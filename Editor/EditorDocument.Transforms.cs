@@ -57,7 +57,7 @@ public sealed partial class EditorDocument
         if ((long)width * height > Services.ImageOutput.MaxPixels) throw new Services.ImageTooLargeException(width, height);
         // Smooth resampling blends each output pixel from several source pixels, so pixels under
         // a redaction would bleed into the edge just outside the scaled box. They are blacked out
-        // in the source first, so only the redaction's own color can bleed.
+        // in the source first, matching the opaque black used by ShapeAnnotation.Render.
         BitmapSource source = State.Image;
         var redactions = State.Items.OfType<ShapeAnnotation>().Where(s => s.Kind == ShapeKind.Redact).ToList();
         if (redactions.Count > 0)
@@ -67,7 +67,7 @@ public sealed partial class EditorDocument
             using (var dc = covered.RenderOpen())
             {
                 dc.DrawImage(State.Image, new Rect(0, 0, w, h));
-                foreach (var r in redactions) dc.DrawRectangle(new SolidColorBrush(r.Color), null, r.PixelCells);
+                foreach (var r in redactions) dc.DrawRectangle(Brushes.Black, null, r.PixelCells);
             }
             var flat = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
             flat.Render(covered);
@@ -81,7 +81,48 @@ public sealed partial class EditorDocument
         rtb.Render(visual);
         var (px, _, _) = Pixels(new FormatConvertedBitmap(rtb, PixelFormats.Bgra32, null, 0));
         double sx = (double)width / w, sy = (double)height / h;
-        return Replace(Bitmap(px, width, height), new Matrix(sx, 0, 0, sy, 0, 0), Math.Sqrt(sx * sy));
+        var transform = new Matrix(sx, 0, 0, sy, 0, 0);
+        double scale = Math.Sqrt(sx * sy);
+        var items = State.Items.ToBuilder();
+        var covers = new List<Rect>();
+        // An inserted picture is resampled separately. Cover its source pixels too, but only
+        // with redactions above it in the stack. Keep every object editable and in its place.
+        for (int i = items.Count - 1; i >= 0; i--)
+        {
+            var item = items[i];
+            if (item is ShapeAnnotation { Kind: ShapeKind.Redact } redact) covers.Add(redact.PixelCells);
+            else if (item is ImageAnnotation picture) item = CoverImageForResize(picture, covers);
+            items[i] = item.Transform(transform, scale);
+        }
+        Apply(new EditorState(Bitmap(px, width, height), items.ToImmutable()));
+        return true;
+    }
+
+    private static ImageAnnotation CoverImageForResize(ImageAnnotation picture, List<Rect> covers)
+    {
+        var box = picture.Box;
+        if (box.Width <= 0 || box.Height <= 0) return picture;
+        int w = picture.Image.PixelWidth, h = picture.Image.PixelHeight;
+        byte[]? pixels = null;
+        foreach (var cover in covers)
+        {
+            var overlap = Rect.Intersect(box, cover);
+            if (overlap.IsEmpty || overlap.Width <= 0 || overlap.Height <= 0) continue;
+            // Include each source cell touched by the mask, even with a fractional placement.
+            int left = Math.Clamp((int)Math.Floor((overlap.Left - box.Left) * w / box.Width), 0, w);
+            int top = Math.Clamp((int)Math.Floor((overlap.Top - box.Top) * h / box.Height), 0, h);
+            int right = Math.Clamp((int)Math.Ceiling((overlap.Right - box.Left) * w / box.Width), 0, w);
+            int bottom = Math.Clamp((int)Math.Ceiling((overlap.Bottom - box.Top) * h / box.Height), 0, h);
+            pixels ??= Pixels(picture.Image).Pixels;
+            for (int y = top; y < bottom; y++)
+                for (int x = left; x < right; x++)
+                {
+                    int offset = (y * w + x) * 4;
+                    pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = 0;
+                    pixels[offset + 3] = 255;
+                }
+        }
+        return pixels is null ? picture : picture with { Image = Bitmap(pixels, w, h) };
     }
 
     /// <summary>Adds a border of <paramref name="size"/> pixels in a color around the picture.</summary>

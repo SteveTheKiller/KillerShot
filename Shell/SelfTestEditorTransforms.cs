@@ -26,6 +26,9 @@ internal static class SelfTestEditorTransforms
         {
             Run(report);
             UpscaleKeepsRedaction(report);
+            InsertedImageRedaction(report);
+            ResizePreservesImageLayers(report);
+            BaseRedactionUsesOpaqueBlack(report);
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -93,6 +96,101 @@ internal static class SelfTestEditorTransforms
         for (int i = 0; i < all.Length; i += 4) brightest = Math.Max(brightest, Math.Max(all[i], Math.Max(all[i + 1], all[i + 2])));
         report.Add($"upscaled redaction: brightest pixel {brightest} (gray is 128)");
         Expect(brightest <= 130, "Enlarging let the redacted pixels bleed past the redaction.");
+    }
+
+    private static void InsertedImageRedaction(List<string> report)
+    {
+        Check("integer opaque", new Rect(0, 0, 40, 40), new Point(15, 15), new Point(25, 25), false, 120, 120);
+        Check("fractional transparent", new Rect(0.25, 0.5, 39.5, 38.75), new Point(14.25, 13.75), new Point(25.75, 26.25), true, 99, 77);
+        Check("clipped fractional", new Rect(-5.25, -3.5, 40, 40), new Point(8.5, 10.1), new Point(20.5, 22.5), true, 73, 51);
+        Check("downscale", new Rect(0, 0, 40, 40), new Point(15, 15), new Point(25, 25), false, 23, 17);
+
+        void Check(string name, Rect box, Point a, Point b, bool transparent, int width, int height)
+        {
+            EditorDocument Make(byte secret)
+            {
+                var doc = new EditorDocument(RedactionPicture(128, transparent));
+                doc.Add(new ImageAnnotation(RedactionPicture(secret, transparent), box));
+                doc.Add(new ShapeAnnotation(ShapeKind.Redact, a, b, Colors.Black, 1));
+                return doc;
+            }
+            var dark = Make(0); var light = Make(255);
+            var before = dark.State;
+            var beforeExport = Export(dark);
+            Expect(Same(dark.Render(), light.Render()) && Same(beforeExport, Export(light)), name + ": the fixture did not hide the original secret.");
+            dark.Scale(width, height); light.Scale(width, height);
+            bool renderedSame = Same(dark.Render(), light.Render()), exportedSame = Same(Export(dark), Export(light));
+            report.Add($"inserted-image {name}: equal before resize=True, render after={renderedSame}, PNG after={exportedSame}");
+            Expect(renderedSame && exportedSame, name + ": resizing exposed secret pixels under an inserted-image redaction.");
+            Expect(dark.State.Items.Count == 2 && dark.State.Items[0] is ImageAnnotation && dark.State.Items[1] is ShapeAnnotation { Kind: ShapeKind.Redact }, name + ": resizing flattened or reordered editable objects.");
+            var image = (ImageAnnotation)dark.State.Items[0];
+            Expect(At(image.Image, 2, 2) == At(((ImageAnnotation)before.Items[0]).Image, 2, 2), name + ": resizing changed uncovered image pixels or alpha.");
+            var after = dark.State;
+            dark.Undo();
+            Expect(ReferenceEquals(before, dark.State) && Same(beforeExport, Export(dark)), name + ": one undo did not restore the original objects and pixels.");
+            dark.Redo();
+            Expect(ReferenceEquals(after, dark.State), name + ": redo did not restore the safe resized state.");
+            dark.Scale(137, 91); light.Scale(137, 91);
+            Expect(Same(Export(dark), Export(light)), name + ": a second resize exposed the secret.");
+        }
+    }
+
+    private static BitmapSource RedactionPicture(byte secret, bool transparent = false)
+    {
+        var px = new byte[40 * 40 * 4];
+        for (int y = 0; y < 40; y++)
+            for (int x = 0; x < 40; x++)
+            {
+                int i = (y * 40 + x) * 4;
+                bool hidden = x >= 15 && x < 25 && y >= 15 && y < 25;
+                byte v = hidden ? secret : (byte)128;
+                px[i] = px[i + 1] = px[i + 2] = v;
+                px[i + 3] = transparent ? (hidden ? (byte)(secret == 0 ? 40 : 220) : (byte)96) : (byte)255;
+            }
+        var bmp = BitmapSource.Create(40, 40, 96, 96, PixelFormats.Bgra32, null, px, 160);
+        bmp.Freeze();
+        return bmp;
+    }
+
+    private static void ResizePreservesImageLayers(List<string> report)
+    {
+        var doc = new EditorDocument(RedactionPicture(128));
+        doc.Add(new ImageAnnotation(RedactionPicture(255), new Rect(0, 0, 40, 40)));
+        doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(15, 15), new Point(25, 25), Colors.Black, 1));
+        var top = RedactionPicture(255);
+        doc.Add(new ImageAnnotation(top, new Rect(18, 18, 4, 4)));
+        doc.Scale(120, 120);
+        Expect(doc.State.Items.Count == 3 && doc.State.Items[0] is ImageAnnotation && doc.State.Items[1] is ShapeAnnotation && doc.State.Items[2] is ImageAnnotation, "Resize changed the layer order or object types.");
+        var upper = (ImageAnnotation)doc.State.Items[2];
+        Expect(Same(upper.Image, top) && At(Export(doc), 60, 60) == Colors.White, "A redaction damaged a picture above it.");
+        var moved = upper.Offset(new Vector(30, 0));
+        doc.Replace(upper, moved);
+        Expect(ReferenceEquals(doc.State.Items[2], moved) && At(Export(doc), 60, 60) == Colors.Black, "The resized image object could not be moved independently.");
+        doc.Undo();
+        Expect(At(Export(doc), 60, 60) == Colors.White, "Undo did not restore the moved image object.");
+        report.Add("image layer order, independent movement, upper-layer pixels and undo PASS");
+    }
+
+    private static void BaseRedactionUsesOpaqueBlack(List<string> report)
+    {
+        EditorDocument Make(byte secret)
+        {
+            var doc = new EditorDocument(RedactionPicture(secret, true));
+            doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(15, 15), new Point(25, 25), Color.FromArgb(40, 255, 32, 64), 1));
+            return doc;
+        }
+        var dark = Make(0); var light = Make(255);
+        Expect(Same(Export(dark), Export(light)), "The base-image fixture did not hide the secret.");
+        dark.Scale(120, 120); light.Scale(120, 120);
+        bool same = Same(Export(dark), Export(light));
+        report.Add($"base-image redaction with stored translucent color: equal after resize={same}");
+        Expect(same, "Resize used the stored redaction color instead of its opaque black rendering.");
+    }
+
+    private static BitmapSource Export(EditorDocument doc)
+    {
+        using var stream = new MemoryStream(Services.ImageOutput.EncodePng(doc.Render()));
+        return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
     }
 
     private static void Run(List<string> report)
