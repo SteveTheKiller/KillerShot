@@ -132,6 +132,7 @@ namespace KillerShot.Services
             bool themeOwnsRadioHover = newDict.Contains("RadioHoverFgBrush");
             bool themeOwnsCheckFill = newDict.Contains("CheckBoxCheckedBrush");
             bool themeOwnsCheckMark = newDict.Contains("CheckMarkBrush");
+            bool accentOwnsMenuHover = false;
             CompleteKitPalette(newDict, theme);
             // Accent overlay: Dark/Light/Black recolor their accent-family keys on top of the base
             // green. Green is the base itself, so it needs no overlay. Overlays live in Accents/<Family>/.
@@ -148,6 +149,7 @@ namespace KillerShot.Services
                     {
                         Source = new Uri($"pack://application:,,,/Themes/Accents/{family}/{accent}.xaml")
                     };
+                    accentOwnsMenuHover = accentDict.Contains("MenuHoverBrush");
                     var target = newDict;
                     foreach (object key in accentDict.Keys)
                         target[key] = accentDict[key];
@@ -211,7 +213,7 @@ namespace KillerShot.Services
             if (!themeOwnsCheckMark) newDict["CheckMarkBrush"] = newDict["OnPrimaryBrush"];
             if (!newDict.Contains("ComboHighlightTextBrush"))
                 newDict["ComboHighlightTextBrush"] = newDict["PrimaryBrush"];
-            if (theme == Theme.SE98)
+            if (theme == Theme.SE98 && !accentOwnsMenuHover)
                 newDict["MenuHoverBrush"] = newDict["PrimaryBrush"];
 
             // A hovered menu or list item takes the accent for its text, nudged lighter or darker
