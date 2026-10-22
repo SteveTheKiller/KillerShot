@@ -22,6 +22,7 @@ namespace KillerShot.Services
             public int ParentId { get; set; }
             public long ParentCreationFileTime { get; set; }
             public string ImageHash { get; set; } = "";
+            public string[] TargetFiles { get; set; } = Array.Empty<string>();
             public bool MetadataRemoved { get; set; }
             public DateTime UpdatedUtc { get; set; } = DateTime.UtcNow;
         }

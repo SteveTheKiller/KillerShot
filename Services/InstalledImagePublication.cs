@@ -12,6 +12,7 @@ namespace KillerFamily.Deployment
         {
             source = Path.GetFullPath(source);
             target = Path.GetFullPath(target);
+            using var lifecycle = InstallerExitCodes.Acquire(Path.GetFileNameWithoutExtension(target), Path.GetDirectoryName(target)!);
             if (string.Equals(source, target, StringComparison.OrdinalIgnoreCase))
                 throw new IOException("The installer source must be outside the installed image.");
             string token = Guid.NewGuid().ToString("N");

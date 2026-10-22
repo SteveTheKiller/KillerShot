@@ -54,7 +54,9 @@ namespace KillerShot.Services
             bool created = false;
             try
             {
+                using var lifecycle = InstallerExitCodes.Acquire("KillerShot", targetDirectory);
                 ValidateOwned(targetDirectory, ownedFiles);
+                receipt.TargetFiles = TargetIdentities(targetDirectory, ownedFiles);
                 CreateOperationDirectory(directory, machine);
                 created = true;
                 using var parent = _processes.Current();
@@ -117,6 +119,12 @@ namespace KillerShot.Services
                     throw new System.Security.SecurityException("The uninstall parent identity changed.");
                 if (parent != null && !parent.WaitForExit(parentWaitMilliseconds))
                     throw new System.ComponentModel.Win32Exception(InstallerExitCodes.Busy, "The uninstall parent has not exited.");
+                using var lifecycle = InstallerExitCodes.Acquire("KillerShot", targetDirectory);
+                ValidateOwned(targetDirectory, ownedFiles);
+                if (receipt.TargetFiles.Length != ownedFiles.Length)
+                    throw new System.Security.SecurityException("The uninstall receipt has no target identity.");
+                if (!receipt.TargetFiles.SequenceEqual(TargetIdentities(targetDirectory, ownedFiles)))
+                    throw new System.ComponentModel.Win32Exception(InstallerExitCodes.Busy, "The installation changed after uninstall was requested. Start uninstall again.");
                 int result = UninstallWorkflow.CompleteDeferred(targetDirectory, ownedFiles, () =>
                 {
                     removeMetadata();
@@ -234,6 +242,31 @@ namespace KillerShot.Services
         [DllImport("kernel32.dll", EntryPoint = "CreateDirectoryW", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool CreateDirectorySecure(string path, ref SecurityAttributes attributes);
+
+        private static string[] TargetIdentities(string directory, string[] files) => files
+            .Select(file => Path.Combine(directory, file))
+            .Select(path => UninstallWorkflow.Absent(path) ? "missing" : TargetIdentity(path)).ToArray();
+
+        private static string TargetIdentity(string path)
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (!GetFileInformationByHandle(stream.SafeFileHandle, out var identity))
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            return $"{identity.VolumeSerial:X8}:{identity.IndexHigh:X8}:{identity.IndexLow:X8}:" +
+                Convert.ToBase64String(SHA256.HashData(stream));
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct FileIdentity
+        {
+            public uint Attributes;
+            public System.Runtime.InteropServices.ComTypes.FILETIME Created, Accessed, Written;
+            public uint VolumeSerial, SizeHigh, SizeLow, Links, IndexHigh, IndexLow;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle file, out FileIdentity identity);
 
         private static string Hash(string path)
         {

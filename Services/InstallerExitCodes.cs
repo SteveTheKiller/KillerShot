@@ -62,6 +62,13 @@ namespace KillerFamily.Deployment
             value.IndexOfAny(PathSeparators) >= 0;
 #endif
 
+        internal static IDisposable Acquire(string product, string directory)
+        {
+            string scope = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).ToUpperInvariant();
+            string token = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(scope)));
+            return Acquire(product + "-" + token);
+        }
+
         internal static IDisposable Acquire(string product)
         {
             if (string.IsNullOrWhiteSpace(product) || ContainsPathSeparator(product))
