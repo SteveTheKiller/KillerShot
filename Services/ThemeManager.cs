@@ -396,7 +396,7 @@ namespace KillerShot.Services
             if (!d.Contains("FileNameFontSize")) d["FileNameFontSize"] = square ? 11d : 18d;
             if (!d.Contains("FileNameTransform"))
             {
-                var fileNameShift = new TranslateTransform(0, square ? 0 : 3);
+                var fileNameShift = new TranslateTransform(0, square ? 0 : -1);
                 fileNameShift.Freeze();
                 d["FileNameTransform"] = fileNameShift;
             }
