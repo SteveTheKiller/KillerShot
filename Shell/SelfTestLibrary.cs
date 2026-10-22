@@ -473,10 +473,12 @@ internal static partial class SelfTestLibrary
             long receipts = CaptureLibrary.CreateCollection("Receipts");
             var now = DateTime.Now;
             var ids = new List<long>();
+            BitmapSource? firstStored = null;
             for (int n = 0; n < 36; n++)
             {
                 var s = Samples[n % Samples.Length];
                 var bmp = Picture(n, s.Title, s.Text, s.Tint);
+                firstStored ??= bmp;
                 var taken = now.AddHours(-n * 13.5);
                 ids.Add(CaptureLibrary.AddNow(bmp, taken, n % 4 == 0 ? "window" : "region", s.Title, s.Process));
             }
@@ -488,8 +490,10 @@ internal static partial class SelfTestLibrary
             if (CaptureLibrary.Count != 38) throw new InvalidOperationException("Not every capture was stored.");
 
             // Exact pixels back, and nothing readable in the file.
+            // Compared with the very bitmap that was stored: drawing the sample again can smooth its
+            // text a little differently, which is not a storage change.
             var first = CaptureLibrary.LoadImage(ids[0]);
-            var original = Picture(0, Samples[0].Title, Samples[0].Text, Samples[0].Tint);
+            var original = firstStored!;
             bool exact = SamePixels(first, original);
             byte[] file;
             using (var f = new FileStream(CaptureLibrary.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
