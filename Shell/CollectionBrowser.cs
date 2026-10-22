@@ -36,7 +36,7 @@ internal sealed class CollectionBrowser : ListBox
                         <ScrollViewer.Template><ControlTemplate TargetType="ScrollViewer">
                             <Grid ClipToBounds="False">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Column="0" Margin="8,0,8,0"
+                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Column="0"
                                     Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" CanContentScroll="{TemplateBinding CanContentScroll}"/>
                                 <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Panel.ZIndex="10" Orientation="Vertical" Cursor="Arrow"
                                     Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
@@ -44,7 +44,9 @@ internal sealed class CollectionBrowser : ListBox
                                     Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
                             </Grid>
                         </ControlTemplate></ScrollViewer.Template>
-                        <ItemsPresenter/>
+                        <!-- The gutters sit inside the viewport, which clips: pile photos reach a few
+                             pixels past their card and stay whole there, at the top as at the sides. -->
+                        <ItemsPresenter Margin="8,8,8,0"/>
                     </ScrollViewer>
                 </Border>
             </ControlTemplate>
@@ -299,7 +301,7 @@ public sealed class CollectionPreview : StackPanel
             double y = Math.Clamp((slot.Y - jitter) * availableHeight * 1.35 - 18, halfHeight - 12, availableHeight - halfHeight + 40);
             if (_scattered.Count == 2 && index == 0) y = Math.Max(y, halfHeight + 2);
             double x = (slot.X + jitter) * availableWidth;
-            x = Math.Clamp(x, halfWidth - 6, availableWidth - halfWidth + 14);
+            x = Math.Clamp(x, halfWidth - 6, availableWidth - halfWidth + 6);   // the same reach on both sides
             frame.Width = width;
             frame.Height = height;
             Canvas.SetLeft(frame, x - width / 2);
