@@ -77,7 +77,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 ### Help and website
 
 - The website, Help, Technical and About pages explain the encrypted screenshot album and its protection limits. The website and MCP guide include Slovenian, and navigation labels follow the selected language.
-- Website guides and dialogs support keyboard access and adjust to resizing and font changes. Album help points to the current settings location.
+- Website guides and dialogs support keyboard access and adjust to resizing and font changes. Album help points to the current settings location. The website's theme menu can turn Film Grain off (Alt+Shift+G).
 
 ### Changed
 
