@@ -73,3 +73,8 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 - The website, Help, Technical and About pages explain the encrypted screenshot album and its protection limits. The website and MCP guide include Slovenian, and navigation labels follow the selected language.
 - Website guides and dialogs support keyboard access and adjust to resizing and font changes. Album help points to the current settings location.
+
+### Changed
+
+- Wordmarks and headings are raised with a subtle bevel in their own color instead of a dark outline; wordmarks keep their drop shadow. The Dark theme's red accent is the brand red again instead of a pink tint.
+

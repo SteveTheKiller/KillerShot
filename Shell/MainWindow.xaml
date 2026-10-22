@@ -126,12 +126,9 @@
                                Margin="1,2,0,0" IsHitTestVisible="False"
                                Opacity="{DynamicResource WordmarkShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="#D8000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#D8000000"/></TextBlock>
                     <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
-                               Margin="1,1,0,0" IsHitTestVisible="False"
-                               Opacity="{DynamicResource WordmarkEmbossOpacity}"><Run Text="Killer" Foreground="#70000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#70000000"/></TextBlock>
-                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
                                Margin="1,2,0,0" IsHitTestVisible="False"
                                Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="Black"/></TextBlock>
-                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"><Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
+                    <TextBlock theme:Bevel.Enabled="True" FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"><Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
                 </Grid>
                 <!-- The open file's name, after the wordmark as KillerPDF shows it. -->
                 <TextBlock x:Name="TitleFileLabel" Visibility="Collapsed" IsHitTestVisible="False"
@@ -1151,7 +1148,7 @@
                                                    Opacity="{DynamicResource WordmarkShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="2"/></TextBlock.Effect><Run Text="Killer" FontSize="17.21" Foreground="#C0000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="#C0000000"/></TextBlock>
                                         <TextBlock FontFamily="{DynamicResource WordmarkFont}" Margin="1,2,0,0" IsHitTestVisible="False"
                                                    Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" FontSize="17.21" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="Black"/></TextBlock>
-                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}"><Run Text="Killer" FontSize="17.21" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
+                                        <TextBlock theme:Bevel.Enabled="True" FontFamily="{DynamicResource WordmarkFont}"><Run Text="Killer" FontSize="17.21" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="25.85" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
                                     </Grid>
                                     <!-- Tagline split so GPLv3 and the Killer Tools link stay out of
                                          translation. -->
