@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">Нещодавніх знімків немає</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Показати бібліотеку</sys:String>
     <sys:String x:Key="Str_Status_Copied">{0} x {1} скопійовано до буфера обміну</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Перетягніть, щоб обрізати. Ctrl+Z скасовує.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Перетягніть для обрізання або натисніть Enter, щоб почати виділення. Стрілки переміщують; Ctrl+стрілки змінюють розмір (Shift: 10 пікселів). Enter застосовує; Esc скасовує. Ctrl+Z повертає назад.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Не вдалося відкрити зображення: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Це зображення має {0} x {1} пікселів, що перевищує межу в {2} мегапікселів, яку KillerShot може безпечно відкрити.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Не вдалося зберегти: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">Текст на зображенні</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Копіювати</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Прочитати область</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Проведіть по тексту, який треба прочитати. Esc скасовує.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Проведіть по тексту або натисніть Enter, щоб почати виділення. Стрілки переміщують; Ctrl+стрілки змінюють розмір (Shift: 10 пікселів). Enter читає; Esc скасовує.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Мова</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Мова Windows</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Читання тексту…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Обрізати однотонну рамку</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Немає однотонної рамки для обрізання.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Введіть розмір, наприклад 1280 x 720, ширину або 50%.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">Зображення змінилося, поки діалогове вікно було відкрито. Почніть редагування знову.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Вставити зображення поверх</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Вставити як нове зображення</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Вставити зображення з файлу…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Додати ярлик на робочий стіл</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Установити для всіх користувачів цього комп'ютера (потрібні права адміністратора)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Установлення не завершено - KillerShot і далі працює як портативний.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Встановлення завершено. KillerShot залишився відкритим, щоб зберегти роботу, змінену під час встановлення.</sys:String>
 </ResourceDictionary>

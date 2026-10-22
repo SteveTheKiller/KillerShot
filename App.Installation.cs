@@ -53,7 +53,7 @@ namespace KillerShot
             }
             if (string.Equals(first, "/remove-machine-conflict", StringComparison.OrdinalIgnoreCase))
             {
-                RemoveMachineInstallConflict();
+                exitCode = RemoveMachineInstallConflict();
                 return true;
             }
             return false;
@@ -127,16 +127,26 @@ namespace KillerShot
             }
         }
 
-        private static void RemoveMachineInstallConflict()
+        private static int RemoveMachineInstallConflict()
         {
-            string common = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName);
-            try { Registry.LocalMachine.DeleteSubKeyTree(RegKey, false); } catch { }
-            try { Registry.LocalMachine.DeleteSubKeyTree(UninstallKey, false); } catch { }
-            try { File.Delete(Path.Combine(common, AppName + ".lnk")); } catch { }
-            try { File.Delete(CommonDesktopLnk); } catch { }
-            try { if (Directory.Exists(common)) Directory.Delete(common, false); } catch { }
-            KillerFamily.Deployment.InstalledFileCleanup.Remove(MachineInstallDir, InstalledFiles);
-            Services.CommandLinePath.Unregister(MachineInstallDir, machine: true);
+            try
+            {
+                using var lifecycle = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, MachineInstallDir);
+                string common = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName);
+                try { Registry.LocalMachine.DeleteSubKeyTree(RegKey, false); } catch { }
+                try { Registry.LocalMachine.DeleteSubKeyTree(UninstallKey, false); } catch { }
+                try { File.Delete(Path.Combine(common, AppName + ".lnk")); } catch { }
+                try { File.Delete(CommonDesktopLnk); } catch { }
+                try { if (Directory.Exists(common)) Directory.Delete(common, false); } catch { }
+                KillerFamily.Deployment.InstalledFileCleanup.Remove(MachineInstallDir, InstalledFiles);
+                Services.CommandLinePath.Unregister(MachineInstallDir, machine: true);
+                return KillerFamily.Deployment.InstallerExitCodes.Success;
+            }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine("Installation conflict cleanup failed: " + error.Message);
+                return KillerFamily.Deployment.InstallerExitCodes.FromException(error);
+            }
         }
 
         /// <summary>
@@ -144,8 +154,9 @@ namespace KillerShot
         /// exe elevated with /silent - the same machine-wide path winget and choco use - so UAC
         /// only appears when the user actually asked for it. False if elevation was declined.
         /// </summary>
-        internal static bool InstallAndRelaunch(bool wantDesktop, bool allUsers)
+        internal static bool InstallAndRelaunch(bool wantDesktop, bool allUsers, ExitApproval approval, out bool relaunchDeferred)
         {
+            relaunchDeferred = false;
             if (allUsers)
             {
                 if (!RunElevatedSilentInstall(wantDesktop)) return false;
@@ -154,11 +165,13 @@ namespace KillerShot
                 // entry and a single uninstall entry. Settings are deliberately left alone.
                 RemovePerUserInstall();
 
-                return new InstallRelaunch().StartInstalled(MachineInstallExe, ShutdownForRelaunch);
+                return Instance.TryCompleteRelaunch(approval,
+                    () => new InstallRelaunch().StartInstalled(MachineInstallExe, ShutdownForRelaunch), out relaunchDeferred);
             }
 
             if (!DoInstall(wantDesktop) || !File.Exists(InstallExe)) return false;
-            return new InstallRelaunch().StartInstalled(InstallExe, ShutdownForRelaunch);
+            return Instance.TryCompleteRelaunch(approval,
+                () => new InstallRelaunch().StartInstalled(InstallExe, ShutdownForRelaunch), out relaunchDeferred);
         }
 
         /// <summary>The installed copy starts once this process is gone; the exit checks already ran.</summary>
@@ -192,22 +205,32 @@ namespace KillerShot
         /// <summary>Remove a per-user install: files, shortcuts and its HKCU install markers.
         /// The settings file in LOCALAPPDATA is deliberately left alone so theme, accent, locale
         /// and window placement survive the move to a machine-wide install.</summary>
-        private static void RemovePerUserInstall()
+        private static int RemovePerUserInstall()
         {
-            try { if (File.Exists(StartMenuLnk)) File.Delete(StartMenuLnk); } catch { }
-            try { if (Directory.Exists(StartMenuDir)) Directory.Delete(StartMenuDir, false); } catch { }
-            try { if (File.Exists(DesktopLnk)) File.Delete(DesktopLnk); } catch { }
-            KillerFamily.Deployment.InstalledFileCleanup.Remove(InstallDir, InstalledFiles);
-            Services.CommandLinePath.Unregister(InstallDir, machine: false);
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(RegKey, writable: true);
-                key?.DeleteValue("Installed", throwOnMissingValue: false);
-                key?.DeleteValue("InstallPath", throwOnMissingValue: false);
+                using var lifecycle = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, InstallDir);
+                try { if (File.Exists(StartMenuLnk)) File.Delete(StartMenuLnk); } catch { }
+                try { if (Directory.Exists(StartMenuDir)) Directory.Delete(StartMenuDir, false); } catch { }
+                try { if (File.Exists(DesktopLnk)) File.Delete(DesktopLnk); } catch { }
+                KillerFamily.Deployment.InstalledFileCleanup.Remove(InstallDir, InstalledFiles);
+                Services.CommandLinePath.Unregister(InstallDir, machine: false);
+                try
+                {
+                    using var key = Registry.CurrentUser.OpenSubKey(RegKey, writable: true);
+                    key?.DeleteValue("Installed", throwOnMissingValue: false);
+                    key?.DeleteValue("InstallPath", throwOnMissingValue: false);
+                }
+                catch { }
+                try { Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, throwOnMissingSubKey: false); }
+                catch { }
+                return KillerFamily.Deployment.InstallerExitCodes.Success;
             }
-            catch { }
-            try { Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, throwOnMissingSubKey: false); }
-            catch { }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine("Per-user installation cleanup failed: " + error.Message);
+                return KillerFamily.Deployment.InstallerExitCodes.FromException(error);
+            }
         }
 
         // ============================================================
@@ -219,7 +242,6 @@ namespace KillerShot
             string? verified = null;
             try
             {
-                using var installLease = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName);
                 string src = Process.GetCurrentProcess().MainModule!.FileName;
                 var (valid, _, _) = CodeSignature.GetSignerInfo();
                 if (!valid)
@@ -233,6 +255,7 @@ namespace KillerShot
                 // prompt. The app never needs admin rights.
                 bool machine = KillerFamily.Deployment.InstallerExitCodes.IsElevated();
                 string installDir = machine ? MachineInstallDir : InstallDir;
+                using var installLease = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, installDir);
                 string installExe = machine ? MachineInstallExe : InstallExe;
                 string startMenuDir = machine
                     ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName)
@@ -256,13 +279,15 @@ namespace KillerShot
                     try { File.SetAttributes(installExe, FileAttributes.Normal); } catch { }
                 }
                 KillerFamily.Deployment.InstalledImagePublication.Publish(verified, installExe, () =>
+                    KillerFamily.Deployment.InstallationIntegration.Register(hive, RegKey, UninstallKey, machine,
+                    installDir, startMenuDir, wantDesktop ? [startMenuLnk, machine ? CommonDesktopLnk : DesktopLnk] : [startMenuLnk], () =>
                 {
                     Directory.CreateDirectory(startMenuDir);
                     CreateShortcut(startMenuLnk, installExe);
                     if (wantDesktop) CreateShortcut(machine ? CommonDesktopLnk : DesktopLnk, installExe);
                     WriteInstallKeys(hive, installDir, installExe);
                     Services.CommandLinePath.Register(installDir, machine);
-                });
+                }));
                 return KillerFamily.Deployment.InstallerExitCodes.Success;
             }
             catch (Exception ex)
@@ -313,6 +338,7 @@ namespace KillerShot
 
             try
             {
+                using var installLease = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, InstallDir);
                 Directory.CreateDirectory(InstallDir);
                 if (File.Exists(InstallExe))
                 {
@@ -321,13 +347,15 @@ namespace KillerShot
                 try
                 {
                     KillerFamily.Deployment.InstalledImagePublication.Publish(src, InstallExe, () =>
+                        KillerFamily.Deployment.InstallationIntegration.Register(Registry.CurrentUser, RegKey, UninstallKey, false,
+                        InstallDir, StartMenuDir, wantDesktop ? [StartMenuLnk, DesktopLnk] : [StartMenuLnk], () =>
                     {
                         Directory.CreateDirectory(StartMenuDir);
                         CreateShortcut(StartMenuLnk, InstallExe);
                         if (wantDesktop) CreateShortcut(DesktopLnk, InstallExe);
                         WriteInstallKeys(Registry.CurrentUser, InstallDir, InstallExe);
                         Services.CommandLinePath.Register(InstallDir, machine: false);
-                    });
+                    }));
                 }
                 catch (Exception copyEx) when (copyEx is UnauthorizedAccessException or IOException)
                 {

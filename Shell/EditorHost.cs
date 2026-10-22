@@ -109,15 +109,8 @@ namespace KillerShot.Shell
         /// <summary>Title, enabled states, empty state and footer after any document change.</summary>
         private void RefreshDocumentUi()
         {
-            bool has = _doc != null;
             SyncReview();
             SyncLibraryVisibility();
-            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, CopyTextBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
-                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,
-                                      ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
-                b.IsEnabled = has;
-            UndoBtn.IsEnabled = _doc?.CanUndo == true;
-            RedoBtn.IsEnabled = _doc?.CanRedo == true;
             HighlightActiveTool();
 
             string name = _doc?.FilePath is string p ? System.IO.Path.GetFileName(p) : "";
@@ -420,6 +413,19 @@ namespace KillerShot.Shell
         /// library always shows.</summary>
         private bool _libraryShown;
 
+        [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(_doc))]
+        private bool EditorWorkspaceActive => _doc != null && !_libraryShown;
+
+        private void SyncEditorCommands()
+        {
+            foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, CopyTextBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
+                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,
+                                      ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
+                b.IsEnabled = EditorWorkspaceActive;
+            UndoBtn.IsEnabled = EditorWorkspaceActive && _doc.CanUndo;
+            RedoBtn.IsEnabled = EditorWorkspaceActive && _doc.CanRedo;
+        }
+
         private void InitLibrary()
         {
             Library.SearchAnchor = LibrarySearchButton;
@@ -475,6 +481,7 @@ namespace KillerShot.Shell
             Library.Visibility = library ? Visibility.Visible : Visibility.Collapsed;
             SyncStripPlacement();
             EditorScroll.Visibility = library ? Visibility.Collapsed : Visibility.Visible;
+            SyncEditorCommands();
             SyncContentPane();
             SyncFooterView();
         }
@@ -584,6 +591,7 @@ namespace KillerShot.Shell
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (!EditorWorkspaceActive) return;
             var menu = new ContextMenu();
             foreach (var (id, key, shortcut, action) in new (string, string, string, Action)[]
                 { ("save", "Str_Btn_Save", "Ctrl+S", Save), ("saveas", "Str_Btn_SaveAs", "Ctrl+Shift+S", SaveAs) })
@@ -600,7 +608,7 @@ namespace KillerShot.Shell
 
         private void PrintResult()
         {
-            if (_doc == null) return;
+            if (!EditorWorkspaceActive) return;
             Editor.CommitText();
             try
             {
@@ -629,7 +637,12 @@ namespace KillerShot.Shell
         }
 
         internal void CommitPendingText() => Editor.CommitText();
-        internal void SaveDocumentForExit() => Save();
+        internal void SaveDocumentForExit()
+        {
+            _libraryShown = false;
+            SyncLibraryVisibility();
+            Save();
+        }
 
         private bool OpenPath(string path)
         {
@@ -649,14 +662,14 @@ namespace KillerShot.Shell
 
         private void Save()
         {
-            if (_doc == null) return;
+            if (!EditorWorkspaceActive) return;
             if (_doc.FilePath == null || !ImageOutput.CanSaveInPlace(_doc.FilePath)) { SaveAs(); return; }
             WriteTo(_doc, _doc.FilePath);
         }
 
         private void SaveAs()
         {
-            if (_doc == null) return;
+            if (!EditorWorkspaceActive) return;
             Editor.CommitText();
             var document = _doc;
             var dlg = new FileDialog(FileDialogMode.Save)
@@ -692,6 +705,7 @@ namespace KillerShot.Shell
                 ImageOutput.Save(document.Render(), path, CaptureSettings.JpegQuality);
                 document.FilePath = path;
                 document.MarkSaved();
+                App.Instance.DocumentSavedToFile(document);
                 RefreshDocumentUi();
                 StatusText.Text = string.Format(Loc("Str_Status_Saved"), System.IO.Path.GetFileName(path));
             }
@@ -703,7 +717,7 @@ namespace KillerShot.Shell
 
         private void CopyResult()
         {
-            if (_doc == null) return;
+            if (!EditorWorkspaceActive) return;
             Editor.CommitText();
             var bmp = _doc.Render();
             StatusText.Text = ImageOutput.TryCopy(bmp, out var error)
@@ -711,8 +725,8 @@ namespace KillerShot.Shell
                 : string.Format(Loc("Str_Tray_ClipboardBusy"), error);
         }
 
-        private void Undo() { Editor.CommitText(); _doc?.Undo(); }
-        private void Redo() { Editor.CommitText(); _doc?.Redo(); }
+        private void Undo() { if (!EditorWorkspaceActive) return; Editor.CommitText(); _doc.Undo(); }
+        private void Redo() { if (!EditorWorkspaceActive) return; Editor.CommitText(); _doc.Redo(); }
 
         // ---- zoom ----
 

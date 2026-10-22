@@ -36,6 +36,7 @@ public partial class App : Application
     /// <summary>Keeps the open capture's marks in the album; null in self-tests that never show a document.</summary>
     private AlbumMarks Marks => _marks ??= new AlbumMarks(Dispatcher);
     internal event Action? DocumentChanged;
+    internal void DocumentSavedToFile(EditorDocument document) => _marks?.SavedToFile(document);
 
     /// <summary>Set by KillerShot.Cli.exe before it runs the application, so the console build
     /// takes the command line path without needing the --cli switch.</summary>
@@ -82,6 +83,8 @@ public partial class App : Application
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestChromeInteraction.TryRun(e.Args)) return;
         if (SelfTestReleaseSafety.TryRun(e.Args)) return;
+        if (SelfTestInstallation.TryRun(e.Args)) return;
+        if (SelfTestInstallationIntegration.TryRun(e.Args)) return;
         if (SelfTestExternalAlbumChanges.TryRun(e.Args)) return;
         if (SelfTestAccessiblePickers.TryRun(e.Args)) return;
         if (SelfTestEditorSafety.TryRun(e.Args)) return;
@@ -327,7 +330,7 @@ public partial class App : Application
         var opening = _opening;
         _opening = null;
         if (!ReferenceEquals(Document, doc) && !ConfirmDocumentReplacement()) return false;
-        Marks.Flush();
+        if (!Marks.Flush()) return false;
         CurrentItem = doc != null ? opening : null;
         Document = doc;
         Marks.Attach(doc, opening != null && doc != null && !FolderCaptures.IsFolderId(opening.Id) ? opening.Id : null);
@@ -338,9 +341,10 @@ public partial class App : Application
     internal bool ConfirmDocumentReplacement()
     {
         _editor?.CommitPendingText();
+        if (!Marks.Flush()) return false;
         if (Document?.Dirty != true) return true;
         // An album capture keeps its marks in the album, so replacing it loses nothing.
-        if (Document.FilePath == null && Marks.CaptureId != null) { Marks.Flush(); return true; }
+        if (Document.FilePath == null && Marks.CaptureId != null) return true;
         var expectedDocument = Document;
         ShowEditor();
         var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
@@ -422,10 +426,34 @@ public partial class App : Application
     private bool _exitRequested;
     internal bool IsExiting { get; private set; }
 
-    internal async Task<bool> CanExitAsync()
+    internal sealed record ExitApproval(EditorDocument? Document, EditorState? State, long AlbumSession, int Pending);
+
+    internal ExitApproval CaptureExitApproval() => new(Document, Document?.State, CaptureLibrary.Session, CaptureLibrary.PendingCount);
+
+    private bool ExitApprovalIsCurrent(ExitApproval approval, bool checkPending = true)
     {
         _editor?.CommitPendingText();
-        if (Document is { Dirty: true, FilePath: null } && Marks.CaptureId != null) Marks.Flush();
+        return ReferenceEquals(Document, approval.Document) && ReferenceEquals(Document?.State, approval.State) &&
+            CaptureLibrary.Session == approval.AlbumSession && Capture?.IsBusy != true && Video?.IsRecording != true &&
+            (!checkPending || CaptureLibrary.PendingCount == approval.Pending);
+    }
+
+    internal bool TryCompleteRelaunch(ExitApproval approval, Func<bool> relaunch) =>
+        TryCompleteRelaunch(approval, relaunch, out _);
+
+    internal bool TryCompleteRelaunch(ExitApproval approval, Func<bool> relaunch, out bool deferred)
+    {
+        var result = Dispatcher.Invoke(() => ExitApprovalIsCurrent(approval)
+            ? (Started: relaunch(), Deferred: false) : (Started: false, Deferred: true));
+        deferred = result.Deferred;
+        return result.Started;
+    }
+
+    internal async Task<bool> CanExitAsync()
+    {
+        if (Capture?.IsBusy == true) return false;
+        _editor?.CommitPendingText();
+        if (!Marks.Flush()) return false;
         if (Document?.Dirty == true && !(Document.FilePath == null && Marks.CaptureId != null))
         {
             var expected = Document;
@@ -443,8 +471,11 @@ public partial class App : Application
             }
             else if (!edits.AlternativeChosen) return false;
         }
+        var approval = CaptureExitApproval();
         if (Video != null && !await Video.PrepareForExitAsync()) return false;
         await CaptureLibrary.RetryPendingAsync();
+        if (!ExitApprovalIsCurrent(approval, checkPending: false)) return false;
+        if (!Marks.Flush()) return false;
         int pending = CaptureLibrary.PendingCount;
         if (pending == 0) return true;
         ShowEditor();
@@ -452,7 +483,7 @@ public partial class App : Application
             string.Format(LocaleManager.Loc("Str_Lib_PendingExit"), pending),
             LocaleManager.Loc("Str_Tray_Exit"), LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
         dialog.ShowDialog();
-        return dialog.Confirmed;
+        return dialog.Confirmed && ExitApprovalIsCurrent(approval, checkPending: false) && CaptureLibrary.PendingCount == pending;
     }
 
     internal async void RequestExit()

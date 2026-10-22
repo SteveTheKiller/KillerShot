@@ -33,16 +33,18 @@ public partial class MainWindow
         // The installed copy replaces this one, so unsaved edits, a recording and captures still
         // waiting for the album go through the same checks as Exit first.
         if (!await App.Instance.CanExitAsync()) return;
+        var approval = App.Instance.CaptureExitApproval();
         PortableBadge.Visibility = Visibility.Collapsed;
         bool desktop = dialog.Check1Checked, allUsers = dialog.Check2Checked;
         // The copy and the wait for the elevated install run off the interface thread, so the
         // window keeps painting; their dialogs and the restart come back to it.
         bool installed;
-        using (new WaitCursorScope()) installed = await Task.Run(() => App.InstallAndRelaunch(wantDesktop: desktop, allUsers: allUsers));
+        bool deferred = false;
+        using (new WaitCursorScope()) installed = await Task.Run(() => App.InstallAndRelaunch(wantDesktop: desktop, allUsers: allUsers, approval: approval, out deferred));
         if (!installed)
         {
             RefreshPortableBadge();
-            StatusText.Text = LocaleManager.Loc("Str_Status_InstallFailed");
+            StatusText.Text = LocaleManager.Loc(deferred ? "Str_Status_RelaunchDeferred" : "Str_Status_InstallFailed");
         }
     }
 }

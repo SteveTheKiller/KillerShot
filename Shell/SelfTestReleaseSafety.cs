@@ -50,6 +50,7 @@ internal static class SelfTestReleaseSafety
             var image = BitmapSource.Create(4, 4, 96, 96, PixelFormats.Bgra32, null,
                 Enumerable.Repeat((byte)255, 64).ToArray(), 16);
             image.Freeze();
+            await ExitRechecksChangesAsync(image, report);
             var original = new EditorDocument(image);
             App.Instance.SetDocument(original);
             App.Instance.ShowEditor();
@@ -233,6 +234,74 @@ internal static class SelfTestReleaseSafety
             CaptureLibrary.Close();
             Application.Current.Shutdown(code);
         }
+    }
+
+    private static async Task ExitRechecksChangesAsync(BitmapSource image, List<string> report)
+    {
+        object writer = typeof(CaptureLibrary).GetField("PendingWriter",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!.GetValue(null)!;
+        foreach (string change in new[] { "edit", "replacement", "text" })
+        {
+            var document = new EditorDocument(image);
+            App.Instance.Document?.MarkSaved();
+            App.Instance.SetDocument(document);
+            App.Instance.ShowEditor();
+            using var release = new ManualResetEventSlim();
+            var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task blocker = Task.Run(() =>
+            {
+                lock (writer)
+                {
+                    entered.SetResult();
+                    if (!release.Wait(TimeSpan.FromSeconds(10))) throw new TimeoutException("Exit test did not release album writer.");
+                }
+            });
+            await entered.Task;
+            Task<bool> exit = App.Instance.CanExitAsync();
+            try
+            {
+                Check(!exit.IsCompleted, "Exit must wait for the held album writer.");
+                if (change == "replacement") App.Instance.SetDocument(new EditorDocument(image));
+                if (change == "text")
+                {
+                    var canvas = (EditorCanvas)App.Instance.EditorWindow!.FindName("Editor");
+                    canvas.SetTool(ToolKind.Text);
+                    Check(canvas.PlaceMark(), "The pending text fixture did not start editing.");
+                    canvas.Children.OfType<TextBox>().Single().Text = "Keep this text";
+                }
+                else App.Instance.Document!.Add(new ShapeAnnotation(ShapeKind.Rectangle,
+                    new Point(0, 0), new Point(2, 2), Colors.Red, 1));
+            }
+            finally { release.Set(); }
+            await blocker;
+            bool permitted = await exit.WaitAsync(TimeSpan.FromSeconds(5));
+            report.Add($"exit after {change}: permitted={permitted}, dirty={App.Instance.Document!.Dirty}");
+            Check(!permitted && App.Instance.Document.Dirty,
+                "Exit discarded changes made while the album writer was draining.");
+        }
+        App.Instance.Document!.MarkSaved();
+        Check(await App.Instance.CanExitAsync(), "An unchanged saved document should still permit exit.");
+        report.Add("exit rechecks document identity and revision after asynchronous work PASS");
+        var approval = App.Instance.CaptureExitApproval();
+        App.Instance.Document.Add(new ShapeAnnotation(ShapeKind.Rectangle,
+            new Point(0, 0), new Point(3, 3), Colors.Blue, 1));
+        bool relaunched = false;
+        bool completed = await Task.Run(() => App.Instance.TryCompleteRelaunch(approval, () => { relaunched = true; return true; }));
+        Check(!completed && !relaunched && App.Instance.Document.Dirty,
+            "An install relaunch used an exit approval from before a later edit.");
+        App.Instance.Document.MarkSaved();
+        approval = App.Instance.CaptureExitApproval();
+        Check(await Task.Run(() => App.Instance.TryCompleteRelaunch(approval, () => true)),
+            "An unchanged document must allow the approved install relaunch.");
+        var pendingText = (EditorCanvas)App.Instance.EditorWindow!.FindName("Editor");
+        pendingText.SetTool(ToolKind.Text);
+        pendingText.PlaceMark();
+        pendingText.Children.OfType<TextBox>().Single().Text = "Keep install-time text";
+        relaunched = false;
+        Check(!await Task.Run(() => App.Instance.TryCompleteRelaunch(approval, () => { relaunched = true; return true; })) && !relaunched
+            && App.Instance.Document.Dirty, "Install relaunch discarded an uncommitted text buffer.");
+        App.Instance.Document.MarkSaved();
+        report.Add("install completion rechecks exit approval before relaunch PASS");
     }
 
     private static bool RespondToConfirmation(bool accept, Action action, bool alternative = false, string? renderPath = null)

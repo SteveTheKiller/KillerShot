@@ -217,7 +217,7 @@
     <sys:String x:Key="Str_Recent_None">Nincsenek legutóbbi rögzítések</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">A könyvtár megjelenítése</sys:String>
     <sys:String x:Key="Str_Status_Copied">{0} x {1} a vágólapra másolva</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Húzással vághat. A Ctrl+Z visszavonja.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Húzással vághat, vagy az Enterrel kijelölést kezdhet. A nyilak mozgatnak; a Ctrl+nyilak méreteznek (Shift: 10 képpont). Enter: alkalmazás; Esc: megszakítás. Ctrl+Z: visszavonás.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">A kép nem nyitható meg: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Ez a kép {0} x {1} képpont, nagyobb a {2} megapixeles korlátnál, amelyet a KillerShot biztonságosan meg tud nyitni.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">A mentés nem sikerült: {0}</sys:String>
@@ -241,7 +241,7 @@
     <sys:String x:Key="Str_Ocr_Title">Szöveg a képen</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Másolás</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Terület olvasása</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Húzza végig az olvasandó szövegen. Az Esc megszakítja.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Húzza végig a szövegen, vagy az Enterrel kezdjen kijelölést. A nyilak mozgatnak; a Ctrl+nyilak méreteznek (Shift: 10 képpont). Enter: olvasás; Esc: megszakítás.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Nyelv</sys:String>
     <sys:String x:Key="Str_Ocr_Default">A Windows nyelve</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Szöveg olvasása…</sys:String>
@@ -263,6 +263,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Egyszínű keret levágása</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Nincs levágható egyszínű keret.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Adjon meg egy méretet, például 1280 x 720, egy szélességet vagy 50%-ot.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">A kép megváltozott, miközben a párbeszédablak nyitva volt. Kezdje újra a szerkesztést.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Kép beillesztése felülre</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Beillesztés új képként</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Kép beszúrása fájlból…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Adjon hozzá egy asztali parancsikont</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Telepítés mindenki számára ezen a számítógépen (rendszergazda szükséges)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">A telepítés nem fejeződött be - a KillerShot továbbra is hordozható.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">A telepítés befejeződött. A KillerShot nyitva maradt, hogy megőrizze a telepítés közben módosított munkát.</sys:String>
 </ResourceDictionary>

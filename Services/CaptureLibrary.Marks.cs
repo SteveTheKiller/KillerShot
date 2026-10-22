@@ -22,6 +22,23 @@ internal static partial class CaptureLibrary
     /// album has given them an id; the editor links its marks to them through this.</summary>
     public static event Action<BitmapSource, long>? CaptureStored;
 
+    private sealed record StoredCapture(long Id, long Session);
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, StoredCapture> StoredCaptures = new();
+
+    internal static bool TryGetStoredCapture(BitmapSource image, long session, out long id)
+    {
+        lock (_gate)
+        {
+            if (_session == session && StoredCaptures.TryGetValue(image, out var stored) && stored.Session == session)
+            {
+                id = stored.Id;
+                return true;
+            }
+            id = 0;
+            return false;
+        }
+    }
+
     private static void RaiseCaptureStored(BitmapSource bmp, long id)
     {
         try { CaptureStored?.Invoke(bmp, id); }
@@ -31,8 +48,9 @@ internal static partial class CaptureLibrary
     /// <summary>Stores the editor's current marks and base picture for a capture, or forgets them
     /// when the picture is back to the plain original, and shows the flattened result as its
     /// thumbnail. The caller renders <paramref name="flattened"/> on the interface thread.</summary>
-    public static void SaveMarks(long id, EditorState state, BitmapSource original, BitmapSource flattened)
+    public static bool SaveMarks(long id, EditorState state, BitmapSource original, BitmapSource flattened, long? expectedSession = null)
     {
+        long session = expectedSession ?? Session;
         bool plain = state.Items.IsEmpty && ReferenceEquals(state.Image, original);
         byte[]? baseImage = ReferenceEquals(state.Image, original) ? null : ImageOutput.EncodePng(state.Image);
         string marks = MarksFormat.Write(state.Items);
@@ -40,7 +58,7 @@ internal static partial class CaptureLibrary
         byte[]? output = plain ? null : ImageOutput.EncodePng(flattened);
         lock (_gate)
         {
-            if (_db == null) return;
+            if (_db == null || _session != session) return false;
             using var transaction = _db.BeginTransaction();
             using (var cmd = _db.CreateCommand())
             {
@@ -75,7 +93,7 @@ internal static partial class CaptureLibrary
                     """;
                 cmd.Parameters.AddWithValue("$thumb", thumb);
                 cmd.Parameters.AddWithValue("$id", id);
-                if (cmd.ExecuteNonQuery() == 0) return;   // deleted meanwhile; roll back
+                if (cmd.ExecuteNonQuery() == 0) return false;   // deleted meanwhile; roll back
             }
             IndexText(id, transaction);
             transaction.Commit();
@@ -89,6 +107,7 @@ internal static partial class CaptureLibrary
             StartOcr();
             StartQrReading();
         }
+        return true;
     }
 
     /// <summary>Bumped under the gate whenever a capture's marks change, so a background reader that

@@ -6,9 +6,12 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Data protection and recovery
 
+- Redactions keep hidden pixels covered when resizing inserted pictures, including transparent and fractional layers.
 - Albums recover after interrupted password changes or removal, preserving captures and recovery copies when cleanup fails. Failed setup keeps the album closed until the problem is corrected. (#1) (#4)
 - Captures waiting in memory remain visible after a failed album write, save on retry and warn before exit. (#2) Waiting captures are capped at 1 GiB; past that, new captures still copy and save but skip the album with a warning, and nothing already waiting is lost.
-- Unsaved edits require confirmation before another image opens or the app exits, with Save, Discard and Cancel choices. Save As cancels if its image changes while the dialog is open. Retention changes apply only after Save.
+- Failed album edits stay open for retry or recovery through Save As, and delayed edits cannot cross into another album. Exit and installation restart recheck work changed while saving, including text still being typed.
+- Installation and removal serialize changes, preserve newer installations, and restore the previous image, shortcuts and registration when setup fails.
+- Unsaved edits require confirmation before another image opens or the app exits, with Save, Discard and Cancel choices. Save As and image-edit dialogs reject a replaced image, and editor output controls are disabled while the album is visible. Retention changes apply only after Save.
 - Saving animated PNG, GIF, TIFF, BMP or mismatched image files offers a separate static PNG or JPEG export to preserve the original. Image edits retain transparency, and reopened files show their latest contents.
 - Fixed concurrent album edits, search recovery, settings writes and output-file collisions. Failed retention preserves search results, missing search entries repair on reopen, and capture IDs remain unique after deletion.
 - QR and image-text links are checked locally for hidden destinations, disguised downloads and invisible address characters. Checks do not visit destinations or submit links to a third party. Links never open automatically, and warnings explain each finding.
@@ -19,17 +22,17 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Print Screen captures a region, Alt+Print Screen the active window, Ctrl+Print Screen the monitor under the pointer, and Shift+Print Screen every monitor. These global shortcuts are configurable, and capture preserves open menus.
 - Window capture includes covered areas through Windows Graphics Capture and warns when only visible desktop pixels are available. (#5)
 - A movable capture bar selects Photo or Video, capture mode and output folder. Regions capture on release; Escape or right-click cancels without output. Options include capture delay, mouse pointer and camera sound.
-- Scrolling capture stitches a long page or a wide one while you scroll it yourself: pick the region, scroll with the wheel, bar or keys, and press Enter. Sticky headers and footers are kept once, nothing is sent to the scrolled program, and a jump too far to follow keeps what matched.
+- Scrolling capture stitches a long page or a wide one while you scroll it yourself: pick the region, scroll with the wheel, bar or keys, and press Enter. Sticky headers and footers are kept once, nothing is sent to the scrolled program, and a jump too far to follow keeps what matched. Failed captures release their windows, shortcuts and capture resources.
 - Repeat last region (Ctrl+Alt+Print Screen) captures the same area again without selecting, and asks for a new selection when the monitors changed. Saved regions keep a named place or a fixed size around the pointer, and interval capture takes the last region every few seconds to the album and folder until stopped. The command line adds --repeat, --preset and --interval with --count.
 - After-capture choices include copying to the clipboard, saving to a folder, asking where to save and opening the editor, plus copying the saved file's path, opening the capture in up to three chosen programs and starting an email with it attached. Review before copying or saving (off by default) holds each capture in the editor until Copy and save (Ctrl+Enter), so redactions are in place before anything leaves KillerShot. Set a filename pattern, PNG or JPEG format, JPEG quality and notifications. Clipboard captures include both PNG and a standard bitmap.
 - Record a region, window or monitor to MP4 with system sound, microphone or both, or to animated GIF. Frame rate and quality are configurable; multichannel audio keeps center and surround content in stereo.
-- Start recording with Ctrl+R or the global Ctrl+Shift+Print Screen shortcut. A countdown, capture frame and Pause, Resume, Stop and Discard controls stay out of the recording, with keyboard and tray access while the editor stays hidden.
+- Start recording with Ctrl+R or the global Ctrl+Shift+Print Screen shortcut. A countdown, capture frame and Pause, Resume, Stop and Discard controls stay out of the recording, with keyboard and tray access while the editor stays hidden. Stop during countdown cancels startup.
 - Stop and app exit wait for the recording to finish saving. Capture, encoder or audio device errors stop the recording right away and retain recoverable video; GIFs preserve long static intervals and play at their recorded speed at every frame rate.
 
 ### Albums and collections
 
 - Captures are stored in an encrypted SQLCipher album with AES-256 encryption, opened through the Windows account or an optional password. Create, open, rename and switch albums from the title bar; each keeps its own retention and QR settings. External albums open as managed copies.
-- Copy text (Ctrl+Shift+C) reads the text in a picture on this computer, copies it with its line breaks and shows it in a card to select from; Read a region reads just a dragged area. Choose the recognition language there, and read the album's text again from album settings after adding a language.
+- Copy text (Ctrl+Shift+C) reads the text in a picture on this computer, copies it with its line breaks and shows it in a card to select from; Read a region reads a selected area. Crop and text regions support Enter to start or apply, arrows to move, Ctrl+arrows to resize, Shift for larger steps and Escape to cancel, with spoken selection details. Choose the recognition language there, and read the album's text again from album settings after adding a language.
 - Search window titles, program names, notes and recognized image text. Organize captures into collections, add notes and limit history by count or age. Existing Recent captures import on first start.
 - Browse albums as shelves of carousels, one large carousel, a grid or a timeline, grouped by date or collection. Ctrl+L shows the album over an open image.
 - Add local or network folders as saved collections, including subfolders, while keeping images in their original locations. Background scans refresh changed images, retry unavailable folders and locked files, and retain accessible images with an availability warning.
@@ -53,6 +56,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 ### Command line and integration
 
 - The `killershot` command captures regions, rectangles, windows or monitors; records timed MP4 or GIF video; lists, searches, copies, exports and opens album captures; and reports monitors, windows and settings. JSON output and exit codes support scripts and KillerMCP.
+- Repeated command-line captures accept spaced, inline and mixed-case interval options without recursive crashes.
 - `killershot qr` reads QR codes with JSON output and link warnings. `killershot --help` lists commands; `--cli` and `KillerShot.Cli.exe` remain supported, and portable copies run from their folder or full path.
 - `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
 

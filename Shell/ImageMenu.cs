@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using KillerShot.Controls;
+using KillerShot.Editor;
 using KillerShot.Services;
 
 namespace KillerShot.Shell;
@@ -94,9 +95,12 @@ public partial class MainWindow
 
     private void InsertImageFile()
     {
-        if (_doc == null) return;
+        if (!EditorWorkspaceActive) return;
+        var document = _doc;
+        var state = document.State;
         var dialog = new FileDialog(FileDialogMode.Open) { Title = Loc("Str_Img_InsertFile"), Filter = Loc("Str_Dlg_OpenFilter") };
         if (dialog.ShowDialog(this) != true) return;
+        if (!ImageEditIsCurrent(document, state)) return;
         try { Editor.InsertImage(ImageOutput.Load(dialog.FileName)); }
         catch (Exception error) { StatusText.Text = string.Format(Loc("Str_Status_OpenFailed"), error.Message); }
     }
@@ -110,11 +114,15 @@ public partial class MainWindow
 
     private void PromptResize()
     {
-        if (_doc == null) return;
-        string current = $"{_doc.PixelWidth} x {_doc.PixelHeight}";
+        if (!EditorWorkspaceActive) return;
+        Editor.CommitText();
+        var document = _doc;
+        var state = document.State;
+        string current = $"{document.PixelWidth} x {document.PixelHeight}";
         var dialog = new PromptDialog(Loc("Str_Img_ResizeCustom"), Loc("Str_Img_ResizeDetail"), Loc("Str_Img_Resize"), current) { Owner = this };
         if (dialog.ShowDialog() != true) return;
-        if (ParseResize(dialog.Text, _doc.PixelWidth, _doc.PixelHeight) is { } size) ResizeTo(size.Width, size.Height);
+        if (!ImageEditIsCurrent(document, state)) return;
+        if (ParseResize(dialog.Text, state.Image.PixelWidth, state.Image.PixelHeight) is { } size) ResizeTo(size.Width, size.Height);
         else StatusText.Text = Loc("Str_Img_Invalid");
     }
 
@@ -137,15 +145,27 @@ public partial class MainWindow
 
     private void PromptMargin()
     {
-        if (_doc == null) return;
+        if (!EditorWorkspaceActive) return;
+        var document = _doc;
+        var state = document.State;
+        var color = Editor.Color;
         var dialog = new PromptDialog(Loc("Str_Img_Margin"), Loc("Str_Img_MarginDetail"), Loc("Str_Img_MarginOk"), "20") { Owner = this };
         if (dialog.ShowDialog() != true) return;
+        if (!ImageEditIsCurrent(document, state)) return;
         if (!int.TryParse(dialog.Text.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int size) || size < 1 || size > 2000)
         {
             StatusText.Text = Loc("Str_Img_Invalid");
             return;
         }
-        try { _doc.AddMargin(size, Editor.Color); }
+        try { document.AddMargin(size, color); }
         catch (ImageTooLargeException error) { StatusText.Text = error.Message; }
+    }
+
+    private bool ImageEditIsCurrent(EditorDocument document, EditorState state)
+    {
+        if (EditorWorkspaceActive && ReferenceEquals(_doc, document) && ReferenceEquals(Editor.Document, document)
+            && ReferenceEquals(document.State, state)) return true;
+        StatusText.Text = Loc("Str_Img_DocumentChanged");
+        return false;
     }
 }

@@ -13,6 +13,7 @@ internal sealed partial class CaptureController
     private readonly TrayHost _tray;
     private readonly VideoController? _video;
     private bool _busy;
+    internal bool IsBusy => _busy;
 
     public BitmapSource? Last { get; private set; }
 

@@ -32,7 +32,7 @@ namespace KillerShot.Shell
             if (!AnyOverlayOpen && (dockKey is Key.Left or Key.Right ? NavigationDock.HandleKey(e)
                 : StripDock.HandleKey(e))) return;
 
-            var mods = Keyboard.Modifiers;
+            var mods = e.KeyboardDevice.Modifiers;
             bool ctrl = (mods & ModifierKeys.Control) != 0;
             bool alt = (mods & ModifierKeys.Alt) != 0;
             bool shift = (mods & ModifierKeys.Shift) != 0;
@@ -52,6 +52,19 @@ namespace KillerShot.Shell
             if (e.Key == Key.F1) { ToggleShortcutsOverlay(); e.Handled = true; return; }
             if (e.Key == Key.F12) { ShowAboutOverlay(); e.Handled = true; return; }
             if (AnyOverlayOpen) return;
+
+            if (ctrl && !alt && e.Key == Key.Enter && InReview && !TypingInField())
+            {
+                AcceptReview();
+                e.Handled = true;
+                return;
+            }
+
+            if (!Library.IsVisible && Editor.IsKeyboardFocused && Editor.HandleRegionKey(e.Key, mods))
+            {
+                e.Handled = true;
+                return;
+            }
 
             // F5 to F8 pick the library's view, as they pick KillerPDF's view mode, and bring the
             // library up over an open picture.
@@ -94,7 +107,6 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
-                    case Key.Enter when InReview && !TypingInField(): AcceptReview(); break;
                     case Key.L: ToggleLibrary(); break;
                     case Key.F when Library.IsVisible: Library.FocusSearch(); break;
                     case Key.R when shift: if (!e.IsRepeat) App.Instance.Video?.TogglePause(); break;

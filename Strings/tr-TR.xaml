@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">Son yakalama yok</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Kitaplığı göster</sys:String>
     <sys:String x:Key="Str_Status_Copied">{0} x {1} panoya kopyalandı</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Kırpmak için sürükleyin. Ctrl+Z geri alır.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Kırpmak için sürükleyin veya seçime başlamak için Enter'a basın. Oklar taşır; Ctrl+oklar boyutlandırır (10 piksel için Shift). Enter uygular; Esc iptal eder. Ctrl+Z geri alır.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Görüntü açılamadı: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Bu görüntü {0} x {1} piksel; KillerShot'un güvenle açabildiği {2} megapiksel sınırından büyük.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Kaydedilemedi: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">Resimdeki metin</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Kopyala</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Bir bölgeyi oku</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Okunacak metnin üzerinde sürükleyin. Esc iptal eder.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Metnin üzerinde sürükleyin veya seçime başlamak için Enter'a basın. Oklar taşır; Ctrl+oklar boyutlandırır (10 piksel için Shift). Enter okur; Esc iptal eder.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Dil</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Windows dili</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Metin okunuyor…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Düz kenarı kırp</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Kırpılacak düz kenar yok.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">1280 x 720 gibi bir boyut, bir genişlik veya %50 girin.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">İletişim kutusu açıkken görüntü değişti. Düzenlemeyi yeniden başlatın.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Resmi üste yapıştır</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Yeni resim olarak yapıştır</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Dosyadan resim ekle…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Masaüstü kısayolu ekle</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Bu bilgisayardaki herkes için yükle (yönetici gerekir)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Yükleme tamamlanmadı - KillerShot taşınabilir olarak çalışmaya devam ediyor.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Kurulum tamamlandı. Kurulum sırasında değiştirilen çalışmayı korumak için KillerShot açık kaldı.</sys:String>
 </ResourceDictionary>

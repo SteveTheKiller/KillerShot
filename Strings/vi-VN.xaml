@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">Không có ảnh chụp gần đây</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Hiện thư viện</sys:String>
     <sys:String x:Key="Str_Status_Copied">Đã sao chép {0} x {1} vào bảng nhớ tạm</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Kéo để cắt. Ctrl+Z để hoàn tác.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Kéo để cắt hoặc nhấn Enter để bắt đầu chọn. Phím mũi tên di chuyển; Ctrl+mũi tên đổi kích thước (Shift để đổi 10 pixel). Enter áp dụng; Esc hủy. Ctrl+Z hoàn tác.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Không mở được ảnh: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Ảnh này có kích thước {0} x {1} điểm ảnh, lớn hơn giới hạn {2} megapixel mà KillerShot có thể mở an toàn.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Không lưu được: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">Chữ trong ảnh</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Sao chép</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Đọc một vùng</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Kéo qua phần chữ cần đọc. Esc để hủy.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Kéo qua văn bản hoặc nhấn Enter để bắt đầu chọn. Phím mũi tên di chuyển; Ctrl+mũi tên đổi kích thước (Shift để đổi 10 pixel). Enter đọc; Esc hủy.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Ngôn ngữ</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Ngôn ngữ của Windows</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Đang đọc chữ…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Cắt viền một màu</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Không có viền một màu để cắt.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Nhập kích thước như 1280 x 720, một chiều rộng, hoặc 50%.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">Ảnh đã thay đổi khi hộp thoại đang mở. Hãy bắt đầu chỉnh sửa lại.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Dán ảnh lên trên</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Dán thành ảnh mới</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Chèn ảnh từ tệp…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Thêm lối tắt trên màn hình nền</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Cài đặt cho mọi người dùng trên máy tính này (cần quyền quản trị viên)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Cài đặt chưa hoàn tất. KillerShot vẫn đang chạy ở chế độ di động.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Đã cài đặt xong. KillerShot vẫn mở để bảo vệ phần công việc đã thay đổi trong lúc cài đặt.</sys:String>
 </ResourceDictionary>

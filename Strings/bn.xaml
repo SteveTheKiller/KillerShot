@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">সাম্প্রতিক কোনো ক্যাপচার নেই</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">লাইব্রেরি দেখান</sys:String>
     <sys:String x:Key="Str_Status_Copied">{0} x {1} ক্লিপবোর্ডে কপি হয়েছে</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">ক্রপ করতে টানুন। Ctrl+Z পূর্বাবস্থায় ফেরায়।</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">ক্রপ করতে টানুন, অথবা নির্বাচন শুরু করতে Enter চাপুন। তীরচিহ্নের কী দিয়ে সরান; Ctrl+তীরচিহ্ন দিয়ে আকার বদলান (Shift চাপলে ১০ পিক্সেল)। Enter প্রয়োগ করে; Esc বাতিল করে। Ctrl+Z পূর্বাবস্থায় ফেরায়।</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">ছবি খোলা যায়নি: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">এই ছবিটি {0} x {1} পিক্সেল, যা KillerShot নিরাপদে খুলতে পারে এমন {2} মেগাপিক্সেল সীমার চেয়ে বড়।</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">সংরক্ষণ করা যায়নি: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">ছবির লেখা</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">কপি করুন</sys:String>
     <sys:String x:Key="Str_Ocr_Region">একটি অঞ্চল পড়ুন</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">যে লেখা পড়তে চান তার ওপর টানুন। Esc বাতিল করে।</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">লেখার ওপর টানুন, অথবা নির্বাচন শুরু করতে Enter চাপুন। তীরচিহ্নের কী দিয়ে সরান; Ctrl+তীরচিহ্ন দিয়ে আকার বদলান (Shift চাপলে ১০ পিক্সেল)। Enter পড়ে; Esc বাতিল করে।</sys:String>
     <sys:String x:Key="Str_Ocr_Language">ভাষা</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Windows ভাষা</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">লেখা পড়া হচ্ছে…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">সাধারণ সীমানা ছাঁটুন</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">ছাঁটার মতো সাধারণ সীমানা নেই।</sys:String>
     <sys:String x:Key="Str_Img_Invalid">1280 x 720, একটি প্রস্থ, অথবা 50% এর মতো আকার লিখুন।</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">ডায়ালগ খোলা থাকাকালীন ছবিটি বদলে গেছে। সম্পাদনা আবার শুরু করুন।</sys:String>
     <sys:String x:Key="Str_Img_Paste">উপরে ছবি পেস্ট করুন</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">নতুন ছবি হিসেবে পেস্ট করুন</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">ফাইল থেকে ছবি যোগ করুন…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">ডেস্কটপ শর্টকাট যোগ করুন</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">এই কম্পিউটারের সব ব্যবহারকারীর জন্য ইনস্টল করুন (অ্যাডমিন লাগবে)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">ইনস্টল সম্পূর্ণ হয়নি - KillerShot এখনও পোর্টেবল হিসেবে চলছে।</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">ইনস্টলেশন শেষ হয়েছে। ইনস্টলেশনের সময় করা কাজের পরিবর্তন সুরক্ষিত রাখতে KillerShot খোলা রয়েছে।</sys:String>
 </ResourceDictionary>

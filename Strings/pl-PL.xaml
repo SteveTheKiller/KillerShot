@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">Brak ostatnich zrzutów</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Pokaż bibliotekę</sys:String>
     <sys:String x:Key="Str_Status_Copied">Skopiowano {0} x {1} do schowka</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Przeciągnij, aby przyciąć. Ctrl+Z cofa.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Przeciągnij, aby przyciąć, lub naciśnij Enter, aby rozpocząć zaznaczanie. Strzałki przesuwają; Ctrl+strzałki zmieniają rozmiar (Shift: 10 pikseli). Enter zatwierdza; Esc anuluje. Ctrl+Z cofa.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Nie można otworzyć obrazu: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Ten obraz ma {0} x {1} pikseli, więcej niż limit {2} megapikseli, który KillerShot może bezpiecznie otworzyć.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Nie można zapisać: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">Tekst na obrazie</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Kopiuj</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Odczytaj obszar</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Przeciągnij nad tekstem do odczytania. Esc anuluje.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Przeciągnij nad tekstem lub naciśnij Enter, aby rozpocząć zaznaczanie. Strzałki przesuwają; Ctrl+strzałki zmieniają rozmiar (Shift: 10 pikseli). Enter odczytuje; Esc anuluje.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Język</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Język systemu Windows</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Odczytywanie tekstu…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Przytnij jednolitą ramkę</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Brak jednolitej ramki do przycięcia.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Wpisz rozmiar, np. 1280 x 720, szerokość lub 50%.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">Obraz zmienił się, gdy okno dialogowe było otwarte. Rozpocznij edycję ponownie.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Wklej obraz na wierzch</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Wklej jako nowy obraz</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Wstaw obraz z pliku…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Dodaj skrót na pulpicie</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Zainstaluj dla wszystkich użytkowników tego komputera (wymaga administratora)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Instalacja nie została zakończona - KillerShot nadal działa w trybie przenośnym.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Instalacja została zakończona. KillerShot pozostał otwarty, aby chronić pracę zmienioną podczas instalacji.</sys:String>
 </ResourceDictionary>

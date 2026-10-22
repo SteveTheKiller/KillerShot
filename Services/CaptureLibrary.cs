@@ -139,7 +139,7 @@ internal static partial class CaptureLibrary
             catch (Exception error) { System.Diagnostics.Trace.TraceWarning("Album notification failed: {0}", error.Message); }
     }
 
-    private static void ReportWriteFailure(Exception error)
+    internal static void ReportWriteFailure(Exception error)
     {
         var listeners = WriteFailed;
         if (listeners == null) return;
@@ -564,6 +564,11 @@ internal static partial class CaptureLibrary
     /// <summary>Pixel memory held by captures waiting for the album.</summary>
     public static long PendingBytes { get { lock (_pending) return _pendingBytes; } }
 
+    internal static bool HasPending(BitmapSource image)
+    {
+        lock (_pending) return _pending.Any(item => ReferenceEquals(item.Bmp, image));
+    }
+
     private static long SizeOf(BitmapSource bmp) => (long)bmp.PixelWidth * bmp.PixelHeight * 4;
 
     /// <summary>Queues a capture immediately, then stores it in the background. A locked album
@@ -646,6 +651,9 @@ internal static partial class CaptureLibrary
                 mark.ExecuteNonQuery();
             }
             transaction.Commit();
+            // Keep the committed identity available even before the editor subscribes, or while
+            // its notification is queued. Weak keys do not retain old capture bitmaps.
+            StoredCaptures.AddOrUpdate(bmp, new StoredCapture(id, _session));
         }
         // The capture is committed. Later indexing, pruning or listeners cannot turn it back
         // into a pending capture and create a duplicate on retry.

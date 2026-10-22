@@ -221,7 +221,7 @@
     <sys:String x:Key="Str_Recent_None">No recent captures</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Show the library</sys:String>
     <sys:String x:Key="Str_Status_Copied">Copied {0} x {1} to the clipboard</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Drag to crop. Ctrl+Z undoes it.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Drag to crop, or press Enter to start a selection. Arrows move it; Ctrl+arrows resize (Shift for 10 pixels). Enter applies; Esc cancels. Ctrl+Z undoes.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Could not open the image: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">This image is {0} x {1} pixels, larger than the {2} megapixel limit KillerShot can open safely.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Could not save: {0}</sys:String>
@@ -245,7 +245,7 @@
     <sys:String x:Key="Str_Ocr_Title">Text in the picture</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Copy</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Read a region</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Drag over the text to read. Esc cancels.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Drag over text, or press Enter to start a selection. Arrows move it; Ctrl+arrows resize (Shift for 10 pixels). Enter reads; Esc cancels.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Language</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Windows language</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Reading text…</sys:String>
@@ -267,6 +267,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Trim plain border</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">No plain border to trim.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Enter a size such as 1280 x 720, a width, or 50%.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">The image changed while the dialog was open. Start the edit again.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Paste picture on top</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Paste as new picture</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Insert picture from file…</sys:String>
@@ -587,4 +588,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Add a desktop shortcut</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Install for everyone on this computer (needs admin)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Install did not complete - KillerShot is still running portable.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Installation finished. KillerShot stayed open to protect work changed during installation.</sys:String>
 </ResourceDictionary>

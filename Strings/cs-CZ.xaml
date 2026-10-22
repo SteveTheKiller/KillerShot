@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">Žádné nedávné snímky</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Zobrazit knihovnu</sys:String>
     <sys:String x:Key="Str_Status_Copied">Zkopírováno {0} x {1} do schránky</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Tažením oříznete. Ctrl+Z to vrátí.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Táhněte pro oříznutí, nebo začněte výběr klávesou Enter. Šipky přesouvají; Ctrl+šipky mění velikost (Shift po 10 pixelech). Enter použije výběr; Esc zruší. Ctrl+Z vrátí změnu.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Obrázek nelze otevřít: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Tento obrázek má {0} x {1} pixelů, což je víc než limit {2} megapixelů, který KillerShot bezpečně otevře.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Nelze uložit: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">Text v obrázku</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Kopírovat</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Přečíst oblast</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Táhněte přes text, který chcete přečíst. Esc zruší.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Táhněte přes text, nebo začněte výběr klávesou Enter. Šipky přesouvají; Ctrl+šipky mění velikost (Shift po 10 pixelech). Enter přečte text; Esc zruší.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Jazyk</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Jazyk Windows</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Čtení textu…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Oříznout jednobarevný okraj</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Žádný jednobarevný okraj k oříznutí.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Zadejte velikost jako 1280 x 720, šířku nebo 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">Obrázek se změnil, zatímco bylo dialogové okno otevřené. Spusťte úpravu znovu.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Vložit obrázek navrch</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Vložit jako nový obrázek</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Vložit obrázek ze souboru…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Přidat zástupce na plochu</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Nainstalovat pro všechny uživatele tohoto počítače (vyžaduje správce)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Instalace nebyla dokončena - KillerShot běží dál přenosně.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Instalace byla dokončena. KillerShot zůstal otevřený, aby ochránil práci změněnou během instalace.</sys:String>
 </ResourceDictionary>

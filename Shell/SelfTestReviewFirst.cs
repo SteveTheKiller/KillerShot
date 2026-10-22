@@ -75,6 +75,7 @@ internal static class SelfTestReviewFirst
 
             // Accept: the edited (redacted) picture is what gets saved.
             var doc = App.Instance.Document!;
+            long reviewedId = CaptureLibrary.Items().Single().Id;
             doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(0, 0), new Point(1, 1), Colors.Black, 1));
             Expect(editor.AcceptReview() && !editor.InReview, "Copy and save did not accept the review.");
             Expect(Files() == 1, "Accepting did not save exactly one file.");
@@ -87,6 +88,10 @@ internal static class SelfTestReviewFirst
                 .CopyPixels(new Int32Rect(0, 0, 1, 1), last, 4, 0);
             Expect(last[0] == 0 && last[1] == 0 && last[2] == 0, "The tray's last capture is not the accepted, redacted picture.");
             report.Add("accept saves the edited picture PASS");
+            Expect(await App.Instance.CanExitAsync(), "A successfully accepted review should permit exit.");
+            Expect(CaptureLibrary.LoadMarks(reviewedId)?.Items.Count == 1,
+                "Exit immediately after review acceptance lost its editable album redaction.");
+            report.Add("exit immediately after acceptance keeps editable album redaction PASS");
 
             // Discard, and replacing the picture, send nothing.
             await capture.RepeatRegion();

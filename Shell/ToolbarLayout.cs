@@ -305,7 +305,10 @@ namespace KillerShot.Shell
                 Button target = unit.Main;
                 // After the menu closes, so a button that opens its own flyout opens it cleanly.
                 item.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input,
-                    new Action(() => target.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, target))));
+                    new Action(() =>
+                    {
+                        if (target.IsEnabled) target.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, target));
+                    }));
                 MoreMenu.Items.Add(item);
             }
             if (_toolbarHidden)

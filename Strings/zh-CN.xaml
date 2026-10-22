@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">没有最近的截图</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">显示截图库</sys:String>
     <sys:String x:Key="Str_Status_Copied">已将 {0} x {1} 复制到剪贴板</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">拖动以裁剪。Ctrl+Z 可撤销。</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">拖动以裁剪，或按 Enter 开始选择。方向键移动选区；Ctrl+方向键调整大小（按住 Shift 以10像素为单位）。Enter 应用；Esc 取消。Ctrl+Z 撤销。</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">无法打开图像：{0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">此图像为 {0} x {1} 像素，超过 KillerShot 可安全打开的 {2} 百万像素上限。</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">无法保存：{0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">图片中的文字</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">复制</sys:String>
     <sys:String x:Key="Str_Ocr_Region">读取区域</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">在要读取的文字上拖动。按 Esc 取消。</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">在文字上拖动，或按 Enter 开始选择。方向键移动选区；Ctrl+方向键调整大小（按住 Shift 以10像素为单位）。Enter 读取；Esc 取消。</sys:String>
     <sys:String x:Key="Str_Ocr_Language">语言</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Windows 语言</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">正在读取文字…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">裁去纯色边框</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">没有可裁去的纯色边框。</sys:String>
     <sys:String x:Key="Str_Img_Invalid">请输入如 1280 x 720 的尺寸、宽度或 50%。</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">对话框打开期间，图像已更改。请重新开始编辑。</sys:String>
     <sys:String x:Key="Str_Img_Paste">将图片粘贴在上方</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">粘贴为新图片</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">从文件插入图片…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">添加桌面快捷方式</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">为这台电脑上的所有用户安装（需要管理员）</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">安装未完成 - KillerShot 仍以便携版运行。</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">安装已完成。为保护安装期间更改的工作，KillerShot 保持打开。</sys:String>
 </ResourceDictionary>

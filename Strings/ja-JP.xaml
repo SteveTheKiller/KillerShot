@@ -218,7 +218,7 @@
     <sys:String x:Key="Str_Recent_None">最近のキャプチャはありません</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">ライブラリを表示</sys:String>
     <sys:String x:Key="Str_Status_Copied">{0} x {1} をクリップボードにコピーしました</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">ドラッグして切り抜きます。Ctrl+Z で元に戻せます。</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">ドラッグして切り抜くか、Enter で選択を開始します。矢印キーで移動し、Ctrl+矢印キーでサイズを変更します（Shift で10ピクセル単位）。Enter で適用、Esc でキャンセル、Ctrl+Z で元に戻します。</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">画像を開けませんでした: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">この画像は {0} x {1} ピクセルで、KillerShot が安全に開ける {2} メガピクセルの上限を超えています。</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">保存できませんでした: {0}</sys:String>
@@ -242,7 +242,7 @@
     <sys:String x:Key="Str_Ocr_Title">画像内のテキスト</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">コピー</sys:String>
     <sys:String x:Key="Str_Ocr_Region">範囲を読み取る</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">読み取るテキストの上をドラッグします。Esc で取り消します。</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">テキスト上をドラッグするか、Enter で選択を開始します。矢印キーで移動し、Ctrl+矢印キーでサイズを変更します（Shift で10ピクセル単位）。Enter で読み取り、Esc でキャンセルします。</sys:String>
     <sys:String x:Key="Str_Ocr_Language">言語</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Windows の言語</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">テキストを読み取っています…</sys:String>
@@ -264,6 +264,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">単色の余白を切り取る</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">切り取る単色の余白はありません。</sys:String>
     <sys:String x:Key="Str_Img_Invalid">1280 x 720、幅、または 50% のようにサイズを入力してください。</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">ダイアログが開いている間に画像が変更されました。編集をやり直してください。</sys:String>
     <sys:String x:Key="Str_Img_Paste">画像を上に貼り付け</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">新しい画像として貼り付け</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">ファイルから画像を挿入…</sys:String>
@@ -584,4 +585,5 @@
     <sys:String x:Key="Str_Chk_Desktop">デスクトップショートカットを追加</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">このコンピューターのすべてのユーザーにインストール（管理者権限が必要）</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">インストールは完了しませんでした。KillerShot はポータブルのまま動作しています。</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">インストールが完了しました。インストール中に変更された作業を保護するため、KillerShot は開いたままになっています。</sys:String>
 </ResourceDictionary>

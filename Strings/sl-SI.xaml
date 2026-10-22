@@ -214,7 +214,7 @@
     <sys:String x:Key="Str_Recent_None">Ni nedavnih posnetkov</sys:String>
     <sys:String x:Key="Str_Recent_ShowLibrary">Prikaži knjižnico</sys:String>
     <sys:String x:Key="Str_Status_Copied">Slika {0} x {1} je kopirana v odložišče</sys:String>
-    <sys:String x:Key="Str_Status_CropHint">Povleci za obrezovanje. Ctrl+Z ga razveljavi.</sys:String>
+    <sys:String x:Key="Str_Status_CropHint">Povlecite za obrezovanje ali pritisnite Enter za začetek izbire. Puščice premikajo; Ctrl+puščice spreminja velikost (Shift za 10 pik). Enter uveljavi; Esc prekliče. Ctrl+Z razveljavi.</sys:String>
     <sys:String x:Key="Str_Status_OpenFailed">Slike ni bilo mogoče odpreti: {0}</sys:String>
     <sys:String x:Key="Str_Err_ImageTooLarge">Ta slika ima {0} x {1} slikovnih pik, kar presega omejitev {2} milijonov slikovnih pik, ki jo KillerShot varno odpre.</sys:String>
     <sys:String x:Key="Str_Status_SaveFailed">Shranjevanje ni uspelo: {0}</sys:String>
@@ -238,7 +238,7 @@
     <sys:String x:Key="Str_Ocr_Title">Besedilo na sliki</sys:String>
     <sys:String x:Key="Str_Ocr_CopyAll">Kopiraj</sys:String>
     <sys:String x:Key="Str_Ocr_Region">Preberi območje</sys:String>
-    <sys:String x:Key="Str_Ocr_RegionHint">Povlecite čez besedilo, ki ga želite prebrati. Esc prekliče.</sys:String>
+    <sys:String x:Key="Str_Ocr_RegionHint">Povlecite čez besedilo ali pritisnite Enter za začetek izbire. Puščice premikajo; Ctrl+puščice spreminja velikost (Shift za 10 pik). Enter prebere; Esc prekliče.</sys:String>
     <sys:String x:Key="Str_Ocr_Language">Jezik</sys:String>
     <sys:String x:Key="Str_Ocr_Default">Jezik sistema Windows</sys:String>
     <sys:String x:Key="Str_Ocr_Reading">Branje besedila…</sys:String>
@@ -260,6 +260,7 @@
     <sys:String x:Key="Str_Img_AutoCrop">Obreži enobarvni rob</sys:String>
     <sys:String x:Key="Str_Status_NoBorder">Ni enobarvnega roba za obrezovanje.</sys:String>
     <sys:String x:Key="Str_Img_Invalid">Vnesite velikost, npr. 1280 x 720, širino ali 50 %.</sys:String>
+    <sys:String x:Key="Str_Img_DocumentChanged">Slika se je spremenila, ko je bilo pogovorno okno odprto. Znova začnite urejanje.</sys:String>
     <sys:String x:Key="Str_Img_Paste">Prilepi sliko na vrh</sys:String>
     <sys:String x:Key="Str_Img_PasteNew">Prilepi kot novo sliko</sys:String>
     <sys:String x:Key="Str_Img_InsertFile">Vstavi sliko iz datoteke…</sys:String>
@@ -577,4 +578,5 @@
     <sys:String x:Key="Str_Chk_Desktop">Dodaj bližnjico na namizje</sys:String>
     <sys:String x:Key="Str_Chk_AllUsers">Namesti za vse uporabnike tega računalnika (zahteva skrbniške pravice)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Namestitev ni bila dokončana. KillerShot še vedno deluje v prenosnem načinu.</sys:String>
+    <sys:String x:Key="Str_Status_RelaunchDeferred">Namestitev je končana. KillerShot je ostal odprt, da zaščiti delo, spremenjeno med namestitvijo.</sys:String>
 </ResourceDictionary>
