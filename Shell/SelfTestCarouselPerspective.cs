@@ -106,12 +106,18 @@ internal static class SelfTestCarouselPerspective
         flow.UpdateLayout();
         string path = Path.Combine(folder, $"strip-tops-{(cards ? "cards" : "photos")}-{selected}.png");
         Render(flow, path);
-        var shot = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        // Inspect the photo layer alone; the decorative backing may reach the control edge.
+        var shot = new RenderTargetBitmap(1000, 150, 96, 96, PixelFormats.Pbgra32);
+        shot.Render((Viewport3D)VisualTreeHelper.GetChild(flow, 0));
+        var pixels = new byte[1000 * 150 * 4];
+        shot.CopyPixels(pixels, 1000 * 4, 0);
+        Check(Enumerable.Range(0, 1000 * 150).Count(i => pixels[i * 4 + 3] > 6) > 1000,
+            "The clipping fixture did not render its photo layer.");
         var row = new byte[1000 * 4];
         new FormatConvertedBitmap(shot, PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(0, 0, 1000, 1), row, 1000 * 4, 0);
         int touched = 0;
         for (int x = 0; x < 1000; x++)
-            if (Math.Abs(row[x * 4] - 30) > 6 || Math.Abs(row[x * 4 + 1] - 30) > 6 || Math.Abs(row[x * 4 + 2] - 30) > 6) touched++;
+            if (row[x * 4 + 3] > 6 && Math.Max(row[x * 4], Math.Max(row[x * 4 + 1], row[x * 4 + 2])) > 40) touched++;
         report.Add($"strip top row pixels covered ({(cards ? "cards" : "photos")}, front {selected}): {touched}");
         Check(touched == 0, "A taller picture in the editor's strip is cut off at the top.");
         report.Add("Strip pictures of mixed shapes all show their top edge PASS");
@@ -126,13 +132,18 @@ internal static class SelfTestCarouselPerspective
         flow.UpdateLayout();
         string path = Path.Combine(folder, (shelf ? "shelf" : "album") + "-shallow.png");
         Render(flow, path);
-        var shot = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        var shot = new RenderTargetBitmap((int)flow.ActualWidth, (int)flow.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        shot.Render((Viewport3D)VisualTreeHelper.GetChild(flow, 0));
         int w = shot.PixelWidth;
+        var pixels = new byte[w * shot.PixelHeight * 4];
+        shot.CopyPixels(pixels, w * 4, 0);
+        Check(Enumerable.Range(0, w * shot.PixelHeight).Count(i => pixels[i * 4 + 3] > 6) > 1000,
+            "The shallow-depth fixture did not render its photo layer.");
         var row = new byte[w * 4];
         new FormatConvertedBitmap(shot, PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(0, 0, w, 1), row, w * 4, 0);
         int touched = 0;
         for (int x = 0; x < w; x++)
-            if (Math.Abs(row[x * 4] - 30) > 6 || Math.Abs(row[x * 4 + 1] - 30) > 6 || Math.Abs(row[x * 4 + 2] - 30) > 6) touched++;
+            if (row[x * 4 + 3] > 6 && Math.Max(row[x * 4], Math.Max(row[x * 4 + 1], row[x * 4 + 2])) > 40) touched++;
         report.Add($"{(shelf ? "shelf" : "album")} at the shallowest depth, top row pixels covered: {touched}");
         Check(touched == 0, "At the shallowest depth the side pictures are cut off at the top.");
     }

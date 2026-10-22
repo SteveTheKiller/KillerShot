@@ -551,7 +551,7 @@ namespace KillerShot.Shell
                     Text = row.Timeline ? item.Taken.ToString("t", CultureInfo.CurrentCulture) : item.Taken.ToString("g", CultureInfo.CurrentCulture),
                     FontSize = 10, Width = w, TextTrimming = TextTrimming.CharacterEllipsis,
                 };
-                // Until a card color is picked, a card is the theme's pane gray on the window background.
+                // A subtle secondary surface separates default cards from the content pane.
                 bool picked = !CardColors.CardIsDefault;
                 caption.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardTextBrush" : "TextBrush");
                 detail.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardMutedBrush" : "MutedTextBrush");
@@ -560,7 +560,7 @@ namespace KillerShot.Shell
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content, Tag = item };
-                tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "ContentPaneBrush");
+                tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "SurfaceBrush");
                 if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
                 {
                     tile.BorderBrush = new SolidColorBrush(own);

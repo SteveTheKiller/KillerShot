@@ -136,6 +136,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         {
             long? keep = SelectedItem?.Id;
             _items = value ?? [];
+            RefreshPhotoShadow();
             ClearCards();
             MaximumIndex = Math.Max(0, _items.Count - 1);
             int index = keep is long id ? IndexOf(id) : 0;
@@ -239,6 +240,17 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     protected override int VisualChildrenCount => 1;
     protected override Visual GetVisualChild(int index) => _viewport;
 
+    private void RefreshPhotoShadow()
+    {
+        double strength = TryFindResource("PaneShadowOpacity") is double opacity ? opacity : 0;
+        _viewport.Effect = _items.Count == 0 || SystemParameters.HighContrast || strength <= 0 ? null
+            : new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black, BlurRadius = 14, ShadowDepth = 3, Direction = 270,
+                Opacity = Math.Clamp(strength * .55, 0, .45),
+            };
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         _viewport.Measure(availableSize);
@@ -307,6 +319,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
 
     private void RefreshCards()
     {
+        RefreshPhotoShadow();
         ClearCards();
         Rebuild();
     }

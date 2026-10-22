@@ -252,8 +252,8 @@ internal static class SelfTestAlbumLayout
                 library.SetView(view);
                 Layout(root);
                 var viewPane = (Border)window.FindName("ContentPane");
-                Check(ReferenceEquals(viewPane.Background, window.FindResource("ContentPaneBrush")) == (view is "shelves" or "flow"),
-                    "Both carousel views must use the main content pane background; grid and timeline keep their existing background.");
+                Check(ReferenceEquals(viewPane.Background, window.FindResource("ContentPaneBrush")),
+                    "Every album view must keep the main content pane background.");
                 Check(dock.ShowPane && dock.Side == DockSide.Left && Visuals(dock).Contains(pane)
                     && chevron.Visibility == Visibility.Visible, "The album view hides its existing sidebar and chevron: " + view);
             }
@@ -362,7 +362,8 @@ internal static class SelfTestAlbumLayout
             Check(browser.Items.Cast<CollectionChoice>().Any(c => c.Source == "folder"), "The enabled Screenshots source is missing.");
             string originalAlbum = CaptureLibrary.FilePath;
             string otherAlbum = CaptureLibrary.CreateAlbum("Navigation fixture");
-            Check(CaptureLibrary.TrySwitchAlbum(otherAlbum, null, out _), "The second test album did not open.");
+            await window.TestOpenAlbumAsync(otherAlbum);
+            Check(CaptureLibrary.IsOpen && CaptureLibrary.FilePath == otherAlbum, "The second test album did not open.");
             await Task.Delay(250);
             Layout(root);
             Check(window.TestStrip.Source == "all" && browser.Items.Count == 3
@@ -374,7 +375,8 @@ internal static class SelfTestAlbumLayout
             Layout(root);
             Check(((FrameworkElement)library.FindName("LockPanel")).IsVisible && browser.IsVisible,
                 "The locked album must retain usable navigation and its unlock surface.");
-            Check(CaptureLibrary.TrySwitchAlbum(originalAlbum, null, out _), "The original test album did not reopen.");
+            await window.TestOpenAlbumAsync(originalAlbum);
+            Check(CaptureLibrary.IsOpen && CaptureLibrary.FilePath == originalAlbum, "The original test album did not reopen.");
             await Task.Delay(250);
             Layout(root);
             Check(browser.Items.Cast<CollectionChoice>().Any(c => c.Name == "Layout collection"),
@@ -386,8 +388,11 @@ internal static class SelfTestAlbumLayout
             App.Instance.SetDocument(null);
             Layout(root);
             Check(Math.Abs(pane.ActualWidth - 180) < 1, "Album width must restore when both modes dock at the left edge.");
-            App.Instance.SetDocument(new EditorDocument(image));
+            var finalDocument = new EditorDocument(image);
+            bool assigned = App.Instance.SetDocument(finalDocument);
+            Check(assigned && ReferenceEquals(window.Editor.Document, finalDocument), "The editor fixture did not assign its document.");
             Layout(root);
+            report.Add($"editor navigation width={pane.ActualWidth:F1}; horizontal carousel={window.TestStripDock.IsHorizontal}; album visible={library.IsVisible}; document present={App.Instance.Document != null}");
             Check(Math.Abs(pane.ActualWidth - 180) < 1 && window.TestStripDock.IsHorizontal,
                 "The collection sidebar must persist beside the editor's independent horizontal carousel.");
             App.Instance.SetDocument(null);

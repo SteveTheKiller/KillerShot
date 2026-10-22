@@ -488,12 +488,11 @@ namespace KillerShot.Shell
 
         private System.Windows.Media.Effects.Effect? _paneShadow;
 
-        /// <summary>The editor and both carousel views use the lifted content pane.</summary>
+        /// <summary>The editor and every album view keep the same lifted content pane.</summary>
         private void SyncContentPane()
-            => ShowContentPane(_doc != null && !_libraryShown || Library.CurrentView is "flow" or "shelves");
+            => ShowContentPane(true);
 
-        /// <summary>Grid and timeline sit on the window background; carousel views and the editor
-        /// use the themed content surface, border and grain.</summary>
+        /// <summary>Keep the themed content surface, border and grain together.</summary>
         private void ShowContentPane(bool on)
         {
             _paneShadow ??= ContentPane.Effect;
