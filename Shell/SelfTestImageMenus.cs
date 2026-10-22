@@ -171,8 +171,10 @@ internal static class SelfTestImageMenus
                 throw new InvalidOperationException("Library settings must be on the right of the title bar.");
             string keepBefore = CaptureLibrary.Keep;
             librarySettings.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            await Task.Delay(150);
             var libraryPopup = (System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup");
+            // The card opens in its own popup window; give it time to lay out on a busy machine.
+            for (int wait = 0; wait < 40 && !(libraryPopup.IsOpen && ((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible); wait++)
+                await Task.Delay(50);
             if (!libraryPopup.IsOpen || !ReferenceEquals(libraryPopup.PlacementTarget, librarySettings)
                 || !((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible
                 || ((FrameworkElement)window.FindName("CaptureSettingsOverlay")).IsVisible)
