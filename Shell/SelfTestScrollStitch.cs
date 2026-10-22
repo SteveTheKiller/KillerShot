@@ -24,6 +24,7 @@ internal static class SelfTestScrollStitch
             Vertical(report, folder);
             Sideways(report);
             Limits(report);
+            Repeating(report);
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -33,6 +34,21 @@ internal static class SelfTestScrollStitch
     }
 
     private static void Expect(bool ok, string message) { if (!ok) throw new InvalidOperationException(message); }
+
+    /// <summary>Rows that repeat every 10 lines match at several shifts. Scrolled by steady steps,
+    /// the stitcher keeps the step it saw rather than the smallest match, so no rows go missing.</summary>
+    private static void Repeating(List<string> report)
+    {
+        const int w = 40, h = 600, view = 100, step = 25;
+        var page = Page(w, h, 7);
+        for (int y = 210; y < h; y++) Buffer.BlockCopy(page, (200 + (y - 200) % 10) * w * 4, page, y * w * 4, w * 4);
+        var stitcher = new ScrollStitcher(w, view, ImageOutput.MaxPixels);
+        for (int top = 0; top + view <= h; top += step) stitcher.Add(Rows(page, w, top, view));
+        var result = stitcher.Result();
+        report.Add($"repeating rows: stitched {result.PixelHeight} of {h} rows");
+        Expect(result.PixelHeight == h && Pixels(result).AsSpan().SequenceEqual(page), "Rows that repeat were stitched at the wrong step.");
+        report.Add("repeating rows keep the steady scroll step PASS");
+    }
 
     /// <summary>A page whose every row is different, so a misplaced row cannot go unnoticed.</summary>
     private static byte[] Page(int w, int h, int seed)

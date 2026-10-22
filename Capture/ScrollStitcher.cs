@@ -72,8 +72,12 @@ internal sealed class ScrollStitcher
         // move == 0: the user scrolled back or nothing in the band moved; nothing to add.
     }
 
+    // The last step the page moved, for telling repeating rows apart (see FindShift).
+    private int _lastShift;
+
     private void Append(byte[] frame, int shift)
     {
+        _lastShift = shift;
         bool vertical = _vertical!.Value;
         int lines = vertical ? _height : _width, across = vertical ? _width : _height;
         int end = lines - _trail;
@@ -173,6 +177,7 @@ internal sealed class ScrollStitcher
         if (band < 4) return -1;
         int best = 0;
         double bestShare = 0;
+        var exact = new List<int>();
         // A page-down scroll leaves only a little overlap, but at least a few lines must overlap
         // for a shift to be told apart from chance.
         int minimumOverlap = Math.Max(8, band / 30);
@@ -182,9 +187,13 @@ internal sealed class ScrollStitcher
             for (int i = 0; i < overlap; i++) if (hc[start + i] == hp[start + shift + i]) same++;
             double share = (double)same / overlap;
             if (share > bestShare + 1e-9) { bestShare = share; best = shift; }
-            if (share == 1 && shift > 0) break;   // exact, and the smallest such move
+            if (share == 1) exact.Add(shift);
         }
         if (bestShare < MatchShare) return -1;
+        // Rows that repeat match at several shifts. Not moving stays not moving; otherwise the
+        // match nearest the step the page last moved wins, since scrolling keeps a steady step.
+        if (exact.Count > 1 && exact[0] > 0)
+            return _lastShift > 0 ? exact.OrderBy(s => Math.Abs(s - _lastShift)).First() : exact[0];
         return best;
     }
 }

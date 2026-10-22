@@ -328,7 +328,13 @@ public sealed record CalloutAnnotation(Point Tip, Point Origin, string Text, Col
         }
     }
 
-    private Geometry Shape()
+    // Hit testing runs on every pointer move. A mark never changes (edits make a new record), so its
+    // outline is built once per instance; the table keys by reference, never by record equality.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<CalloutAnnotation, Geometry> Shapes = new();
+
+    private Geometry Shape() => Shapes.GetValue(this, mark => mark.BuildShape());
+
+    private Geometry BuildShape()
     {
         var box = BubbleRect;
         double radius = Math.Min(Pad, Math.Min(box.Width, box.Height) / 2);
