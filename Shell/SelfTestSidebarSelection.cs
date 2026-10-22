@@ -48,7 +48,9 @@ internal static class SelfTestSidebarSelection
             foreach (string source in new[] { "c" + collection, "folder", "all" })
             {
                 if (source == "folder") ImageOutput.Save(pixel, Path.Combine(FolderCaptures.Folder, "folder-photo.png"));
-                library.SetSource(source);
+                // The collection sidebar picks the album's source, as a click there does; a view
+                // change syncs the album back to it.
+                window.TestNavigationStrip!.SetSource(source);
                 library.TestSet("shelves", "collection", "");
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
                 bool folderHeader = Descendants<TextBlock>(library).Any(text => text.IsVisible && text.Text == FolderCaptures.Name);
