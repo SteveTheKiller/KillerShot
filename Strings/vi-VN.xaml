@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Cài đặt cho mọi người dùng trên máy tính này (cần quyền quản trị viên)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Cài đặt chưa hoàn tất. KillerShot vẫn đang chạy ở chế độ di động.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Đã cài đặt xong. KillerShot vẫn mở để bảo vệ phần công việc đã thay đổi trong lúc cài đặt.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 chọn mục tiêu. Phím mũi tên đổi mục tiêu. Enter chụp. Escape hủy.</sys:String>
 </ResourceDictionary>

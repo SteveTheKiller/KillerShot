@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Installer for alle på denne datamaskinen (krever administrator)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Installasjonen ble ikke fullført - KillerShot kjører fortsatt som portabel.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Installasjonen er fullført. KillerShot forble åpen for å beskytte arbeid som ble endret under installasjonen.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 velger et mål. Piltastene bytter mål. Enter tar bildet. Escape avbryter.</sys:String>
 </ResourceDictionary>

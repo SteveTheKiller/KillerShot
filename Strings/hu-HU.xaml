@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Telepítés mindenki számára ezen a számítógépen (rendszergazda szükséges)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">A telepítés nem fejeződött be - a KillerShot továbbra is hordozható.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">A telepítés befejeződött. A KillerShot nyitva maradt, hogy megőrizze a telepítés közben módosított munkát.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">Az F2 célt választ. A nyílbillentyűkkel másik célt választhat. Az Enter rögzít. Az Escape megszakítja a műveletet.</sys:String>
 </ResourceDictionary>

@@ -579,4 +579,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Namesti za vse uporabnike tega računalnika (zahteva skrbniške pravice)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Namestitev ni bila dokončana. KillerShot še vedno deluje v prenosnem načinu.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Namestitev je končana. KillerShot je ostal odprt, da zaščiti delo, spremenjeno med namestitvijo.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 izbere cilj. Puščične tipke zamenjajo cilj. Enter zajame. Escape prekliče.</sys:String>
 </ResourceDictionary>

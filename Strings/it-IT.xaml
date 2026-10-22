@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Installa per tutti gli utenti di questo computer (richiede l'amministratore)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">L'installazione non è stata completata - KillerShot continua in modalità portatile.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">L’installazione è terminata. KillerShot è rimasto aperto per proteggere il lavoro modificato durante l’installazione.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 seleziona un obiettivo. I tasti freccia cambiano obiettivo. Enter acquisisce. Escape annulla.</sys:String>
 </ResourceDictionary>

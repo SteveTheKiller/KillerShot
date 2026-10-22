@@ -577,6 +577,7 @@
     <sys:String x:Key="Str_Save_StaticOriginal">স্থির ছবি রপ্তানি করতে এবং মূল ফাইলটি অক্ষত রাখতে অন্য একটি ফাইলের নাম বেছে নিন।</sys:String>
     <sys:String x:Key="Str_Save_DocumentChanged">খোলা ছবিটি পরিবর্তিত হয়েছে। বর্তমান ছবিটি আবার সংরক্ষণ করুন।</sys:String>
     <sys:String x:Key="Str_Capture_Keyboard">F2 দিয়ে একটি কোণা নির্ধারণ করুন। আকার বদলাতে তীরচিহ্নের কীগুলো ব্যবহার করুন (10 পিক্সেলের জন্য Shift), তারপর ক্যাপচার করতে Enter চাপুন। Escape বাতিল করে।</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 দিয়ে লক্ষ্য নির্বাচন করুন। তীরচিহ্নের কী দিয়ে লক্ষ্য বদলান। Enter ক্যাপচার করে। Escape বাতিল করে।</sys:String>
     <sys:String x:Key="Str_Portable">পোর্টেবল</sys:String>
     <sys:String x:Key="Str_Btn_Install">KillerShot ইনস্টল করুন</sys:String>
     <sys:String x:Key="Str_Dlg_InstallMsg">এই কম্পিউটারে KillerShot ইনস্টল করবেন?</sys:String>

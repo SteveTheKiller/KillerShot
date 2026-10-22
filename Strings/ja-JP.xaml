@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">このコンピューターのすべてのユーザーにインストール（管理者権限が必要）</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">インストールは完了しませんでした。KillerShot はポータブルのまま動作しています。</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">インストールが完了しました。インストール中に変更された作業を保護するため、KillerShot は開いたままになっています。</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 で対象を選択します。矢印キーで対象を切り替えます。Enter でキャプチャし、Escape でキャンセルします。</sys:String>
 </ResourceDictionary>

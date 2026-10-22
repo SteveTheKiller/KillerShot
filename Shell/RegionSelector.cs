@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -28,12 +30,14 @@ internal sealed class RegionSelector
     private bool _dragged;
     private bool _finished;
     private Win32.POINT? _keyboardPoint;
+    private bool _keyboardTarget;
     private readonly bool _showBar;
     private CaptureBar? _bar;
     public CaptureMode Mode { get; private set; }
     public bool IsVideo { get; private set; }
     internal Win32.RECT? CurrentSelection => _selection;
     internal Task<Win32.RECT?> Result => _result.Task;
+    internal string? TargetDescription { get; private set; }
 
     /// <summary>The window chosen by a click, or zero when the result is a dragged region.</summary>
     public IntPtr PickedWindow { get; private set; }
@@ -94,9 +98,12 @@ internal sealed class RegionSelector
 
     internal void BeginAt(Win32.POINT p)
     {
+        _keyboardTarget = false;
+        TargetDescription = null;
         _keyboardPoint = null;
         _start = p;
         _dragged = false;
+        if (Mode is CaptureMode.Window or CaptureMode.Monitor) MoveAt(p);
     }
 
     public void Move()
@@ -107,7 +114,7 @@ internal sealed class RegionSelector
 
     internal void MoveAt(Win32.POINT p)
     {
-        if (_keyboardPoint != null) return;
+        if (_keyboardPoint != null || _keyboardTarget) return;
         if (_start == null && Mode is CaptureMode.Region or CaptureMode.Qr)
         {
             _hover = null;
@@ -162,6 +169,8 @@ internal sealed class RegionSelector
     public void SetMode(CaptureMode mode)
     {
         Mode = IsVideo && mode == CaptureMode.Qr ? CaptureMode.Region : mode;
+        _keyboardTarget = false;
+        TargetDescription = null;
         _keyboardPoint = null;
         _start = null; _selection = null; _hover = null;
         RedrawAll();
@@ -189,6 +198,37 @@ internal sealed class RegionSelector
     public bool HandleKey(Key key, ModifierKeys modifiers, Win32.RECT? monitor = null)
     {
         if (key == Key.Escape) { Cancel(); return true; }
+        if (Mode is CaptureMode.Window or CaptureMode.Monitor)
+        {
+            if (key == Key.F2 || key is Key.Left or Key.Right or Key.Up or Key.Down)
+            {
+                var targets = Mode == CaptureMode.Monitor
+                    ? _frozen.Monitors.Select(m => new WindowBounds(IntPtr.Zero, m.Bounds)).ToArray()
+                    : _frozen.Windows.Select(w => w with { Bounds = Win32.RECT.Intersect(w.Bounds, _frozen.Bounds) })
+                        .Where(w => w.Bounds.Width >= 3 && w.Bounds.Height >= 3).ToArray();
+                if (targets.Length == 0 && Mode == CaptureMode.Window)
+                    targets = _frozen.Monitors.Select(m => new WindowBounds(IntPtr.Zero, m.Bounds)).ToArray();
+                if (targets.Length == 0) return false;
+                int index = Array.FindIndex(targets, target => target == _hover);
+                if (index < 0) index = 0;
+                if (key is Key.Right or Key.Down) index = (index + 1) % targets.Length;
+                else if (key is Key.Left or Key.Up) index = (index + targets.Length - 1) % targets.Length;
+                _keyboardTarget = true;
+                _start = null;
+                _hover = targets[index];
+                _selection = _hover.Bounds;
+                string title = _hover.Handle != IntPtr.Zero ? Win32.WindowTitle(_hover.Handle) : "";
+                if (string.IsNullOrWhiteSpace(title)) title = Services.LocaleManager.Loc(Mode == CaptureMode.Window ? "Str_Mode_Window" : "Str_Mode_Monitor");
+                TargetDescription = $"{title}, {index + 1} / {targets.Length}, {_selection.Value.Width} x {_selection.Value.Height}";
+                var overlay = _overlays.FirstOrDefault(o => o.Monitor.Contains(new Win32.POINT { X = _selection.Value.Left, Y = _selection.Value.Top }));
+                overlay?.Activate();
+                if (overlay != null) Keyboard.Focus(overlay);
+                RedrawAll();
+                return true;
+            }
+            if (key == Key.Enter) { CaptureSelection(); return true; }
+            return false;
+        }
         if (Mode is not (CaptureMode.Region or CaptureMode.Qr)) return false;
         if (key == Key.F2)
         {
@@ -295,6 +335,7 @@ internal sealed class RegionOverlay : Window
             VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Center,
             MaxWidth = 600, IsHitTestVisible = false
         };
+        AutomationProperties.SetLiveSetting(_hint, AutomationLiveSetting.Polite);
         root.Children.Add(_hint);
         root.Children.Add(new Border { BorderBrush = Accent, BorderThickness = new Thickness(3), IsHitTestVisible = false });
         Content = root;
@@ -327,7 +368,17 @@ internal sealed class RegionOverlay : Window
     /// its actual size to the monitor's pixel size.</summary>
     public void Redraw(Win32.RECT? selection)
     {
-        _hint.Visibility = _owner.Mode is CaptureMode.Region or CaptureMode.Qr ? Visibility.Visible : Visibility.Collapsed;
+        bool targetMode = _owner.Mode is CaptureMode.Window or CaptureMode.Monitor;
+        string hint = Services.LocaleManager.Loc(targetMode ? "Str_Capture_TargetKeyboard" : "Str_Capture_Keyboard");
+        if (_owner.TargetDescription is { } target) hint = target + ". " + hint;
+        if (_hint.Text != hint)
+        {
+            _hint.Text = hint;
+            AutomationProperties.SetName(_hint, hint);
+            UIElementAutomationPeer.FromElement(_hint)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+        _hint.Visibility = _owner.Mode is CaptureMode.Region or CaptureMode.Qr or CaptureMode.Window or CaptureMode.Monitor
+            ? Visibility.Visible : Visibility.Collapsed;
         double w = ActualWidth, h = ActualHeight;
         if (w <= 0 || h <= 0) return;
         double sx = w / Monitor.Width, sy = h / Monitor.Height;

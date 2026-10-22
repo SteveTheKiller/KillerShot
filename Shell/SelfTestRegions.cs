@@ -23,6 +23,50 @@ internal static class SelfTestRegions
 
     private static void Expect(bool ok, string message) { if (!ok) throw new InvalidOperationException(message); }
 
+    private static async Task KeyboardTargets(List<string> report)
+    {
+        var bounds = new Win32.RECT(-200, 0, 200, 120);
+        MonitorBounds[] monitors = [new((IntPtr)1, new(-200, 0, 0, 120), true), new((IntPtr)2, new(0, 0, 200, 120), false)];
+        WindowBounds[] windows = [new((IntPtr)11, new(-190, 10, -90, 80)), new((IntPtr)22, new(20, 20, 170, 100)),
+            new((IntPtr)33, new(500, 0, 550, 50))];
+        var frozen = new FrozenDesktop(bounds, new byte[400 * 120 * 4], monitors, windows);
+        foreach (var mode in new[] { CaptureMode.Window, CaptureMode.Monitor })
+        {
+            var selector = new RegionSelector(frozen, mode: mode);
+            selector.MoveAt(new Win32.POINT { X = -180, Y = 30 });
+            Expect(selector.HandleKey(System.Windows.Input.Key.F2, System.Windows.Input.ModifierKeys.None),
+                "F2 cannot start keyboard target selection for " + mode);
+            Expect(selector.HandleKey(System.Windows.Input.Key.Right, System.Windows.Input.ModifierKeys.None), "Arrow key did not select another target.");
+            var expected = mode == CaptureMode.Window ? windows[1].Bounds : monitors[1].Bounds;
+            Expect(selector.CurrentSelection?.Equals(expected) == true, "Keyboard selected the wrong target.");
+            Expect(selector.TargetDescription?.Contains("2 / 2") == true, "Selected target has no readable position announcement.");
+            selector.MoveAt(new Win32.POINT { X = -180, Y = 30 });
+            Expect(selector.CurrentSelection?.Equals(expected) == true, "Pointer polling overwrote the keyboard target.");
+            Expect(selector.HandleKey(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.None), "Enter did not accept the keyboard target.");
+            Expect((await selector.Result)?.Equals(expected) == true && selector.PickedWindow == (mode == CaptureMode.Window ? (IntPtr)22 : IntPtr.Zero),
+                "Capture result lost the selected target or native window identity.");
+            var wrap = new RegionSelector(frozen, mode: mode);
+            wrap.MoveAt(new Win32.POINT { X = -180, Y = 30 });
+            wrap.HandleKey(System.Windows.Input.Key.F2, System.Windows.Input.ModifierKeys.None);
+            wrap.HandleKey(System.Windows.Input.Key.Left, System.Windows.Input.ModifierKeys.None);
+            Expect(wrap.CurrentSelection?.Equals(expected) == true, "Target cycling failed to wrap or included an off-desktop window.");
+            wrap.HandleKey(System.Windows.Input.Key.Escape, System.Windows.Input.ModifierKeys.None);
+            Expect(await wrap.Result == null, "Escape did not cancel target selection.");
+            var mouse = new RegionSelector(frozen, mode: mode);
+            mouse.MoveAt(new Win32.POINT { X = -180, Y = 30 });
+            mouse.HandleKey(System.Windows.Input.Key.Right, System.Windows.Input.ModifierKeys.None);
+            mouse.BeginAt(new Win32.POINT { X = -180, Y = 30 });
+            mouse.End();
+            var first = mode == CaptureMode.Window ? windows[0].Bounds : monitors[0].Bounds;
+            Expect((await mouse.Result)?.Equals(first) == true, "A mouse click did not regain target selection after keyboard use.");
+            var reset = new RegionSelector(frozen, mode: mode);
+            reset.HandleKey(System.Windows.Input.Key.F2, System.Windows.Input.ModifierKeys.None);
+            reset.SetMode(CaptureMode.Region);
+            Expect(reset.TargetDescription == null && reset.CurrentSelection == null, "Changing modes retained the keyboard target.");
+        }
+        report.Add("keyboard chooses another window or monitor, ignores pointer polling, wraps and cancels PASS");
+    }
+
     private static async Task RunAsync(string folder)
     {
         int code = 1;
@@ -37,6 +81,7 @@ internal static class SelfTestRegions
             CaptureLibrary.BackgroundWork = false;
             App.InitializeKit();
             LocaleManager.Apply(Locale.EnUS);
+            await KeyboardTargets(report);
 
             // Layout: two side-by-side monitors; the region repeats only on this layout.
             MonitorBounds[] two = [new(IntPtr.Zero, new Win32.RECT(0, 0, 1920, 1080), true), new(IntPtr.Zero, new Win32.RECT(1920, 0, 3840, 1080), false)];

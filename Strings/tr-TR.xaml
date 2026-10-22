@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">Bu bilgisayardaki herkes için yükle (yönetici gerekir)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Yükleme tamamlanmadı - KillerShot taşınabilir olarak çalışmaya devam ediyor.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Kurulum tamamlandı. Kurulum sırasında değiştirilen çalışmayı korumak için KillerShot açık kaldı.</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">F2 hedef seçer. Ok tuşları hedefi değiştirir. Enter yakalar. Escape iptal eder.</sys:String>
 </ResourceDictionary>

@@ -586,4 +586,5 @@
     <sys:String x:Key="Str_Chk_AllUsers">為這台電腦上的所有使用者安裝（需要系統管理員）</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">安裝未完成 - KillerShot 仍以可攜版執行。</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">安裝已完成。為保護安裝期間變更的工作，KillerShot 保持開啟。</sys:String>
+    <sys:String x:Key="Str_Capture_TargetKeyboard">按 F2 選擇目標。使用方向鍵切換目標。按 Enter 擷取，按 Escape 取消。</sys:String>
 </ResourceDictionary>
