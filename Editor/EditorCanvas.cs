@@ -74,6 +74,7 @@ public sealed partial class EditorCanvas : Canvas
 
     private void OnDocChanged()
     {
+        if (_keyboardRegion || _regionPick != null) CancelGesture();
         // A selection that no longer exists (undo, delete) is dropped.
         if (_selected != null && _doc != null && !_doc.State.Items.Contains(_selected)) _selected = null;
         if (_doc != null) _others.RemoveAll(o => !_doc.State.Items.Contains(o));
@@ -106,6 +107,11 @@ public sealed partial class EditorCanvas : Canvas
     public void SetTool(ToolKind tool)
     {
         CommitText();
+        if (tool != Tool)
+        {
+            CancelRegionPick();
+            ClearKeyboardRegion();
+        }
         Tool = tool;
         if (tool != ToolKind.Select) _selected = null;
         Cursor = tool switch
@@ -189,15 +195,15 @@ public sealed partial class EditorCanvas : Canvas
         }
     }
 
-    // Set while the next drag picks an area for something else, such as reading its text.
+    // Set while a drag or keyboard rectangle picks an area, such as reading its text.
     private Action<Int32Rect?>? _regionPick;
 
-    /// <summary>The next drag on the picture picks an area instead of drawing; <paramref name="done"/>
+    /// <summary>The next drag or keyboard rectangle picks an area instead of drawing; <paramref name="done"/>
     /// gets it in image pixels, or null when cancelled with Escape or a click without a drag.</summary>
     public void BeginRegionPick(Action<Int32Rect?> done)
     {
         CommitText();
-        CancelRegionPick();
+        CancelGesture();
         _regionPick = done;
         Cursor = Cursors.Cross;
     }
@@ -206,6 +212,7 @@ public sealed partial class EditorCanvas : Canvas
     {
         if (_regionPick is not { } pick) return false;
         _regionPick = null;
+        ClearKeyboardRegion();
         _box = null;
         SetTool(Tool);   // restores the tool's cursor
         pick(null);
@@ -263,6 +270,7 @@ public sealed partial class EditorCanvas : Canvas
     {
         base.OnMouseLeftButtonDown(e);
         if (_doc == null || e.OriginalSource is TextBox) return;
+        ClearKeyboardRegion();
         Focus();
         var p = ToImage(e.GetPosition(this));
         if (_regionPick != null)
@@ -555,6 +563,7 @@ public sealed partial class EditorCanvas : Canvas
     public bool CancelGesture()
     {
         if (CancelRegionPick()) return true;
+        if (ClearKeyboardRegion()) return true;
         if (_textBox != null) { CancelText(); return true; }
         if (_dragging)
         {

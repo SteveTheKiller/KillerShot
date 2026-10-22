@@ -24,13 +24,25 @@ internal static class SelfTestEditorKeyboard
         return true;
     }
 
-    private static void Key(MainWindow window, IInputElement target, Key key)
+    private sealed class TestKeyboard(ModifierKeys modifiers) : KeyboardDevice(InputManager.Current)
+    {
+        protected override KeyStates GetKeyStatesFromSystem(System.Windows.Input.Key key) => key switch
+        {
+            System.Windows.Input.Key.LeftCtrl when modifiers.HasFlag(ModifierKeys.Control) => KeyStates.Down,
+            System.Windows.Input.Key.LeftShift when modifiers.HasFlag(ModifierKeys.Shift) => KeyStates.Down,
+            System.Windows.Input.Key.LeftAlt when modifiers.HasFlag(ModifierKeys.Alt) => KeyStates.Down,
+            _ => KeyStates.None,
+        };
+    }
+
+    private static void Key(MainWindow window, IInputElement target, Key key, ModifierKeys modifiers = ModifierKeys.None)
     {
         var source = PresentationSource.FromVisual(window)!;
-        var down = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, key) { RoutedEvent = Keyboard.PreviewKeyDownEvent };
+        var keyboard = new TestKeyboard(modifiers);
+        var down = new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.PreviewKeyDownEvent };
         target.RaiseEvent(down);
         if (down.Handled) return;
-        target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent });
+        target.RaiseEvent(new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent });
     }
 
     private static async Task RunAsync(string folder)
@@ -169,6 +181,174 @@ internal static class SelfTestEditorKeyboard
             if (MarksFormat.Read("""{"v":1,"marks":[{"t":"shape"}]}""") is { Count: > 0 })
                 throw new InvalidOperationException("A mark missing its fields was read.");
             report.Add("damaged marks row is skipped PASS");
+
+            // Crop through the window's actual key route. Pixel coordinates in this fixture
+            // identify the chosen area independently of the selection implementation.
+            var coordinates = new byte[40 * 30 * 4];
+            for (int y = 0; y < 30; y++)
+                for (int x = 0; x < 40; x++)
+                {
+                    int offset = (y * 40 + x) * 4;
+                    coordinates[offset] = (byte)x;
+                    coordinates[offset + 1] = (byte)y;
+                    coordinates[offset + 2] = 200;
+                    coordinates[offset + 3] = 255;
+                }
+            var coordinateImage = BitmapSource.Create(40, 30, 96, 96, PixelFormats.Bgra32, null, coordinates, 40 * 4);
+            coordinateImage.Freeze();
+            var crop = new EditorDocument(coordinateImage);
+            App.Instance.Document?.MarkSaved();
+            if (!App.Instance.SetDocument(crop)) throw new InvalidOperationException("The crop fixture did not open.");
+            canvas.Zoom = 2;
+            window.UpdateLayout();
+            canvas.Focus();
+            Keyboard.Focus(canvas);
+            Key(window, canvas, System.Windows.Input.Key.C);
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            Key(window, canvas, System.Windows.Input.Key.Right);
+            Key(window, canvas, System.Windows.Input.Key.Down);
+            if (peer.GetName() != "Crop, 20 by 15 pixels at 11, 8" || peer.GetLiveSetting() != AutomationLiveSetting.Polite
+                || !peer.GetHelpText().Contains("Ctrl+arrows"))
+                throw new InvalidOperationException("Crop does not expose its rectangle and keyboard instructions through automation.");
+            await window.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+            var selectionView = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+            selectionView.Render(window);
+            ImageOutput.Save(selectionView, Path.Combine(folder, "keyboard-crop-selection.png"));
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            if (crop.PixelWidth != 20 || crop.PixelHeight != 15)
+                throw new InvalidOperationException($"Keyboard crop left {crop.PixelWidth} by {crop.PixelHeight} pixels instead of the selected 20 by 15.");
+            var cropOutput = new FormatConvertedBitmap(crop.Render(), PixelFormats.Bgra32, null, 0);
+            cropOutput.CopyPixels(new Int32Rect(0, 0, 1, 1), pixel, 4, 0);
+            if (pixel[0] != 11 || pixel[1] != 8) throw new InvalidOperationException("Keyboard crop chose the wrong top-left pixel.");
+            cropOutput.CopyPixels(new Int32Rect(19, 14, 1, 1), pixel, 4, 0);
+            if (pixel[0] != 30 || pixel[1] != 22) throw new InvalidOperationException("Keyboard crop chose the wrong bottom-right pixel.");
+            report.Add("keyboard crop selects an interior rectangle at 200% zoom PASS");
+
+            var regionDocument = new EditorDocument(coordinateImage);
+            crop.MarkSaved();
+            if (!App.Instance.SetDocument(regionDocument)) throw new InvalidOperationException("The region fixture did not open.");
+            canvas.SetTool(ToolKind.Select);
+            canvas.Zoom = 0.5;
+            window.UpdateLayout();
+            canvas.Focus();
+            Keyboard.Focus(canvas);
+            Int32Rect? picked = null;
+            bool regionCompleted = false;
+            canvas.BeginRegionPick(area => { picked = area; regionCompleted = true; });
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            Key(window, canvas, System.Windows.Input.Key.Right);
+            Key(window, canvas, System.Windows.Input.Key.Down);
+            Key(window, canvas, System.Windows.Input.Key.Right, ModifierKeys.Control);
+            Key(window, canvas, System.Windows.Input.Key.Up, ModifierKeys.Control);
+            if (peer.GetName() != "Read a region, 21 by 14 pixels at 11, 8" || !peer.GetHelpText().Contains("Enter reads"))
+                throw new InvalidOperationException("OCR does not expose its current rectangle and acceptance instruction.");
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            if (!regionCompleted || picked != new Int32Rect(11, 8, 21, 14))
+                throw new InvalidOperationException($"Keyboard OCR region did not complete with 11,8,21,14. Result: {picked}.");
+            if (regionDocument.Dirty || regionDocument.PixelWidth != 40 || regionDocument.PixelHeight != 30)
+                throw new InvalidOperationException("Choosing an OCR region changed the image.");
+            report.Add("keyboard OCR rectangle moves, resizes and accepts at 50% zoom PASS");
+
+            regionCompleted = false;
+            canvas.BeginRegionPick(area => { picked = area; regionCompleted = true; });
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            Key(window, canvas, System.Windows.Input.Key.Right, ModifierKeys.Control | ModifierKeys.Shift);
+            Key(window, canvas, System.Windows.Input.Key.Escape);
+            if (!regionCompleted || picked != null || regionDocument.Dirty || peer.GetName().StartsWith("Read a region,"))
+                throw new InvalidOperationException("Escape did not cancel OCR selection without changing the image.");
+            Key(window, canvas, System.Windows.Input.Key.C);
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            Key(window, canvas, System.Windows.Input.Key.Right);
+            Key(window, canvas, System.Windows.Input.Key.Escape);
+            if (regionDocument.Dirty || peer.GetName().StartsWith("Crop,"))
+                throw new InvalidOperationException("Escape did not cancel the crop rectangle.");
+            report.Add("Escape cancels crop and OCR with no image mutation or stale automation rectangle PASS");
+
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            for (int i = 0; i < 5; i++)
+            {
+                Key(window, canvas, System.Windows.Input.Key.Left, ModifierKeys.Shift);
+                Key(window, canvas, System.Windows.Input.Key.Up, ModifierKeys.Shift);
+                Key(window, canvas, System.Windows.Input.Key.Right, ModifierKeys.Control | ModifierKeys.Shift);
+                Key(window, canvas, System.Windows.Input.Key.Down, ModifierKeys.Control | ModifierKeys.Shift);
+            }
+            if (peer.GetName() != "Crop, 40 by 30 pixels at 0, 0")
+                throw new InvalidOperationException("Keyboard rectangle exceeded the image boundary.");
+            for (int i = 0; i < 5; i++)
+            {
+                Key(window, canvas, System.Windows.Input.Key.Left, ModifierKeys.Control | ModifierKeys.Shift);
+                Key(window, canvas, System.Windows.Input.Key.Up, ModifierKeys.Control | ModifierKeys.Shift);
+            }
+            if (peer.GetName() != "Crop, 2 by 2 pixels at 0, 0")
+                throw new InvalidOperationException("Keyboard crop did not stop at its minimum size.");
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            if (regionDocument.PixelWidth != 2 || regionDocument.PixelHeight != 2)
+                throw new InvalidOperationException("Enter did not apply the resized crop through the window key route.");
+            report.Add("Shift movement, Ctrl+Shift resize, image limits and resized crop acceptance PASS");
+
+            regionDocument.MarkSaved();
+            var replacement = new EditorDocument(coordinateImage);
+            if (!App.Instance.SetDocument(replacement)) throw new InvalidOperationException("The replacement fixture did not open.");
+            canvas.SetTool(ToolKind.Select);
+            canvas.Focus();
+            Keyboard.Focus(canvas);
+            regionCompleted = false;
+            canvas.BeginRegionPick(area => { picked = area; regionCompleted = true; });
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            if (!App.Instance.SetDocument(new EditorDocument(coordinateImage)) || !regionCompleted || picked != null)
+                throw new InvalidOperationException("Replacing the document did not cancel its pending OCR region.");
+            report.Add("document replacement cancels the pending region callback PASS");
+
+            window.UpdateLayout();
+            canvas.Focus();
+            Keyboard.Focus(canvas);
+            regionCompleted = false;
+            canvas.BeginRegionPick(area => { picked = area; regionCompleted = true; });
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            canvas.Document!.Scale(4, 4);
+            if (!regionCompleted || picked != null || peer.GetName().StartsWith("Read a region,"))
+                throw new InvalidOperationException("Changing the source image retained a stale region rectangle.");
+            report.Add("source image changes cancel the pending rectangle PASS");
+            regionCompleted = false;
+            canvas.BeginRegionPick(area => { picked = area; regionCompleted = true; });
+            Key(window, canvas, System.Windows.Input.Key.Enter);
+            Key(window, canvas, System.Windows.Input.Key.P);
+            if (!regionCompleted || picked != null || canvas.Tool != ToolKind.Pen)
+                throw new InvalidOperationException("Changing tools retained a pending OCR region.");
+            report.Add("changing tools cancels the pending region PASS");
+
+            // The review chord keeps its meaning even while Crop owns ordinary Enter.
+            string reviewOutput = Path.Combine(folder, "review-output");
+            Directory.CreateDirectory(reviewOutput);
+            CaptureSettings.OutputFolder = reviewOutput;
+            CaptureSettings.SaveToFolder = true;
+            CaptureSettings.CopyToClipboard = false;
+            CaptureSettings.PlaySound = false;
+            CaptureSettings.Notify = false;
+            using var tray = new TrayHost();
+            var capture = App.Instance.TestUseCapture(new CaptureController(tray));
+            foreach (bool pendingCrop in new[] { false, true })
+            {
+                App.Instance.Document?.MarkSaved();
+                var reviewed = new EditorDocument(coordinateImage);
+                if (!App.Instance.SetDocument(reviewed)) throw new InvalidOperationException("The review fixture did not open.");
+                window.UpdateLayout();
+                canvas.Focus();
+                Keyboard.Focus(canvas);
+                Key(window, canvas, System.Windows.Input.Key.C);
+                if (pendingCrop) Key(window, canvas, System.Windows.Input.Key.Enter);
+                var stateBeforeReview = reviewed.State;
+                window.BeginReview(reviewed, DateTime.Now, KillerShot.Capture.CaptureMode.Region);
+                Key(window, canvas, System.Windows.Input.Key.Enter, ModifierKeys.Control);
+                if (window.InReview || !ReferenceEquals(reviewed.State, stateBeforeReview) || reviewed.Dirty
+                    || reviewed.FilePath is not { } savedReview || !File.Exists(savedReview)
+                    || capture.Last?.PixelWidth != 40 || capture.Last.PixelHeight != 30)
+                    throw new InvalidOperationException("Ctrl+Enter did not accept review without cropping (pending crop: " + pendingCrop + ").");
+                var savedReviewImage = ImageOutput.Load(savedReview);
+                if (savedReviewImage.PixelWidth != 40 || savedReviewImage.PixelHeight != 30)
+                    throw new InvalidOperationException("Review acceptance exported the pending crop instead of the current image.");
+                report.Add("Ctrl+Enter accepts review with Crop active, pending crop " + pendingCrop + " PASS");
+            }
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

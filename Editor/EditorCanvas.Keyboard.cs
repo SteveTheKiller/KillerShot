@@ -5,6 +5,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using KillerShot.Services;
 
@@ -16,6 +17,85 @@ public sealed partial class EditorCanvas
 {
     /// <summary>Raised when the selected mark changes, by keyboard, mouse or automation.</summary>
     public event Action? SelectionChanged;
+
+    private bool _keyboardRegion;
+
+    /// <summary>Enter starts or applies a crop or text region. Arrows move it, Ctrl+arrows resize it,
+    /// and Shift changes the step to ten image pixels. Escape uses CancelGesture.</summary>
+    public bool HandleRegionKey(Key key, ModifierKeys modifiers)
+    {
+        if (_doc == null || _textBox != null || _dragging || (_regionPick == null && Tool != ToolKind.Crop)
+            || (modifiers & (ModifierKeys.Alt | ModifierKeys.Windows)) != 0) return false;
+        if (key == Key.Escape) return CancelGesture();
+        if (key == Key.Enter)
+        {
+            if (!_keyboardRegion)
+            {
+                var view = VisibleImage();
+                int minimum = _regionPick != null ? 4 : 2;
+                int width = Math.Clamp((int)(view.Width / 2), Math.Min(minimum, _doc.PixelWidth), _doc.PixelWidth);
+                int height = Math.Clamp((int)(view.Height / 2), Math.Min(minimum, _doc.PixelHeight), _doc.PixelHeight);
+                int x = Math.Clamp((int)(view.X + (view.Width - width) / 2), 0, _doc.PixelWidth - width);
+                int y = Math.Clamp((int)(view.Y + (view.Height - height) / 2), 0, _doc.PixelHeight - height);
+                _box = new Rect(x, y, width, height);
+                _keyboardRegion = true;
+                NotifyRegion();
+            }
+            else if (_box is { } area)
+            {
+                var pick = _regionPick;
+                _regionPick = null;
+                ClearKeyboardRegion();
+                if (pick != null)
+                {
+                    SetTool(Tool);
+                    pick(area.Width >= 4 && area.Height >= 4
+                        ? new Int32Rect((int)area.X, (int)area.Y, (int)area.Width, (int)area.Height) : null);
+                }
+                else if (area.Width >= 2 && area.Height >= 2)
+                    _doc.Crop(new Int32Rect((int)area.X, (int)area.Y, (int)area.Width, (int)area.Height));
+            }
+            return true;
+        }
+        if (key is not (Key.Left or Key.Right or Key.Up or Key.Down)) return false;
+        if (!_keyboardRegion || _box is not { } box) return true;
+        int step = (modifiers & ModifierKeys.Shift) != 0 ? 10 : 1;
+        int dx = key == Key.Left ? -step : key == Key.Right ? step : 0;
+        int dy = key == Key.Up ? -step : key == Key.Down ? step : 0;
+        if ((modifiers & ModifierKeys.Control) != 0)
+            _box = new Rect(box.X, box.Y,
+                Math.Clamp(box.Width + dx, Math.Min(_regionPick != null ? 4 : 2, _doc.PixelWidth), _doc.PixelWidth - box.X),
+                Math.Clamp(box.Height + dy, Math.Min(_regionPick != null ? 4 : 2, _doc.PixelHeight), _doc.PixelHeight - box.Y));
+        else
+            _box = new Rect(Math.Clamp(box.X + dx, 0, _doc.PixelWidth - box.Width),
+                Math.Clamp(box.Y + dy, 0, _doc.PixelHeight - box.Height), box.Width, box.Height);
+        NotifyRegion();
+        return true;
+    }
+
+    internal string? KeyboardRegionName => _keyboardRegion && _box is { } box
+        ? string.Format(CultureInfo.CurrentCulture, LocaleManager.Loc("Str_Mark_Name"), LocaleManager.Loc(_regionPick != null ? "Str_Ocr_Region" : "Str_Tool_Crop"),
+            box.Width, box.Height, box.X, box.Y) : null;
+
+    internal string? RegionKeyboardHelp => _regionPick != null ? LocaleManager.Loc("Str_Ocr_RegionHint")
+        : Tool == ToolKind.Crop ? LocaleManager.Loc("Str_Status_CropHint") : null;
+
+    private void NotifyRegion()
+    {
+        InvalidateVisual();
+        if (KeyboardRegionName is { } name) Status?.Invoke(name);
+        if (UIElementAutomationPeer.FromElement(this) is { } peer)
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+    }
+
+    private bool ClearKeyboardRegion()
+    {
+        if (!_keyboardRegion) return false;
+        _keyboardRegion = false;
+        _box = null;
+        NotifyRegion();
+        return true;
+    }
 
     /// <summary>Selects a mark on the current picture, or clears the selection with null.</summary>
     public void Select(Annotation? mark)
@@ -209,9 +289,13 @@ internal sealed class EditorCanvasAutomationPeer(EditorCanvas owner) : Framework
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
     protected override string GetNameCore()
     {
+        if (Canvas.KeyboardRegionName is { } region) return region;
         string name = base.GetNameCore();
         return string.IsNullOrEmpty(name) ? LocaleManager.Loc("Str_Mark_List") : name;
     }
+
+    protected override string GetHelpTextCore() => Canvas.RegionKeyboardHelp ?? base.GetHelpTextCore();
+    protected override AutomationLiveSetting GetLiveSettingCore() => AutomationLiveSetting.Polite;
 
     public override object? GetPattern(PatternInterface pattern) =>
         pattern == PatternInterface.Selection ? this : base.GetPattern(pattern);
