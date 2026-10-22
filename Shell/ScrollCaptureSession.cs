@@ -20,9 +20,11 @@ internal sealed class ScrollCaptureSession
 {
     private const int HotkeyDone = 0x5C11, HotkeyCancel = 0x5C12;
     private readonly Win32.RECT _rect;
-    private readonly TaskCompletionSource<BitmapSource?> _result = new();
+    private readonly Func<IFrameGrabber>? _grabberFactory;
+    private readonly Action<Checkpoint>? _checkpoint;
+    private readonly TaskCompletionSource<BitmapSource?> _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private ScrollStitcher? _stitcher;
-    private ScreenGrabber? _grabber;
+    private IFrameGrabber? _grabber;
     private byte[]? _buffer;
     private DispatcherTimer? _timer;
     private Window? _frame, _bar;
@@ -32,49 +34,64 @@ internal sealed class ScrollCaptureSession
     // interface; a finish asked for meanwhile waits for that frame.
     private Task? _adding;
     private bool? _finishRequested;
+    private bool _finished;
+    private Exception? _failure;
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
-    public ScrollCaptureSession(Win32.RECT rect) => _rect = rect;
+    internal enum Checkpoint { GrabberCreated, ChromeShown, KeysRegistered, BeforeAdd }
+
+    public ScrollCaptureSession(Win32.RECT rect, Func<IFrameGrabber>? grabberFactory = null, Action<Checkpoint>? checkpoint = null)
+    {
+        _rect = rect;
+        _grabberFactory = grabberFactory;
+        _checkpoint = checkpoint;
+    }
 
     /// <summary>The stitched picture, or null when cancelled.</summary>
     public Task<BitmapSource?> RunAsync()
     {
         try
         {
-            _grabber = new ScreenGrabber(_rect, includeCursor: false);
+            _grabber = _grabberFactory?.Invoke() ?? new ScreenGrabber(_rect, includeCursor: false);
+            _checkpoint?.Invoke(Checkpoint.GrabberCreated);
             _buffer = new byte[_rect.Width * _rect.Height * 4];
             _stitcher = new ScrollStitcher(_rect.Width, _rect.Height, ImageOutput.MaxPixels);
             ShowChrome();
+            _checkpoint?.Invoke(Checkpoint.ChromeShown);
             RegisterKeys();
+            _checkpoint?.Invoke(Checkpoint.KeysRegistered);
             Tick();   // the first picture before anything moves
+            if (_finished) return _result.Task;
             _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(110), DispatcherPriority.Normal, (_, _) => Tick(), Dispatcher.CurrentDispatcher);
             _timer.Start();
         }
         catch (Exception error)
         {
-            // Reported, not taken for a cancel: the result is set before Finish completes it.
-            _result.TrySetException(error);
-            Finish(keep: false);
+            Finish(keep: false, error);
         }
         return _result.Task;
     }
 
     private void Tick()
     {
-        if (_grabber == null || _stitcher == null || _buffer == null || _adding is { IsCompleted: false }) return;
-        if (!_grabber.Grab(_buffer)) return;
-        // The buffer is not grabbed into again until this frame is added, and Add copies it.
-        var stitcher = _stitcher;
-        var frame = _buffer;
-        _adding = Task.Run(() => stitcher.Add(frame));
-        _adding.ContinueWith(AfterAdd, TaskScheduler.FromCurrentSynchronizationContext());
+        if (_finished || _finishRequested.HasValue || _grabber == null || _stitcher == null || _buffer == null || _adding is { IsCompleted: false }) return;
+        try
+        {
+            if (!_grabber.Grab(_buffer)) return;
+            // The buffer is not grabbed into again until this frame is added, and Add copies it.
+            var stitcher = _stitcher;
+            var frame = _buffer;
+            _adding = Task.Run(() => { _checkpoint?.Invoke(Checkpoint.BeforeAdd); stitcher.Add(frame); });
+            _adding.ContinueWith(AfterAdd, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+        catch (Exception error) { Finish(keep: false, error); }
     }
 
     private void AfterAdd(Task added)
     {
-        if (_result.Task.IsCompleted || _stitcher == null) return;
-        if (added.Exception is { } error) { _result.TrySetException(error.InnerException ?? error); Finish(keep: false); return; }
+        if (_finished || _stitcher == null) return;
+        if (added.Exception is { } error) { Finish(keep: false, error.InnerException ?? error); return; }
         if (_finishRequested is bool keep) { Finish(keep); return; }
         if (_stitcher.Full) { SetStatus(Loc("Str_Scroll_Full")); Finish(keep: true); return; }
         SetStatus(_stitcher.LostTrack ? Loc("Str_Scroll_Lost")
@@ -127,30 +144,47 @@ internal sealed class ScrollCaptureSession
     /// <summary>For the self-test: Done or Cancel without the keyboard.</summary>
     internal void TestFinish(bool keep) => Finish(keep);
 
-    private void Finish(bool keep)
+    private void Finish(bool keep, Exception? error = null)
     {
-        if (_result.Task.IsCompleted) return;
+        if (_finished) return;
+        _failure ??= error;
         _timer?.Stop();
         if (_adding is { IsCompleted: false })
         {
             _finishRequested = keep;   // AfterAdd finishes once the frame in hand is stitched
             return;
         }
+        _finished = true;
+        BitmapSource? result = null;
+        try { if (keep && _failure == null && _stitcher != null) result = _stitcher.Result(); }
+        catch (InvalidOperationException) { }   // no frame was captured
+        catch (Exception ex) { _failure ??= ex; }
+
+        // Completion is published only after every resource has been released. A failure in
+        // one cleanup operation must not skip the others or replace the original error.
+        void Release(Action action)
+        {
+            try { action(); }
+            catch (Exception ex) { _failure ??= ex; }
+        }
         if (_keys != null)
         {
-            Win32.UnregisterHotKey(_keys.Handle, HotkeyDone);
-            Win32.UnregisterHotKey(_keys.Handle, HotkeyCancel);
-            _keys.Dispose();
+            Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyDone));
+            Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyCancel));
+            Release(_keys.Dispose);
             _keys = null;
         }
-        try { _frame?.Close(); } catch (InvalidOperationException) { }
-        try { _bar?.Close(); } catch (InvalidOperationException) { }
-        BitmapSource? result = null;
-        try { if (keep && _stitcher != null) result = _stitcher.Result(); }
-        catch (InvalidOperationException) { }
-        catch (OutOfMemoryException error) { _result.TrySetException(error); }
-        _grabber?.Dispose();
+        Release(() => _frame?.Close());
+        Release(() => _bar?.Close());
+        Release(() => _grabber?.Dispose());
+        _frame = _bar = null;
         _grabber = null;
-        _result.TrySetResult(result);
+        _timer = null;
+        _stitcher = null;
+        _buffer = null;
+        _status = null;
+        _adding = null;
+        if (_failure != null) _result.TrySetException(_failure);
+        else _result.TrySetResult(result);
     }
 }
