@@ -170,22 +170,21 @@ public static class Program
                 throw new CliException("--interval with --count above 1 needs --out to be a folder, not a file.");
             if (o.Has("editor") || o.Has("pick"))
                 throw new CliException("--interval cannot be combined with --editor or --pick.");
-            var once = new List<string>();
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i] is "--interval" or "--count") { i++; continue; }
-                once.Add(args[i]);
-            }
             int last = ExitOk;
             for (int n = 0; n < count; n++)
             {
                 if (n > 0) await Task.Delay(TimeSpan.FromSeconds(interval));
-                last = await CaptureAsync([.. once]);
+                last = await CaptureOnceAsync(o);
                 if (last != ExitOk) return last;
             }
             return last;
         }
         if (o.Has("count")) throw new CliException("--count is only used with --interval.");
+        return await CaptureOnceAsync(o);
+    }
+
+    private static async Task<int> CaptureOnceAsync(Options o)
+    {
         if (o.Has("repeat") && o.Value("preset") != null) throw new CliException("--repeat and --preset cannot be combined.");
         var mode = ModeFor(o, CaptureSettings.LastMode == CaptureMode.Qr ? CaptureMode.Region : CaptureSettings.LastMode);
         int delay = o.Int("delay", 0, 30) ?? CaptureSettings.DelaySeconds;
