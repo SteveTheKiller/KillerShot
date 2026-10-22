@@ -419,7 +419,7 @@ namespace KillerShot.Shell
             title.SetResourceReference(TextBlock.FontFamilyProperty, "HeadingFont");
             var detail = new TextBlock { Text = row.Detail, FontSize = 11, Margin = new Thickness(10, 0, 0, 2), VerticalAlignment = VerticalAlignment.Bottom };
             detail.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
-            var line = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 8) };
+            var line = new CollectionHeader { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 14, 0, 8) };
             if (row.IsFolder)
             {
                 // A folder on disk, not a collection in the library: a folder mark, and its menu
@@ -454,15 +454,19 @@ namespace KillerShot.Shell
             {
                 line.Focusable = true;
                 KeyboardNavigation.SetIsTabStop(line, true);
-                line.KeyDown += (_, e) =>
+                line.OpenMenu = () =>
                 {
-                    if (e.Key is not (Key.Apps or Key.Enter or Key.Space) &&
-                        !(e.SystemKey == Key.F10 && (Keyboard.Modifiers & ModifierKeys.Shift) != 0)) return;
                     if (row.IsCollection && row.CollectionId is long collectionId)
                         FillCollectionMenu(line.ContextMenu, collectionId, row.Title);
                     line.ContextMenu.PlacementTarget = line;
                     line.ContextMenu.Placement = PlacementMode.Bottom;
                     line.ContextMenu.IsOpen = true;
+                };
+                line.KeyDown += (_, e) =>
+                {
+                    if (e.Key is not (Key.Apps or Key.Enter or Key.Space) &&
+                        !(e.SystemKey == Key.F10 && (Keyboard.Modifiers & ModifierKeys.Shift) != 0)) return;
+                    line.OpenMenu();
                     e.Handled = true;
                 };
             }

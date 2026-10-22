@@ -33,6 +33,57 @@ internal static class SelfTestCarouselAutomation
         Window? window = null;
         try
         {
+            var view = new LibraryView();
+            foreach (bool timeline in new[] { false, true })
+            {
+                var row = view.BuildRow(new LibraryRow { Kind = LibraryRowKind.Header, Title = "Tickets",
+                    Detail = "3 captures", IsCollection = true, CollectionId = 7, Timeline = timeline });
+                var header = row is System.Windows.Controls.Panel panel && timeline
+                    ? panel.Children.OfType<FrameworkElement>().Last() : row;
+                window = new Window { Content = row, Width = 450, Height = 120, Left = -20000, Top = -20000, ShowActivated = false };
+                window.SetResourceReference(Control.BackgroundProperty, "ContentPaneBrush");
+                window.Show();
+                var peer = UIElementAutomationPeer.CreatePeerForElement(header);
+                if (peer?.GetPattern(PatternInterface.Invoke) is not IInvokeProvider invoke ||
+                    peer.GetAutomationControlType() != AutomationControlType.Button || !peer.GetName().Contains("Tickets"))
+                    throw new InvalidOperationException("Collection header is not a named invokable control.");
+                invoke.Invoke();
+                await Task.Delay(100);
+                if (header.ContextMenu?.IsOpen != true || header.ContextMenu.Items.OfType<MenuItem>().Count() < 3)
+                    throw new InvalidOperationException("Invoking the collection header did not open management actions.");
+                header.ContextMenu.IsOpen = false;
+                header.IsEnabled = false;
+                try { invoke.Invoke(); throw new InvalidOperationException("Disabled header accepted Invoke."); }
+                catch (ElementNotEnabledException) { }
+                header.IsEnabled = true;
+                header.Focusable = false;
+                window.Activate();
+                System.Windows.Input.Keyboard.Focus(window);
+                header.Focusable = true;
+                byte[] RenderHeader(string name)
+                {
+                    var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(window.ActualWidth),
+                        (int)Math.Ceiling(window.ActualHeight), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                    bitmap.Render(window);
+                    var pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
+                    bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
+                    var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+                    using var file = File.Create(Path.Combine(folder, name + ".png"));
+                    encoder.Save(file);
+                    return pixels;
+                }
+                var unfocused = RenderHeader("header-unfocused-" + timeline);
+                peer.SetFocus();
+                await Task.Delay(50);
+                if (!peer.HasKeyboardFocus() || unfocused.SequenceEqual(RenderHeader("header-focused-" + timeline)))
+                    throw new InvalidOperationException("Header automation focus has no visible indicator.");
+                window.Close();
+                try { invoke.Invoke(); throw new InvalidOperationException("Detached header accepted Invoke."); }
+                catch (ElementNotAvailableException) { }
+                window = null;
+            }
+            report.Add("collection headers expose named buttons and invoke management actions in grid and timeline PASS");
             var items = Enumerable.Range(0, 80).Select(i => new CaptureItem(i, DateTime.Today, 320, 200, "window", "Picture " + i, null, null, null)).ToArray();
             var flow = new CoverFlow { Describe = i => i.Window ?? "" };
             window = new Window { Content = flow, Width = 900, Height = 400, Left = -20000, Top = -20000, ShowActivated = false, WindowStyle = WindowStyle.None };
