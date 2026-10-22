@@ -28,6 +28,9 @@ internal sealed class Mp4Encoder : IVideoSink
     private IRandomAccessStream? _stream;
     private int _w, _h, _fps;
     private TimeSpan _last = TimeSpan.Zero;
+    private readonly object _videoSamples = new();
+    private (byte[] Frame, TimeSpan At)? _pendingVideo;
+    private TimeSpan _finishedAt;
 
     /// <summary>Whether Media Foundation reads this input bottom-up. Settled by the self-test,
     /// which decodes a recorded frame and checks which way up it is.</summary>
@@ -144,17 +147,23 @@ internal sealed class Mp4Encoder : IVideoSink
         {
             try
             {
-                var item = _queue.Take();
-                if (item is { } f)
+                lock (_videoSamples)
                 {
-                    var sample = MediaStreamSample.CreateFromBuffer(f.Frame.AsBuffer(), f.At);
-                    sample.Duration = TimeSpan.FromSeconds(1.0 / _fps);
-                    sample.KeyFrame = true;
-                    request.Sample = sample;
-                }
-                else
-                {
-                    request.Sample = null;   // end of stream
+                    var item = _pendingVideo;
+                    if (item == null) _queue.TryTake(out item, Timeout.Infinite);
+                    if (item is { } f)
+                    {
+                        // Look ahead one frame so sparse captures hold until the next frame,
+                        // and the final picture holds until the recording's Stop timestamp.
+                        _queue.TryTake(out var next, Timeout.Infinite);
+                        _pendingVideo = next;
+                        TimeSpan end = next?.At ?? _finishedAt;
+                        var sample = MediaStreamSample.CreateFromBuffer(f.Frame.AsBuffer(), f.At);
+                        sample.Duration = end > f.At ? end - f.At : TimeSpan.FromSeconds(1.0 / _fps);
+                        sample.KeyFrame = true;
+                        request.Sample = sample;
+                    }
+                    else request.Sample = null;
                 }
             }
             catch (InvalidOperationException)
@@ -211,6 +220,7 @@ internal sealed class Mp4Encoder : IVideoSink
 
     public async Task FinishAsync(TimeSpan duration)
     {
+        _finishedAt = duration;
         CompleteQueues();
         try { if (_transcode != null) await _transcode; }
         finally { DisposeStream(); }

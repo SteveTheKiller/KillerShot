@@ -13,6 +13,7 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
+        if (SelfTestMp4Timing.TryRun(args)) return true;
         if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands" or "--selftest-audio-fault" or "--selftest-recording-countdown" or "--selftest-mp4-fault")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
