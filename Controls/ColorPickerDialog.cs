@@ -102,7 +102,7 @@ namespace KillerShot.Controls
             var card = new PickerBorder
             {
                 Background = R("SurfaceBrush"),
-                BorderBrush = R("CardBorderBrush"),
+                BorderBrush = R("AppBorderBrush"),
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(14),
             };

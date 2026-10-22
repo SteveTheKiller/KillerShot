@@ -124,7 +124,7 @@ internal sealed class PrintPreviewWindow : Window
         layers.Children.Add(contents);
         var card = new PickerBorder { Margin = new Thickness(12), BorderThickness = new Thickness(1), Child = layers };
         card.SetResourceReference(Border.BackgroundProperty, "BackgroundBrush");
-        card.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
+        card.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
         card.SetResourceReference(Border.CornerRadiusProperty, "PanelCornerRadius");
         Content = card;
     }
