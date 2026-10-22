@@ -431,7 +431,8 @@ namespace KillerShot
                 return KillerFamily.Deployment.InstallerExitCodes.AccessDenied;
             return new DeferredUninstall().RunWorker(Process.GetCurrentProcess().MainModule!.FileName,
                 UninstallStagingRoot(machine), machine ? MachineInstallDir : InstallDir, InstalledFiles,
-                machine, args[2], () => RemoveUninstallMetadata(machine));
+                machine, args[2], () => RemoveUninstallMetadata(machine),
+                removeIntegration: () => RemoveUninstallIntegration(machine));
         }
 
         private static int Uninstall(bool silent, string? requestedOperationId)
@@ -492,7 +493,9 @@ namespace KillerShot
             return false;
         }
 
-        private static void RemoveUninstallMetadata(bool machine)
+        /// <summary>Shortcuts, PATH and startup: removed while the program is still in
+        /// place, so a failure here leaves an uninstall entry that still works.</summary>
+        private static void RemoveUninstallIntegration(bool machine)
         {
             string startMenuDir = machine
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName)
@@ -520,7 +523,10 @@ namespace KillerShot
             using (var startup = Registry.CurrentUser.OpenSubKey(KillerFamily.Deployment.StartupRegistration.RunKeyPath))
                 if (startup?.GetValue(Services.AppInfo.DisplayName) != null)
                     throw new IOException("The startup registration remains.");
+        }
 
+        private static void RemoveUninstallMetadata(bool machine)
+        {
             var hive = machine ? Registry.LocalMachine : Registry.CurrentUser;
 
 
