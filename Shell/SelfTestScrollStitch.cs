@@ -21,6 +21,7 @@ internal static class SelfTestScrollStitch
         int code = 1;
         try
         {
+            UnusedHighByte(report, folder);
             Vertical(report, folder);
             Sideways(report);
             Limits(report);
@@ -34,6 +35,32 @@ internal static class SelfTestScrollStitch
     }
 
     private static void Expect(bool ok, string message) { if (!ok) throw new InvalidOperationException(message); }
+
+    private static void UnusedHighByte(List<string> report, string folder)
+    {
+        const int width = 40, view = 60, height = 140;
+        byte[] expected = Page(width, height, 21);
+        byte[] first = Rows(expected, width, 0, view);
+        for (int i = 3; i < first.Length; i += 4) first[i] = 0;
+        var single = new ScrollStitcher(width, view, ImageOutput.MaxPixels);
+        single.Add(first);
+        string path = Path.Combine(folder, "opaque-screen.png");
+        ImageOutput.SavePng(single.Result(), path);
+        var decoded = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        Expect(Pixels(decoded).AsSpan().SequenceEqual(Rows(expected, width, 0, view)),
+            "Unused zero screen bytes became transparent PNG pixels.");
+        Expect(first[3] == 0, "The stitcher modified the caller's frame.");
+        var stitcher = new ScrollStitcher(width, view, ImageOutput.MaxPixels);
+        for (int top = 0; top <= height - view; top += 20)
+        {
+            byte[] frame = Rows(expected, width, top, view);
+            for (int i = 3; i < frame.Length; i += 4) frame[i] = (byte)(top + i % 127);
+            stitcher.Add(frame);
+        }
+        Expect(stitcher.Result().PixelHeight == height && Pixels(stitcher.Result()).AsSpan().SequenceEqual(expected),
+            "Changing unused screen bytes broke overlap matching or output opacity.");
+        report.Add("zero and varying unused screen bytes preserve RGB, opaque PNG output and overlap matching PASS");
+    }
 
     /// <summary>Rows that repeat every 10 lines match at several shifts. Scrolled by steady steps,
     /// the stitcher keeps the step it saw rather than the smallest match, so no rows go missing.</summary>

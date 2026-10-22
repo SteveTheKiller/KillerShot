@@ -40,11 +40,14 @@ internal sealed class ScrollStitcher
     public bool LostTrack { get; private set; }
     public bool Moved => _vertical != null;
 
-    /// <summary>Adds a frame, BGRA top-down, width * height * 4 bytes.</summary>
+    /// <summary>Adds opaque screen pixels, BGRX top-down, width * height * 4 bytes.</summary>
     public void Add(byte[] frame)
     {
         if (Full) return;
         var copy = (byte[])frame.Clone();
+        // A 32-bit BI_RGB screen buffer has no alpha channel. Ignore its unused high bytes
+        // for both overlap matching and output, without modifying the caller's buffer.
+        for (int i = 3; i < copy.Length; i += 4) copy[i] = 255;
         if (_previous == null) { _previous = _first = _last = copy; return; }
         if (copy.AsSpan().SequenceEqual(_previous)) return;
         if (_vertical == null)
