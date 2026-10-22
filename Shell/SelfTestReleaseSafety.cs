@@ -22,6 +22,7 @@ internal static class SelfTestReleaseSafety
 
     internal static bool TryRun(string[] args)
     {
+        if (SelfTestFooterLayout.TryRun(args)) return true;
         if (SelfTestAlbumSurfaces.TryRun(args)) return true;
         if (SelfTestAlbumLayout.TryRun(args)) return true;
         if (SelfTestViewCards.TryRun(args)) return true;
@@ -352,4 +353,3 @@ internal static class SelfTestReleaseSafety
         ImageOutput.SavePng(bitmap, path);
     }
 }
-

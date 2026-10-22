@@ -71,7 +71,53 @@ namespace KillerShot.Shell
             Library.ViewChanged += SyncFooterView;
             StripDock.LayoutChanged += SyncFooterView;
             NavigationDock.LayoutChanged += SyncFooterView;
+            FooterBar.LayoutUpdated += SyncPortableFooterLayout;
             SyncFooterView();
+        }
+
+        private void SyncPortableFooterLayout(object? sender, EventArgs e)
+        {
+            // Keep the interactive controls readable before secondary attribution at narrow widths.
+            var copyright = PortableBadge.IsVisible && FooterBar.ActualWidth < 900 ? Visibility.Collapsed : Visibility.Visible;
+            if (FooterCopyright.Visibility != copyright)
+            {
+                FooterCopyright.Visibility = copyright;
+                return;
+            }
+            var controls = FooterViewCell.Children.OfType<StackPanel>().Single();
+            double controlsWidth = controls.Margin.Left + controls.Margin.Right + controls.Children.OfType<FrameworkElement>()
+                .Where(child => child.IsVisible).Sum(child => child.ActualWidth + child.Margin.Left + child.Margin.Right);
+            if (Math.Abs(FooterViewCell.MinWidth - controlsWidth) > .5)
+            {
+                FooterViewCell.MinWidth = controlsWidth;
+                return;
+            }
+            bool portable = PortableBadge.IsVisible && PortableBadge.ActualWidth > 0;
+            double informationWidth = Math.Max(0, FooterBar.ActualWidth - FooterViewCell.DesiredSize.Width
+                - FooterBrandingCell.DesiredSize.Width - (portable ? PortableBadge.ActualWidth + 100 : 60));
+            if (Math.Abs(ImageInfoText.MaxWidth - informationWidth) > .5)
+            {
+                ImageInfoText.MaxWidth = informationWidth;
+                return;
+            }
+            if (!portable)
+            {
+                FooterStatusCell.MaxWidth = double.PositiveInfinity;
+                return;
+            }
+            double right = FooterViewCell.TranslatePoint(new Point(), FooterBar).X;
+            if (ImageInfoText.IsVisible && ImageInfoText.ActualWidth > 0)
+                right = Math.Min(right, ImageInfoText.TranslatePoint(new Point(), FooterBar).X);
+            double left = Math.Max(4, Math.Min((FooterBar.ActualWidth - PortableBadge.ActualWidth) / 2,
+                right - PortableBadge.ActualWidth - 8));
+            if (PortableBadge.HorizontalAlignment != HorizontalAlignment.Left || Math.Abs(PortableBadge.Margin.Left - left) > .5)
+            {
+                PortableBadge.HorizontalAlignment = HorizontalAlignment.Left;
+                PortableBadge.Margin = new Thickness(left, 0, 0, 0);
+            }
+            double statusWidth = Math.Max(0, left - FooterStatusCell.TranslatePoint(new Point(), FooterBar).X - 8);
+            if (Math.Abs(FooterStatusCell.MaxWidth - statusWidth) > .5)
+                FooterStatusCell.MaxWidth = statusWidth;
         }
 
         private Button StripRailButton(object icon, string key)

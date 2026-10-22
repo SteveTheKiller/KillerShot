@@ -19,6 +19,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Capture and recording
 
+- MP4 recordings hold the final frame through Stop, including sparse captures and stopping while paused.
 - Print Screen captures a region, Alt+Print Screen the active window, Ctrl+Print Screen the monitor under the pointer, and Shift+Print Screen every monitor. These global shortcuts are configurable, and capture preserves open menus.
 - Window capture includes covered areas through Windows Graphics Capture and warns when only visible desktop pixels are available. (#5)
 - A movable capture bar selects Photo or Video, capture mode and output folder. Regions capture on release; Escape or right-click cancels without output. Options include capture delay, mouse pointer and camera sound.
@@ -61,6 +62,8 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
 
 ### Desktop, accessibility and localization
+- Every album view keeps the themed content pane, with subtly shaded screenshot cards and restrained photo shadows in carousels.
+- Portable stays clear of footer controls and long image readouts in narrow windows.
 - In 98SE, menu hover fill follows the selected accent.
 - Light is shades of gray with nothing white: the background, sidebar and footer are the darkest gray (#cccccc), menus and bars a step lighter, then panes, then fields.
 
