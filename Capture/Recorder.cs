@@ -25,6 +25,7 @@ internal sealed class Recorder
     private Exception? _error;
     private readonly SoundSource _sound;
     private readonly IEnumerable<IAudioCaptureSource>? _audioSources;
+    private readonly Func<IFrameGrabber>? _grabberFactory;
     private AudioCapture? _audio;
     private IFrameGrabber? _grabber;
 
@@ -33,7 +34,7 @@ internal sealed class Recorder
     public bool IsPaused => _paused;
     /// <summary>A capture, encoder or audio error. Audio counts, so a lost microphone stops the
     /// recording at once instead of recording silence until Stop.</summary>
-    public bool HasFailed => Volatile.Read(ref _error) != null || _audio?.Error != null;
+    public bool HasFailed => Volatile.Read(ref _error) != null || _audio?.Error != null || _sink.Error != null;
     /// <summary>The encoder completed the file, even if a capture source reported an error.</summary>
     public bool IsFinalized { get; private set; }
 
@@ -41,10 +42,11 @@ internal sealed class Recorder
     public bool UsesGraphicsCapture { get; private set; }
 
     public Recorder(Win32.RECT rect, IVideoSink sink, int fps, bool includeCursor, SoundSource sound = SoundSource.None,
-        IEnumerable<IAudioCaptureSource>? audioSources = null)
+        IEnumerable<IAudioCaptureSource>? audioSources = null, Func<IFrameGrabber>? grabberFactory = null)
     {
         _sound = sound;
         _audioSources = audioSources;
+        _grabberFactory = grabberFactory;
         _rect = rect;
         _sink = sink;
         _fps = Math.Clamp(fps, 1, 60);
@@ -63,7 +65,7 @@ internal sealed class Recorder
         {
             await _sink.StartAsync(_rect.Width, _rect.Height, _fps);
             // Created off the UI thread, before the clock starts, so the first frame is ready on time.
-            _grabber = await Task.Run(() => (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
+            _grabber = await Task.Run(() => _grabberFactory?.Invoke() ?? (IFrameGrabber?)MonitorGrabber.TryCreate(_rect, _cursor) ?? new ScreenGrabber(_rect, _cursor));
             UsesGraphicsCapture = _grabber is MonitorGrabber;
             if (_sound != SoundSource.None || _audioSources != null)
             {
@@ -135,7 +137,7 @@ internal sealed class Recorder
             });
         }
         catch (Exception ex) { failure ??= ex; }
-        failure ??= _error ?? _audio?.Error;
+        failure ??= _error ?? _audio?.Error ?? _sink.Error;
         try
         {
             await _sink.FinishAsync(duration);

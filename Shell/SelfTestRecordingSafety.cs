@@ -4,6 +4,7 @@ using System.Windows;
 using KillerShot.Native;
 using KillerShot.Services;
 using KillerShot.Video;
+using KillerShot.Capture;
 
 namespace KillerShot.Shell;
 
@@ -12,7 +13,7 @@ internal static class SelfTestRecordingSafety
 {
     public static bool TryRun(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands" or "--selftest-audio-fault")) return false;
+        if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands" or "--selftest-audio-fault" or "--selftest-recording-countdown" or "--selftest-mp4-fault")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
         Settings.UseFolder(Path.Combine(dir, "settings"));
@@ -24,9 +25,180 @@ internal static class SelfTestRecordingSafety
             "--selftest-audio-downmix" => RunDownmixAsync(dir),
             "--selftest-recording-commands" => RunCommandsAsync(dir),
             "--selftest-audio-fault" => RunAudioFaultAsync(dir),
+            "--selftest-recording-countdown" => RunCountdownAsync(dir),
+            "--selftest-mp4-fault" => RunMp4FaultAsync(dir),
             _ => RunAsync(dir)
         };
         return true;
+    }
+
+    private static async Task RunMp4FaultAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        try
+        {
+            VideoSettings.Format = "mp4";
+            VideoSettings.Sound = SoundSource.None;
+            VideoSettings.Countdown = VideoSettings.CopyFile = VideoSettings.Notify = false;
+            foreach (bool paused in new[] { false, true })
+            {
+                VideoSettings.OutputFolder = Path.Combine(dir, paused ? "paused" : "active");
+                var originalWindows = Application.Current.Windows.Cast<Window>().ToHashSet();
+                using var tray = new TrayHost();
+                var transcode = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var frames = new SyntheticVideoFrames();
+                var warnings = new List<string>();
+                int restores = 0;
+                Mp4Encoder? sink = null;
+                var controller = new VideoController(tray, sinkFactory: path => sink = new Mp4Encoder(path, .1, transcodeFactory: () => transcode.Task),
+                    grabberFactory: () => frames, showWarning: (_, message) => warnings.Add(message));
+                try
+                {
+                    await controller.StartAsync(new Win32.RECT(100, 100, 164, 164), () => restores++);
+                    await frames.ThreeFrames.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                    if (paused) controller.TogglePause();
+                    var error = new IOException("Injected asynchronous MP4 failure.");
+                    var elapsed = System.Diagnostics.Stopwatch.StartNew();
+                    transcode.SetException(error);
+                    while (controller.IsRecording && elapsed.ElapsedMilliseconds < 1500) await Task.Delay(10);
+                    report.Add($"MP4 async fault paused={paused}: active={controller.IsRecording}, elapsed={elapsed.ElapsedMilliseconds} ms, warnings={warnings.Count}, disposals={frames.Disposals}");
+                    if (controller.IsRecording) throw new InvalidOperationException("The MP4 transcoder fault stayed hidden until manual Stop.");
+                    if (!warnings.SequenceEqual(new[] { error.Message }) || frames.Disposals != 1 || restores != 1 || controller.LastVideoPath != null)
+                        throw new InvalidOperationException("The MP4 fault did not preserve its error, release capture, or restore the editor exactly once.");
+                    if (Application.Current.Windows.Cast<Window>().Except(originalWindows).Any() || Directory.EnumerateFiles(VideoSettings.OutputFolder, "*", SearchOption.AllDirectories).Any())
+                        throw new InvalidOperationException("MP4 failure left capture chrome or a published output.");
+                    await controller.StopAsync(false);
+                    if (warnings.Count != 1 || restores != 1) throw new InvalidOperationException("Repeated Stop repeated fault reporting or editor restoration.");
+                }
+                finally
+                {
+                    transcode.TrySetResult();
+                    sink?.Dispose();
+                    await controller.StopAsync(true);
+                }
+            }
+            report.Add("Asynchronous MP4 failure stops active and paused recording without manual Stop: PASS");
+            await Mp4QueueFaultAsync(dir, report);
+            code = 0;
+        }
+        catch (Exception error) { report.Add(error.ToString()); }
+        File.WriteAllLines(Path.Combine(dir, "mp4-fault-report.txt"), report);
+        App.Instance.Shutdown(code);
+    }
+
+    private static async Task Mp4QueueFaultAsync(string dir, List<string> report)
+    {
+        var transcode = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var sink = new Mp4Encoder(Path.Combine(dir, "queue.mp4"), .1, 128000, () => transcode.Task);
+        await sink.StartAsync(2, 2, 30);
+        var frame = new byte[16];
+        for (int i = 0; i < 9; i++) sink.AddFrame(frame, TimeSpan.FromMilliseconds(i * 34));
+        if (sink.Dropped != 1 || sink.Error != null) throw new InvalidOperationException("Ordinary queue saturation was mistaken for an encoder fault.");
+        for (int i = 0; i < 400; i++) sink.AddAudio(new byte[4], TimeSpan.FromMilliseconds(i));
+        var enteredVideo = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var enteredAudio = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task<Exception?> video = Task.Run(() => Write(() => sink.AddFrame(frame, TimeSpan.FromSeconds(1)), enteredVideo));
+        Task<Exception?> audio = Task.Run(() => Write(() => sink.AddAudio(new byte[4], TimeSpan.FromSeconds(1)), enteredAudio));
+        try
+        {
+            await Task.WhenAll(enteredVideo.Task, enteredAudio.Task).WaitAsync(TimeSpan.FromSeconds(2));
+            await Task.Delay(50);
+            if (video.IsCompleted || audio.IsCompleted) throw new InvalidOperationException("The fault fixture did not fill both input queues.");
+            var error = new IOException("Injected fault while both MP4 input queues are full.");
+            var elapsed = System.Diagnostics.Stopwatch.StartNew();
+            transcode.SetException(error);
+            var failures = await Task.WhenAll(video, audio).WaitAsync(TimeSpan.FromMilliseconds(750));
+            if (failures.Any(failure => !ReferenceEquals(failure, error)) || !ReferenceEquals(sink.Error, error) || sink.Dropped != 1)
+                throw new InvalidOperationException("A failed MP4 producer lost the original error or counted failure as a dropped frame.");
+            report.Add($"Full MP4 video/audio queues release both writers with the original failure in {elapsed.ElapsedMilliseconds} ms; ordinary saturation drops one frame: PASS");
+        }
+        finally
+        {
+            transcode.TrySetResult();
+            sink.Dispose();
+            await Task.WhenAll(video, audio);
+        }
+
+        static Exception? Write(Action add, TaskCompletionSource entered)
+        {
+            entered.TrySetResult();
+            try { add(); return null; }
+            catch (Exception error) { return error; }
+        }
+    }
+
+    private sealed class SyntheticVideoFrames : IFrameGrabber
+    {
+        private int _grabs, _disposals;
+        public int Width => 64;
+        public int Height => 64;
+        public int Disposals => Volatile.Read(ref _disposals);
+        public TaskCompletionSource ThreeFrames { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Grab(byte[] bgra)
+        {
+            ObjectDisposedException.ThrowIf(Disposals != 0, this);
+            Array.Fill(bgra, (byte)255);
+            if (Interlocked.Increment(ref _grabs) == 3) ThreeFrames.TrySetResult();
+            return true;
+        }
+        public void Dispose() => Interlocked.Increment(ref _disposals);
+    }
+
+    private static async Task RunCountdownAsync(string dir)
+    {
+        int code = 1;
+        var report = new List<string>();
+        var originalWindows = Application.Current.Windows.Cast<Window>().ToHashSet();
+        using var tray = new TrayHost();
+        int attempts = 0, restores = 0;
+        var controller = new VideoController(tray, sinkFactory: _ =>
+        {
+            attempts++;
+            throw new IOException("The countdown test refuses any recording startup.");
+        });
+        try
+        {
+            VideoSettings.OutputFolder = Path.Combine(dir, "videos");
+            VideoSettings.Format = "gif";
+            VideoSettings.Countdown = true;
+            VideoSettings.CopyFile = VideoSettings.Notify = false;
+            foreach (int seconds in new[] { 3, 2, 1 })
+            {
+                Task startup = controller.StartAsync(new Win32.RECT(100, 100, 164, 164), () => restores++);
+                string text = string.Format(LocaleManager.Loc("Str_Rec_Starting"), seconds);
+                var wait = System.Diagnostics.Stopwatch.StartNew();
+                while (!Chrome().SelectMany(Visuals).OfType<System.Windows.Controls.TextBlock>().Any(t => t.Text == text))
+                {
+                    if (wait.Elapsed > TimeSpan.FromSeconds(4)) throw new TimeoutException("Countdown value did not appear: " + seconds);
+                    await Task.Delay(10);
+                }
+                var stop = Chrome().SelectMany(Visuals).OfType<System.Windows.Controls.Button>()
+                    .Single(b => Equals(b.Content, LocaleManager.Loc("Str_Rec_Stop")));
+                stop.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                await startup.WaitAsync(TimeSpan.FromSeconds(2));
+                bool files = Directory.Exists(VideoSettings.OutputFolder) && Directory.EnumerateFiles(VideoSettings.OutputFolder, "*", SearchOption.AllDirectories).Any();
+                report.Add($"Stop at {seconds}: encoder attempts={attempts}, active={controller.IsRecording}, restores={restores}, windows={Chrome().Count()}, output files={files}");
+                if (attempts != 0 || controller.IsRecording || restores != 4 - seconds || Chrome().Any() || files || controller.LastVideoPath != null)
+                    throw new InvalidOperationException("Countdown Stop attempted recording instead of canceling startup.");
+            }
+            Task skipped = controller.StartAsync(new Win32.RECT(100, 100, 164, 164), () => restores++);
+            controller.Toggle(fromShortcut: true);
+            await skipped.WaitAsync(TimeSpan.FromSeconds(2));
+            if (attempts != 1 || restores != 4 || controller.IsRecording || Chrome().Any())
+                throw new InvalidOperationException("The explicit recording shortcut no longer skips the countdown.");
+            report.Add("Stop cancels at every countdown value; the shortcut still attempts immediate startup: PASS");
+            code = 0;
+        }
+        catch (Exception error) { report.Add(error.ToString()); }
+        finally
+        {
+            await controller.StopAsync(true);
+            File.WriteAllLines(Path.Combine(dir, "recording-countdown-report.txt"), report);
+            App.Instance.Shutdown(code);
+        }
+
+        IEnumerable<Window> Chrome() => Application.Current.Windows.Cast<Window>().Except(originalWindows);
     }
 
     private static async Task RunCommandsAsync(string dir)

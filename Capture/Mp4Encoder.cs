@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Media.Core;
 using Windows.Media.MediaProperties;
@@ -21,6 +22,7 @@ internal sealed class Mp4Encoder : IVideoSink
     private readonly BlockingCollection<(byte[] Frame, TimeSpan At)?> _queue = new(boundedCapacity: 8);
     private readonly BlockingCollection<(byte[] Pcm, TimeSpan At)?> _audio = new(boundedCapacity: 400);
     private readonly int _audioBitrate;
+    private readonly Func<Task>? _transcodeFactory;
     private AudioStreamDescriptor? _audioDesc;
     private Task? _transcode;
     private IRandomAccessStream? _stream;
@@ -34,11 +36,12 @@ internal sealed class Mp4Encoder : IVideoSink
     /// <param name="bitsPerPixel">Target bits per pixel per frame: about 0.05 is small, 0.1 is
     /// balanced and 0.2 is high quality for screen content.</param>
     /// <param name="audioBitrate">AAC bits per second, or 0 for a silent video.</param>
-    public Mp4Encoder(string path, double bitsPerPixel, int audioBitrate = 0)
+    public Mp4Encoder(string path, double bitsPerPixel, int audioBitrate = 0, Func<Task>? transcodeFactory = null)
     {
         _path = path;
         _bitsPerPixel = bitsPerPixel;
         _audioBitrate = audioBitrate;
+        _transcodeFactory = transcodeFactory;
     }
 
     /// <summary>The size of the encoded video, which is smaller than the recorded area when the
@@ -48,6 +51,9 @@ internal sealed class Mp4Encoder : IVideoSink
 
     /// <summary>Frames dropped because the encoder fell behind.</summary>
     public int Dropped { get; private set; }
+
+    public Exception? Error => _transcode is { IsFaulted: true } failed ? failed.Exception!.InnerException
+        : _transcode is { IsCanceled: true } canceled ? new TaskCanceledException(canceled) : null;
 
     public async Task StartAsync(int width, int height, int fps)
     {
@@ -83,6 +89,11 @@ internal sealed class Mp4Encoder : IVideoSink
         profile.Video.PixelAspectRatio.Denominator = 1;
         profile.Video.Bitrate = (uint)Math.Clamp(outW * (double)outH * fps * _bitsPerPixel, 500_000, 80_000_000);
 
+        if (_transcodeFactory != null)
+        {
+            ObserveTranscode(_transcodeFactory());
+            return;
+        }
         System.IO.File.Create(_path).Dispose();
         var file = await StorageFile.GetFileFromPathAsync(_path);
         _stream = await file.OpenAsync(FileAccessMode.ReadWrite);
@@ -90,7 +101,19 @@ internal sealed class Mp4Encoder : IVideoSink
         var prepared = await transcoder.PrepareMediaStreamSourceTranscodeAsync(source, _stream, profile);
         if (!prepared.CanTranscode)
             throw new InvalidOperationException("Windows could not set up the MP4 encoder: " + prepared.FailureReason);
-        _transcode = prepared.TranscodeAsync().AsTask();
+        ObserveTranscode(prepared.TranscodeAsync().AsTask());
+    }
+
+    private void ObserveTranscode(Task transcode)
+    {
+        _transcode = transcode;
+        _ = transcode.ContinueWith(completed =>
+        {
+            if (!completed.IsFaulted && !completed.IsCanceled) return;
+            _ = completed.Exception;
+            // Wake blocked producers and sample requests when the consumer can no longer run.
+            CompleteQueues();
+        }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
     }
 
     private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs e)
@@ -147,6 +170,7 @@ internal sealed class Mp4Encoder : IVideoSink
 
     public void AddFrame(byte[] bgra, TimeSpan timestamp)
     {
+        ThrowIfFailed();
         var copy = new byte[bgra.Length];
         int stride = _w * 4;
         if (FlipRows)
@@ -156,12 +180,33 @@ internal sealed class Mp4Encoder : IVideoSink
             System.Buffer.BlockCopy(bgra, 0, copy, 0, copy.Length);
         if (timestamp <= _last && _last != TimeSpan.Zero) timestamp = _last + TimeSpan.FromMilliseconds(1);
         _last = timestamp;
-        if (!_queue.TryAdd((copy, timestamp), 2000)) Dropped++;
+        if (!Add(_queue, (copy, timestamp))) Dropped++;
     }
 
     public void AddAudio(byte[] pcm, TimeSpan timestamp)
     {
-        if (_audioDesc != null) _audio.TryAdd((pcm, timestamp), 2000);
+        if (_audioDesc != null) Add(_audio, (pcm, timestamp));
+    }
+
+    private bool Add<T>(BlockingCollection<T> queue, T item)
+    {
+        ThrowIfFailed();
+        try
+        {
+            bool added = queue.TryAdd(item, 2000);
+            ThrowIfFailed();
+            return added;
+        }
+        catch (InvalidOperationException)
+        {
+            ThrowIfFailed();   // queue closure must not hide the original transcoder error
+            throw;
+        }
+    }
+
+    private void ThrowIfFailed()
+    {
+        if (Error is { } error) ExceptionDispatchInfo.Capture(error).Throw();
     }
 
     public async Task FinishAsync(TimeSpan duration)

@@ -20,6 +20,8 @@ internal sealed class VideoController
     private readonly TrayHost _tray;
     private readonly IEnumerable<IAudioCaptureSource>? _audioSources;
     private readonly Func<string, IVideoSink>? _sinkFactory;
+    private readonly Func<IFrameGrabber>? _grabberFactory;
+    private readonly Action<string, string> _showWarning;
     private Recorder? _recorder;
     private RecordingChrome? _chrome;
     private DispatcherTimer? _tick;
@@ -38,11 +40,14 @@ internal sealed class VideoController
 
     private static string Loc(string key) => LocaleManager.Loc(key);
 
-    public VideoController(TrayHost tray, IEnumerable<IAudioCaptureSource>? audioSources = null, Func<string, IVideoSink>? sinkFactory = null)
+    public VideoController(TrayHost tray, IEnumerable<IAudioCaptureSource>? audioSources = null, Func<string, IVideoSink>? sinkFactory = null,
+        Func<IFrameGrabber>? grabberFactory = null, Action<string, string>? showWarning = null)
     {
         _tray = tray;
         _audioSources = audioSources;
         _sinkFactory = sinkFactory;
+        _grabberFactory = grabberFactory;
+        _showWarning = showWarning ?? tray.ShowWarning;
         _tray.PauseRecordingRequested += TogglePause;
         _tray.DiscardRecordingRequested += () => _ = StopAsync(true);
         _tray.RecordingPaused = () => _recorder?.IsPaused == true;
@@ -84,7 +89,7 @@ internal sealed class VideoController
 
             _chrome = new RecordingChrome(rect);
             _chrome.PauseClicked += TogglePause;
-            _chrome.StopClicked += () => Toggle();
+            _chrome.StopClicked += () => _ = StopAsync(discard: false);
             _chrome.DiscardClicked += () => _ = StopAsync(discard: true);
             _chrome.Show();
 
@@ -111,7 +116,7 @@ internal sealed class VideoController
                 ? new GifEncoder(_path, VideoSettings.GifColors >= 256 ? 255 : VideoSettings.GifColors, VideoSettings.GifSize / 100.0, VideoSettings.GifLoop)
                 : new Mp4Encoder(_path, VideoSettings.Mp4BitsPerPixel, VideoSettings.Sound == SoundSource.None ? 0 : VideoSettings.AudioKbps * 1000));
             _recorder = new Recorder(rect, sink, fps, VideoSettings.IncludeCursor, gif ? SoundSource.None : VideoSettings.Sound,
-                gif ? null : _audioSources);
+                gif ? null : _audioSources, _grabberFactory);
             await _recorder.StartAsync();
             recorderStarted = true;
             if (_stopRequested) return;
@@ -137,7 +142,7 @@ internal sealed class VideoController
             try { sink?.Dispose(); } catch { }
             Cleanup();
             CleanupStaging();
-            _tray.ShowWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
+            _showWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
         }
         finally
         {
@@ -210,13 +215,13 @@ internal sealed class VideoController
             _stopSucceeded = true;
             if (VideoSettings.CopyFile) CopyFileToClipboard(published);
             if (captureWarning != null)
-                _tray.ShowWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
+                _showWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
             else if (VideoSettings.Notify)
                 _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published), () => ShowInFolder(published));
         }
         catch (Exception ex)
         {
-            _tray.ShowWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
+            _showWarning(Loc("Str_Tray_VideoFailedTitle"), ex.Message);
         }
         finally
         {
@@ -257,7 +262,7 @@ internal sealed class VideoController
             dialog.ShowDialog();
             if (dialog.Confirmed) ShowInFolder(path);
         }
-        catch { _tray.ShowWarning(Loc("Str_Tray_SaveFailedTitle"), detail); }
+        catch { _showWarning(Loc("Str_Tray_SaveFailedTitle"), detail); }
     }
 
     private void CleanupStaging(bool retainFile = false)

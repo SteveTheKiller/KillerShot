@@ -4,6 +4,9 @@ namespace KillerShot.Video;
 /// recording's size; the timestamp is time since recording started, with pauses removed.</summary>
 internal interface IVideoSink : IDisposable
 {
+    /// <summary>A terminal asynchronous encoder failure, visible even when no frames arrive.</summary>
+    Exception? Error => null;
+
     /// <summary>Called once, before the first frame.</summary>
     Task StartAsync(int width, int height, int fps);
 
