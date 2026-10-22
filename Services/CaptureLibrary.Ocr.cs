@@ -119,7 +119,9 @@ internal static partial class CaptureLibrary
                     try { text = await recognize(png); }
                     catch
                     {
-                        lock (_ocrFailed) _ocrFailed.Add(id);
+                        lock (_gate)
+                            if (ReferenceEquals(_db, database))
+                                lock (_ocrFailed) _ocrFailed.Add(id);
                         continue;
                     }
                     StoreOcr(id, text, database, revision);

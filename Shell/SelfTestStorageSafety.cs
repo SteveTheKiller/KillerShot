@@ -39,6 +39,7 @@ internal static class SelfTestStorageSafety
             else if (scenario == "pending-budget") await PendingBudget(log);
             else if (scenario == "legacy-migration") await LegacyMigration(dir, log);
             else if (scenario == "ocr-retry") await OcrRetry(log);
+            else if (scenario == "ocr-album") await OcrAlbumIdentity(log);
             else if (scenario == "identity") CaptureIdentity(log);
             else if (scenario == "password") PasswordExportRecovery(log);
             else if (scenario == "mutations") MutationRollback(log);
@@ -282,6 +283,49 @@ internal static class SelfTestStorageSafety
         }
         finally
         {
+            CaptureLibrary.BackgroundWork = false;
+            CaptureLibrary.OcrEngineFactory = saved;
+        }
+    }
+
+    private static async Task OcrAlbumIdentity(StringBuilder log)
+    {
+        var saved = CaptureLibrary.OcrEngineFactory;
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var old = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var currentFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int calls = 0;
+        long sourceId = CaptureLibrary.AddNow(Pixel(), DateTime.Now, "region", "A", null);
+        string destination = CaptureLibrary.CreateAlbum("OCR destination");
+        CaptureLibrary.OcrEngineFactory = () => _ =>
+        {
+            int call = Interlocked.Increment(ref calls);
+            if (call == 1) { started.SetResult(); return old.Task; }
+            if (call == 2) return Task.FromResult("invoice-b-7129");
+            currentFailure.TrySetResult();
+            throw new InvalidOperationException("Current album OCR failure");
+        };
+        try
+        {
+            CaptureLibrary.BackgroundWork = true;
+            CaptureLibrary.ReindexOcr();
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            if (!CaptureLibrary.TrySwitchAlbum(destination, null, out _)) throw new InvalidOperationException("Could not switch OCR fixture album.");
+            long destinationId = CaptureLibrary.AddNow(Pixel(), DateTime.Now, "region", "B", null);
+            if (sourceId != destinationId) throw new InvalidOperationException("OCR fixture requires equal local IDs.");
+            old.SetException(new InvalidOperationException("Old album OCR failure"));
+            for (int i = 0; i < 100 && CaptureLibrary.Items("invoice-b-7129").Count == 0; i++) await Task.Delay(20);
+            if (CaptureLibrary.Items("invoice-b-7129").SingleOrDefault()?.Id != destinationId)
+                throw new InvalidOperationException("An old album OCR failure suppressed recognition of the current album's equal ID.");
+            CaptureLibrary.AddNow(Pixel(), DateTime.Now.AddSeconds(1), "region", "Current failure", null);
+            await currentFailure.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            await Task.Delay(150);
+            if (calls != 3) throw new InvalidOperationException("Current album OCR failure was retried in a loop.");
+            log.AppendLine("old album failure does not suppress current text search; current failure attempted once PASS");
+        }
+        finally
+        {
+            old.TrySetException(new InvalidOperationException("Fixture cleanup"));
             CaptureLibrary.BackgroundWork = false;
             CaptureLibrary.OcrEngineFactory = saved;
         }
