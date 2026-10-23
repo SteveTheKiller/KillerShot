@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Сақталған түзетулер мен түзетулері біріктірілген суретті қауіпсіз оқу мүмкін болмады. Түпнұсқа мен сақталған түзетулер альбомда қалады.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Түпнұсқаны қалпына келтіру...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Түпнұсқада түзетулермен немесе бояп жасыру арқылы жасырылған мазмұн болуы мүмкін. Ол бөлек көшірме ретінде ашылады. Сақталған түзетулер альбомда қалады. Жалғастыру керек пе?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Экранды түсіру кадрларды беруді тоқтатты.</sys:String>
 </ResourceDictionary>

@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">De lagrede endringene og bildet med de sammenslåtte endringene kunne ikke leses trygt. Originalen og de lagrede endringene blir værende i albumet.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Gjenopprett original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Originalen kan inneholde innhold som er skjult av endringer eller sladding. Den åpnes som en egen kopi. De lagrede endringene blir værende i albumet. Fortsette?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Skjermopptaket sluttet å levere bilder.</sys:String>
 </ResourceDictionary>

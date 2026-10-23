@@ -81,6 +81,7 @@ public partial class App : Application
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
         if (SelfTestAlbumActionIdentity.TryRun(e.Args)) return;
+        if (SelfTestFailedFrames.TryRun(e.Args)) return;
         if (SelfTestAlbumImageAdmission.TryRun(e.Args)) return;
         if (SelfTestAlbumModalIdentity.TryRun(e.Args)) return;
         // The interface self-test runs without the tray, the shortcuts or the single-instance

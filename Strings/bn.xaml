@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">সংরক্ষিত সম্পাদনাগুলো ও সব সম্পাদনা একত্র করা ছবিটি নিরাপদে পড়া যায়নি। মূল ছবি ও সংরক্ষিত সম্পাদনাগুলো অ্যালবামে রয়েছে।</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">মূল ছবি পুনরুদ্ধার করুন...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">মূল ছবিতে সম্পাদনা বা কালো করে ঢাকার মাধ্যমে লুকানো বিষয়বস্তু থাকতে পারে। এটি আলাদা একটি কপি হিসেবে খুলবে। সংরক্ষিত সম্পাদনাগুলো অ্যালবামে থাকবে। চালিয়ে যাবেন?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">স্ক্রিন ক্যাপচার থেকে আর ফ্রেম পাওয়া যাচ্ছে না।</sys:String>
 </ResourceDictionary>

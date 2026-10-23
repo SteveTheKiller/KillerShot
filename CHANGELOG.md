@@ -30,6 +30,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Record a region, window or monitor to MP4 with system sound, microphone or both, or to animated GIF. Frame rate and quality are configurable; multichannel audio keeps center and surround content in stereo.
 - Start recording with Ctrl+R or the global Ctrl+Shift+Print Screen shortcut. A countdown, capture frame and Pause, Resume, Stop and Discard controls stay out of the recording, with keyboard and tray access while the editor stays hidden. Stop during countdown cancels startup.
 - Stop and app exit wait for the recording to finish saving. Capture, encoder or audio device errors stop the recording right away and retain recoverable video; GIFs preserve long static intervals and play at their recorded speed at every frame rate.
+- Missing recording frames reuse buffers, recover from brief interruptions and stop with an error when capture does not recover.
 
 ### Albums and collections
 

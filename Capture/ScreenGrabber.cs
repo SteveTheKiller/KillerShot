@@ -48,7 +48,8 @@ internal sealed class ScreenGrabber : IFrameGrabber
     public bool Grab(byte[] bgra)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
-        if (!Win32.BitBlt(_mem, 0, 0, Width, Height, _screen, _rect.Left, _rect.Top, Win32.SRCCOPY | Win32.CAPTUREBLT)) return false;
+        if (!Win32.BitBlt(_mem, 0, 0, Width, Height, _screen, _rect.Left, _rect.Top, Win32.SRCCOPY | Win32.CAPTUREBLT))
+            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
         if (_cursor) FrozenDesktop.DrawCursor(_mem, _rect.Left, _rect.Top);
         Marshal.Copy(_bits, bgra, 0, Width * Height * 4);
         return true;

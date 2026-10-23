@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Les modifications enregistrées et l'image aplatie n'ont pas pu être lues en toute sécurité. L'original et les modifications enregistrées restent dans l'album.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Récupérer l'original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">L'original peut contenir du contenu masqué par des modifications ou des zones de masquage. Il s'ouvrira dans une copie séparée. Les modifications enregistrées resteront dans l'album. Continuer ?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">La capture d'écran ne fournit plus d'images.</sys:String>
 </ResourceDictionary>

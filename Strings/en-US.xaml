@@ -595,4 +595,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">The saved edits and flattened image could not be read safely. The original and saved edits remain in the album.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Recover original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">The original may contain content hidden by edits or redaction. It will open as a separate copy. Saved edits will stay in the album. Continue?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">The screen capture stopped providing frames.</sys:String>
 </ResourceDictionary>

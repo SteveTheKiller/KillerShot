@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Die gespeicherten Änderungen und das Bild mit den zusammengeführten Änderungen konnten nicht sicher gelesen werden. Das Original und die gespeicherten Änderungen bleiben im Album.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Original wiederherstellen...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Das Original kann Inhalte enthalten, die durch Änderungen oder Schwärzungen verborgen sind. Es wird als separate Kopie geöffnet. Die gespeicherten Änderungen bleiben im Album. Fortfahren?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Die Bildschirmaufnahme liefert keine Bilder mehr.</sys:String>
 </ResourceDictionary>

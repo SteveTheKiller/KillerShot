@@ -585,4 +585,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Shranjenih sprememb in slike z združenimi spremembami ni bilo mogoče varno prebrati. Izvirnik in shranjene spremembe ostanejo v albumu.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Obnovi izvirnik...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Izvirnik lahko vsebuje vsebino, skrito s spremembami ali prekrivanjem občutljivih podatkov. Odprl se bo kot ločena kopija. Shranjene spremembe bodo ostale v albumu. Želite nadaljevati?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Zajem zaslona je prenehal pošiljati sličice.</sys:String>
 </ResourceDictionary>

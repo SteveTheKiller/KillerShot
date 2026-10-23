@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">A mentett módosítások és a módosításokat egyesítő kép nem olvashatók biztonságosan. Az eredeti és a mentett módosítások megmaradnak az albumban.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Eredeti helyreállítása...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Az eredeti a módosításokkal vagy kitakarással elrejtett tartalmat is tartalmazhat. Külön másolatként nyílik meg. A mentett módosítások megmaradnak az albumban. Folytatja?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">A képernyőrögzítés már nem biztosít képkockákat.</sys:String>
 </ResourceDictionary>

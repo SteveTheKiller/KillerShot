@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">無法安全讀取已儲存的編輯內容和合併了編輯內容的影像。原圖和已儲存的編輯內容仍保留在相簿中。</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">復原原圖...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">原圖可能包含透過編輯或塗黑隱藏的內容。它將以獨立副本開啟。已儲存的編輯內容仍會保留在相簿中。是否繼續？</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">螢幕擷取已停止提供影格。</sys:String>
 </ResourceDictionary>

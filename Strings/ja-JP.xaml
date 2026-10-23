@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">保存された編集内容と編集内容を統合した画像を安全に読み取れませんでした。元の画像と保存された編集内容はアルバムに残っています。</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">元の画像を復元...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">元の画像には、編集や黒塗りで隠された内容が含まれている可能性があります。別のコピーとして開きます。保存された編集内容はアルバムに残ります。続行しますか？</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">画面キャプチャからフレームを取得できなくなりました。</sys:String>
 </ResourceDictionary>

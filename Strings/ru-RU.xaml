@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Не удалось безопасно прочитать сохранённые правки и изображение с объединёнными правками. Оригинал и сохранённые правки остаются в альбоме.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Восстановить оригинал...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Оригинал может содержать данные, скрытые правками или закрашиванием. Он откроется как отдельная копия. Сохранённые правки останутся в альбоме. Продолжить?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Захват экрана перестал предоставлять кадры.</sys:String>
 </ResourceDictionary>

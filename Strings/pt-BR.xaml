@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Não foi possível ler com segurança as edições salvas nem a imagem com as edições incorporadas. O original e as edições salvas permanecem no álbum.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Recuperar original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">O original pode conter conteúdo oculto por edições ou tarjas. Ele será aberto como uma cópia separada. As edições salvas permanecerão no álbum. Continuar?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">A captura da tela parou de fornecer quadros.</sys:String>
 </ResourceDictionary>

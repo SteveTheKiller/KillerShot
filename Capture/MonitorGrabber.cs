@@ -190,7 +190,7 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
             {
                 D3D11_MAPPED_SUBRESOURCE map;
                 int hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint, int, uint, D3D11_MAPPED_SUBRESOURCE*, int>)Slot(_context, Slot_Map))(_context, part.Staging, 0, D3D11_MAP_READ, 0, &map);
-                if (hr < 0) return false;
+                if (hr < 0) Marshal.ThrowExceptionForHR(hr);
                 try
                 {
                     int row = part.W * 4;

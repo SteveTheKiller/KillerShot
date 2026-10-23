@@ -157,9 +157,12 @@ internal sealed class Recorder
         try
         {
             using var grabber = _grabber!;
-            int size = grabber.Width * grabber.Height * 4;
+            int size = checked(grabber.Width * grabber.Height * 4);
             double frameMs = 1000.0 / _fps;
             double next = 0;
+            int missingFrames = 0;
+            // Allow brief no-frame intervals, but never leave an empty recording running forever.
+            int missingLimit = Math.Max(3, _fps);
             while (!_stop)
             {
                 if (_paused) { Thread.Sleep(15); continue; }
@@ -171,11 +174,19 @@ internal sealed class Recorder
                     continue;
                 }
                 var buffer = _pool.TryTake(out var b) ? b : new byte[size];
-                if (grabber.Grab(buffer))
+                bool queued = false;
+                try
                 {
-                    if (_queue.TryAdd((buffer, TimeSpan.FromMilliseconds(now)))) Frames++;
-                    else { Dropped++; _pool.Add(buffer); }
+                    if (grabber.Grab(buffer))
+                    {
+                        missingFrames = 0;
+                        if (_queue.TryAdd((buffer, TimeSpan.FromMilliseconds(now)))) { queued = true; Frames++; }
+                        else Dropped++;
+                    }
+                    else if (++missingFrames >= missingLimit)
+                        throw new InvalidOperationException(Services.LocaleManager.Loc("Str_Record_NoFrames"));
                 }
+                finally { if (!queued) _pool.Add(buffer); }
                 next += frameMs;
                 if (now - next > frameMs) next = now + frameMs;   // fell behind: skip ahead, don't burst
             }
@@ -194,14 +205,15 @@ internal sealed class Recorder
         {
             foreach (var (frame, at) in _queue.GetConsumingEnumerable())
             {
-                if (_error == null) _sink.AddFrame(frame, at);
-                _pool.Add(frame);
+                // Capture failure stops new frames. Valid queued frames still belong in the partial video.
+                try { _sink.AddFrame(frame, at); }
+                finally { _pool.Add(frame); }
             }
         }
         catch (Exception ex)
         {
             Fail(ex);
-            foreach (var _ in _queue.GetConsumingEnumerable()) { }
+            foreach (var (frame, _) in _queue.GetConsumingEnumerable()) _pool.Add(frame);
         }
     }
 

@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Nie można bezpiecznie odczytać zapisanych zmian ani obrazu ze scalonymi zmianami. Oryginał i zapisane zmiany pozostają w albumie.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Odzyskaj oryginał...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Oryginał może zawierać treści ukryte przez zmiany lub maskowanie. Zostanie otwarty jako osobna kopia. Zapisane zmiany pozostaną w albumie. Kontynuować?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">Przechwytywanie ekranu przestało dostarczać klatki.</sys:String>
 </ResourceDictionary>

@@ -592,4 +592,5 @@
     <sys:String x:Key="Str_Marks_Unreadable">Impossibile leggere in modo sicuro le modifiche salvate e l'immagine con le modifiche incorporate. L'originale e le modifiche salvate rimangono nell'album.</sys:String>
     <sys:String x:Key="Str_Marks_OpenOriginal">Recupera originale...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">L'originale potrebbe contenere contenuti nascosti da modifiche o oscuramenti. Verrà aperto come copia separata. Le modifiche salvate rimarranno nell'album. Continuare?</sys:String>
+    <sys:String x:Key="Str_Record_NoFrames">L'acquisizione dello schermo ha smesso di fornire fotogrammi.</sys:String>
 </ResourceDictionary>
