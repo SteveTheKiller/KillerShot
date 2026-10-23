@@ -113,6 +113,7 @@
     <sys:String x:Key="Str_About_RenderHint">Automaticky používá softwarové vykreslování ve Vzdálené ploše a při vzdálené správě, kde hardwarové vykreslování může zobrazit černé okno. Změny platí při příštím otevření okna.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Zavírat do oznamovací oblasti</sys:String>
     <sys:String x:Key="Str_About_StartWithWindows">Spouštět se systémem Windows</sys:String>
+    <sys:String x:Key="Str_About_ShowShortcutsInMenus">Zobrazovat zkratky v nabídkách</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Když je tato možnost vypnutá, zavřením okna se KillerShot ukončí a jeho klávesové zkratky přestanou fungovat.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Zachytit</sys:String>

@@ -109,6 +109,7 @@
     <sys:String x:Key="Str_About_RenderHint">Samodejni način med sejami oddaljenega namizja ali oddaljenega upravljanja uporablja programsko izrisovanje, saj lahko strojno izrisovanje prikaže črno okno. Spremembe začnejo veljati ob naslednjem odprtju okna.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Ob zapiranju skrij v območje za obvestila</sys:String>
     <sys:String x:Key="Str_About_StartWithWindows">Zaženi ob prijavi v Windows</sys:String>
+    <sys:String x:Key="Str_About_ShowShortcutsInMenus">Prikaži bližnjice v menijih</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Ko je ta možnost izklopljena, zapiranje okna konča KillerShot in njegove bližnjice prenehajo delovati.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Zajemi</sys:String>

@@ -113,6 +113,7 @@
     <sys:String x:Key="Str_About_RenderHint">Automatisk bruker programvaregjengivelse i Eksternt skrivebord og fjernstyringsøkter, der maskinvaregjengivelse kan vise et svart vindu. Endringer gjelder neste gang vinduet åpnes.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Lukk til systemstatusfeltet</sys:String>
     <sys:String x:Key="Str_About_StartWithWindows">Start når Windows starter</sys:String>
+    <sys:String x:Key="Str_About_ShowShortcutsInMenus">Vis hurtigtaster i menyer</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Når dette er av, avslutter KillerShot når vinduet lukkes, og hurtigtastene slutter å virke.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100 %</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Ta bilde</sys:String>

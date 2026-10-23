@@ -113,6 +113,7 @@
     <sys:String x:Key="Str_About_RenderHint">В автоматическом режиме используется программная отрисовка в сеансах удалённого рабочего стола и удалённого управления, где аппаратная отрисовка может показать чёрное окно. Изменения вступают в силу при следующем открытии окна.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Сворачивать в системный трей при закрытии</sys:String>
     <sys:String x:Key="Str_About_StartWithWindows">Запускать вместе с Windows</sys:String>
+    <sys:String x:Key="Str_About_ShowShortcutsInMenus">Показывать сочетания клавиш в меню</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Если отключено, закрытие окна завершает KillerShot, и его сочетания клавиш перестают работать.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Снимок</sys:String>

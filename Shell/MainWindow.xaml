@@ -1232,6 +1232,11 @@
                                 <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
                                            Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
                                            TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
+                                <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,8,0,0"
+                                          MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"
+                                          IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
+                                    <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
+                                </CheckBox>
                             </StackPanel>
 
                         </StackPanel>

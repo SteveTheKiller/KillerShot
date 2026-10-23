@@ -300,6 +300,7 @@ public partial class App : Application
         RenderModeService.Apply();
         ThemeManager.GetSetting = Settings.Get;
         ThemeManager.SetSetting = Settings.Set;
+        KillerFamily.Layout.ShortcutHints.Initialize(Settings.Get, Settings.Set);
         ThemeManager.Initialize();
         FilmGrain.Initialize();
         Controls.GrainTexture.Publish();

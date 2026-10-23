@@ -113,6 +113,7 @@
     <sys:String x:Key="Str_About_RenderHint">В автоматичному режимі використовується програмне відображення в сеансах віддаленого робочого стола та віддаленого керування, де апаратне відображення може показати чорне вікно. Зміни діють з наступного відкриття вікна.</sys:String>
     <sys:String x:Key="Str_About_CloseToTray">Згортати в системний трей під час закриття</sys:String>
     <sys:String x:Key="Str_About_StartWithWindows">Запускати разом із Windows</sys:String>
+    <sys:String x:Key="Str_About_ShowShortcutsInMenus">Показувати сполучення клавіш у меню</sys:String>
     <sys:String x:Key="Str_About_CloseToTrayHint">Якщо вимкнено, закриття вікна завершує KillerShot, і його сполучення клавіш перестають працювати.</sys:String>
     <sys:String x:Key="Str_Btn_ActualSize">100%</sys:String>
     <sys:String x:Key="Str_Btn_Capture">Знімок</sys:String>
