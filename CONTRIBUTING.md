@@ -60,4 +60,3 @@ Be prepared to revise an approved contribution after review. Contributions must 
 ## Project-specific guidance
 
 Preserve captured images, album data, and recovery behavior. Test capture changes with fabricated content and keep private screenshots out of public reports.
-
