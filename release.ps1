@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    KillerShot release script: check, build, sign, verify, bundle source, and publish.
+    Prepare, accept, or publish an immutable KillerShot release candidate.
 .DESCRIPTION
     1. Preflight: version, CHANGELOG date, ReleaseDate, translations, package vulnerabilities, and a
        clean default branch that matches origin.
@@ -13,8 +13,10 @@
     3. Signs it, retrying the timestamp across three TSA endpoints, and runs
        "signtool verify /pa /v" as a post-sign gate.
     4. Builds the GPLv3 source archive from the exact tagged commit.
-    5. Writes SHA256SUMS.txt, extracts release notes from the CHANGELOG, tags, and creates the
-       GitHub release.
+    5. Writes checksums, notes, and candidate.json, then stops for validation.
+    6. AcceptCandidate binds the final validation record to those exact files.
+    7. PublishCandidate verifies the retained acceptance hash and reuses the files without
+       rebuilding or signing. Only that parameter set creates a tag or GitHub release.
 
     The self-tests need an interactive desktop and are not run here. Run the full suite on the
     release candidate first. WinGet, Chocolatey, the Store and the landing site are not handled
@@ -27,32 +29,49 @@
 .PARAMETER SkipSign
     Skip signing for local test builds. Only allowed with -DryRun.
 .PARAMETER DryRun
-    Build and validate without tagging or publishing.
+    Compatibility option for candidate preparation. Allows SkipSign for development fixtures.
+.PARAMETER CandidateDirectory
+    New directory for a prepared candidate. An existing directory is never replaced.
+.PARAMETER AcceptCandidate
+    Path to candidate.json after all required acceptance gates have passed.
+.PARAMETER ValidationRecord
+    Final evidence record for the exact candidate. Acceptance stores a preserved copy.
+.PARAMETER PublishCandidate
+    Path to the accepted candidate.json. This mode performs no build or signing.
+.PARAMETER Acceptance
+    Path to its acceptance.json.
+.PARAMETER AcceptanceSha256
+    Acceptance hash retained independently when the candidate was accepted.
 
 .EXAMPLE
     .\release.ps1 -DryRun -SkipSign
 .EXAMPLE
     .\release.ps1 -CertThumbprint "AABBCC..."
 #>
+[CmdletBinding(DefaultParameterSetName='Prepare')]
 param(
     [string]$CertThumbprint = "",
     [string]$CertName       = "Open Source Developer Stephen Riley",
-    [switch]$SkipSign,
-    [switch]$DryRun
+    [Parameter(ParameterSetName='Prepare')][switch]$SkipSign,
+    [Parameter(ParameterSetName='Prepare')][switch]$DryRun,
+    [Parameter(ParameterSetName='Prepare')][string]$CandidateDirectory = '',
+    [Parameter(Mandatory=$true,ParameterSetName='Accept')][string]$AcceptCandidate,
+    [Parameter(Mandatory=$true,ParameterSetName='Accept')][string]$ValidationRecord,
+    [Parameter(Mandatory=$true,ParameterSetName='Publish')][string]$PublishCandidate,
+    [Parameter(Mandatory=$true,ParameterSetName='Publish')][string]$Acceptance,
+    [Parameter(Mandatory=$true,ParameterSetName='Publish')][string]$AcceptanceSha256
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'scripts\ReleaseCandidate.ps1')
 
 if ($SkipSign -and -not $DryRun) {
     throw "-SkipSign is only allowed with -DryRun. Unsigned builds cannot be published."
 }
 
 $proj       = Join-Path $PSScriptRoot "KillerShot.csproj"
-$publishDir = Join-Path $PSScriptRoot "bin\Release\publish\single-file-win-x64"
-$releaseDir = Join-Path $PSScriptRoot "bin\Release\release"
-$exe        = Join-Path $releaseDir "KillerShot.exe"
-$licenseOut = Join-Path $releaseDir "LICENSE.txt"
+$nativeInput = Join-Path $PSScriptRoot 'third_party\sqlcipher\e_sqlcipher.dll'
 
 $tsaList = @(
     "http://timestamp.digicert.com",
@@ -97,6 +116,56 @@ function Read-StringMap([string]$Path) {
         if ($key) { $map[$key] = [string]$node.InnerText }
     }
     return $map
+}
+
+function Get-ValidatedSourceCommit {
+    Push-Location $PSScriptRoot
+    try {
+        $null = Assert-CleanSyncedBranch
+        return (git rev-parse HEAD).Trim()
+    } finally { Pop-Location }
+}
+
+if ($PSCmdlet.ParameterSetName -eq 'Accept') {
+    $receipt = New-ReleaseAcceptance -Manifest $AcceptCandidate -ValidationRecord $ValidationRecord -ExpectedCommit (Get-ValidatedSourceCommit) -NativeInput $nativeInput -CertName $CertName -CertThumbprint $CertThumbprint
+    Write-Host "Acceptance: $receipt"
+    Write-Host "Retain this acceptance SHA256 separately: $((Get-FileHash -LiteralPath $receipt -Algorithm SHA256).Hash)"
+    return
+}
+
+if ($PSCmdlet.ParameterSetName -eq 'Publish') {
+    gh auth status
+    if ($LASTEXITCODE -ne 0) { throw 'GitHub authentication failed.' }
+    $login = (gh api user --jq '.login' | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0 -or $login -ne 'SteveTheKiller') { throw 'Release publication requires the established SteveTheKiller identity.' }
+    $getCommit = { Get-ValidatedSourceCommit }
+    $publishStep = {
+        param($step, $candidate)
+        $tag = 'v' + $candidate.Data.Version
+        Push-Location $PSScriptRoot
+        try {
+            switch ($step) {
+                'tag' {
+                    if (git tag --list $tag) { throw "Tag $tag already exists." }
+                    if (git ls-remote --tags origin $tag) { throw "Tag $tag already exists on origin." }
+                    git tag -a $tag $candidate.Data.SourceCommit -m "KillerShot $tag"
+                    if ($LASTEXITCODE -ne 0) { throw 'Tag creation failed.' }
+                }
+                'push' {
+                    git push origin $tag
+                    if ($LASTEXITCODE -ne 0) { throw 'Tag push failed.' }
+                }
+                'release' {
+                    gh release create $tag @($candidate.PublishPaths) --title "KillerShot $tag" --notes-file (Join-Path $candidate.Directory 'release-notes.md') --verify-tag
+                    if ($LASTEXITCODE -ne 0) { throw 'Release creation failed.' }
+                    gh release view $tag --json url --jq '.url'
+                    if ($LASTEXITCODE -ne 0) { throw 'Release verification failed.' }
+                }
+            }
+        } finally { Pop-Location }
+    }
+    Invoke-ReleasePromotion -Manifest $PublishCandidate -Acceptance $Acceptance -AcceptanceSha256 $AcceptanceSha256 -NativeInput $nativeInput -GetSourceCommit $getCommit -PublishStep $publishStep -CertName $CertName -CertThumbprint $CertThumbprint
+    return
 }
 
 # --- 1. Release metadata preflight ---
@@ -175,7 +244,7 @@ Write-Host "    Translations OK: $($english.Count) keys across $($localeFiles.Co
 # Family rule: no en or em dashes in shipped text.
 $dashHits = @(Get-ChildItem $PSScriptRoot -Recurse -Include *.cs, *.xaml, *.md, *.html -File |
     Where-Object { $_.FullName -notmatch '\\(bin|obj|third_party)\\' } |
-    Select-String -Pattern "[–—]")
+    Select-String -Pattern ('[' + [char]0x2013 + [char]0x2014 + ']'))
 if ($dashHits.Count) { throw "En or em dashes found:`n$($dashHits | Select-Object -First 10 | Out-String)" }
 
 # --- 6. Vulnerability audit ---
@@ -186,15 +255,27 @@ Write-Host $auditText
 if ($auditText -match '(?i)has the following vulnerable packages') { throw "Vulnerable packages were found." }
 
 # --- 7. Publish ---
+if (-not $SkipSign) {
+    $nativeSigner = Assert-ReleaseSignature -Path $nativeInput -CertName $CertName -CertThumbprint $CertThumbprint -Label 'Native SQLCipher'
+}
+$nativeHashAtBuild = (Get-FileHash -LiteralPath $nativeInput -Algorithm SHA256).Hash
+if (!$CandidateDirectory) {
+    $candidateRoot = Join-Path ([Environment]::GetFolderPath('UserProfile')) 'scratch\KillerShot-candidates'
+    $CandidateDirectory = Join-Path $candidateRoot ("$Version-" + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmss') + '-' + [Guid]::NewGuid().ToString('N'))
+}
+$releaseDir = [IO.Path]::GetFullPath($CandidateDirectory)
+if (Test-Path -LiteralPath $releaseDir) { throw 'CandidateDirectory already exists. Choose a new directory.' }
+$null = New-Item -ItemType Directory -Path $releaseDir -ErrorAction Stop
+$publishDir = Join-Path $releaseDir 'build'
+$exe = Join-Path $releaseDir 'KillerShot.exe'
+$licenseOut = Join-Path $releaseDir 'LICENSE.txt'
 Write-Host "`n==> Publishing KillerShot.exe..." -ForegroundColor Cyan
-if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
-dotnet publish $proj -p:PublishProfile=PortableSingleFile --nologo -v quiet
+dotnet publish $proj -p:PublishProfile=PortableSingleFile --output $publishDir --nologo -v quiet
 if ($LASTEXITCODE -ne 0) { throw "Publish failed." }
-if (-not [IO.Directory]::Exists($releaseDir)) { [void][IO.Directory]::CreateDirectory($releaseDir) }
-Copy-Item -LiteralPath (Join-Path $publishDir 'KillerShot.exe') -Destination $exe -Force
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LICENSE.txt') -Destination $licenseOut -Force
+[IO.File]::Copy((Join-Path $publishDir 'KillerShot.exe'), $exe, $false)
+[IO.File]::Copy((Join-Path $PSScriptRoot 'LICENSE.txt'), $licenseOut, $false)
 $thirdPartyLicenses = @(Get-ChildItem (Join-Path $PSScriptRoot 'third_party\sqlcipher') -Filter 'LICENSE-*.txt' |
-    ForEach-Object { Copy-Item $_.FullName -Destination $releaseDir -Force; Join-Path $releaseDir $_.Name })
+    ForEach-Object { $target=Join-Path $releaseDir $_.Name; [IO.File]::Copy($_.FullName, $target, $false); $target })
 $actual = [Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion
 if ($actual -ne $expectedFileVersion) { throw "KillerShot.exe is file version $actual, expected $expectedFileVersion" }
 # A small file means the single-file bundle lost its managed dependencies.
@@ -229,6 +310,7 @@ if (-not $SkipSign) {
     # /n matches a subject substring, so confirm the certificate that signed is the one intended.
     if ($CertThumbprint -and $actualThumb -ne $CertThumbprint.ToUpperInvariant()) { throw "Signed with $actualThumb, expected $CertThumbprint." }
     if (-not $CertThumbprint -and $actualCN -ne $CertName) { throw "Signed by '$actualCN', expected '$CertName'." }
+    $null = Assert-ReleaseSignature -Path $exe -CertName $CertName -CertThumbprint $CertThumbprint -Label 'Executable'
 } else {
     Write-Host "`n  WARNING: -SkipSign is set. KillerShot.exe IS NOT SIGNED. Do not distribute it." -ForegroundColor Red
     $actualCN = "(not signed)"; $actualThumb = "(not signed)"
@@ -240,11 +322,21 @@ $versionOut = (& $exe version 2>&1 | Out-String).Trim()
 if ($LASTEXITCODE -ne 0) { throw "KillerShot.exe version failed with exit code $LASTEXITCODE." }
 Write-Host "    $versionOut" -ForegroundColor Green
 
+# Prove the native bytes embedded in this executable match the admitted signed input.
+if ((Get-FileHash -LiteralPath $nativeInput -Algorithm SHA256).Hash -ne $nativeHashAtBuild) { throw 'Native input changed during preparation.' }
+[IO.File]::Copy($nativeInput, (Join-Path $releaseDir 'e_sqlcipher.dll'), $false)
+$nativeProof = Join-Path $releaseDir 'native-validation'
+[void][IO.Directory]::CreateDirectory($nativeProof)
+& $exe --selftest-library-native-probe (Join-Path $nativeProof 'cache') (Join-Path $nativeProof 'result.txt')
+if ($LASTEXITCODE -ne 0) { throw 'Packaged native validation failed.' }
+$extracted = @(Get-ChildItem -LiteralPath (Join-Path $nativeProof 'cache') -Filter 'e_sqlcipher.dll' -File -Recurse)
+if ($extracted.Count -ne 1 -or (Get-FileHash -LiteralPath $extracted[0].FullName -Algorithm SHA256).Hash -ne $nativeHashAtBuild) { throw 'Embedded native differs from the admitted input.' }
+
 # --- 10. GPLv3 source archive from the release commit ---
 Push-Location $PSScriptRoot
 try {
     $srcZip = Join-Path $releaseDir "KillerShot-$Version-src.zip"
-    if (Test-Path $srcZip) { Remove-Item $srcZip -Force }
+    if (Test-Path -LiteralPath $srcZip) { throw 'Candidate source archive already exists.' }
     git archive --format=zip --prefix="KillerShot-$Version/" -o $srcZip $releaseCommit -- . ':(exclude)shot-landing'
     if ($LASTEXITCODE -ne 0) { throw "git archive failed." }
 } finally { Pop-Location }
@@ -274,23 +366,10 @@ foreach ($line in (Get-Content -Path (Join-Path $PSScriptRoot 'CHANGELOG.md') -E
 if ($notes.Count -eq 0) { throw "Could not extract [$Version] notes from CHANGELOG.md" }
 $notes.Add('')
 $notes.Add('KillerShot.exe runs as a portable copy and installs itself from the PORTABLE badge in the footer, or with "KillerShot.exe /silent" for deployment tools. It needs the .NET 10 Desktop Runtime (x64). The complete GPLv3 source for this release is attached as ' + [IO.Path]::GetFileName($srcZip) + '.')
-$notesFile = Join-Path $env:TEMP "KillerShot-$Version-notes.md"
+$notesFile = Join-Path $releaseDir 'release-notes.md'
 [IO.File]::WriteAllLines($notesFile, $notes, [Text.UTF8Encoding]::new($false))
 
-if ($DryRun) {
-    Write-Host "`n==> DryRun: stopping before tag and release. Notes: $notesFile" -ForegroundColor Yellow
-    exit 0
-}
-
-Push-Location $PSScriptRoot
-try {
-    $null = Assert-CleanSyncedBranch
-    if ((git rev-parse HEAD).Trim() -ne $releaseCommit) { throw "HEAD changed during the build. Rerun the release." }
-    git tag -a $Tag -m "KillerShot $Tag"
-    if ($LASTEXITCODE -ne 0) { throw "git tag failed" }
-    git push origin $Tag
-    if ($LASTEXITCODE -ne 0) { throw "Tag push failed" }
-    gh release create $Tag @($assets + $sumsPath) --title "KillerShot $Tag" --notes-file $notesFile --verify-tag
-    if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
-    gh release view $Tag --json url --jq '.url'
-} finally { Pop-Location }
+if ((Get-ValidatedSourceCommit) -ne $releaseCommit) { throw 'HEAD changed during candidate preparation.' }
+$manifest = New-ReleaseCandidate -Directory $releaseDir -SourceCommit $releaseCommit -Version $Version -DevelopmentOnly:$SkipSign -CertName $CertName -CertThumbprint $CertThumbprint
+Write-Host "`nCandidate prepared: $manifest"
+Write-Host 'Validate these exact files, then use -AcceptCandidate with the final validation record. Publish with -PublishCandidate and the independently retained acceptance SHA256.'
