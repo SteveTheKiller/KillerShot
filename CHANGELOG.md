@@ -63,7 +63,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Desktop, accessibility and localization
 - Black table headers match the content surface.
-- About can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts.
+- About groups settings in two columns and can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts.
 - Every album view keeps the themed content pane, with subtly shaded screenshot cards and restrained photo shadows in carousels.
 - Portable stays clear of footer controls and long image readouts in narrow windows.
 - In 98SE, menu hover fill follows the selected accent.

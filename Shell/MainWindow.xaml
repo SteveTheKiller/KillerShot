@@ -1210,34 +1210,50 @@
 
                             <!-- About options belong below the raised identity pane, matching the
                                  shared KillerPDF/Killer Tools About hierarchy. -->
-                            <StackPanel Margin="0,12,0,0" HorizontalAlignment="Left">
-                                <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
-                                           FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <RadioButton x:Name="RenderAutoRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderAuto}"
-                                                 FontSize="11" Margin="8,0,6,0" Checked="RenderMode_Checked" Tag="Auto"/>
-                                    <RadioButton x:Name="RenderHardwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderHardware}"
-                                                 FontSize="11" Margin="8,0,6,0" Checked="RenderMode_Checked" Tag="Hardware"/>
-                                    <RadioButton x:Name="RenderSoftwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode" Content="{DynamicResource Str_About_RenderSoftware}"
-                                                 FontSize="11" Margin="8,0,0,0" Checked="RenderMode_Checked" Tag="Software"/>
+                            <Grid Margin="0,12,0,0" Width="{Binding ActualWidth, ElementName=AboutInfoGrid}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <CheckBox x:Name="AboutStartWithWindows" FontSize="11" Click="AboutStartWithWindows_Click">
+                                        <TextBlock Text="{DynamicResource Str_About_StartWithWindows}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,6,0,0"
+                                              Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed">
+                                        <TextBlock Text="{DynamicResource Str_About_CloseToTray}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
+                                               Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
-                                <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
-                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
-                                           TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
-                                <CheckBox x:Name="AboutStartWithWindows" Content="{DynamicResource Str_About_StartWithWindows}"
-                                          FontSize="11" Margin="0,12,0,0" Click="AboutStartWithWindows_Click"/>
-                                <CheckBox x:Name="CloseToTrayCheck" Content="{DynamicResource Str_About_CloseToTray}"
-                                          FontSize="11" Margin="0,12,0,0"
-                                          Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed"/>
-                                <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
-                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
-                                           TextWrapping="Wrap" MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"/>
-                                <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,8,0,0"
-                                          MaxWidth="{Binding ActualWidth, ElementName=AboutInfoGrid}"
+                                <StackPanel Grid.Column="2">
+                                <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,0,0,8"
                                           IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
                                     <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
                                 </CheckBox>
-                            </StackPanel>
+                                <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
+                                           FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4" TextWrapping="Wrap"/>
+                                <StackPanel>
+                                    <RadioButton x:Name="RenderAutoRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
+                                                 FontSize="11" Margin="8,0,0,0" Checked="RenderMode_Checked" Tag="Auto">
+                                        <TextBlock Text="{DynamicResource Str_About_RenderAuto}" TextWrapping="Wrap"/>
+                                    </RadioButton>
+                                    <RadioButton x:Name="RenderHardwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
+                                                 FontSize="11" Margin="8,4,0,0" Checked="RenderMode_Checked" Tag="Hardware">
+                                        <TextBlock Text="{DynamicResource Str_About_RenderHardware}" TextWrapping="Wrap"/>
+                                    </RadioButton>
+                                    <RadioButton x:Name="RenderSoftwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
+                                                 FontSize="11" Margin="8,4,0,0" Checked="RenderMode_Checked" Tag="Software">
+                                        <TextBlock Text="{DynamicResource Str_About_RenderSoftware}" TextWrapping="Wrap"/>
+                                    </RadioButton>
+                                </StackPanel>
+                                <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
+                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
+                                           TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
 
                         </StackPanel>
                     </Grid>
