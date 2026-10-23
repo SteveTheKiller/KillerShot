@@ -45,9 +45,9 @@ namespace KillerShot.Services
         /// <summary>A collection's own color, or null when it has none.</summary>
         public static Color? Collection(long? id) => id is long i && i > 0 ? Parse(CaptureLibrary.GetAlbumSetting("CollectionColor." + i.ToString(CultureInfo.InvariantCulture))) : null;
 
-        public static void SetCollection(long id, Color? color)
+        public static void SetCollection(long id, Color? color, long? expectedSession = null)
         {
-            CaptureLibrary.SetAlbumSetting("CollectionColor." + id.ToString(CultureInfo.InvariantCulture), color is Color c ? Hex(c) : "");
+            CaptureLibrary.SetAlbumSetting("CollectionColor." + id.ToString(CultureInfo.InvariantCulture), color is Color c ? Hex(c) : "", expectedSession);
             Changed?.Invoke();
         }
 

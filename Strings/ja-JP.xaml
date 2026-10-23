@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">インストールは完了しませんでした。KillerShot はポータブルのまま動作しています。</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">インストールが完了しました。インストール中に変更された作業を保護するため、KillerShot は開いたままになっています。</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 で対象を選択します。矢印キーで対象を切り替えます。Enter でキャプチャし、Escape でキャンセルします。</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">保存された編集内容を読み取れませんでした。編集内容を統合した画像を開きました。作業を続けるには、別のファイルとして保存してください。元の画像と保存された編集内容はアルバムに残っています。</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">保存された編集内容と編集内容を統合した画像を安全に読み取れませんでした。元の画像と保存された編集内容はアルバムに残っています。</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">元の画像を復元...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">元の画像には、編集や黒塗りで隠された内容が含まれている可能性があります。別のコピーとして開きます。保存された編集内容はアルバムに残ります。続行しますか？</sys:String>
 </ResourceDictionary>

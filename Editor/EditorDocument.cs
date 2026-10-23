@@ -8,6 +8,7 @@ namespace KillerShot.Editor;
 /// <summary>The picture being edited: the capture's pixels plus the marks on top. A state is
 /// immutable, so undo and redo swap whole states and crop keeps the uncropped pixels for undo.</summary>
 public sealed record EditorState(BitmapSource Image, ImmutableList<Annotation> Items);
+public enum AlbumRecovery { None, Flattened, Original }
 
 public sealed partial class EditorDocument
 {
@@ -22,6 +23,8 @@ public sealed partial class EditorDocument
     public DateTime Taken { get; }
     public bool Dirty { get; private set; }
     public bool ReadQr { get; init; }
+    /// <summary>A separate recovery copy whose album metadata must remain untouched.</summary>
+    public AlbumRecovery Recovery { get; init; }
 
     public event Action? Changed;
 

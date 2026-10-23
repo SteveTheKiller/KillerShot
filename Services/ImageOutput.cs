@@ -125,10 +125,10 @@ internal static class ImageOutput
     public const long MaxPixels = 100_000_000;
 
     /// <summary>Throws when an image of this size would take more memory than an import may use.</summary>
-    public static void CheckSize(int width, int height)
+    public static void CheckSize(int width, int height, long pixelLimit = MaxPixels)
     {
-        if (width < 1 || height < 1 || (long)width * height > MaxPixels)
-            throw new ImageTooLargeException(width, height);
+        if (width < 1 || height < 1 || (long)width * height > pixelLimit)
+            throw new ImageTooLargeException(width, height, pixelLimit);
     }
 
     /// <summary>Loads an image at its true pixel size, upright and in sRGB. The size is checked
@@ -139,15 +139,29 @@ internal static class ImageOutput
     public static BitmapSource Load(string path)
     {
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        return Decode(stream, MaxPixels);
+    }
+
+    /// <summary>The same guarded decoder for album blobs and inserted marks. No pixels are
+    /// requested until the header has passed the caller's admission limit.</summary>
+    public static BitmapSource Load(byte[] encoded, long pixelLimit = MaxPixels)
+    {
+        using var stream = new MemoryStream(encoded, writable: false);
+        return Decode(stream, pixelLimit);
+    }
+
+    private static BitmapSource Decode(Stream stream, long pixelLimit)
+    {
         var frame = BitmapDecoder.Create(stream, BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.PreservePixelFormat
             | BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.None).Frames[0];
-        CheckSize(frame.PixelWidth, frame.PixelHeight);
+        CheckSize(frame.PixelWidth, frame.PixelHeight, pixelLimit);
         BitmapSource src = ToSrgb(frame);
         if (Orientation(frame) is { } turn) src = new TransformedBitmap(src, turn);
         int w = src.PixelWidth, h = src.PixelHeight;
-        var px = new byte[(long)w * h * 4];
-        src.CopyPixels(px, w * 4, 0);
-        var copy = BitmapSource.Create(w, h, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, px, w * 4);
+        int stride = checked(w * 4);
+        var px = new byte[checked(stride * h)];
+        src.CopyPixels(px, stride, 0);
+        var copy = BitmapSource.Create(w, h, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, px, stride);
         copy.Freeze();
         return copy;
     }
@@ -208,8 +222,8 @@ internal static class ImageOutput
 }
 
 /// <summary>An image whose pixel count exceeds what an import may decode.</summary>
-internal sealed class ImageTooLargeException(int width, int height)
-    : NotSupportedException(string.Format(LocaleManager.Loc("Str_Err_ImageTooLarge"), width, height, ImageOutput.MaxPixels / 1_000_000))
+internal sealed class ImageTooLargeException(int width, int height, long pixelLimit = ImageOutput.MaxPixels)
+    : NotSupportedException(string.Format(LocaleManager.Loc("Str_Err_ImageTooLarge"), width, height, pixelLimit / 1_000_000d))
 {
     public int Width { get; } = width;
     public int Height { get; } = height;

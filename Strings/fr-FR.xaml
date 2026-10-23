@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Installation non terminée - KillerShot fonctionne toujours en portable.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">L’installation est terminée. KillerShot est resté ouvert pour protéger le travail modifié pendant l’installation.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 sélectionne une cible. Les flèches changent de cible. Entrée capture. Échap annule.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Les modifications enregistrées n'ont pas pu être lues. L'image aplatie a été ouverte. Enregistrez un fichier séparé pour continuer à travailler. L'original et les modifications enregistrées restent dans l'album.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Les modifications enregistrées et l'image aplatie n'ont pas pu être lues en toute sécurité. L'original et les modifications enregistrées restent dans l'album.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Récupérer l'original...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">L'original peut contenir du contenu masqué par des modifications ou des zones de masquage. Il s'ouvrira dans une copie séparée. Les modifications enregistrées resteront dans l'album. Continuer ?</sys:String>
 </ResourceDictionary>

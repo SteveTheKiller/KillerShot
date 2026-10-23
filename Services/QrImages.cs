@@ -24,15 +24,5 @@ internal static class QrImages
         return QrReader.Read(gray, width, height);
     }
 
-    public static BitmapSource Load(byte[] encoded)
-    {
-        using var stream = new MemoryStream(encoded, writable: false);
-        // Read the size from the header first, so an oversized image never decodes.
-        var header = BitmapDecoder.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.None).Frames[0];
-        ImageOutput.CheckSize(header.PixelWidth, header.PixelHeight);
-        stream.Position = 0;
-        var image = BitmapDecoder.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames[0];
-        image.Freeze();
-        return image;
-    }
+    public static BitmapSource Load(byte[] encoded) => ImageOutput.Load(encoded);
 }

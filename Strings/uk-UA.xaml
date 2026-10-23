@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Установлення не завершено - KillerShot і далі працює як портативний.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Встановлення завершено. KillerShot залишився відкритим, щоб зберегти роботу, змінену під час встановлення.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 вибирає ціль. Клавіші зі стрілками змінюють ціль. Enter виконує захоплення. Escape скасовує дію.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Не вдалося прочитати збережені правки. Відкрито зображення з об'єднаними правками. Щоб продовжити роботу, збережіть окремий файл. Оригінал і збережені правки залишаються в альбомі.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Не вдалося безпечно прочитати збережені правки та зображення з об'єднаними правками. Оригінал і збережені правки залишаються в альбомі.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Відновити оригінал...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Оригінал може містити дані, приховані правками або зафарбовуванням. Він відкриється як окрема копія. Збережені правки залишаться в альбомі. Продовжити?</sys:String>
 </ResourceDictionary>

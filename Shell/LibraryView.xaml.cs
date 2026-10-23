@@ -31,6 +31,7 @@ namespace KillerShot.Shell
         internal string Title { get; init; } = "";
         internal string Detail { get; init; } = "";
         internal long? CollectionId { get; init; }
+        internal long Session { get; init; }
         internal bool IsCollection { get; init; }
         internal bool IsFolder { get; init; }
         internal bool Timeline { get; init; }
@@ -375,6 +376,7 @@ namespace KillerShot.Shell
                         Key = g.Key, Title = g.Title,
                         Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
                         CollectionId = g.CollectionId, IsCollection = g.IsCollection, IsFolder = g.IsFolder, Items = g.Items,
+                        Session = _collections.FirstOrDefault(c => c.Id == g.CollectionId)?.Session ?? _albumSession,
                     });
                 }
             }
@@ -388,6 +390,7 @@ namespace KillerShot.Shell
                         Kind = LibraryRowKind.Header, Key = g.Key, Title = g.Title,
                         Detail = g.Items.Count > 0 ? CountLabel(g.Items.Count) : Loc("Str_Lib_EmptyCollection"),
                         CollectionId = g.CollectionId, IsCollection = g.IsCollection, IsFolder = g.IsFolder, Timeline = timeline,
+                        Session = _collections.FirstOrDefault(c => c.Id == g.CollectionId)?.Session ?? _albumSession,
                     });
                     for (int i = 0; i < g.Items.Count; i += _tilesPerRow)
                         rows.Add(new LibraryRow
@@ -447,7 +450,7 @@ namespace KillerShot.Shell
             {
                 line.Background = Brushes.Transparent;
                 line.ContextMenu = new ContextMenu();
-                line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title); };
+                line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title, row.Session); };
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
             if (line.ContextMenu != null)
@@ -457,7 +460,7 @@ namespace KillerShot.Shell
                 line.OpenMenu = () =>
                 {
                     if (row.IsCollection && row.CollectionId is long collectionId)
-                        FillCollectionMenu(line.ContextMenu, collectionId, row.Title);
+                        FillCollectionMenu(line.ContextMenu, collectionId, row.Title, row.Session);
                     line.ContextMenu.PlacementTarget = line;
                     line.ContextMenu.Placement = PlacementMode.Bottom;
                     line.ContextMenu.IsOpen = true;
@@ -876,18 +879,19 @@ namespace KillerShot.Shell
                 return;
             }
             Add("Str_Lib_SaveAs", () => SaveAs(item));
+            Add("Str_Marks_OpenOriginal", () => RecoverOriginal(item));
             if (BuildOcrLinksMenu(item.Id, anchor) is { } links) menu.Items.Add(links);
             menu.Items.Add(new Separator());
 
             var move = new MenuItem { Header = Loc("Str_Lib_MoveTo") };
             var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
-            none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null));
+            none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null, item.Session));
             move.Items.Add(none);
             foreach (var c in CaptureLibrary.Collections())
             {
                 var target = c;
                 var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
-                mi.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], target.Id));
+                mi.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], target.Id, item.Session));
                 move.Items.Add(mi);
             }
             move.Items.Add(new Separator());
@@ -918,15 +922,17 @@ namespace KillerShot.Shell
             return menu;
         }
 
-        private void FillCollectionMenu(ContextMenu menu, long id, string name)
+        internal Func<PromptDialog, bool?> PresentPrompt { get; set; } = dialog => dialog.ShowDialog();
+
+        internal void FillCollectionMenu(ContextMenu menu, long id, string name, long session)
         {
             menu.Items.Clear();
             var rename = new MenuItem { Header = Loc("Str_Lib_RenameCollection") };
             rename.Click += (_, _) =>
             {
                 var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
-                if (dlg.ShowDialog() == true && dlg.Text.Trim().Length > 0)
-                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text));
+                if (PresentPrompt(dlg) == true && dlg.Text.Trim().Length > 0)
+                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text, session));
             };
             menu.Items.Add(rename);
             var color = new MenuItem { Header = Loc("Str_Lib_CollectionColor") };
@@ -934,13 +940,13 @@ namespace KillerShot.Shell
             {
                 var dlg = new ColorPickerDialog(OwnerWindow, CardColors.Collection(id) ?? Color.FromRgb(0x50, 0xAE, 0xE8));
                 dlg.ShowDialog();
-                if (dlg.Accepted) CardColors.SetCollection(id, dlg.SelectedColor);
+                if (dlg.Accepted) TryChangeAlbum(() => CardColors.SetCollection(id, dlg.SelectedColor, session));
             };
             menu.Items.Add(color);
             if (CardColors.Collection(id) != null)
             {
                 var clear = new MenuItem { Header = Loc("Str_Lib_CollectionColorNone") };
-                clear.Click += (_, _) => CardColors.SetCollection(id, null);
+                clear.Click += (_, _) => TryChangeAlbum(() => CardColors.SetCollection(id, null, session));
                 menu.Items.Add(clear);
             }
             menu.Items.Add(new Separator());
@@ -949,8 +955,7 @@ namespace KillerShot.Shell
             {
                 var dlg = new ConfirmDialog(string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_DeleteCollectionTitle"), name),
                     Loc("Str_Lib_DeleteCollectionDetail"), Loc("Str_Lib_DeleteCollection"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
-                dlg.ShowDialog();
-                if (dlg.Confirmed) TryChangeAlbum(() => CaptureLibrary.DeleteCollection(id));
+                if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.DeleteCollection(id, session));
             };
             menu.Items.Add(delete);
         }
@@ -963,11 +968,12 @@ namespace KillerShot.Shell
             if (dlg.Accepted) CardColors.SetCard(dlg.SelectedColor);
         }
 
-        private void NewCollection(CaptureItem? moveIn)
+        internal void NewCollection(CaptureItem? moveIn)
         {
+            long session = moveIn?.Session ?? CaptureLibrary.Session;
             var dlg = new PromptDialog(Loc("Str_Lib_NewCollectionTitle"), "", Loc("Str_Lib_Create")) { Owner = OwnerWindow };
-            if (dlg.ShowDialog() != true || dlg.Text.Trim().Length == 0) return;
-            if (!TryChangeAlbum(() => CaptureLibrary.CreateCollection(dlg.Text, moveIn != null ? [moveIn.Id] : null))) return;
+            if (PresentPrompt(dlg) != true || dlg.Text.Trim().Length == 0) return;
+            if (!TryChangeAlbum(() => CaptureLibrary.CreateCollection(dlg.Text, moveIn != null ? [moveIn.Id] : null, session))) return;
             if (_group != "collection" && _view != "timeline")
             {
                 _group = "collection";
@@ -977,10 +983,10 @@ namespace KillerShot.Shell
             }
         }
 
-        private void EditNote(CaptureItem item)
+        internal void EditNote(CaptureItem item)
         {
             var dlg = new PromptDialog(Loc("Str_Lib_NoteTitle"), Loc("Str_Lib_NoteDetail"), Loc("Str_Lib_Save"), initialText: item.Note ?? "") { Owner = OwnerWindow };
-            if (dlg.ShowDialog() == true) TryChangeAlbum(() => CaptureLibrary.SetNote(item.Id, dlg.Text));
+            if (PresentPrompt(dlg) == true) TryChangeAlbum(() => CaptureLibrary.SetNote(item.Id, dlg.Text, item.Session));
         }
 
         /// <summary>The capture the keyboard is on: a focused tile, or the current card of a focused
@@ -1026,7 +1032,9 @@ namespace KillerShot.Shell
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 
-        private void SaveAs(CaptureItem item)
+        internal Func<FileDialog, Window?, bool?> PresentExportDialog { get; set; } = (dialog, owner) => dialog.ShowDialog(owner);
+
+        internal void SaveAs(CaptureItem item)
         {
             var mode = item.Mode switch { "window" => CaptureMode.Window, "monitor" => CaptureMode.Monitor, "all" => CaptureMode.AllMonitors, _ => CaptureMode.Region };
             var dlg = new FileDialog(FileDialogMode.Save)
@@ -1038,12 +1046,12 @@ namespace KillerShot.Shell
                 FileName = OutputFiles.FileName(CaptureSettings.FileNamePattern, item.Taken, mode, item.Width, item.Height, CaptureSettings.Format),
                 InitialDirectory = CaptureSettings.OutputFolder,
             };
-            if (dlg.ShowDialog(OwnerWindow) != true) return;
+            if (PresentExportDialog(dlg, OwnerWindow) != true) return;
             try
             {
                 if (Path.GetExtension(dlg.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    byte[] png = CaptureLibrary.LoadOutputPng(item.Id);
+                    byte[] png = CaptureLibrary.LoadOutputPng(item);
                     OutputFiles.WriteAtomic(dlg.FileName, true, stream => stream.Write(png));
                 }
                 else
@@ -1051,6 +1059,16 @@ namespace KillerShot.Shell
                 StatusMessage?.Invoke(dlg.FileName);
             }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        private void RecoverOriginal(CaptureItem item)
+        {
+            var dialog = new ConfirmDialog(Loc("Str_Marks_OpenOriginal"), Loc("Str_Marks_OriginalWarning"),
+                Loc("Str_Lib_Open"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
+            dialog.ShowDialog();
+            if (!dialog.Confirmed) return;
+            try { App.Instance.RecoverLibraryOriginal(item); }
+            catch (Exception error) { StatusMessage?.Invoke(error.Message); }
         }
 
         /// <summary>Opens the Screenshots folder in File Explorer, with a file selected when one is given.</summary>
@@ -1077,12 +1095,13 @@ namespace KillerShot.Shell
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 
-        private void Delete(CaptureItem item)
+        internal Func<ConfirmDialog, bool> PresentConfirmation { get; set; } = dialog => { dialog.ShowDialog(); return dialog.Confirmed; };
+
+        internal void Delete(CaptureItem item)
         {
             if (FolderCaptures.IsFolderId(item.Id)) return;   // the folder's files are left alone
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
-            dlg.ShowDialog();
-            if (dlg.Confirmed) TryChangeAlbum(() => CaptureLibrary.Delete([item.Id]));
+            if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.Delete([item.Id], item.Session));
         }
     }
 }

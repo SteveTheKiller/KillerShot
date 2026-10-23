@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Cài đặt chưa hoàn tất. KillerShot vẫn đang chạy ở chế độ di động.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Đã cài đặt xong. KillerShot vẫn mở để bảo vệ phần công việc đã thay đổi trong lúc cài đặt.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 chọn mục tiêu. Phím mũi tên đổi mục tiêu. Enter chụp. Escape hủy.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Không thể đọc các chỉnh sửa đã lưu. Đã mở ảnh có các chỉnh sửa được gộp vào. Hãy lưu thành tệp riêng để tiếp tục làm việc. Bản gốc và các chỉnh sửa đã lưu vẫn còn trong album.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Không thể đọc an toàn các chỉnh sửa đã lưu và ảnh có các chỉnh sửa được gộp vào. Bản gốc và các chỉnh sửa đã lưu vẫn còn trong album.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Khôi phục bản gốc...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Bản gốc có thể chứa nội dung đã bị ẩn do chỉnh sửa hoặc che đen. Ảnh sẽ mở dưới dạng bản sao riêng. Các chỉnh sửa đã lưu vẫn sẽ được giữ trong album. Tiếp tục?</sys:String>
 </ResourceDictionary>

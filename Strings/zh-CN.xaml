@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">安装未完成 - KillerShot 仍以便携版运行。</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">安装已完成。为保护安装期间更改的工作，KillerShot 保持打开。</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">按 F2 选择目标。使用方向键切换目标。按 Enter 捕获，按 Escape 取消。</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">无法读取已保存的编辑内容。已打开合并了编辑内容的图像。请另存为单独的文件以继续处理。原图和已保存的编辑内容仍保留在相册中。</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">无法安全读取已保存的编辑内容和合并了编辑内容的图像。原图和已保存的编辑内容仍保留在相册中。</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">恢复原图...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">原图可能包含通过编辑或涂黑隐藏的内容。它将作为单独的副本打开。已保存的编辑内容仍会保留在相册中。是否继续？</sys:String>
 </ResourceDictionary>

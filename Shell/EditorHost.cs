@@ -59,6 +59,12 @@ namespace KillerShot.Shell
             Editor.Status += text => StatusText.Text = text;
             App.Instance.DocumentChanged += OnAppDocumentChanged;
             Closed += (_, _) => App.Instance.DocumentChanged -= OnAppDocumentChanged;
+            Closed += (_, _) =>
+            {
+                _recognitionClosed = true;
+                SyncRecognitionState();
+                if (_doc != null) _doc.Changed -= RefreshDocumentUi;
+            };
 
             // The pixel readout follows the mouse without a handler on every move.
             _pixelTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(80) };
@@ -95,6 +101,7 @@ namespace KillerShot.Shell
             Editor.Document = doc;
             if (_doc != null) _doc.Changed += RefreshDocumentUi;
             RefreshDocumentUi();
+            if (changed && doc?.Recovery == AlbumRecovery.Flattened) StatusText.Text = Loc("Str_Marks_Recovery");
             if (changed) _strip?.Follow(App.Instance.CurrentItem, doc?.FilePath);
         }
 
@@ -104,11 +111,13 @@ namespace KillerShot.Shell
             if (_doc != null) _doc.Changed -= RefreshDocumentUi;
             _doc = null;
             Editor.Document = null;
+            SyncRecognitionState();
         }
 
         /// <summary>Title, enabled states, empty state and footer after any document change.</summary>
         private void RefreshDocumentUi()
         {
+            SyncRecognitionState();
             SyncReview();
             SyncLibraryVisibility();
             HighlightActiveTool();

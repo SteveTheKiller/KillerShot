@@ -6,8 +6,12 @@ namespace KillerShot.Shell;
 
 public partial class MainWindow
 {
-    private BitmapSource? _qrImage;
+    internal Func<BitmapSource, Task<IReadOnlyList<KillerTools.Qr.QrResult>>> RecognizeQrAsync { get; set; }
+        = image => Task.Run(() => QrImages.Read(image));
+    private RecognitionSnapshot? _qrSnapshot;
+    private bool _qrAllowed;
     private int _qrReadGeneration;
+    private bool _qrReading, _qrRefreshPending;
 
     private void InitQrReader()
     {
@@ -16,32 +20,55 @@ public partial class MainWindow
         Closed += (_, _) => { if (_qrResultCard != null) _qrResultCard.IsOpen = false; };
         Deactivated += (_, _) => { if (_qrResultCard != null) _qrResultCard.IsOpen = false; };
         PreviewMouseDown += (_, _) => { if (_qrResultCard != null) _qrResultCard.IsOpen = false; };
+        void AlbumChanged() => Dispatcher.BeginInvoke(new Action(SyncRecognitionState));
+        CaptureLibrary.Changed += AlbumChanged;
+        Closed += (_, _) => CaptureLibrary.Changed -= AlbumChanged;
         RefreshDocumentQr();
     }
 
     private async void RefreshDocumentQr()
     {
-        if (_doc == null)
+        SyncRecognitionState();
+        if (_doc == null || _recognitionClosed)
         {
-            _qrImage = null;
+            _qrSnapshot = null;
             _qrReadGeneration++;
             Editor.SetQrCodes([]);
             return;
         }
-        var image = _doc.Image;
-        if (ReferenceEquals(image, _qrImage)) return;
-        _qrImage = image;
-        int generation = ++_qrReadGeneration;
+        bool allowed = CaptureLibrary.QrReadingEnabled || _doc.ReadQr || App.Instance.CurrentItem?.HasQr == true;
+        if (IsCurrentRecognition(_qrSnapshot) && _qrAllowed == allowed) return;
+        _qrSnapshot = CaptureRecognition();
+        _qrAllowed = allowed;
+        _qrReadGeneration++;
         Editor.SetQrCodes([]);
-        var stored = App.Instance.CurrentItem is { Id: > 0 } item && !_doc.Dirty ? CaptureLibrary.QrCodes(item.Id) : [];
-        if (stored.Count > 0) { Editor.SetQrCodes(stored); return; }
-        if (!CaptureLibrary.QrReadingEnabled && !_doc.ReadQr) { _qrImage = null; return; }
+        if (_qrResultCard != null) _qrResultCard.IsOpen = false;
+        if (!allowed) return;
+        _qrRefreshPending = true;
+        if (_qrReading) return;
+        _qrReading = true;
         try
         {
-            var results = await Task.Run(() => QrImages.Read(image));
-            if (generation == _qrReadGeneration && ReferenceEquals(_doc?.Image, image)) Editor.SetQrCodes(results);
+            while (_qrRefreshPending && !_recognitionClosed)
+            {
+                _qrRefreshPending = false;
+                var snapshot = _qrSnapshot;
+                int generation = _qrReadGeneration;
+                if (!_qrAllowed || !IsCurrentRecognition(snapshot)) continue;
+                try
+                {
+                    // Only the active scan owns rendered pixels. Edits retain one latest pending state.
+                    var image = _doc!.Render();
+                    var results = await RecognizeQrAsync(image);
+                    if (generation == _qrReadGeneration && IsCurrentRecognition(snapshot)) Editor.SetQrCodes(results);
+                }
+                catch (Exception error)
+                {
+                    if (generation == _qrReadGeneration && IsCurrentRecognition(snapshot)) StatusText.Text = error.Message;
+                }
+            }
         }
-        catch (Exception error) { if (generation == _qrReadGeneration) StatusText.Text = error.Message; }
+        finally { _qrReading = false; }
     }
 
     private void QrReadingButton_Click(object sender, RoutedEventArgs e)

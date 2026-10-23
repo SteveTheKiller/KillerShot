@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Installasjonen ble ikke fullført - KillerShot kjører fortsatt som portabel.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Installasjonen er fullført. KillerShot forble åpen for å beskytte arbeid som ble endret under installasjonen.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 velger et mål. Piltastene bytter mål. Enter tar bildet. Escape avbryter.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">De lagrede endringene kunne ikke leses. Bildet med de sammenslåtte endringene ble åpnet. Lagre en egen fil for å fortsette arbeidet. Originalen og de lagrede endringene blir værende i albumet.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">De lagrede endringene og bildet med de sammenslåtte endringene kunne ikke leses trygt. Originalen og de lagrede endringene blir værende i albumet.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Gjenopprett original...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Originalen kan inneholde innhold som er skjult av endringer eller sladding. Den åpnes som en egen kopi. De lagrede endringene blir værende i albumet. Fortsette?</sys:String>
 </ResourceDictionary>

@@ -20,8 +20,7 @@ public static class MarksFormat
         return new JsonObject { ["v"] = Version, ["marks"] = list }.ToJsonString();
     }
 
-    /// <summary>The marks, or null when the text is not a version this build understands. A
-    /// mark of an unknown kind is skipped rather than guessed at.</summary>
+    /// <summary>The complete marks, or null when any part cannot be understood safely.</summary>
     public static ImmutableList<Annotation>? Read(string json)
     {
         try
@@ -30,12 +29,15 @@ public static class MarksFormat
                 return null;
             var result = ImmutableList.CreateBuilder<Annotation>();
             foreach (var node in marks)
-                if (node is JsonObject o && FromJson(o) is { } mark) result.Add(mark);
+            {
+                if (node is not JsonObject o || FromJson(o) is not { } mark) return null;
+                result.Add(mark);
+            }
             return result.ToImmutable();
         }
-        // A damaged or oversized row opens the original instead of failing the capture.
+        // A partial parse could omit a redaction. The caller must use the flattened output.
         catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException
-            or NullReferenceException or NotSupportedException or ArgumentException or System.IO.IOException) { return null; }
+            or NullReferenceException or NotSupportedException or ArgumentException or OverflowException or System.IO.IOException) { return null; }
     }
 
     private static JsonObject? ToJson(Annotation mark) => mark switch
@@ -67,7 +69,11 @@ public static class MarksFormat
 
     private static Annotation? FromJson(JsonObject o)
     {
-        double D(string key) => o[key]!.GetValue<double>();
+        double D(string key)
+        {
+            double value = o[key]!.GetValue<double>();
+            return double.IsFinite(value) ? value : throw new FormatException("Invalid mark coordinate.");
+        }
         Color c = ParseColor(o["c"]!.GetValue<string>());
         double w = D("w");
         if (!double.IsFinite(w) || w <= 0) return null;
@@ -75,23 +81,19 @@ public static class MarksFormat
         {
             case "stroke":
                 var values = o["pts"]!.AsArray().Select(v => v!.GetValue<double>()).ToArray();
-                if (values.Length < 2 || values.Length % 2 != 0) return null;
+                if (values.Length < 2 || values.Length % 2 != 0 || values.Any(v => !double.IsFinite(v))) return null;
                 var points = Enumerable.Range(0, values.Length / 2).Select(i => new Point(values[i * 2], values[i * 2 + 1])).ToImmutableArray();
                 return new StrokeAnnotation(points, c, w, o["hl"]?.GetValue<bool>() == true);
             case "shape":
-                if (!Enum.TryParse<ShapeKind>(o["k"]?.GetValue<string>(), out var kind)) return null;
+                if (!Enum.TryParse<ShapeKind>(o["k"]?.GetValue<string>(), out var kind) || !Enum.IsDefined(kind)) return null;
                 return new ShapeAnnotation(kind, new Point(D("ax"), D("ay")), new Point(D("bx"), D("by")), c, w, o["f"]?.GetValue<bool>() == true);
             case "text":
                 return new TextAnnotation(new Point(D("x"), D("y")), o["s"]!.GetValue<string>(), c, w);
             case "step":
                 return new StepAnnotation(new Point(D("x"), D("y")), o["n"]!.GetValue<int>(), c, w);
             case "image":
-                using (var png = new System.IO.MemoryStream(Convert.FromBase64String(o["png"]!.GetValue<string>()), writable: false))
                 {
-                    var frame = System.Windows.Media.Imaging.BitmapFrame.Create(png, System.Windows.Media.Imaging.BitmapCreateOptions.None,
-                        System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
-                    Services.ImageOutput.CheckSize(frame.PixelWidth, frame.PixelHeight);
-                    frame.Freeze();
+                    var frame = Services.ImageOutput.Load(Convert.FromBase64String(o["png"]!.GetValue<string>()));
                     double bw = D("bw"), bh = D("bh");
                     return bw > 0 && bh > 0 ? new ImageAnnotation(frame, new Rect(D("x"), D("y"), bw, bh)) : null;
                 }

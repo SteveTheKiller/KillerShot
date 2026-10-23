@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Орнату аяқталмады - KillerShot әлі де портативті режимде жұмыс істеп тұр.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Орнату аяқталды. Орнату кезінде өзгертілген жұмысты қорғау үшін KillerShot ашық қалды.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 нысананы таңдайды. Көрсеткі пернелері нысананы ауыстырады. Enter түсіреді. Escape әрекетті тоқтатады.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Сақталған түзетулерді оқу мүмкін болмады. Түзетулері біріктірілген сурет ашылды. Жұмысты жалғастыру үшін бөлек файл сақтаңыз. Түпнұсқа мен сақталған түзетулер альбомда қалады.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Сақталған түзетулер мен түзетулері біріктірілген суретті қауіпсіз оқу мүмкін болмады. Түпнұсқа мен сақталған түзетулер альбомда қалады.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Түпнұсқаны қалпына келтіру...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Түпнұсқада түзетулермен немесе бояп жасыру арқылы жасырылған мазмұн болуы мүмкін. Ол бөлек көшірме ретінде ашылады. Сақталған түзетулер альбомда қалады. Жалғастыру керек пе?</sys:String>
 </ResourceDictionary>

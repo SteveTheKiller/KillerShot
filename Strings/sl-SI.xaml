@@ -581,4 +581,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Namestitev ni bila dokončana. KillerShot še vedno deluje v prenosnem načinu.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Namestitev je končana. KillerShot je ostal odprt, da zaščiti delo, spremenjeno med namestitvijo.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 izbere cilj. Puščične tipke zamenjajo cilj. Enter zajame. Escape prekliče.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Shranjenih sprememb ni bilo mogoče prebrati. Odprta je bila slika z združenimi spremembami. Za nadaljevanje dela shranite ločeno datoteko. Izvirnik in shranjene spremembe ostanejo v albumu.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Shranjenih sprememb in slike z združenimi spremembami ni bilo mogoče varno prebrati. Izvirnik in shranjene spremembe ostanejo v albumu.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Obnovi izvirnik...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Izvirnik lahko vsebuje vsebino, skrito s spremembami ali prekrivanjem občutljivih podatkov. Odprl se bo kot ločena kopija. Shranjene spremembe bodo ostale v albumu. Želite nadaljevati?</sys:String>
 </ResourceDictionary>

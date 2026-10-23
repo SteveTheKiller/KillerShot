@@ -38,13 +38,13 @@ internal static partial class CaptureLibrary
         lock (_gate) if (IsCurrent(item)) StoreOcr(item.Id, text, _db);
     }
 
-    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase, int? revision = null)
+    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase, long? revision = null)
     {
         lock (_gate)
         {
             if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
-            if (revision is int read && read != MarksRevision(id)) return;   // read before an edit
             using var transaction = _db.BeginTransaction();
+            if (revision is long read && read != MarksRevision(id, transaction)) return;
             using var command = _db.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "UPDATE captures SET ocr_text = $text WHERE id = $id";
@@ -96,7 +96,7 @@ internal static partial class CaptureLibrary
                         if (recognize == null) { completed = false; return; }
                     }
                     long id;
-                    int revision;
+                    long revision;
                     byte[] png;
                     SqliteConnection database;
                     lock (_gate)
@@ -106,14 +106,14 @@ internal static partial class CaptureLibrary
                         using var cmd = _db.CreateCommand();
                         lock (_ocrFailed)
                             // The edited result when the capture has marks, so text under a redaction is never read.
-                            cmd.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image) FROM captures c WHERE c.ocr_text IS NULL"
+                            cmd.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image), COALESCE((SELECT revision FROM capture_revisions WHERE capture_id=c.id), 0) FROM captures c WHERE c.ocr_text IS NULL"
                                 + (_ocrFailed.Count > 0 ? " AND c.id NOT IN (" + string.Join(",", _ocrFailed) + ")" : "")
                                 + " ORDER BY c.taken_utc DESC LIMIT 1";
                         using var r = cmd.ExecuteReader();
                         if (!r.Read()) return;
                         id = r.GetInt64(0);
                         png = (byte[])r[1];
-                        revision = MarksRevision(id);
+                        revision = r.GetInt64(2);
                     }
                     string text;
                     try { text = await recognize(png); }

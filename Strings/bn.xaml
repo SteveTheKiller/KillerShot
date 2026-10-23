@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Chk_AllUsers">এই কম্পিউটারের সব ব্যবহারকারীর জন্য ইনস্টল করুন (অ্যাডমিন লাগবে)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">ইনস্টল সম্পূর্ণ হয়নি - KillerShot এখনও পোর্টেবল হিসেবে চলছে।</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">ইনস্টলেশন শেষ হয়েছে। ইনস্টলেশনের সময় করা কাজের পরিবর্তন সুরক্ষিত রাখতে KillerShot খোলা রয়েছে।</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">সংরক্ষিত সম্পাদনাগুলো পড়া যায়নি। সব সম্পাদনা একত্র করা ছবিটি খোলা হয়েছে। কাজ চালিয়ে যেতে আলাদা একটি ফাইল সংরক্ষণ করুন। মূল ছবি ও সংরক্ষিত সম্পাদনাগুলো অ্যালবামে রয়েছে।</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">সংরক্ষিত সম্পাদনাগুলো ও সব সম্পাদনা একত্র করা ছবিটি নিরাপদে পড়া যায়নি। মূল ছবি ও সংরক্ষিত সম্পাদনাগুলো অ্যালবামে রয়েছে।</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">মূল ছবি পুনরুদ্ধার করুন...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">মূল ছবিতে সম্পাদনা বা কালো করে ঢাকার মাধ্যমে লুকানো বিষয়বস্তু থাকতে পারে। এটি আলাদা একটি কপি হিসেবে খুলবে। সংরক্ষিত সম্পাদনাগুলো অ্যালবামে থাকবে। চালিয়ে যাবেন?</sys:String>
 </ResourceDictionary>

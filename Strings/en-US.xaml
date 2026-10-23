@@ -591,4 +591,8 @@
     <sys:String x:Key="Str_Chk_AllUsers">Install for everyone on this computer (needs admin)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Install did not complete - KillerShot is still running portable.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Installation finished. KillerShot stayed open to protect work changed during installation.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">The saved edits could not be read. Opened the flattened image. Save a separate file to keep working. The original and saved edits remain in the album.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">The saved edits and flattened image could not be read safely. The original and saved edits remain in the album.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Recover original...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">The original may contain content hidden by edits or redaction. It will open as a separate copy. Saved edits will stay in the album. Continue?</sys:String>
 </ResourceDictionary>

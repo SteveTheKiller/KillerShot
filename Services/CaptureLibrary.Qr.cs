@@ -9,6 +9,7 @@ internal static partial class CaptureLibrary
     private static readonly SemaphoreSlim QrWorker = new(1, 1);
     private static readonly Dictionary<string, bool> PendingQrChoices = new(StringComparer.OrdinalIgnoreCase);
     private static int _qrScheduled;
+    internal static Func<System.Windows.Media.Imaging.BitmapSource, IReadOnlyList<QrResult>> QrRecognizer { get; set; } = QrImages.Read;
 
     public static bool QrReadingEnabled
     {
@@ -67,7 +68,7 @@ internal static partial class CaptureLibrary
             {
                 SqliteConnection database;
                 long id;
-                int revision;
+                long revision;
                 byte[] image;
                 lock (_gate)
                 {
@@ -75,18 +76,37 @@ internal static partial class CaptureLibrary
                     database = _db;
                     using var command = database.CreateCommand();
                     // The edited result when the capture has marks, so a redacted code is never decoded.
-                    command.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image) FROM captures c WHERE NOT EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id = c.id) ORDER BY c.taken_utc DESC LIMIT 1";
+                    command.CommandText = "SELECT c.id, COALESCE((SELECT m.output_image FROM capture_marks m WHERE m.capture_id = c.id), c.image), COALESCE((SELECT revision FROM capture_revisions WHERE capture_id=c.id), 0) FROM captures c WHERE NOT EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id = c.id) ORDER BY c.taken_utc DESC LIMIT 1";
                     using var reader = command.ExecuteReader();
                     if (!reader.Read()) return;
                     id = reader.GetInt64(0);
                     image = (byte[])reader[1];
-                    revision = MarksRevision(id);
+                    revision = reader.GetInt64(2);
                 }
-                var results = await Task.Run(() => QrImages.Read(QrImages.Load(image))).ConfigureAwait(false);
+                var results = await Task.Run(() => QrRecognizer(QrImages.Load(image))).ConfigureAwait(false);
                 StoreQr(id, results, database, revision);
             }
         }
         finally { QrWorker.Release(); }
+    }
+
+    private static void ReadInitialQr(long id, SqliteConnection database)
+    {
+        byte[] output;
+        long revision;
+        lock (_gate)
+        {
+            if (!ReferenceEquals(_db, database)) return;
+            using var command = database.CreateCommand();
+            command.CommandText = "SELECT COALESCE((SELECT output_image FROM capture_marks WHERE capture_id=c.id), c.image), COALESCE((SELECT revision FROM capture_revisions WHERE capture_id=c.id), 0) FROM captures c WHERE c.id=$id";
+            command.Parameters.AddWithValue("$id", id);
+            using var reader = command.ExecuteReader();
+            if (!reader.Read()) return;
+            output = (byte[])reader[0];
+            revision = reader.GetInt64(1);
+        }
+        var results = QrRecognizer(QrImages.Load(output));
+        StoreQr(id, results, database, revision);
     }
 
     public static void StoreQr(long id, IReadOnlyList<QrResult> results) => StoreQr(id, results, null);
@@ -96,15 +116,15 @@ internal static partial class CaptureLibrary
         lock (_gate) if (IsCurrent(item)) StoreQr(item.Id, results, _db);
     }
 
-    private static void StoreQr(long id, IReadOnlyList<QrResult> results, SqliteConnection? expectedDatabase, int? revision = null)
+    private static void StoreQr(long id, IReadOnlyList<QrResult> results, SqliteConnection? expectedDatabase, long? revision = null)
     {
         string json = JsonSerializer.Serialize(results);
         string text = string.Join('\n', results.Select(result => result.Text));
         lock (_gate)
         {
-            if (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase)) return;
-            if (revision is int read && read != MarksRevision(id)) return;   // read before an edit
+            if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
             using var transaction = Db.BeginTransaction();
+            if (revision is long read && read != MarksRevision(id, transaction)) return;
             using var command = Db.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = """

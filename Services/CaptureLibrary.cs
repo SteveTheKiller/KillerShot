@@ -12,7 +12,7 @@ internal sealed record CaptureItem(long Id, DateTime Taken, int Width, int Heigh
     string? Window, string? Process, long? CollectionId, string? Note, bool HasQr = false, long Session = 0);
 
 /// <summary>A collection (a folder inside the library) and how many captures it holds.</summary>
-internal sealed record CaptureCollection(long Id, string Name, int Count);
+internal sealed record CaptureCollection(long Id, string Name, int Count, long Session = 0);
 
 /// <summary>
 /// Every capture KillerShot keeps, in one SQLCipher database (Library.kshot, AES-256) under
@@ -43,7 +43,7 @@ internal static partial class CaptureLibrary
         SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlcipher());
     }
 
-    private const int SchemaVersion = 3;
+    private const int SchemaVersion = 4;
     private const int ThumbLongSide = 512;
     private static readonly byte[] KeyEntropy = "KillerShot.Library.v1"u8.ToArray();
 
@@ -518,6 +518,9 @@ internal static partial class CaptureLibrary
                 capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
                 results TEXT NOT NULL,
                 text TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS capture_revisions(
+                capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
+                revision INTEGER NOT NULL);
             """ + MarksSchema + """
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
@@ -530,6 +533,24 @@ internal static partial class CaptureLibrary
             INSERT INTO meta(key, value) VALUES ('capture_id', (SELECT COALESCE(MAX(id), 0) FROM captures))
             ON CONFLICT(key) DO UPDATE SET value = MAX(CAST(meta.value AS INTEGER), CAST(excluded.value AS INTEGER));
             """);
+        // Older builds could index original QR pixels after a redaction. Only derived data is
+        // invalidated, once and transactionally; source images, edits and notes stay intact.
+        using (var repair = db.BeginTransaction())
+        {
+            using var migration = db.CreateCommand();
+            migration.Transaction = repair;
+            migration.CommandText = """
+                UPDATE captures SET ocr_text = NULL WHERE id IN (SELECT capture_id FROM capture_marks)
+                    AND NOT EXISTS(SELECT 1 FROM meta WHERE key='recognition_safe_output_v1');
+                DELETE FROM capture_qr WHERE capture_id IN (SELECT capture_id FROM capture_marks)
+                    AND NOT EXISTS(SELECT 1 FROM meta WHERE key='recognition_safe_output_v1');
+                UPDATE capture_search SET ocr = '' WHERE rowid IN (SELECT capture_id FROM capture_marks)
+                    AND NOT EXISTS(SELECT 1 FROM meta WHERE key='recognition_safe_output_v1');
+                INSERT OR IGNORE INTO meta(key, value) VALUES ('recognition_safe_output_v1', '1');
+                """;
+            migration.ExecuteNonQuery();
+            repair.Commit();
+        }
         using var cmd = db.CreateCommand();
         cmd.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('schema', $v)";
         cmd.Parameters.AddWithValue("$v", SchemaVersion);
@@ -660,7 +681,7 @@ internal static partial class CaptureLibrary
         RaiseCaptureStored(bmp, id);
         try
         {
-            if (mode == "qr") StoreQr(id, QrImages.Read(bmp), album);
+            if (mode == "qr") ReadInitialQr(id, album);
             Prune(album);
             RaiseChanged();
             if (BackgroundWork)
@@ -847,7 +868,7 @@ internal static partial class CaptureLibrary
                 """;
             var list = new List<CaptureCollection>();
             using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(new CaptureCollection(r.GetInt64(0), r.GetString(1), r.GetInt32(2)));
+            while (r.Read()) list.Add(new CaptureCollection(r.GetInt64(0), r.GetString(1), r.GetInt32(2), _session));
             return list;
         }
     }
@@ -965,33 +986,24 @@ internal static partial class CaptureLibrary
         ThumbnailCache.Clear(folders: false);
     }
 
-    private static BitmapSource Decode(byte[] bytes, bool exactPixels)
-    {
-        var img = new BitmapImage();
-        img.BeginInit();
-        img.CacheOption = BitmapCacheOption.OnLoad;
-        img.CreateOptions = BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.PreservePixelFormat;
-        img.StreamSource = new MemoryStream(bytes);
-        img.EndInit();
-        if (!exactPixels) { img.Freeze(); return img; }
-        // At its true pixel size, as ImageOutput.Load does for files.
-        BitmapSource src = img.Format == PixelFormats.Bgra32 ? img : new FormatConvertedBitmap(img, PixelFormats.Bgra32, null, 0);
-        int w = src.PixelWidth, h = src.PixelHeight;
-        var px = new byte[(long)w * h * 4];
-        src.CopyPixels(px, w * 4, 0);
-        var copy = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, px, w * 4);
-        copy.Freeze();
-        return copy;
-    }
+    private static BitmapSource Decode(byte[] bytes, bool exactPixels) =>
+        ImageOutput.Load(bytes, exactPixels ? ImageOutput.MaxPixels : (long)ThumbLongSide * ThumbLongSide);
 
     // ============================================================
     // Changing captures and collections
     // ============================================================
 
-    public static void Delete(IEnumerable<long> ids)
+    private static void RequireSession(long? expectedSession)
+    {
+        if (expectedSession.HasValue && (_db == null || _session != expectedSession.Value))
+            throw new InvalidOperationException(Loc("Str_Album_Changed"));
+    }
+
+    public static void Delete(IEnumerable<long> ids, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             foreach (long id in ids)
             {
@@ -1008,10 +1020,11 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>Puts captures in a collection, or takes them out of any with null.</summary>
-    public static void Move(IEnumerable<long> ids, long? collectionId)
+    public static void Move(IEnumerable<long> ids, long? collectionId, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             foreach (long id in ids)
             {
@@ -1028,10 +1041,11 @@ internal static partial class CaptureLibrary
         RaiseChanged();
     }
 
-    public static void SetNote(long id, string? note)
+    public static void SetNote(long id, string? note, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
             cmd.Transaction = tx;
@@ -1045,11 +1059,12 @@ internal static partial class CaptureLibrary
         RaiseChanged();
     }
 
-    public static long CreateCollection(string name, IEnumerable<long>? moveIn = null)
+    public static long CreateCollection(string name, IEnumerable<long>? moveIn = null, long? expectedSession = null)
     {
         long id;
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
             cmd.Transaction = tx;
@@ -1074,10 +1089,11 @@ internal static partial class CaptureLibrary
         return id;
     }
 
-    public static void RenameCollection(long id, string name)
+    public static void RenameCollection(long id, string name, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             using var cmd = Db.CreateCommand();
             cmd.Transaction = tx;
@@ -1092,10 +1108,11 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>Removes a collection. Its captures stay in the library, in no collection.</summary>
-    public static void DeleteCollection(long id)
+    public static void DeleteCollection(long id, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var tx = Db.BeginTransaction();
             var members = MembersOf(id, tx);
             using var cmd = Db.CreateCommand();

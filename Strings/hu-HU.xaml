@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">A telepítés nem fejeződött be - a KillerShot továbbra is hordozható.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">A telepítés befejeződött. A KillerShot nyitva maradt, hogy megőrizze a telepítés közben módosított munkát.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">Az F2 célt választ. A nyílbillentyűkkel másik célt választhat. Az Enter rögzít. Az Escape megszakítja a műveletet.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">A mentett módosítások nem olvashatók. A módosításokat egyesítő kép nyílt meg. A munka folytatásához mentse külön fájlba. Az eredeti és a mentett módosítások megmaradnak az albumban.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">A mentett módosítások és a módosításokat egyesítő kép nem olvashatók biztonságosan. Az eredeti és a mentett módosítások megmaradnak az albumban.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Eredeti helyreállítása...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Az eredeti a módosításokkal vagy kitakarással elrejtett tartalmat is tartalmazhat. Külön másolatként nyílik meg. A mentett módosítások megmaradnak az albumban. Folytatja?</sys:String>
 </ResourceDictionary>

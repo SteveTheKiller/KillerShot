@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Chk_AllUsers">Nainstalovat pro všechny uživatele tohoto počítače (vyžaduje správce)</sys:String>
     <sys:String x:Key="Str_Status_InstallFailed">Instalace nebyla dokončena - KillerShot běží dál přenosně.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Instalace byla dokončena. KillerShot zůstal otevřený, aby ochránil práci změněnou během instalace.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Uložené úpravy nelze přečíst. Byl otevřen obrázek se sloučenými úpravami. Chcete-li pokračovat v práci, uložte jej do samostatného souboru. Originál a uložené úpravy zůstávají v albu.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Uložené úpravy ani obrázek se sloučenými úpravami nelze bezpečně přečíst. Originál a uložené úpravy zůstávají v albu.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Obnovit originál...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Originál může obsahovat obsah skrytý úpravami nebo začerněním. Otevře se jako samostatná kopie. Uložené úpravy zůstanou v albu. Pokračovat?</sys:String>
 </ResourceDictionary>

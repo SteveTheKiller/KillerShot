@@ -14,19 +14,24 @@ namespace KillerShot.Shell;
 /// card to select from, with a region reader and the recognition language.</summary>
 public partial class MainWindow
 {
+    internal Func<BitmapSource, Task<string?>> RecognizeTextAsync { get; set; } = TextRecognition.ReadAsync;
+    internal Action<string> CopyTextToClipboard { get; set; } = Clipboard.SetText;
     private Popup? _textPopup;
     private TextBox? _textBox;
     private TextBlock? _textStatus;
     private ComboBox? _textLanguage;
     private int _textRead;   // ignores a slow read that a newer one replaced
+    private RecognitionSnapshot? _textSnapshot;
 
     private void CopyTextBtn_Click(object sender, RoutedEventArgs e) => _ = ReadPictureTextAsync(null, copy: true);
 
     /// <summary>Reads the whole picture, or one area of it, and optionally copies the result.</summary>
     internal async Task ReadPictureTextAsync(Int32Rect? area, bool copy)
     {
-        if (_doc == null) return;
+        if (_doc == null || _recognitionClosed) return;
         Editor.CommitText();
+        SyncRecognitionState();
+        var snapshot = CaptureRecognition();
         ShowTextPanel();
         BitmapSource image = _doc.Render();
         if (area is { } a)
@@ -36,11 +41,14 @@ public partial class MainWindow
             image = cropped;
         }
         int read = ++_textRead;
+        _textSnapshot = null;
+        _textBox!.Text = "";
         _textStatus!.Text = Loc("Str_Ocr_Reading");
         string? text;
-        try { text = await TextRecognition.ReadAsync(image); }
-        catch (Exception error) { if (read == _textRead) _textStatus.Text = error.Message; return; }
-        if (read != _textRead) return;
+        try { text = await RecognizeTextAsync(image); }
+        catch (Exception error) { if (read == _textRead && IsCurrentRecognition(snapshot)) _textStatus.Text = error.Message; return; }
+        if (read != _textRead || !IsCurrentRecognition(snapshot)) return;
+        _textSnapshot = snapshot;
         if (text == null) { _textBox!.Text = ""; _textStatus.Text = Loc("Str_Ocr_Unavailable"); return; }
         _textBox!.Text = text;
         if (text.Trim().Length == 0) { _textStatus.Text = Loc("Str_Ocr_None"); return; }
@@ -56,13 +64,14 @@ public partial class MainWindow
 
     private void CopyRecognizedText()
     {
-        if (_textBox == null || _textBox.Text.Length == 0) return;
+        if (_textBox == null || _textBox.Text.Length == 0 || !IsCurrentRecognition(_textSnapshot)) return;
         string text = _textBox.SelectionLength > 0 ? _textBox.SelectedText : _textBox.Text;
         for (int attempt = 0; attempt < 5; attempt++)
         {
+            if (!IsCurrentRecognition(_textSnapshot)) return;
             try
             {
-                Clipboard.SetText(text);
+                CopyTextToClipboard(text);
                 string done = string.Format(CultureInfo.CurrentCulture, Loc("Str_Ocr_Copied"), text.Length);
                 _textStatus!.Text = done;
                 StatusText.Text = done;
@@ -76,6 +85,7 @@ public partial class MainWindow
     private void ShowTextPanel()
     {
         if (_textPopup == null) BuildTextPanel();
+        if (!IsVisible) return;
         RefreshTextLanguages();
         FlyoutPlacement.AttachInsidePane(_textPopup!, CopyTextBtn.IsVisible ? CopyTextBtn : MoreBtn, alignRight: true);
         _textPopup!.IsOpen = true;

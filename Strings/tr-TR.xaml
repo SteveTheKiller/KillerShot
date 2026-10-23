@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">Yükleme tamamlanmadı - KillerShot taşınabilir olarak çalışmaya devam ediyor.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">Kurulum tamamlandı. Kurulum sırasında değiştirilen çalışmayı korumak için KillerShot açık kaldı.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 hedef seçer. Ok tuşları hedefi değiştirir. Enter yakalar. Escape iptal eder.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">Kaydedilen düzenlemeler okunamadı. Düzenlemelerin birleştirildiği görüntü açıldı. Çalışmaya devam etmek için ayrı bir dosya kaydedin. Asıl görüntü ve kaydedilen düzenlemeler albümde kalır.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">Kaydedilen düzenlemeler ve düzenlemelerin birleştirildiği görüntü güvenli bir şekilde okunamadı. Asıl görüntü ve kaydedilen düzenlemeler albümde kalır.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Asıl görüntüyü kurtar...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">Asıl görüntü, düzenlemeler veya karartma ile gizlenmiş içerik barındırabilir. Ayrı bir kopya olarak açılacaktır. Kaydedilen düzenlemeler albümde kalacaktır. Devam edilsin mi?</sys:String>
 </ResourceDictionary>

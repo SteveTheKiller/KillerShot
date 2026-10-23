@@ -588,4 +588,8 @@
     <sys:String x:Key="Str_Status_InstallFailed">La instalación no se completó: KillerShot sigue en modo portátil.</sys:String>
     <sys:String x:Key="Str_Status_RelaunchDeferred">La instalación terminó. KillerShot permaneció abierto para proteger el trabajo modificado durante la instalación.</sys:String>
     <sys:String x:Key="Str_Capture_TargetKeyboard">F2 selecciona un destino. Las flechas cambian el destino. Enter captura. Escape cancela.</sys:String>
+    <sys:String x:Key="Str_Marks_Recovery">No se pudieron leer las ediciones guardadas. Se abrió la imagen con las ediciones integradas. Guarda un archivo aparte para seguir trabajando. El original y las ediciones guardadas permanecen en el álbum.</sys:String>
+    <sys:String x:Key="Str_Marks_Unreadable">No se pudieron leer de forma segura las ediciones guardadas ni la imagen con las ediciones integradas. El original y las ediciones guardadas permanecen en el álbum.</sys:String>
+    <sys:String x:Key="Str_Marks_OpenOriginal">Recuperar original...</sys:String>
+    <sys:String x:Key="Str_Marks_OriginalWarning">El original puede contener contenido oculto por ediciones o tachados. Se abrirá como una copia independiente. Las ediciones guardadas permanecerán en el álbum. ¿Continuar?</sys:String>
 </ResourceDictionary>

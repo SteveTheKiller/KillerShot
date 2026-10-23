@@ -78,6 +78,11 @@ public partial class App : Application
         }
 
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
+        if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
+        if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
+        if (SelfTestAlbumActionIdentity.TryRun(e.Args)) return;
+        if (SelfTestAlbumImageAdmission.TryRun(e.Args)) return;
+        if (SelfTestAlbumModalIdentity.TryRun(e.Args)) return;
         // The interface self-test runs without the tray, the shortcuts or the single-instance
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
@@ -275,11 +280,17 @@ public partial class App : Application
             try { OpenImage(path); } finally { _opening = null; }
             return;
         }
-        var bmp = CaptureLibrary.LoadImage(item);
-        // A capture edited before opens with its marks, still editable.
-        var restored = CaptureLibrary.LoadMarks(item.Id, bmp);
+        var document = CaptureLibrary.LoadDocument(item);
         _opening = item;
-        SetDocument(restored != null ? EditorDocument.Restore(bmp, restored, item.Taken) : new EditorDocument(bmp, null, item.Taken));
+        SetDocument(document);
+    }
+
+    /// <summary>Called only after the original-content recovery warning was accepted.</summary>
+    internal void RecoverLibraryOriginal(CaptureItem item)
+    {
+        var original = CaptureLibrary.LoadImage(item);
+        _opening = item;
+        SetDocument(new EditorDocument(original, null, item.Taken) { Recovery = AlbumRecovery.Original });
     }
 
     /// <summary>The library or Screenshots folder picture in the editor, or null for a new

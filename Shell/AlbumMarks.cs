@@ -50,9 +50,9 @@ internal sealed class AlbumMarks
         if (_doc != null) _doc.Changed -= OnChanged;
         _delay.Stop();
         _doc = doc;
-        _id = id;
+        _id = doc != null && doc.Recovery != AlbumRecovery.None ? null : id;
         _session = CaptureLibrary.Session;
-        _awaitingCapture = doc != null && id == null && doc.FilePath == null;
+        _awaitingCapture = doc != null && doc.Recovery == AlbumRecovery.None && id == null && doc.FilePath == null;
         LinkStoredCapture();
         if (_doc != null) _doc.Changed += OnChanged;
     }

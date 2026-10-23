@@ -6,6 +6,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Data protection and recovery
 
+- Unreadable album edits open the flattened image safely and preserve recovery data. QR and text recognition follow edits and reject obsolete results; album actions stay bound to their original album.
 - Redactions keep hidden pixels covered when resizing inserted pictures, including transparent and fractional layers.
 - Albums recover after interrupted password changes or removal, preserving captures and recovery copies when cleanup fails. Failed setup keeps the album closed until the problem is corrected. (#1) (#4)
 - Captures waiting in memory remain visible after a failed album write, save on retry and warn before exit. (#2) Waiting captures are capped at 1 GiB; past that, new captures still copy and save but skip the album with a warning, and nothing already waiting is lost.
@@ -47,6 +48,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Print from the editor, album or tray through a themed preview with printer, paper, orientation, scale, color and copies controls. The preview fits smaller and scaled work areas. Over the album, Ctrl+C and Ctrl+P use the capture in focus, and the tray's Save Last keeps the capture it opened with.
 - Ctrl+V pastes a copied picture onto the open capture as an object you can move, resize and keep in the album; Ctrl+Shift+V opens it as a new picture, and Insert picture from file places one from disk. Pasting keeps PNG transparency and never watches the clipboard.
 - Opened and dropped images appear upright using their camera orientation, convert embedded color profiles to sRGB, and are refused with a clear message above 100 megapixels instead of exhausting memory.
+- Album images and inserted pictures use the same size checks before decoding, with a smaller limit for thumbnails.
 - Drag images into the album or editor and full-size PNG copies into other apps. Abandoned temporary exports expire after 24 hours while active sessions and locked files remain intact.
 
 ### QR reading

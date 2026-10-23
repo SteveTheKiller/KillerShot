@@ -283,10 +283,11 @@ internal static partial class CaptureLibrary
         }
     }
 
-    public static void SetAlbumSetting(string key, string value)
+    public static void SetAlbumSetting(string key, string value, long? expectedSession = null)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var command = Db.CreateCommand();
             command.CommandText = "INSERT INTO meta(key, value) VALUES ($key, $value) ON CONFLICT(key) DO UPDATE SET value=excluded.value";
             command.Parameters.AddWithValue("$key", "setting." + key);
