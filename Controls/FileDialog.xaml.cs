@@ -93,6 +93,7 @@ namespace KillerShot.Controls
         {
             _mode = mode;
             InitializeComponent();
+            Closed += (_, _) => CloseDirectoryListing();
             TitleIcon.Source = System.Windows.Media.Imaging.BitmapDecoder.Create(new Uri("pack://application:,,,/KillerShot;component/Resources/kst-icon.ico"),
                 System.Windows.Media.Imaging.BitmapCreateOptions.None, System.Windows.Media.Imaging.BitmapCacheOption.OnLoad).Frames[0];
             Loaded += (_, _) => Anim.FadeIn(RootBorder);

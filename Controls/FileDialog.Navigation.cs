@@ -42,100 +42,10 @@ namespace KillerShot.Controls
             _ = NavigateToAsync(dir);
         }
 
-        private async Task NavigateToAsync(string dir)
-        {
-            long version = ++_navigationVersion;
-            bool showHidden = _showHidden;
-            _directoryReady = false;
-            AcceptButton.IsEnabled = false;
-            UpButton.IsEnabled = false;
+        private Task NavigateToAsync(string dir) => DirectoryListingTask = NavigateDirectoryAsync(dir);
 
-            _navigating = true;
-            _currentDir  = dir;
-            PathBox.Text = dir;
-            _raw.Clear();
-            ApplySort();
-            UpdateInfoSummary();
-            _navigating = false;
-
-            bool exists;
-            List<PickerEntry> entries;
-            try
-            {
-                (exists, entries) = await Task.Run(() =>
-                    Directory.Exists(dir)
-                        ? (true, EntryEnumerator(dir, showHidden))
-                        : (false, new List<PickerEntry>()));
-            }
-            catch (IOException) { exists = false; entries = []; }
-            catch (UnauthorizedAccessException) { exists = false; entries = []; }
-            if (_dialogClosed || version != _navigationVersion) return;
-            if (!exists)
-            {
-                if (_lastValidDir.Length > 0 && !string.Equals(_lastValidDir, dir, StringComparison.OrdinalIgnoreCase))
-                    NavigateTo(_lastValidDir);
-                return;
-            }
-
-            _lastValidDir = dir;
-
-            _navigating = true;
-            try
-            {
-                _raw.AddRange(entries);
-                ApplySort();
-                UpButton.IsEnabled = Directory.GetParent(dir) != null;
-                UpdateInfoSummary();
-                SyncPlacesSelection();
-            }
-            finally { _navigating = false; }
-
-            _directoryReady = true;
-            AcceptButton.IsEnabled = !_accepting;
-            if (_folderFocusPending)
-            {
-                _folderFocusPending = false;
-                AcceptButton.Focus();
-            }
-            RecordRecent(dir);
-            _ = RevealInTree(dir, version);
-        }
-
-        private static List<PickerEntry> EnumerateEntries(string dir, bool showHidden)
-        {
-            var entries = new List<PickerEntry>();
-            try
-            {
-                // The toggle gates two things together: attribute Hidden/System AND leading-dot
-                // names - the Unix convention is all over a Windows home folder (.gradle, .ssh)
-                // and those carry no Hidden attribute. Same gate in the folder tree (FolderTree.cs).
-                foreach (var sub in Directory.EnumerateDirectories(dir))
-                {
-                    DirectoryInfo info;
-                    try { info = new DirectoryInfo(sub); } catch { continue; }
-                    if (!showHidden)
-                    {
-                        if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
-                        if (info.Name.StartsWith(".", StringComparison.Ordinal)) continue;
-                    }
-                    entries.Add(new PickerEntry(info.Name, sub, true, 0, SafeTime(() => info.LastWriteTime)));
-                }
-                foreach (var file in Directory.EnumerateFiles(dir))
-                {
-                    FileInfo fi;
-                    try { fi = new FileInfo(file); } catch { continue; }
-                    if (!showHidden)
-                    {
-                        if ((fi.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
-                        if (fi.Name.StartsWith(".", StringComparison.Ordinal)) continue;
-                    }
-                    entries.Add(new PickerEntry(fi.Name, file, false, SafeLen(fi), SafeTime(() => fi.LastWriteTime)));
-                }
-            }
-            catch { /* unauthorized / unreadable - show what we have */ }
-
-            return entries;
-        }
+        private static List<PickerEntry> EnumerateEntries(string dir, bool showHidden) =>
+            PickerDirectoryListing.Read(dir, showHidden, System.Threading.CancellationToken.None).Entries.ToList();
 
         private static DateTime SafeTime(Func<DateTime> get)
         {

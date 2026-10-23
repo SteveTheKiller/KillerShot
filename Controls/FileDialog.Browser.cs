@@ -82,6 +82,7 @@ namespace KillerShot.Controls
             var leaf    = Path.GetFileName(_currentDir.TrimEnd('\\'));
             SelName.Text = leaf.Length == 0 ? _currentDir : leaf;
             SelMeta.Text = string.Format(Loc("Str_Sum_Counts"), folders, shown);
+            if (!IsDirectoryListingComplete && !string.IsNullOrWhiteSpace(_listingError)) SelMeta.Text += " | " + _listingError;
         }
 
         // ── View modes ───────────────────────────────────────────────────────────
@@ -191,7 +192,9 @@ namespace KillerShot.Controls
         /// Rebuilds Entries from _raw: filter applied, folders always before files, then the
         /// active sort key. Folders-first is not a sort key - it is the frame the sort runs in.
         /// </summary>
-        private void ApplySort()
+        private void ApplySort() => _ = ApplySortAsync();
+
+        private async Task ApplySortAsync()
         {
             var visible = _raw.Where(PassesFilter);
 
@@ -205,8 +208,7 @@ namespace KillerShot.Controls
                               : visible.OrderBy(x => !x.IsFolder).ThenByDescending(x => x.Name, StringComparer.OrdinalIgnoreCase),
             };
 
-            Entries.Clear();
-            foreach (var e in ordered) Entries.Add(e);
+            if (!await PublishListingRowsAsync(ordered.ToArray())) return;
 
             NameArrow.Text = _sortKey == 0 ? (_sortAsc ? ArrowUp : ArrowDown) : "";
             SizeArrow.Text = _sortKey == 1 ? (_sortAsc ? ArrowUp : ArrowDown) : "";
