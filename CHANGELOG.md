@@ -62,6 +62,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
 
 ### Desktop, accessibility and localization
+- Black table headers match the content surface.
 - About can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts.
 - Every album view keeps the themed content pane, with subtly shaded screenshot cards and restrained photo shadows in carousels.
 - Portable stays clear of footer controls and long image readouts in narrow windows.
