@@ -478,7 +478,10 @@ public static class Program
             recorder = new Recorder(area, sink, fps, cursor, sound, audioSources);
             Console.CancelKeyPress += onCancel;
             await recorder.StartAsync();
-            await Task.WhenAny(Task.Delay(seconds * 1000), stop.Task);
+            // A capture, encoder or audio failure ends the wait at once instead of idling out --seconds.
+            var deadline = Task.Delay(seconds * 1000);
+            while (!deadline.IsCompleted && !stop.Task.IsCompleted && !recorder.HasFailed)
+                await Task.WhenAny(deadline, stop.Task, Task.Delay(100));
             duration = recorder.Elapsed;
             try { await recorder.StopAsync(); }
             catch (Exception ex) when (recorder.IsFinalized) { recordingWarning = ex; }
