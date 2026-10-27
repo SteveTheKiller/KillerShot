@@ -6,6 +6,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 
 ### Fixed
 
+- Updates keep working after the publisher's code signing certificate is renewed. A release must still carry a valid signature naming the same publisher, but no longer the exact certificate of the installed copy.
 - Exit from the tray icon closes the window the normal way, so the prompt for unsaved edits can still cancel it.
 - In High Contrast, hovered menu items use the system highlight colors.
 
