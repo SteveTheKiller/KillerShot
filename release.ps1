@@ -179,6 +179,13 @@ foreach ($field in 'AssemblyVersion', 'FileVersion') {
     if ($csprojRaw -notmatch "<$field>([0-9.]+)</$field>") { throw "No <$field> in KillerShot.csproj" }
     if ($Matches[1] -ne $expectedFileVersion) { throw "KillerShot.csproj <$field> is $($Matches[1]), expected $expectedFileVersion" }
 }
+# The command line project carries its own version fields; keep them in step with the app.
+$cliRaw = Get-Content -Path (Join-Path $PSScriptRoot 'KillerShot.Cli\KillerShot.Cli.csproj') -Raw
+foreach ($pair in @(@('Version', $Version), @('AssemblyVersion', $expectedFileVersion), @('FileVersion', $expectedFileVersion))) {
+    $field, $want = $pair
+    if ($cliRaw -notmatch "<$field>([0-9.]+)</$field>") { throw "No <$field> in KillerShot.Cli.csproj" }
+    if ($Matches[1] -ne $want) { throw "KillerShot.Cli.csproj <$field> is $($Matches[1]), expected $want" }
+}
 Write-Host "    Version: $Version (tag $Tag)"
 
 $changelog = Get-Content -Path (Join-Path $PSScriptRoot 'CHANGELOG.md') -Raw
