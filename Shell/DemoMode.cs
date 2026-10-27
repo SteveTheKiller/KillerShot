@@ -95,11 +95,15 @@ internal static class DemoMode
 /// folder, so the demo can be looked at without a window on the user's screen.</summary>
 internal static class SelfTestDemo
 {
+    /// <summary>--landing: only the landing page set, at the page's 1600 by 1000 size.</summary>
+    private static bool _landing;
+
     public static bool TryRun(string[] args)
     {
         int i = Array.FindIndex(args, a => a.Equals("--selftest-demo", StringComparison.OrdinalIgnoreCase));
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest-demo");
+        _landing = args.Any(a => a.Equals("--landing", StringComparison.OrdinalIgnoreCase));
         Directory.CreateDirectory(dir);
         SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(dir, "native"));
         DemoMode.TryEnter(["--demo"], Path.Combine(Path.GetFullPath(dir), "state"));
@@ -137,6 +141,74 @@ internal static class SelfTestDemo
                 log.AppendLine("shot " + name);
             }
             var view = w.TestLibrary;
+            if (_landing)
+            {
+                // The landing page set: each shot its own theme and accent, so the page shows the
+                // family palettes as well as the views, docking sides and the settings card.
+                w.Width = 1600; w.Height = 1000;
+                // The settings card shows the output folder; a generic one keeps the machine's user name off the page.
+                CaptureSettings.OutputFolder = @"C:\Users\You\Pictures\Screenshots";
+                void Look(Theme theme, Accent accent)
+                {
+                    ThemeManager.ApplyAccent(theme, accent);
+                    ThemeManager.Apply(theme);
+                }
+                void Dock(KillerFamily.Layout.DockSide sidebar, KillerFamily.Layout.DockSide strip)
+                {
+                    w.TestNavigationDock.DockTo(sidebar);
+                    w.TestStripDock.DockTo(strip);
+                }
+                var keepAlive = CaptureLibrary.Items().First(c => c.Window?.Contains("Keep Alive") == true);
+                var pdf = CaptureLibrary.Items().FirstOrDefault(c => c.Process == "KillerPDF") ?? keepAlive;
+
+                Look(Theme.Dark, Accent.Teal);
+                Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                view.TestSet("shelves", "collection", "");
+                await Shot("landing-01-shelves-dark");
+
+                Look(Theme.Blood, Accent.Red);
+                view.TestSet("flow", "date", "");
+                await Shot("landing-02-carousel-blood");
+
+                Look(Theme.Light, Accent.Blue);
+                view.TestSet("grid", "date", "");
+                await Shot("landing-03-grid-light");
+
+                Look(Theme.Black, Accent.Purple);
+                view.TestSet("timeline", "date", "");
+                await Shot("landing-04-timeline-black");
+
+                Look(Theme.Cyanotic, Accent.Blue);
+                view.TestSet("grid", "date", "theme");
+                await Shot("landing-05-search-cyanotic");
+
+                Look(Theme.Dark, Accent.Orange);
+                w.TestOpenLibraryCapture(keepAlive);
+                Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                await Shot("landing-06-editor-strip-top");
+
+                Look(Theme.Ectoplasm, Accent.Green);
+                w.TestOpenLibraryCapture(pdf);
+                Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Bottom);
+                await Shot("landing-07-editor-right-bottom");
+
+                Look(Theme.Delirium, Accent.Magenta);
+                Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                w.TestShowCaptureSettings();
+                await Shot("landing-08-capture-settings");
+                w.TestCloseOverlays();
+
+                Look(Theme.SE98, Accent.Teal);
+                w.TestToggleLibrary();
+                view.TestSet("shelves", "date", "");
+                await Shot("landing-09-shelves-98se");
+
+                w.Close();
+                log.AppendLine("result=ok");
+                File.WriteAllText(Path.Combine(dir, "report.txt"), log.ToString());
+                System.Windows.Application.Current.Shutdown(0);
+                return;
+            }
             foreach (var (v, g) in new[] { ("shelves", "collection"), ("flow", "date"), ("grid", "collection"), ("timeline", "date") })
             {
                 view.TestSet(v, g, "");

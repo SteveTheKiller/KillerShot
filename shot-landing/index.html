@@ -228,6 +228,8 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <div class="sb-thumbs" id="sbThumbs">
 <div class="sb-empty" data-i18n="sb_empty">Screenshots<br>coming soon</div>
 </div>
+<div class="sb-fade sb-fade-top" aria-hidden="true"></div>
+<div class="sb-fade sb-fade-bottom" aria-hidden="true"></div>
 </aside>
 </div>
 
@@ -237,9 +239,130 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 </footer>
 <div class="egg-toast" id="eggToast"></div>
 
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Expanded KillerShot screenshot" aria-hidden="true" tabindex="-1" inert>
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close" title="Close">&times;</button>
+  <figure class="lightbox-figure">
+    <img id="lightboxImg" src="" alt="">
+    <figcaption id="lightboxCaption"></figcaption>
+  </figure>
+</div>
+
+<div hidden id="screenshotDescriptions">
+<span data-i18n="shot_shelves">Dark theme: the album as shelves, one carousel per collection of Killer Tools screenshots.</span>
+<span data-i18n="shot_carousel">Blood theme: one large carousel with the capture's title, date, size and program under it.</span>
+<span data-i18n="shot_grid">Light theme with a blue accent: the grid by date, with the collection strip above it.</span>
+<span data-i18n="shot_timeline">Black theme with a purple accent: the timeline, one day per row.</span>
+<span data-i18n="shot_search">Cyanotic theme: a search for "theme" that matches text Windows read inside the pictures.</span>
+<span data-i18n="shot_editor">A KillerScan capture open in the editor, with its collection running across the top as a carousel.</span>
+<span data-i18n="shot_docked">Ectoplasm theme: collections docked on the right and the strip along the bottom.</span>
+<span data-i18n="shot_settings">Delirium theme: capture settings with global shortcuts, what happens after a capture, and the output file.</span>
+<span data-i18n="shot_classic">98SE theme: shelves by date in the classic look.</span>
+</div>
+
 <script src="kst-i18n.js?v=2"></script>
 <script src="kst.js?v=3"></script>
 <script src="feature-carousel.js?v=4"></script>
+<script>
+(function () {
+  // Rendered by KillerShot.exe --selftest-demo <folder> --landing from the privacy-reviewed demo album.
+  // Each localized description supplies alt text, a tooltip and the lightbox caption.
+  var screenshots = ['shot_shelves', 'shot_carousel', 'shot_grid', 'shot_timeline', 'shot_search',
+    'shot_editor', 'shot_docked', 'shot_settings', 'shot_classic'];
+  var sbThumbs = document.getElementById('sbThumbs');
+  var empty = sbThumbs.querySelector('.sb-empty');
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightboxImg');
+  var lightboxCaption = document.getElementById('lightboxCaption');
+  var lightboxClose = document.getElementById('lightboxClose');
+  var lastTrigger = null;
+  var background = [];
+
+  function file(n) { return 'screenshots/' + (n < 10 ? '0' : '') + n + '.jpg'; }
+  function descriptionFor(n) {
+    var caption = document.querySelector('[data-i18n="' + screenshots[n - 1] + '"]');
+    return caption ? caption.textContent : '';
+  }
+  function refreshDescriptions() {
+    sbThumbs.querySelectorAll('.sb-thumb').forEach(function (b) {
+      var description = descriptionFor(+b.dataset.idx);
+      b.title = description; b.setAttribute('aria-label', description);
+      var img = b.querySelector('img'); if (img) { img.alt = description; img.title = description; }
+    });
+    if (lastTrigger) {
+      var description = descriptionFor(+lastTrigger.dataset.idx);
+      lightboxCaption.textContent = description; lightboxImg.alt = description; lightboxImg.title = description;
+    }
+  }
+  new MutationObserver(refreshDescriptions).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  // A real modal: everything behind the overlay is inert until it closes.
+  function openLightbox(trigger) {
+    if (!lightbox.classList.contains('show')) {
+      background = Array.from(document.body.children).filter(function (element) {
+        return element !== lightbox && !/^(SCRIPT|STYLE|LINK)$/.test(element.tagName);
+      }).map(function (element) {
+        var previous = element.inert; element.inert = true;
+        return { element: element, previous: previous };
+      });
+    }
+    lastTrigger = trigger;
+    var n = +trigger.dataset.idx, description = descriptionFor(n);
+    lightboxImg.src = file(n); lightboxImg.alt = description; lightboxImg.title = description;
+    lightboxCaption.textContent = description;
+    lightbox.setAttribute('aria-hidden', 'false');
+    lightbox.inert = false;
+    lightbox.classList.add('show');
+    lightboxClose.focus();
+  }
+  function closeLightbox() {
+    if (!lightbox.classList.contains('show')) return;
+    background.forEach(function (state) { state.element.inert = state.previous; });
+    background = [];
+    lightbox.classList.remove('show');
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightbox.inert = true;
+    if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+    lastTrigger = null;
+  }
+  lightbox.addEventListener('click', closeLightbox);
+  lightboxClose.addEventListener('click', function (e) { e.stopPropagation(); closeLightbox(); });
+  document.addEventListener('keydown', function (e) {
+    if (!lightbox.classList.contains('show')) return;
+    if (e.key === 'Tab') { lightboxClose.focus(); e.preventDefault(); }
+    if (e.key === 'Escape') { closeLightbox(); e.preventDefault(); }
+  });
+
+  // Probe each still before adding its thumbnail, in numeric order whichever loads first,
+  // so a missing file leaves the rest of the strip usable.
+  screenshots.forEach(function (_, i) {
+    var n = i + 1, img = new Image();
+    img.onload = function () {
+      if (empty) { empty.remove(); empty = null; }
+      var b = document.createElement('button');
+      b.className = 'sb-thumb'; b.type = 'button'; b.dataset.idx = n;
+      b.appendChild(img);
+      b.addEventListener('click', function () { openLightbox(b); });
+      var next = null, kids = sbThumbs.children;
+      for (var k = 0; k < kids.length; k++) if (kids[k].dataset && +kids[k].dataset.idx > n) { next = kids[k]; break; }
+      sbThumbs.insertBefore(b, next);
+      refreshDescriptions();
+      updateFade();
+    };
+    img.src = file(n);
+  });
+
+  // Fade the strip's edges while more shots sit beyond them, as the app's sidebar does.
+  var fadeTop = document.querySelector('.sb-fade-top');
+  var fadeBottom = document.querySelector('.sb-fade-bottom');
+  function updateFade() {
+    if (fadeTop) fadeTop.classList.toggle('on', sbThumbs.scrollTop > 2);
+    if (fadeBottom) fadeBottom.classList.toggle('on', sbThumbs.scrollHeight - sbThumbs.clientHeight - sbThumbs.scrollTop > 2);
+  }
+  sbThumbs.addEventListener('scroll', updateFade, { passive: true });
+  window.addEventListener('resize', updateFade);
+  updateFade();
+})();
+</script>
 <script src="brand-layout.js?v=1"></script>
 </body>
 </html>
