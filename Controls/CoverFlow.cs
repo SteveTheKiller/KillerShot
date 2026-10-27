@@ -297,8 +297,11 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
                 double sideNear = -SideDepth - 1.2 * _perspectiveZoom + MaxPictureWidth / 2 * Math.Sin(SideAngle * Math.PI / 180);
                 double frontNear = .9 * _perspectiveZoom;
                 double Scale(double z) => CameraDistance / (CameraDistance - Math.Max(0, z));
+                // Each limit is the lowest aim at which that picture's top still fits, so the aim
+                // takes the largest of them: a short front picture must not pull the view down
+                // under its taller neighbours' tops.
                 if (AlignTop)
-                    aim = Math.Min(aim, Math.Min(MaxPictureHeight - height * .47 / Scale(sideNear), pictureHeight - height * .47 / Scale(frontNear)));
+                    aim = Math.Max(aim, Math.Max(MaxPictureHeight - height * .47 / Scale(sideNear), pictureHeight - height * .47 / Scale(frontNear)));
                 else
                     height = Math.Max(height, Math.Max((MaxPictureHeight - aim) * Scale(sideNear), (pictureHeight - aim) * Scale(frontNear)) * 2 / .94);
                 camera.Position = new Point3D(0, aim, CameraDistance);

@@ -35,6 +35,8 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Albums and collections
 
+- The photo strip's carousel keeps every picture's top in view when a wide, short capture is in front.
+
 - Captures are stored in an encrypted SQLCipher album with AES-256 encryption, opened through the Windows account or an optional password. Create, open, rename and switch albums from the title bar; each keeps its own retention and QR settings. External albums open as managed copies.
 - Copy text (Ctrl+Shift+C) reads the text in a picture on this computer, copies it with its line breaks and shows it in a card to select from; Read a region reads a selected area. Crop and text regions support Enter to start or apply, arrows to move, Ctrl+arrows to resize, Shift for larger steps and Escape to cancel, with spoken selection details. Choose the recognition language there, and read the album's text again from album settings after adding a language.
 - Search window titles, program names, notes and recognized image text. Organize captures into collections, add notes and limit history by count or age. Existing Recent captures import on first start.
