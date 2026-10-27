@@ -20,7 +20,7 @@
     <Copyright>Copyright (c) 2026 Steve the Killer</Copyright>
     <FileVersion>1.0.0.0</FileVersion>
     <!-- Shown on the About card beside the version. Keep this as Unreleased during development. -->
-    <ReleaseDate>Unreleased</ReleaseDate>
+    <ReleaseDate>2026-10-27</ReleaseDate>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 

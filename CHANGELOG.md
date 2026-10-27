@@ -1,6 +1,6 @@
 # KillerShot Changelog
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-10-27
 
 KillerShot combines screenshot and screen recording tools with an encrypted capture album, image editing and local QR reading.
 

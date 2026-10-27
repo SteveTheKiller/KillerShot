@@ -1,6 +1,6 @@
 # Microsoft Store listing
 
-`KillerShot-Store-listing.csv` contains local listing copy for all 20 app languages, using the family's 70-field Store CSV format. Optional fields remain blank. KillerShot 1.0.0 is unreleased. These files prepare the listing only; they do not register a Store product, submit a listing, or change packaging and release automation.
+`KillerShot-Store-listing.csv` contains local listing copy for all 20 app languages, using the family's 70-field Store CSV format. Optional fields remain blank. KillerShot 1.0.0 was released on 2026-10-27. These files prepare the listing only; they do not register a Store product, submit a listing, or change packaging and release automation.
 
 The copy describes the current app and keeps album encryption separate from exported files and clipboard storage. The listed platform is Windows 11 x64. Packaging and any runtime prerequisite must be confirmed before the first Store submission.
 
