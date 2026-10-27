@@ -397,8 +397,8 @@ namespace KillerShot.Shell
             return menu;
         }
 
-        public string PreviewStyle => Settings.Get("CollectionPreview") is "grid" or "mini" or "pile"
-            ? Settings.Get("CollectionPreview")! : "stack";
+        public string PreviewStyle => Settings.Get("CollectionPreview") is "stack" or "grid" or "mini"
+            ? Settings.Get("CollectionPreview")! : "pile";
 
         public MenuItem PreviewMenu()
         {

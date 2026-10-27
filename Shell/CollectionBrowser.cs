@@ -151,6 +151,9 @@ public sealed class CollectionPreview : StackPanel
         Unloaded += (_, _) => { ThemeManager.ThemeChanged -= Refresh; _generation++; _photos.Children.Clear(); _pile.Children.Clear(); _scattered.Clear(); };
     }
 
+    /// <summary>The family's bar shadow weight: present on the modern themes, zero on flat ones like 98SE.</summary>
+    private double PileShadowOpacity() => TryFindResource("BarShadowOpacity") is double opacity ? opacity : 0;
+
     internal void Relocalize()
     {
         if (DataContext is not CollectionChoice choice) return;
@@ -180,6 +183,10 @@ public sealed class CollectionPreview : StackPanel
         _captions.Margin = choice.Style == "pile" ? new Thickness(2, 0, 2, 0) : default;
         _photos.ClipToBounds = choice.Style != "pile";
         if (choice.Style == "pile") _photos.Children.Add(_pile);
+        // The pile's name card sits on the photos; a theme-weighted shadow lifts it off them.
+        _label.Effect = choice.Style == "pile"
+            ? new DropShadowEffect { Color = Colors.Black, BlurRadius = 8, ShadowDepth = 2, Opacity = PileShadowOpacity() }
+            : null;
         ToolTip = choice.Path is { } path ? path + "\n" + choice.Detail : choice.AccessibleName;
         if (!IsLoaded) return;
         var preview = choice.Preview.Take(choice.Style == "pile" ? 12 : 4).Reverse().ToArray();
@@ -222,9 +229,7 @@ public sealed class CollectionPreview : StackPanel
                 frame.VerticalAlignment = VerticalAlignment.Top;
                 _scattered.Add((frame, preview[i], i));
                 PlaceScatteredPhotos();
-                var shadow = new DropShadowEffect { Color = Colors.Black, BlurRadius = 5, ShadowDepth = 2 };
-                frame.Effect = shadow;
-                shadow.Opacity = TryFindResource("SelectedTileShadowOpacity") is double opacity ? opacity : 0;
+                frame.Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 6, ShadowDepth = 2, Opacity = PileShadowOpacity() };
             }
             if (choice.Style == "pile") _pile.Children.Add(frame);
             else _photos.Children.Add(frame);
