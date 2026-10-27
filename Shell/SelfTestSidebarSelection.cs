@@ -88,7 +88,7 @@ internal static class SelfTestSidebarSelection
                 .Select(image => (Image: image, Source: image.Source)).ToArray();
             if (photos.Length == 0) throw new InvalidOperationException("The language fixture needs loaded mini-carousel previews.");
             string source = strip.Source;
-            foreach (var locale in new[] { Locale.De, Locale.Ja, Locale.EnUS })
+            foreach (var locale in new[] { Locale.De, Locale.JaJP, Locale.EnUS })
             {
                 ((Button)window.FindName("LangButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);

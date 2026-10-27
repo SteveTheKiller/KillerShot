@@ -54,13 +54,59 @@ namespace KillerShot.Services
         private static readonly Dictionary<string, ImageSource?> _small = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, ImageSource?> _large = new(StringComparer.OrdinalIgnoreCase);
 
-        private const string FolderKey = "\0dir";
+        private const string FolderKey = " dir";
 
         /// <summary>16px icon for a list row. Null if the shell has nothing (caller falls back).</summary>
         internal static ImageSource? Small(string path, bool isFolder) => Get(path, isFolder, true);
 
         /// <summary>32px icon for the icon grid.</summary>
         internal static ImageSource? Large(string path, bool isFolder) => Get(path, isFolder, false);
+
+        private static readonly Dictionary<string, ImageSource?> _thumbs = new(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly HashSet<string> ThumbExts = new(StringComparer.OrdinalIgnoreCase)
+        { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tif", ".tiff", ".ico" };
+
+        /// <summary>True when the file is a raster image we can render a real thumbnail for.</summary>
+        internal static bool CanThumbnail(string path) =>
+            !string.IsNullOrEmpty(path) && ThumbExts.Contains(Path.GetExtension(path));
+
+        /// <summary>
+        /// A real thumbnail of an image file, or null when it is not an image / cannot be decoded.
+        /// Picking an image from a list of generic type icons is guesswork, which is what this
+        /// removes.
+        ///
+        /// DecodePixelWidth is what makes it affordable: WPF decodes at the requested size instead
+        /// of loading a 40-megapixel photo into memory to draw it 32px wide. OnLoad caching closes
+        /// the file handle immediately - without it the picker keeps every previewed file locked,
+        /// and the user cannot rename or delete what they just looked at. Frozen and cached by
+        /// path so scrolling a folder decodes each file once.
+        /// </summary>
+        internal static ImageSource? Thumbnail(string path, int px)
+        {
+            string key = path + "|" + px;
+            if (_thumbs.TryGetValue(key, out var hit)) return hit;
+
+            ImageSource? img = null;
+            try
+            {
+                if (CanThumbnail(path) && File.Exists(path))
+                {
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource = new Uri(path);
+                    bmp.DecodePixelWidth = px;
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                    bmp.EndInit();
+                    bmp.Freeze();
+                    img = bmp;
+                }
+            }
+            catch { img = null; }   // unreadable, corrupt, or not really an image - fall back to the type icon
+            _thumbs[key] = img;
+            return img;
+        }
 
         // key: full path - the places rail is a dozen entries, so per-path caching is cheap
         private static readonly Dictionary<string, ImageSource?> _places = new(StringComparer.OrdinalIgnoreCase);
@@ -73,29 +119,26 @@ namespace KillerShot.Services
         /// </summary>
         internal static ImageSource? Place(string path)
         {
-            lock (_places)
+            if (_places.TryGetValue(path, out var hit)) return hit;
+
+            ImageSource? img = null;
+            var info = new SHFILEINFO();
+            IntPtr res = SHGetFileInfo(path, 0, ref info, (uint)Marshal.SizeOf(info),
+                                       SHGFI_ICON | SHGFI_SMALLICON);
+            if (res != IntPtr.Zero && info.hIcon != IntPtr.Zero)
             {
-                if (_places.TryGetValue(path, out var hit)) return hit;
-
-                ImageSource? img = null;
-                var info = new SHFILEINFO();
-                IntPtr res = SHGetFileInfo(path, 0, ref info, (uint)Marshal.SizeOf(info),
-                                           SHGFI_ICON | SHGFI_SMALLICON);
-                if (res != IntPtr.Zero && info.hIcon != IntPtr.Zero)
+                try
                 {
-                    try
-                    {
-                        img = Imaging.CreateBitmapSourceFromHIcon(
-                            info.hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                        img.Freeze();
-                    }
-                    catch { img = null; }
-                    finally { DestroyIcon(info.hIcon); }
+                    img = Imaging.CreateBitmapSourceFromHIcon(
+                        info.hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    img.Freeze();
                 }
-
-                _places[path] = img;
-                return img;
+                catch { img = null; }
+                finally { DestroyIcon(info.hIcon); }
             }
+
+            _places[path] = img;
+            return img;
         }
 
         private static ImageSource? Get(string path, bool isFolder, bool small)
@@ -105,7 +148,7 @@ namespace KillerShot.Services
             if (cache.TryGetValue(key, out var hit)) return hit;
 
             var img = Load(isFolder ? "dir" : "x" + key, isFolder, small);
-            img?.Freeze();          // shared across threads and rows
+            if (img != null) img.Freeze();          // shared across threads and rows
             cache[key] = img;
             return img;
         }
@@ -117,7 +160,7 @@ namespace KillerShot.Services
         private static string ExtOf(string path)
         {
             var ext = Path.GetExtension(path);
-            return string.IsNullOrEmpty(ext) ? "\0noext" : ext.ToLowerInvariant();
+            return string.IsNullOrEmpty(ext) ? " noext" : ext.ToLowerInvariant();
         }
 
         private static BitmapSource? Load(string fakeName, bool isFolder, bool small)

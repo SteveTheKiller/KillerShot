@@ -1,0 +1,8 @@
+<!-- KillerShot's own theme values: keys only KillerShot's views use. ThemeManager.AppTokens
+     (Services/AppTheme.cs) merges the 98SE Yellow values over the family palette. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+    <!-- Dark file name text on the yellow caption gradient. -->
+    <SolidColorBrush x:Key="FilenameBrush" Color="#24231c" po:Freeze="True"/>
+</ResourceDictionary>

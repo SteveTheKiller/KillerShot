@@ -235,7 +235,7 @@ internal static class SelfTestUi
             }
             ThemeManager.Apply(Theme.Black);
 
-            foreach (var loc in new[] { Locale.De, Locale.Ja, Locale.RuRU })
+            foreach (var loc in new[] { Locale.De, Locale.JaJP, Locale.RuRU })
             {
                 LocaleManager.Apply(loc);
                 w.TestRelocalize();

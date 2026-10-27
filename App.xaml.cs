@@ -65,6 +65,8 @@ public partial class App : Application
 
         KillerFamily.Accessibility.AccessibleControls.Initialize();
         KillerFamily.Theming.AccentShadow.Initialize();
+        Controls.AltDrag.Register();   // Alt+drag moves any window (Controls/AltDrag.cs)
+        AppTheme.Configure();
         base.OnStartup(e);
 
         // The command line runs in its own process without the tray, the shortcuts or the
@@ -77,6 +79,7 @@ public partial class App : Application
             return;
         }
 
+        if (SelfTestThemeDump.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
@@ -310,14 +313,15 @@ public partial class App : Application
                 w.SetResourceReference(System.Windows.Controls.Control.FontFamilyProperty, "UiFont");
         }));
         RenderModeService.Apply();
-        ThemeManager.GetSetting = Settings.Get;
-        ThemeManager.SetSetting = Settings.Set;
         KillerFamily.Layout.ShortcutHints.Initialize(Settings.Get, Settings.Set);
         ThemeManager.Initialize();
         FilmGrain.Initialize();
         Controls.GrainTexture.Publish();
-        LocaleManager.GetSetting = Settings.Get;
-        LocaleManager.SetSetting = Settings.Set;
+        // KillerShot saved Czech and Italian as "Cs" and "It" before the family locale names;
+        // the kit's LocaleManager maps only the old "Ja" itself.
+        string? savedLocale = Settings.Get("Locale");
+        if (savedLocale == "Cs") Settings.Set("Locale", "CsCZ");
+        else if (savedLocale == "It") Settings.Set("Locale", "ItIT");
         LocaleManager.Initialize();
         Controls.MenuIcons.Install();
     }

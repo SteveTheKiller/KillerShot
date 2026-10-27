@@ -5,17 +5,105 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- [0] is the live palette: ThemeManager updates this dictionary in place and paints
-                     the accent overlay into it, so it must stay first and be the only palette here.
-                     Dark is KillerShot's shipped default with the Teal accent applied over it by
-                     ThemeManager; this must match ThemeManager's _current or the first paint
-                     flashes the wrong palette. -->
+                <!-- [0] Theme COLORS, replaced at startup and on every theme change by ThemeManager.
+                     Dark is KillerShot's shipped default; ThemeManager applies the Teal accent over it. -->
                 <ResourceDictionary Source="Themes/Dark.xaml"/>
+                <!-- The family control styles from the KillerUI template, identical in every app. -->
                 <ResourceDictionary Source="Controls/Controls.xaml"/>
-                <!-- [2] English string base, always present. LocaleManager layers the chosen locale
-                     at [3], so a partial translation falls back to English. -->
+                <!-- English string base, always present. LocaleManager layers the chosen locale
+                     directly after it, so a partial translation falls back to English. -->
                 <ResourceDictionary Source="Strings/en-US.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- ================================================================
+                 KillerShot's own resources. Everything shared with the rest of the
+                 family lives in Controls/Controls.xaml; only what KillerShot's views
+                 alone use is here. All brush references use DynamicResource so a live
+                 theme/accent change repaints them.
+                 ================================================================ -->
+
+            <!-- The capture bar's mode chips. A bare ToggleButton keeps WPF's DEFAULT template,
+                 which paints the system highlight blue on hover whatever the theme says.
+                 CHECKED IS A FILL, not an outline: the accent OUTLINE is the confirm button's
+                 identity (OutlineButton), and a chip wearing it would read as the primary action
+                 rather than as a setting that is currently on. -->
+            <Style x:Key="ChipToggle" TargetType="ToggleButton">
+                <Setter Property="Background" Value="{DynamicResource PaneBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Padding" Value="8,3"/>
+                <Setter Property="Margin" Value="0,0,4,4"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Grid><Border x:Name="borderRing" IsHitTestVisible="False" CornerRadius="{Binding CornerRadius, ElementName=border}" BorderThickness="{Binding BorderThickness, ElementName=border}" BorderBrush="{Binding Background, ElementName=border}" Margin="{Binding Margin, ElementName=border}" Visibility="{Binding Visibility, ElementName=border}" Opacity="{Binding Opacity, ElementName=border}"/><Border x:Name="border" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{DynamicResource SmallCornerRadius}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border></Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                </Trigger>
+                                <!-- After IsMouseOver so hovering a checked chip does not undo the fill. -->
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryFillBrush}"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 98SE password fields get the classic sunken well; other themes keep WPF's box,
+                 which the callers color through Background and BorderBrush. -->
+            <Style TargetType="PasswordBox">
+                <Setter Property="Tag" Value="{DynamicResource UseDialogCaption}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="PasswordBox">
+                                    <Grid>
+                                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                                SnapsToDevicePixels="True">
+                                            <ScrollViewer x:Name="PART_ContentHost" HorizontalScrollBarVisibility="Hidden"
+                                                          VerticalScrollBarVisibility="Hidden" Focusable="False"/>
+                                        </Border>
+                                        <Border IsHitTestVisible="False" BorderBrush="{DynamicResource BevelDarkBrush}"
+                                                BorderThickness="{DynamicResource CheckSunkenDarkThickness}"/>
+                                        <Border IsHitTestVisible="False" BorderBrush="{DynamicResource BevelLightBrush}"
+                                                BorderThickness="{DynamicResource CheckSunkenLightThickness}"/>
+                                        <Border IsHitTestVisible="False" Margin="1" BorderBrush="{DynamicResource FrameOuterDarkBrush}"
+                                                BorderThickness="{DynamicResource CheckSunkenDarkThickness}"/>
+                                        <Border IsHitTestVisible="False" Margin="1" BorderBrush="{DynamicResource FrameOuterLightBrush}"
+                                                BorderThickness="{DynamicResource CheckSunkenLightThickness}"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.56"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
