@@ -18,8 +18,8 @@ also use this DLL, with matching SHA-256 hashes.
 | SQLCipher | 4.19.0 community (SQLite 3.53.4) |
 | LibTomCrypt | 1.18.2 |
 | Toolchain | llvm-mingw 20260616 (clang 22.1.8), ucrt |
-| e_sqlcipher.dll sha256 | `ec67d36a1e01d9e68726319d88e6d3a9b294fa3ad52e71555c2a120f6c234a4a` |
-| Signature | Unsigned development rebuild. Authenticode signing and timestamping remain a separately authorized release step. |
+| e_sqlcipher.dll sha256 | `9084585bab8eca1abe5710030dcc20c037a7b8fe78413b040f99487911a49e99` (signed); unsigned build `ec67d36a1e01d9e68726319d88e6d3a9b294fa3ad52e71555c2a120f6c234a4a` |
+| Signature | Authenticode, Open Source Developer Stephen Riley (E478E4940DFD3547DAF2199494B399214FB3E0FD), DigiCert timestamp, signed 2026-10-27 for 1.0.0 |
 
 Source tarballs (verify before building):
 
