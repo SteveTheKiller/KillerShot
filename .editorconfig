@@ -1,5 +1,0 @@
-# The shared theme fade is written without nullable annotations; keep the kit copy byte for byte
-# and silence its nullable warnings here until KillerUI annotates it.
-[Controls/ThemeTransition.cs]
-dotnet_diagnostic.CS8600.severity = none
-dotnet_diagnostic.CS8602.severity = none
