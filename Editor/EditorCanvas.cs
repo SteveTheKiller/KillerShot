@@ -76,8 +76,9 @@ public sealed partial class EditorCanvas : Canvas
     {
         if (_keyboardRegion || _regionPick != null) CancelGesture();
         // A selection that no longer exists (undo, delete) is dropped.
-        if (_selected != null && _doc != null && !_doc.State.Items.Contains(_selected)) _selected = null;
-        if (_doc != null) _others.RemoveAll(o => !_doc.State.Items.Contains(o));
+        // Marks placed alike are equal records, so membership is by reference, never by value.
+        if (_selected != null && !Holds(_selected)) _selected = null;
+        _others.RemoveAll(o => !Holds(o));
         // Screen readers see marks come and go.
         System.Windows.Automation.Peers.UIElementAutomationPeer.FromElement(this)?.ResetChildrenCache();
         InvalidateMeasure();
@@ -459,6 +460,7 @@ public sealed partial class EditorCanvas : Canvas
         if (_doc == null || _selected == null) return false;
         var keep = _doc.State.Items.Where(a => !IsSelectedMark(a)).ToImmutableList();
         _selected = null;
+        if (keep.Count == _doc.State.Items.Count) { InvalidateVisual(); return false; }
         _doc.Apply(_doc.State with { Items = keep });
         InvalidateVisual();
         return true;

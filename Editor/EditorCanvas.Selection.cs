@@ -24,10 +24,13 @@ public sealed partial class EditorCanvas
 
     private bool IsSelectedMark(Annotation a) => ReferenceEquals(a, _primary) || _others.Any(o => ReferenceEquals(o, a));
 
+    /// <summary>Whether the picture holds this very mark, not just one equal to it.</summary>
+    private bool Holds(Annotation mark) => _doc != null && _doc.State.Items.Any(a => ReferenceEquals(a, mark));
+
     /// <summary>Ctrl+click: adds a mark to the selection, or takes it out.</summary>
     public void ToggleSelection(Annotation mark)
     {
-        if (_doc == null || !_doc.State.Items.Contains(mark)) return;
+        if (!Holds(mark)) return;
         if (ReferenceEquals(mark, _primary))
         {
             _primary = _others.Count > 0 ? _others[0] : null;
@@ -58,6 +61,7 @@ public sealed partial class EditorCanvas
         if (_doc == null || _primary == null) return false;
         var items = _doc.State.Items;
         int primaryIndex = items.FindIndex(a => ReferenceEquals(a, _primary));
+        if (primaryIndex < 0) return false;
         var chosen = Enumerable.Range(0, items.Count).Where(i => IsSelectedMark(items[i])).ToList();
         var next = items.Select((a, i) => chosen.Contains(i) ? change(a) : a).ToImmutableList();
         // A change that changes nothing, such as shrinking a mark already at its smallest, adds
@@ -87,6 +91,7 @@ public sealed partial class EditorCanvas
             if (copy is StepAnnotation step) copy = step with { Number = number++ };
             copies.Add(copy);
         }
+        if (copies.Count == 0) return false;
         _doc.Apply(_doc.State with { Items = items.AddRange(copies) });
         _selected = copies[^1];
         _others.AddRange(copies.Take(copies.Count - 1));

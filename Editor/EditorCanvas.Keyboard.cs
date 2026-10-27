@@ -100,7 +100,7 @@ public sealed partial class EditorCanvas
     /// <summary>Selects a mark on the current picture, or clears the selection with null.</summary>
     public void Select(Annotation? mark)
     {
-        if (_doc == null || (mark != null && !_doc.State.Items.Contains(mark))) return;
+        if (_doc == null || (mark != null && !Holds(mark))) return;
         if (ReferenceEquals(_selected, mark)) return;
         _selected = mark;
         InvalidateVisual();
@@ -241,7 +241,7 @@ public sealed partial class EditorCanvas
     /// <summary>Replaces a mark with a changed copy and returns what is now on the picture.</summary>
     internal Annotation ChangeMark(Annotation mark, Func<Annotation, Annotation> change)
     {
-        if (_doc == null || !_doc.State.Items.Contains(mark)) return mark;
+        if (_doc == null || !Holds(mark)) return mark;
         var now = change(mark);
         bool selected = ReferenceEquals(_selected, mark);   // Replace drops the old selection
         _doc.Replace(mark, now);
