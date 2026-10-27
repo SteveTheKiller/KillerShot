@@ -201,25 +201,28 @@ internal static class SelfTestDemo
                 Look(Theme.Cyanotic, Accent.Blue);
                 w.Width = 1200; w.Height = 900;
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
-                Preview("stack");
+                Preview("pile");
                 w.TestStrip!.TestScrollTo(0.5);
                 view.TestSet("grid", "date", "theme");
                 await Shot("landing-05-search-cyanotic");
 
                 Look(Theme.Dark, Accent.Orange);
                 w.Width = 1600; w.Height = 1000;
+                Preview("stack");
                 w.TestOpenLibraryCapture(keepAlive);
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
                 await Shot("landing-06-editor-strip-top");
 
                 Look(Theme.Ectoplasm, Accent.Green);
                 w.Width = 1360; w.Height = 1000;
+                Preview("grid");
                 w.TestOpenLibraryCapture(pdf);
                 Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Bottom);
                 await Shot("landing-07-editor-right-bottom");
 
                 Look(Theme.Delirium, Accent.Magenta);
                 w.Width = 1440; w.Height = 900;
+                Preview("mini");
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
                 w.TestShowCaptureSettings();
                 await Shot("landing-08-capture-settings");
@@ -227,7 +230,7 @@ internal static class SelfTestDemo
 
                 Look(Theme.SE98, Accent.Teal);
                 w.Width = 1024; w.Height = 768;
-                Preview("grid");
+                Preview("pile");
                 w.TestStrip!.TestScrollTo(0.2);
                 w.TestToggleLibrary();
                 view.TestSet("shelves", "date", "");
