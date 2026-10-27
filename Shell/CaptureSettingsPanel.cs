@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using KillerShot.Capture;
@@ -41,7 +42,47 @@ namespace KillerShot.Shell
             SyncCaptureOptions();
             BuildShortcutRows();
             CaptureSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110) + CaptureSettingsScroll.Padding.Top + CaptureSettingsScroll.Padding.Bottom;
+            CaptureSettingsOffset.X = CaptureSettingsOffset.Y = 0;   // each opening starts centered
             FadeOverlayIn(CaptureSettingsOverlay);
+        }
+
+        // The card moves by its top band. The offset is clamped so the band stays inside the window.
+        private Point _settingsDragStart;
+        private Vector _settingsDragOrigin;
+
+        private void CaptureSettingsDrag_Down(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject source && FindAncestor<ButtonBase>(source) != null) return;
+            _settingsDragStart = e.GetPosition(CaptureSettingsOverlay);
+            _settingsDragOrigin = new Vector(CaptureSettingsOffset.X, CaptureSettingsOffset.Y);
+            ((UIElement)sender).CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void CaptureSettingsDrag_Move(object sender, MouseEventArgs e)
+        {
+            if (!((UIElement)sender).IsMouseCaptured) return;
+            var moved = _settingsDragOrigin + (e.GetPosition(CaptureSettingsOverlay) - _settingsDragStart);
+            var card = CaptureSettingsCard.TransformToAncestor(CaptureSettingsOverlay)
+                .TransformBounds(new Rect(CaptureSettingsCard.RenderSize));
+            double homeLeft = card.Left - CaptureSettingsOffset.X, homeTop = card.Top - CaptureSettingsOffset.Y;
+            // Keep 60px of the card on screen sideways and its top band reachable.
+            moved.X = Math.Clamp(moved.X, 60 - homeLeft - card.Width, CaptureSettingsOverlay.ActualWidth - 60 - homeLeft);
+            moved.Y = Math.Clamp(moved.Y, -homeTop, CaptureSettingsOverlay.ActualHeight - 36 - homeTop);
+            CaptureSettingsOffset.X = moved.X;
+            CaptureSettingsOffset.Y = moved.Y;
+        }
+
+        private void CaptureSettingsDrag_Up(object sender, MouseButtonEventArgs e)
+        {
+            if (((UIElement)sender).IsMouseCaptured) ((UIElement)sender).ReleaseMouseCapture();
+            e.Handled = true;
+        }
+
+        private static T? FindAncestor<T>(DependencyObject? node) where T : DependencyObject
+        {
+            while (node != null && node is not T) node = node is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(node) : LogicalTreeHelper.GetParent(node);
+            return node as T;
         }
 
         /// <summary>Puts the stored choices into every control without firing their handlers.</summary>

@@ -10,7 +10,7 @@
         Title="KillerShot"
         Icon="/Resources/kst-icon.ico"
         WindowStyle="None" Background="{DynamicResource BackgroundBrush}"
-        MinWidth="640" MinHeight="460" Width="1200" Height="800"
+        MinWidth="640" MinHeight="460" Width="1200" Height="620"
         TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
         FontFamily="{DynamicResource UiFont}"
         WindowStartupLocation="CenterScreen"
@@ -340,27 +340,27 @@
                 <kl:DockHost.Rail>
                 <StackPanel x:Name="RailStack">
                     <Button x:Name="LibrarySearchButton" Style="{StaticResource RailButton}"
-                            Click="LibrarySearchButton_Click" Content="&#xE721;" Margin="0,0,0,6"
+                            Click="LibrarySearchButton_Click" Content="&#xE721;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_Lib_Search}"/>
                     <Button x:Name="NewCollectionButton" Style="{StaticResource RailButton}"
-                            Click="NewCollectionButton_Click" Content="&#xE8F4;" Margin="0,0,0,6"
+                            Click="NewCollectionButton_Click" Content="&#xE8F4;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_Lib_NewCollection}"/>
                     <Button x:Name="CaptureSettingsButton" Style="{StaticResource RailButton}"
-                            Click="CaptureSettingsButton_Click" Content="&#xE713;" Margin="0,0,0,6"
+                            Click="CaptureSettingsButton_Click" Content="&#xE713;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_TT_CaptureSettings}"/>
                     <Button x:Name="VideoSettingsButton" Style="{StaticResource RailButton}"
-                            Click="VideoSettingsButton_Click" Content="&#xE714;" Margin="0,0,0,6"
+                            Click="VideoSettingsButton_Click" Content="&#xE714;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_TT_VideoSettings}"/>
                     <Button x:Name="QrReadingButton" Style="{StaticResource RailButton}"
-                            Click="QrReadingButton_Click" Content="&#xED14;" Margin="0,0,0,6"
+                            Click="QrReadingButton_Click" Content="&#xED14;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_TT_QrReading}"/>
                     <!-- Shortcuts: a literal ? in Consolas at 18, the family's rail standard. -->
                     <Button x:Name="ShortcutsButton" Style="{StaticResource RailButton}"
                             Click="ShortcutsButton_Click" Content="?" FontFamily="Consolas"
-                            FontSize="18" Margin="0,0,0,6"
+                            FontSize="18" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_TT_Shortcuts}"/>
                     <Button x:Name="LangButton" Style="{StaticResource RailButton}"
-                            Click="LangButton_Click" Content="&#xF2B7;" Margin="0,0,0,6"
+                            Click="LangButton_Click" Content="&#xF2B7;" Margin="0,0,0,10"
                             ToolTip="{DynamicResource Str_TT_Language}">
                         <Button.ContextMenu>
                             <ContextMenu x:Name="LangMenu"/>
@@ -628,7 +628,8 @@
                     <EventSetter Event="Unchecked" Handler="CaptureOption_Changed"/>
                 </Style>
             </Grid.Resources>
-            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
+            <Grid x:Name="CaptureSettingsCard" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
+                <Grid.RenderTransform><TranslateTransform x:Name="CaptureSettingsOffset"/></Grid.RenderTransform>
                 <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
@@ -640,6 +641,11 @@
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
                                 Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
 
+                        <!-- The card's top band moves it, like a title bar. -->
+                        <Border Height="36" VerticalAlignment="Top" Background="Transparent" Cursor="SizeAll" Panel.ZIndex="1"
+                                MouseLeftButtonDown="CaptureSettingsDrag_Down" MouseMove="CaptureSettingsDrag_Move"
+                                MouseLeftButtonUp="CaptureSettingsDrag_Up"/>
+
                         <Button Content="&#x2715;" Click="CaptureSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
                                 ToolTip="{DynamicResource Str_Sys_Close}"
                                 HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -648,7 +654,9 @@
 
                         <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
                                 Visibility="{DynamicResource AboutCaptionVisibility}"
-                                Background="{DynamicResource DialogTitleBarBrush}">
+                                Background="{DynamicResource DialogTitleBarBrush}"
+                                MouseLeftButtonDown="CaptureSettingsDrag_Down" MouseMove="CaptureSettingsDrag_Move"
+                                MouseLeftButtonUp="CaptureSettingsDrag_Up">
                             <Grid Margin="4,0,2,0">
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" VerticalAlignment="Center"
                                            FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
@@ -700,11 +708,6 @@
                                         </DockPanel>
                                         <CheckBox x:Name="EmailToggle" Content="{DynamicResource Str_CS_Email}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="NotifyToggle" Content="{DynamicResource Str_CS_Notify}" Style="{StaticResource CsCheck}"/>
-
-                                        <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
-                                        <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
-                                        <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
-                                        <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
                                     </StackPanel>
 
                                     <StackPanel Width="420">
@@ -755,6 +758,11 @@
                                         <CheckBox x:Name="SoundToggle" Content="{DynamicResource Str_CS_Sound}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="PickWindowToggle" Content="{DynamicResource Str_CS_PickWindow}" Style="{StaticResource CsCheck}"/>
 
+                                        <!-- Printing sits under Capture so the two columns end near the same height. -->
+                                        <TextBlock Text="{DynamicResource Str_CS_Printing}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
+                                        <CheckBox x:Name="PrintShrinkToggle" Content="{DynamicResource Str_CS_PrintShrink}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintEnlargeToggle" Content="{DynamicResource Str_CS_PrintEnlarge}" Style="{StaticResource CsCheck}"/>
+                                        <CheckBox x:Name="PrintRotateToggle" Content="{DynamicResource Str_CS_PrintRotate}" Style="{StaticResource CsCheck}"/>
                                     </StackPanel>
                                 </WrapPanel>
                             </StackPanel>
@@ -1231,12 +1239,13 @@
                                     <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
                                                Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
                                                TextWrapping="Wrap"/>
+                                    <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,6,0,0"
+                                              IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
+                                        <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
+                                    </CheckBox>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,0,0,8"
-                                          IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
-                                    <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
-                                </CheckBox>
+                                <!-- The Remote Desktop explanation lives in the tooltip; the column stays as short as the options. -->
+                                <StackPanel Grid.Column="2" ToolTip="{DynamicResource Str_About_RenderHint}">
                                 <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
                                            FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4" TextWrapping="Wrap"/>
                                 <StackPanel>
@@ -1253,9 +1262,6 @@
                                         <TextBlock Text="{DynamicResource Str_About_RenderSoftware}" TextWrapping="Wrap"/>
                                     </RadioButton>
                                 </StackPanel>
-                                <TextBlock x:Name="RenderHintText" Text="{DynamicResource Str_About_RenderHint}"
-                                           Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
-                                           TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
 
