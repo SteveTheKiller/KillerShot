@@ -12,7 +12,7 @@ namespace KillerShot.Shell
         private void InitLanguageMenu()
         {
             // LangButton: a flyout hangs off its own button (family rule).
-            _languageMenu = new Controls.LanguageMenu(LangMenu, LangButton, RelocalizeDynamicUi);
+            _languageMenu = new Controls.LanguageMenu(LangMenu, LangButton, ContentPane, RelocalizeDynamicUi);
         }
 
         private void LangButton_Click(object sender, RoutedEventArgs e) => _languageMenu.Open();
