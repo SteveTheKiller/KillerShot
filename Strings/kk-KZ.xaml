@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Мұнда ағымдағы файл түріне сәйкес ештеңе жоқ.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Мұндай файл жоқ.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Мұндай қалта жоқ.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Алдын ала қарау</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">{0} ауыстырылсын ба?</sys:String>
     <sys:String x:Key="Str_KS_About">Бағдарлама туралы картасы</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">ФАЙЛ</sys:String>

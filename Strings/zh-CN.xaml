@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">此处没有与当前文件类型匹配的项。</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">该文件不存在。</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">该文件夹不存在。</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">预览</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">要替换 {0} 吗？</sys:String>
     <sys:String x:Key="Str_KS_About">关于卡片</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">文件</sys:String>

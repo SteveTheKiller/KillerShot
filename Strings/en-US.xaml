@@ -41,6 +41,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Nothing here matches the current file type.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">That file does not exist.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">That folder does not exist.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Preview</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Replace {0}?</sys:String>
     <sys:String x:Key="Str_KS_About">About card</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">FILE</sys:String>

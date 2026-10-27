@@ -36,6 +36,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Nobena datoteka ne ustreza izbrani vrsti.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Ta datoteka ne obstaja.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Ta mapa ne obstaja.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Predogled</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Zamenjam {0}?</sys:String>
     <sys:String x:Key="Str_KS_About">Kartica o programu</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">DATOTEKA</sys:String>

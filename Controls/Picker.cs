@@ -14,8 +14,11 @@ namespace KillerShot.Controls
         /// <summary>True for a user-pinned (removable) entry; drives are dynamic and never pinned.</summary>
         public bool Pinned { get; } = pinned;
 
-        /// <summary>Real shell icon, resolved before the row is bound to the UI.</summary>
-        public System.Windows.Media.ImageSource? Icon { get; } = icon;
+        /// <summary>Real shell icon, resolved by PATH - a drive shows its true icon (USB,
+        /// network, optical) and a special folder its own. Cached in ShellIcons. An app that
+        /// resolves icons off the UI thread (slow network drives) passes the result as
+        /// <c>icon</c>; otherwise it is looked up on first bind.</summary>
+        public System.Windows.Media.ImageSource? Icon => icon ?? Services.ShellIcons.Place(Path);
     }
 
     // One row in the folder pane: a subfolder or a (dimmed, non-pickable) file.
@@ -39,9 +42,15 @@ namespace KillerShot.Controls
         public System.Windows.Media.ImageSource? Icon
             => Services.ShellIcons.Small(FullPath, IsFolder);
 
-        /// <summary>Shell icon, 32px, for the icon grid.</summary>
+        /// <summary>Shell icon, 32px, for the icon grid - or a real thumbnail when the file is an
+        /// image, so a folder of pictures does not read as a grid of identical type icons.</summary>
         public System.Windows.Media.ImageSource? IconLarge
-            => Services.ShellIcons.Large(FullPath, IsFolder);
+            => (ShowThumbnails ? Services.ShellIcons.Thumbnail(FullPath, 32) : null)
+               ?? Services.ShellIcons.Large(FullPath, IsFolder);
+
+        /// <summary>Image thumbnails in the icon grid. On by default; an app that keeps plain
+        /// shell icons for pictures sets this false once at startup.</summary>
+        public static bool ShowThumbnails { get; set; } = true;
 
         public string SizeLabel     => IsFolder ? string.Empty : FormatSize(SizeBytes);
         public string ModifiedLabel => Modified == DateTime.MinValue ? string.Empty : Modified.ToString("yyyy-MM-dd HH:mm");

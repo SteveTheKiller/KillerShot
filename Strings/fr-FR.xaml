@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Rien ici ne correspond au type de fichier actuel.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Ce fichier n'existe pas.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Ce dossier n'existe pas.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Aperçu</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Remplacer {0} ?</sys:String>
     <sys:String x:Key="Str_KS_About">Carte À propos</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">FICHIER</sys:String>

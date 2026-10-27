@@ -13,6 +13,9 @@ namespace KillerShot.Controls
         private CancellationTokenSource? _listingRows;
         private bool _listingClosed;
         private string? _listingError;
+        // Bumped on every navigation, so a slow tree reveal for an older folder stops instead of
+        // selecting it over the folder now shown.
+        private long _navigationVersion;
         public Func<string, bool, CancellationToken, PickerListingResult> DirectoryListingReader { get; set; } = PickerDirectoryListing.Read;
         public Task DirectoryListingTask { get; private set; } = Task.CompletedTask;
         public bool IsDirectoryListingBusy { get; private set; }
@@ -22,9 +25,9 @@ namespace KillerShot.Controls
         public Task NavigateDirectoryAsync(string directory)
         {
             if (_listingClosed || string.IsNullOrWhiteSpace(directory)) return Task.CompletedTask;
-            long version = ++_navigationVersion;
-            _directoryReady = false;
             _listingRows?.Cancel();
+            long version = ++_navigationVersion;
+            UpdateImagePreview(null);
             IsDirectoryListingBusy = true;
             IsDirectoryListingAvailable = false;
             IsDirectoryListingComplete = false;
@@ -34,27 +37,18 @@ namespace KillerShot.Controls
             MutateListingRows(Entries.Clear);
             SelMeta.Text = "\u2026";
             bool showHidden = _showHidden;
-            var configuredReader = DirectoryListingReader;
-            var enumerate = EntryEnumerator;
-            PickerListingResult Read(string dir, bool hidden, CancellationToken token)
-            {
-                if (enumerate == (Func<string, bool, System.Collections.Generic.List<PickerEntry>>)EnumerateEntries) return configuredReader(dir, hidden, token);
-                token.ThrowIfCancellationRequested();
-                if (!System.IO.Directory.Exists(dir)) return new PickerListingResult(Array.Empty<PickerEntry>(), false, false);
-                var rows = enumerate(dir, hidden).Take(PickerDirectoryListing.MaximumEntries + 1).ToArray();
-                return new PickerListingResult(rows.Take(PickerDirectoryListing.MaximumEntries).ToArray(), true, rows.Length <= PickerDirectoryListing.MaximumEntries);
-            }
-            Func<string, bool, CancellationToken, PickerListingResult> reader = Read;
+            var reader = DirectoryListingReader;
             return DirectoryListingTask = _listingWork.RunAsync(token => reader(directory, showHidden, token), async (result, token) =>
             {
                 if (!result.Exists)
                 {
                     IsDirectoryListingBusy = false;
                     SelMeta.Text = Loc("Str_Dlg_NoSuchFolder");
-                    if (_lastValidDir.Length > 0 && !string.Equals(_lastValidDir, directory, StringComparison.OrdinalIgnoreCase)) NavigateTo(_lastValidDir);
+                    // A bad typed path goes back to the last folder that listed. _currentDir only
+                    // changes after a listing succeeds, so it is always that folder.
+                    if (_currentDir.Length > 0 && !string.Equals(_currentDir, directory, StringComparison.OrdinalIgnoreCase)) NavigateTo(_currentDir);
                     return;
                 }
-                _lastValidDir = directory;
                 IsDirectoryListingComplete = result.Complete && result.Entries.Count <= PickerDirectoryListing.MaximumEntries;
                 _listingError = result.Error ?? (IsDirectoryListingComplete ? null : new Win32Exception(234).Message);
                 MutateListingRows(() =>
@@ -67,9 +61,7 @@ namespace KillerShot.Controls
                 token.ThrowIfCancellationRequested();
                 IsDirectoryListingBusy = false;
                 IsDirectoryListingAvailable = true;
-                _directoryReady = true;
                 AcceptButton.IsEnabled = !_accepting;
-                if (_folderFocusPending) { _folderFocusPending = false; AcceptButton.Focus(); }
                 UpButton.IsEnabled = System.IO.Directory.GetParent(directory) != null;
                 UpdateInfoSummary();
                 MutateListingRows(SyncPlacesSelection);

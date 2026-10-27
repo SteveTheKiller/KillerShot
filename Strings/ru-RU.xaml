@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Здесь ничего не подходит под текущий тип файла.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Такого файла не существует.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Такой папки не существует.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Предварительный просмотр</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Заменить {0}?</sys:String>
     <sys:String x:Key="Str_KS_About">Карточка о программе</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">ФАЙЛ</sys:String>

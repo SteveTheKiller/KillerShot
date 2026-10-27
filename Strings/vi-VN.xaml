@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Không có mục nào ở đây khớp với loại tệp hiện tại.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Tệp đó không tồn tại.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Thư mục đó không tồn tại.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Xem trước</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Thay thế {0}?</sys:String>
     <sys:String x:Key="Str_KS_About">Thẻ Giới thiệu</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">TỆP</sys:String>

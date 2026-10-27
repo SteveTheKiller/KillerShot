@@ -14,7 +14,7 @@ using System.Windows.Media;
 namespace KillerShot.Controls
 {
     // ═══════════════════════════════════════════════════════════
-    //  FOLDER TREE  -  the file dialog's left pane, below places
+    //  FOLDER TREE  -  the file dialog's left pane, above places
     // ═══════════════════════════════════════════════════════════
     // Ported from KillerShell's FolderTree.cs (the family reference), minus what a modal file
     // dialog does not need: no demo mode, no expansion persistence (the dialog reveals the
@@ -40,9 +40,8 @@ namespace KillerShot.Controls
         // Drives get their own treatment: always expandable, never disappear mid-session, and
         // their label is "Local Disk (C:)" rather than a bare folder name.
         public bool IsDrive { get; }
-        private readonly ImageSource? _driveIcon;
 
-        public ObservableCollection<FolderNode> Children { get; } = [];
+        public ObservableCollection<FolderNode> Children { get; } = new();
 
         public FolderNode(string path, string name, bool mayHaveChildren)
         {
@@ -56,8 +55,6 @@ namespace KillerShot.Controls
             Path    = d.RootDirectory.FullName;
             IsDrive = true;
             Name    = DriveLabel(d);
-            try { _driveIcon = Services.ShellIcons.Place(Path); }
-            catch { /* An unavailable drive still gets a tree row. */ }
             Children.Add(Placeholder);
         }
 
@@ -78,13 +75,19 @@ namespace KillerShot.Controls
         }
 
         public bool IsLoaded { get; private set; }
+
+        /// <summary>Lists a folder's subfolders. A test seam: tests swap in a slow or failing
+        /// enumerator to exercise the tree without touching the disk.</summary>
         internal Func<string, List<FolderNode>> ChildEnumerator { get; set; } = EnumerateChildren;
+
+        // One load or refresh at a time per node. A second caller waits for the first instead of
+        // seeing IsLoaded already set over a still-empty child list.
         private readonly System.Threading.SemaphoreSlim _loadGate = new(1, 1);
 
         // A drive's REAL icon (USB, network, optical) via the real-path query; plain folders get
         // the shared generic folder icon so the tree never touches the disk per row.
         public ImageSource? Icon
-            => IsDrive ? _driveIcon : Services.ShellIcons.Small(Path, true);
+            => IsDrive ? Services.ShellIcons.Place(Path) : Services.ShellIcons.Small(Path, true);
 
         private bool _isExpanded;
         public bool IsExpanded
@@ -193,28 +196,5 @@ namespace KillerShot.Controls
         public event PropertyChangedEventHandler? PropertyChanged;
         private void Raise([CallerMemberName] string? p = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
-    }
-
-    // True when a TreeViewItem is the last child of its parent - which is the one thing the
-    // folder tree's connecting lines need to know. Every node draws a vertical line down its own
-    // left edge; for the LAST child that line has to stop at the elbow instead of running past
-    // the bottom of the node into empty space. There is no "IsLastItem" property in WPF and no
-    // way to ask in pure XAML, hence this. Bound with the item itself as the source, so it
-    // re-evaluates when the container is recycled onto a different node.
-    public sealed class LastChildConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is not DependencyObject d) return false;
-
-            var parent = ItemsControl.ItemsControlFromItemContainer(d);
-            if (parent == null) return false;
-
-            int index = parent.ItemContainerGenerator.IndexFromContainer(d);
-            return index >= 0 && index == parent.Items.Count - 1;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotSupportedException();
     }
 }

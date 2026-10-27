@@ -38,6 +38,7 @@
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Zde nic neodpovídá aktuálnímu typu souboru.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Tento soubor neexistuje.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Tato složka neexistuje.</sys:String>
+    <sys:String x:Key="Str_Dlg_Preview">Náhled</sys:String>
     <sys:String x:Key="Str_Dlg_OverwriteMsg">Nahradit {0}?</sys:String>
     <sys:String x:Key="Str_KS_About">Karta O aplikaci</sys:String>
     <sys:String x:Key="Str_KS_GrpFile">SOUBOR</sys:String>
