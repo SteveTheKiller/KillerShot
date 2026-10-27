@@ -15,9 +15,9 @@
     <ApplicationManifest>..\app.manifest</ApplicationManifest>
     <ApplicationIcon>..\Resources\kst-icon.ico</ApplicationIcon>
     <AssemblyName>KillerShot.Cli</AssemblyName>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <Authors>Steve the Killer</Authors>
     <Copyright>Copyright (c) 2026 Steve the Killer</Copyright>
   </PropertyGroup>

@@ -1,5 +1,14 @@
 # KillerShot Changelog
 
+## [1.0.1] - Unreleased
+
+KillerShot 1.0.1 fixes problems found after the first release.
+
+### Fixed
+
+- Exit from the tray icon closes the window the normal way, so the prompt for unsaved edits can still cancel it.
+- In High Contrast, hovered menu items use the system highlight colors.
+
 ## [1.0.0] - 2026-10-27
 
 KillerShot combines screenshot and screen recording tools with an encrypted capture album, image editing and local QR reading.
