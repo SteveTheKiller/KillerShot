@@ -30,7 +30,14 @@ internal static class MenuIcons
         ("Str_Dock_Left", 0xE76B), ("Str_Dock_Right", 0xE76C), ("Str_Dock_Top", 0xE70E), ("Str_Dock_Bottom", 0xE70D),
         ("Str_Lib_RenameCollection", 0xE8AC), ("Str_Lib_CollectionColor", 0xE790),
         ("Str_Lib_DeleteCollection", 0xE74D), ("Str_Ocr_Links", 0xE71B),
-        ("Str_Toolbar_Customize", 0xE713), ("Str_Toolbar_Hide", 0xE890)
+        ("Str_Toolbar_Customize", 0xE713), ("Str_Toolbar_Hide", 0xE890),
+        ("Str_CollectionPreview", 0xE890), ("Str_Preview_stack", 0xE81E), ("Str_Preview_grid", 0xE80A),
+        ("Str_Preview_mini", 0xE7C5), ("Str_Preview_pile", 0xE8B9),
+        ("Str_KS_EditText", 0xE70F), ("Str_KS_SelectAllMarks", 0xE8B3), ("Str_KS_LayerMenu", 0xE81E),
+        ("Str_Btn_Image", 0xE8B9), ("Str_Img_Paste", 0xE77F), ("Str_Img_InsertFile", 0xE8B9),
+        ("Str_Img_RotateRight", 0xE7AD), ("Str_Img_RotateLeft", 0xE7A6),
+        ("Str_Img_FlipH", 0xE8AB), ("Str_Img_FlipV", 0xE8CB),
+        ("Str_Img_Resize", 0xE740), ("Str_Img_Margin", 0xE739), ("Str_Img_AutoCrop", 0xE7A8)
     ];
 
     internal static void Install()
@@ -50,10 +57,12 @@ internal static class MenuIcons
     {
         foreach (var item in menu.Items.OfType<MenuItem>())
         {
-            if (item.Icon == null && item.Header is string header)
+            // A command without a known glyph gets no icon; a stand-in gear made every unmapped item look like Settings.
+            int glyph = item.Icon == null && item.Header is string header
+                ? Commands.FirstOrDefault(c => LocaleManager.Loc(c.Key) == header).Glyph : 0;
+            if (glyph != 0)
             {
-                int glyph = Commands.FirstOrDefault(c => LocaleManager.Loc(c.Key) == header).Glyph;
-                item.Icon = new Glyph { Text = char.ConvertFromUtf32(glyph == 0 ? 0xE713 : glyph),
+                item.Icon = new Glyph { Text = char.ConvertFromUtf32(glyph),
                     FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 14, Width = 16, Height = 16,
                     VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
             }
