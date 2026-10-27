@@ -158,47 +158,77 @@ internal static class SelfTestDemo
                     w.TestNavigationDock.DockTo(sidebar);
                     w.TestStripDock.DockTo(strip);
                 }
+                void Preview(string style)
+                {
+                    foreach (var choice in w.TestStrip!.PreviewMenu().Items.OfType<System.Windows.Controls.MenuItem>())
+                        if ((string)choice.Tag == style)
+                            choice.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+                }
                 var keepAlive = CaptureLibrary.Items().First(c => c.Window?.Contains("Keep Alive") == true);
                 var pdf = CaptureLibrary.Items().FirstOrDefault(c => c.Process == "KillerPDF") ?? keepAlive;
 
                 Look(Theme.Dark, Accent.Teal);
+                w.Width = 1600; w.Height = 1000;
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                Preview("pile");
                 view.TestSet("shelves", "collection", "");
                 await Shot("landing-01-shelves-dark");
 
                 Look(Theme.Blood, Accent.Red);
+                w.Width = 1400; w.Height = 900;
+                Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Top);
+                Preview("stack");
+                w.TestStrip!.TestScrollTo(0.35);
                 view.TestSet("flow", "date", "");
                 await Shot("landing-02-carousel-blood");
 
                 Look(Theme.Light, Accent.Blue);
+                w.Width = 1280; w.Height = 960;
+                Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                Preview("grid");
+                w.TestStrip!.TestScrollTo(0.7);
                 view.TestSet("grid", "date", "");
                 await Shot("landing-03-grid-light");
 
                 Look(Theme.Black, Accent.Purple);
+                w.Width = 1500; w.Height = 860;
+                Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Top);
+                Preview("mini");
+                w.TestStrip!.TestScrollTo(1.0);
                 view.TestSet("timeline", "date", "");
                 await Shot("landing-04-timeline-black");
 
                 Look(Theme.Cyanotic, Accent.Blue);
+                w.Width = 1200; w.Height = 900;
+                Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
+                Preview("stack");
+                w.TestStrip!.TestScrollTo(0.5);
                 view.TestSet("grid", "date", "theme");
                 await Shot("landing-05-search-cyanotic");
 
                 Look(Theme.Dark, Accent.Orange);
+                w.Width = 1600; w.Height = 1000;
                 w.TestOpenLibraryCapture(keepAlive);
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
                 await Shot("landing-06-editor-strip-top");
 
                 Look(Theme.Ectoplasm, Accent.Green);
+                w.Width = 1360; w.Height = 1000;
                 w.TestOpenLibraryCapture(pdf);
                 Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Bottom);
                 await Shot("landing-07-editor-right-bottom");
 
                 Look(Theme.Delirium, Accent.Magenta);
+                w.Width = 1440; w.Height = 900;
                 Dock(KillerFamily.Layout.DockSide.Left, KillerFamily.Layout.DockSide.Top);
                 w.TestShowCaptureSettings();
                 await Shot("landing-08-capture-settings");
                 w.TestCloseOverlays();
 
                 Look(Theme.SE98, Accent.Teal);
+                w.Width = 1024; w.Height = 768;
+                Preview("grid");
+                w.TestStrip!.TestScrollTo(0.2);
                 w.TestToggleLibrary();
                 view.TestSet("shelves", "date", "");
                 await Shot("landing-09-shelves-98se");

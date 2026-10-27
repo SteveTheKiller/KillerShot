@@ -397,6 +397,27 @@ namespace KillerShot.Shell
             return menu;
         }
 
+        /// <summary>Demo hook: scrolls the collection list to a fraction of its length.</summary>
+        internal void TestScrollTo(double fraction)
+        {
+            _browser.UpdateLayout();
+            if (Find<ScrollViewer>(_browser) is { } scroller)
+            {
+                scroller.ScrollToVerticalOffset(scroller.ScrollableHeight * fraction);
+                scroller.ScrollToHorizontalOffset(scroller.ScrollableWidth * fraction);
+            }
+            static T? Find<T>(DependencyObject root) where T : DependencyObject
+            {
+                for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+                {
+                    var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+                    if (child is T hit) return hit;
+                    if (Find<T>(child) is { } deeper) return deeper;
+                }
+                return null;
+            }
+        }
+
         public string PreviewStyle => Settings.Get("CollectionPreview") is "stack" or "grid" or "mini"
             ? Settings.Get("CollectionPreview")! : "pile";
 

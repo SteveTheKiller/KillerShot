@@ -35,6 +35,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Albums and collections
 
+- Each shelf in the shelves view opens on its middle picture, so the carousel fills both sides instead of leaving the left half empty.
 - The photo strip's carousel keeps every picture's top in view when a wide, short capture is in front.
 
 - Captures are stored in an encrypted SQLCipher album with AES-256 encryption, opened through the Windows account or an optional password. Create, open, rename and switch albums from the title bar; each keeps its own retention and QR settings. External albums open as managed copies.

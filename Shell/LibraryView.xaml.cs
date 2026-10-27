@@ -516,6 +516,8 @@ namespace KillerShot.Shell
             };
             flow.Items = row.Items;
             if (_shelfFront.TryGetValue(row.Key, out long front)) flow.Select(front);
+            // Opening on the middle picture fills both sides of the band instead of leaving the left half empty.
+            else if (row.Items.Count > 2) flow.Select(row.Items[row.Items.Count / 2].Id);
             flow.SelectionChanged += () => { if (flow.SelectedItem is { } s) _shelfFront[row.Key] = s.Id; };
             flow.ItemActivated += item => OpenRequested?.Invoke(item);
             flow.ItemMenuRequested += ShowItemMenu;
