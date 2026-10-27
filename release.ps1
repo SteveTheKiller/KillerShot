@@ -168,6 +168,18 @@ if ($PSCmdlet.ParameterSetName -eq 'Publish') {
     return
 }
 
+# --- 0. Native signature, first ---
+# The exe embeds third_party\sqlcipher\e_sqlcipher.dll as it sits in the repo, and the source archive
+# comes from the tagged commit, so the DLL is signed once per rebuild and committed, never inside this
+# script. Checked first so an unsigned rebuild stops the run before any build or audit.
+$nativeStatus = [string](Get-AuthenticodeSignature -LiteralPath $nativeInput).Status
+if ($nativeStatus -ne 'Valid') {
+    $fix = "third_party\sqlcipher\e_sqlcipher.dll is not signed ($nativeStatus). Sign it once and commit it:`n" +
+        "  signtool sign /fd sha256 /tr http://timestamp.digicert.com /td sha256 /n `"$CertName`" /d `"SQLCipher for KillerShot`" third_party\sqlcipher\e_sqlcipher.dll`n" +
+        "then update the hash and Signature rows in third_party\sqlcipher\README.md."
+    if ($SkipSign) { Write-Host "`n  WARNING: $fix" -ForegroundColor Yellow } else { throw $fix }
+}
+
 # --- 1. Release metadata preflight ---
 Write-Host "`n==> Release metadata preflight..." -ForegroundColor Cyan
 $csprojRaw = Get-Content -Path $proj -Raw
