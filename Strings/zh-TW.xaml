@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">主目錄</sys:String>
     <sys:String x:Key="Str_QA_Pictures">圖片</sys:String>
     <sys:String x:Key="Str_Status_Ready">就緒</sys:String>
+    <sys:String x:Key="Str_St_AppSize">應用程式大小 {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">已儲存 {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} 個資料夾，{1} 個檔案</sys:String>
     <sys:String x:Key="Str_Sys_Close">關閉</sys:String>

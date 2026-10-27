@@ -73,6 +73,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Portable stays clear of footer controls and long image readouts in narrow windows.
 - In 98SE, menu hover fill follows the selected accent.
 - Light is shades of gray with nothing white: the background, sidebar and footer are the darkest gray (#cccccc), menus and bars a step lighter, then panes, then fields.
+- Theme changes cross-fade the whole window, app size runs from 70% to 250% with an "App size" readout, and confirmation prompts use the family dialog frame with the 98SE bevel and a translated Cancel.
 
 - The compact toolbar groups capture, recording, editing and output actions, with configurable icons, labels, order and overflow. Alt+M replaces it with a title-bar menu. Context menus provide image, collection and workspace actions.
 - Carousels coast and settle after dragging, stop on a new click and open the selected image after motion ends. Photo information and depth are adjustable.

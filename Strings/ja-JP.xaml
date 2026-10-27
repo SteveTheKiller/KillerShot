@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">ホーム</sys:String>
     <sys:String x:Key="Str_QA_Pictures">ピクチャ</sys:String>
     <sys:String x:Key="Str_Status_Ready">準備完了</sys:String>
+    <sys:String x:Key="Str_St_AppSize">アプリのサイズ {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} を保存しました</sys:String>
     <sys:String x:Key="Str_Sum_Counts">フォルダー {0}、ファイル {1}</sys:String>
     <sys:String x:Key="Str_Sys_Close">閉じる</sys:String>

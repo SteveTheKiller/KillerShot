@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Домашняя папка</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Изображения</sys:String>
     <sys:String x:Key="Str_Status_Ready">Готово</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Размер приложения {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">Сохранено {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">папок: {0}, файлов: {1}</sys:String>
     <sys:String x:Key="Str_Sys_Close">Закрыть</sys:String>

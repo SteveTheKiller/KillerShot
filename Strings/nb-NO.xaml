@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Hjem</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Bilder</sys:String>
     <sys:String x:Key="Str_Status_Ready">Klar</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Appstørrelse {0} %</sys:String>
     <sys:String x:Key="Str_Status_Saved">Lagret {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} mappe(r), {1} fil(er)</sys:String>
     <sys:String x:Key="Str_Sys_Close">Lukk</sys:String>

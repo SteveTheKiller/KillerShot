@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Domů</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Obrázky</sys:String>
     <sys:String x:Key="Str_Status_Ready">Připraveno</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Velikost aplikace {0} %</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} uloženo</sys:String>
     <sys:String x:Key="Str_Sum_Counts">Složek: {0}, souborů: {1}</sys:String>
     <sys:String x:Key="Str_Sys_Close">Zavřít</sys:String>

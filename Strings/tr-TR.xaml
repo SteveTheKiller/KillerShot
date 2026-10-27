@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Ana klasör</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Resimler</sys:String>
     <sys:String x:Key="Str_Status_Ready">Hazır</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Uygulama boyutu %{0}</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} kaydedildi</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} klasör, {1} dosya</sys:String>
     <sys:String x:Key="Str_Sys_Close">Kapat</sys:String>

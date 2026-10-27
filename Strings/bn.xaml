@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">হোম</sys:String>
     <sys:String x:Key="Str_QA_Pictures">ছবি</sys:String>
     <sys:String x:Key="Str_Status_Ready">প্রস্তুত</sys:String>
+    <sys:String x:Key="Str_St_AppSize">অ্যাপের আকার {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} সংরক্ষণ করা হয়েছে</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} টি ফোল্ডার, {1} টি ফাইল</sys:String>
     <sys:String x:Key="Str_Sys_Close">বন্ধ করুন</sys:String>

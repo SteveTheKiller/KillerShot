@@ -45,6 +45,7 @@
     <sys:String x:Key="Str_QA_Home">Kezdőmappa</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Képek</sys:String>
     <sys:String x:Key="Str_Status_Ready">Kész</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Alkalmazás mérete {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">Mentve: {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} mappa, {1} fájl</sys:String>
     <sys:String x:Key="Str_Sys_Close">Bezárás</sys:String>

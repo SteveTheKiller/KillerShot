@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Үй қалтасы</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Суреттер</sys:String>
     <sys:String x:Key="Str_Status_Ready">Дайын</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Қолданба өлшемі {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} сақталды</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} қалта, {1} файл</sys:String>
     <sys:String x:Key="Str_Sys_Close">Жабу</sys:String>

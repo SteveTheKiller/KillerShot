@@ -317,11 +317,6 @@ public partial class App : Application
         ThemeManager.Initialize();
         FilmGrain.Initialize();
         Controls.GrainTexture.Publish();
-        // KillerShot saved Czech and Italian as "Cs" and "It" before the family locale names;
-        // the kit's LocaleManager maps only the old "Ja" itself.
-        string? savedLocale = Settings.Get("Locale");
-        if (savedLocale == "Cs") Settings.Set("Locale", "CsCZ");
-        else if (savedLocale == "It") Settings.Set("Locale", "ItIT");
         LocaleManager.Initialize();
         Controls.MenuIcons.Install();
     }
@@ -478,7 +473,7 @@ public partial class App : Application
             var edits = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Tray_Exit"),
                 LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Btn_Save"),
                 LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
-            edits.SetAlternative(LocaleManager.Loc("Str_Rec_Cancel"));
+            edits.AddChoice("discard", LocaleManager.Loc("Str_Rec_Cancel"));
             edits.ShowDialog();
             if (!ReferenceEquals(Document, expected)) return false;
             if (edits.Confirmed)
@@ -486,7 +481,7 @@ public partial class App : Application
                 _editor!.SaveDocumentForExit();
                 if (Document.Dirty) return false;
             }
-            else if (!edits.AlternativeChosen) return false;
+            else if (edits.Choice != "discard") return false;
         }
         var approval = CaptureExitApproval();
         if (Video != null && !await Video.PrepareForExitAsync()) return false;

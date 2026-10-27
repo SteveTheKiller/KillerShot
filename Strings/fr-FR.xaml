@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Accueil</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Images</sys:String>
     <sys:String x:Key="Str_Status_Ready">Prêt</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Taille de l'application {0} %</sys:String>
     <sys:String x:Key="Str_Status_Saved">{0} enregistré</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} dossier(s), {1} fichier(s)</sys:String>
     <sys:String x:Key="Str_Sys_Close">Fermer</sys:String>

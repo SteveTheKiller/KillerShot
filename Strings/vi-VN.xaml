@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Trang chủ</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Hình ảnh</sys:String>
     <sys:String x:Key="Str_Status_Ready">Sẵn sàng</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Kích thước ứng dụng {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">Đã lưu {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} thư mục, {1} tệp</sys:String>
     <sys:String x:Key="Str_Sys_Close">Đóng</sys:String>

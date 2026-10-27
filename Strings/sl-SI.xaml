@@ -44,6 +44,7 @@
     <sys:String x:Key="Str_QA_Home">Domov</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Slike</sys:String>
     <sys:String x:Key="Str_Status_Ready">Pripravljeno</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Velikost aplikacije {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">Shranjeno: {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">Mape: {0}; datoteke: {1}</sys:String>
     <sys:String x:Key="Str_Sys_Close">Zapri</sys:String>

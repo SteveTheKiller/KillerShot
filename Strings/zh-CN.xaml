@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">主目录</sys:String>
     <sys:String x:Key="Str_QA_Pictures">图片</sys:String>
     <sys:String x:Key="Str_Status_Ready">就绪</sys:String>
+    <sys:String x:Key="Str_St_AppSize">应用大小 {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">已保存 {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} 个文件夹，{1} 个文件</sys:String>
     <sys:String x:Key="Str_Sys_Close">关闭</sys:String>

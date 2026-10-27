@@ -18,6 +18,7 @@ namespace KillerShot.Shell
         {
             _shortcutHost = shortcutHost;
             InitializeComponent();
+            InitChromeExtras();
             new KillerFamily.Accessibility.OverlayFocus(this)
                 .Track(ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay);
             var titleFrames = System.Windows.Media.Imaging.BitmapDecoder.Create(

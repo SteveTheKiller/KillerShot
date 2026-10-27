@@ -46,6 +46,7 @@
     <sys:String x:Key="Str_QA_Home">Домівка</sys:String>
     <sys:String x:Key="Str_QA_Pictures">Зображення</sys:String>
     <sys:String x:Key="Str_Status_Ready">Готово</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Розмір застосунку {0}%</sys:String>
     <sys:String x:Key="Str_Status_Saved">Збережено {0}</sys:String>
     <sys:String x:Key="Str_Sum_Counts">Папок: {0}, файлів: {1}</sys:String>
     <sys:String x:Key="Str_Sys_Close">Закрити</sys:String>
