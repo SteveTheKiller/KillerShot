@@ -9,6 +9,10 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Exit from the tray icon closes the window the normal way, so the prompt for unsaved edits can still cancel it.
 - In High Contrast, hovered menu items use the system highlight colors.
 
+### Changed
+
+- Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
+
 ## [1.0.0] - 2026-10-27
 
 KillerShot combines screenshot and screen recording tools with an encrypted capture album, image editing and local QR reading.
