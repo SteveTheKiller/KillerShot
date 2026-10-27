@@ -87,6 +87,7 @@ public static class Program
             case "capture": return CaptureAsync(rest);
             case "qr": return QrAsync(rest);
             case "edit": return Task.FromResult(Edit(rest));
+            case "text": return TextAsync(rest);
             case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
@@ -148,6 +149,58 @@ public static class Program
             }));
         }
         else foreach (var code in codes) Out.WriteLine(code.Text);
+        return ExitOk;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // text: Copy text's recognition on a file or a selected region, on this computer only.
+    // ------------------------------------------------------------------------------------------
+
+    private static async Task<int> TextAsync(string[] args)
+    {
+        var o = Options.Parse(args, [], ["json", "copy", "languages"]);
+        if (o.Has("languages"))
+        {
+            if (o.Positionals.Count != 0 || o.Has("copy")) throw new CliException("--languages takes no image.");
+            var languages = TextRecognition.Languages;
+            if (o.Has("json"))
+                Out.WriteLine(Json(j =>
+                {
+                    j.WriteStartObject();
+                    j.WriteString("chosen", TextRecognition.LanguageTag);
+                    j.WriteStartArray("languages");
+                    foreach (var (tag, name) in languages) { j.WriteStartObject(); j.WriteString("tag", tag); j.WriteString("name", name); j.WriteEndObject(); }
+                    j.WriteEndArray();
+                    j.WriteEndObject();
+                }));
+            else foreach (var (tag, name) in languages) Out.WriteLine($"{tag}  {name}{(tag == TextRecognition.LanguageTag ? "  (chosen)" : "")}");
+            return ExitOk;
+        }
+        if (o.Positionals.Count != 1) throw new CliException("text needs one image path, or region.");
+        BitmapSource image;
+        if (o.Positionals[0].Equals("region", StringComparison.OrdinalIgnoreCase))
+        {
+            App.InitializeKit();
+            var frozen = FrozenDesktop.Capture(false);
+            var selected = await new RegionSelector(frozen).RunAsync();
+            if (selected == null) return ExitCancelled;
+            image = frozen.Crop(selected.Value) ?? throw new CliException("The selected region is empty.", ExitFailed);
+        }
+        else
+        {
+            string path = Path.GetFullPath(o.Positionals[0]);
+            if (!File.Exists(path)) throw new CliException("The image file does not exist.", ExitFailed);
+            image = ImageOutput.Load(path);
+        }
+        string text = await TextRecognition.ReadAsync(image)
+            ?? throw new CliException("Windows has no text recognition language installed.", ExitFailed);
+        if (o.Has("copy") && text.Length > 0)
+        {
+            try { Clipboard.SetText(text); }
+            catch (System.Runtime.InteropServices.COMException error) { throw new CliException("The clipboard is busy: " + OneLine(error.Message), ExitFailed); }
+        }
+        if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("text", text); j.WriteEndObject(); }));
+        else Out.WriteLine(text);
         return ExitOk;
     }
 
@@ -1243,6 +1296,8 @@ public static class Program
           capture [options]               Take a screenshot and print where it was saved.
           qr <image|region> [--json]       Read QR codes locally without opening their links.
           edit <image> [options]          Rotate, flip, resize, frame or trim a picture file.
+          text <image|region> [--copy]    Read the text in a picture on this computer.
+          text --languages                List the installed text recognition languages.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.

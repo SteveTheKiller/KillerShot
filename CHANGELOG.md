@@ -63,6 +63,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - The `killershot` command captures regions, rectangles, windows or monitors; records timed MP4 or GIF video; lists, searches, copies, exports and opens album captures; and reports monitors, windows and settings. JSON output and exit codes support scripts and KillerMCP.
 - Repeated command-line captures accept spaced, inline and mixed-case interval options without recursive crashes.
 - `killershot edit` trims, rotates, flips, resizes or frames a picture file with the editor's own commands and saves the result beside the original unless `--out` names a file.
+- `killershot text` reads the text in a picture file or a selected region on this computer and can copy it; `text --languages` lists the recognition languages. `killershot recent --delete <n> --yes` removes a capture from the album.
 - `killershot qr` reads QR codes with JSON output and link warnings. `killershot --help` lists commands; `--cli` and `KillerShot.Cli.exe` remain supported, and portable copies run from their folder or full path.
 - `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
 
