@@ -89,6 +89,7 @@ public static class Program
             case "edit": return Task.FromResult(Edit(rest));
             case "text": return TextAsync(rest);
             case "recording": return RecordingControlAsync(rest);
+            case "collections": return Task.FromResult(CollectionsCommand(rest));
             case "print": return PrintAsync(rest);
             case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
@@ -731,11 +732,13 @@ public static class Program
 
     private static int Recent(string[] args)
     {
-        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "delete", "out"], ["json", "overwrite", "yes"]);
+        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "delete", "move", "to", "note", "text", "out"], ["json", "overwrite", "yes"]);
         o.NoPositionals();
-        string[] actions = ["copy", "export", "open", "delete"];
+        string[] actions = ["copy", "export", "open", "delete", "move", "note"];
         var chosen = actions.Where(o.Has).ToArray();
-        if (chosen.Length > 1) throw new CliException("Use one of --copy, --export, --open and --delete at a time.");
+        if (chosen.Length > 1) throw new CliException("Use one of --copy, --export, --open, --delete, --move and --note at a time.");
+        if (o.Has("to") != (chosen is ["move"])) throw new CliException("--move and --to go together.");
+        if (o.Has("text") != (chosen is ["note"])) throw new CliException("--note and --text go together.");
         // Deleting cannot be undone, so it is never the result of a typo alone.
         if (chosen is ["delete"] && !o.Has("yes")) throw new CliException("--delete removes the capture from the album for good; add --yes to confirm.");
         if (o.Has("yes") && chosen is not ["delete"]) throw new CliException("--yes goes with --delete.");
@@ -850,6 +853,22 @@ public static class Program
             case "delete":
                 if (!CaptureLibrary.TryDeleteFromCli(item.Id)) throw new CliException(LibraryClosedReason(), ExitFailed);
                 break;
+            case "move":
+            {
+                string to = o.Value("to")!;
+                bool none = to.Equals("none", StringComparison.OrdinalIgnoreCase);
+                if (!CaptureLibrary.TryWriteForCli(() =>
+                    CaptureLibrary.Move([item.Id], none ? null : FindCollection(to).Id)))
+                    throw new CliException(LibraryClosedReason(), ExitFailed);
+                break;
+            }
+            case "note":
+            {
+                string text = o.Value("text")!.Trim();
+                if (!CaptureLibrary.TryWriteForCli(() => CaptureLibrary.SetNote(item.Id, text.Length == 0 ? null : text)))
+                    throw new CliException(LibraryClosedReason(), ExitFailed);
+                break;
+            }
         }
         if (o.Has("json"))
             Out.WriteLine(Json(j =>
@@ -863,6 +882,82 @@ public static class Program
             }));
         else
             Out.WriteLine(result);
+        return ExitOk;
+    }
+
+    /// <summary>A collection by its name, ignoring case. Call with the album open.</summary>
+    private static CaptureCollection FindCollection(string name)
+    {
+        var matches = CaptureLibrary.Collections().Where(c => c.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        return matches.Count switch
+        {
+            1 => matches[0],
+            0 => throw new CliException($"There is no collection named {name}.", ExitFailed),
+            _ => throw new CliException($"More than one collection is named {name}; rename one in the app first.", ExitFailed),
+        };
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // collections: list, create, rename and delete. Deleting keeps the captures, in no collection.
+    // ------------------------------------------------------------------------------------------
+
+    private static int CollectionsCommand(string[] args)
+    {
+        var o = Options.Parse(args, [], ["json", "yes"]);
+        var p = o.Positionals;
+        string verb = p.Count == 0 ? "list" : p[0].ToLowerInvariant();
+        (int Count, string Usage) shape = verb switch
+        {
+            "list" => (1, "collections"),
+            "create" => (2, "collections create <name>"),
+            "rename" => (3, "collections rename <name> <new name>"),
+            "delete" => (2, "collections delete <name> --yes"),
+            _ => throw new CliException("collections takes list, create, rename or delete."),
+        };
+        if (Math.Max(p.Count, 1) != shape.Count) throw new CliException("Use " + shape.Usage + ".");
+        if (o.Has("yes") != (verb == "delete")) throw new CliException(verb == "delete"
+            ? "Deleting a collection cannot be undone (its captures stay in the album); add --yes to confirm." : "--yes goes with delete.");
+
+        IReadOnlyList<CaptureCollection> list = [];
+        bool ok = verb == "list"
+            ? CaptureLibrary.TryReadForCli(() => list = CaptureLibrary.Collections())
+            : CaptureLibrary.TryWriteForCli(() =>
+            {
+                switch (verb)
+                {
+                    case "create":
+                        if (p[1].Trim().Length == 0) throw new CliException("A collection needs a name.");
+                        if (CaptureLibrary.Collections().Any(c => c.Name.Equals(p[1].Trim(), StringComparison.OrdinalIgnoreCase)))
+                            throw new CliException($"A collection named {p[1].Trim()} already exists.", ExitFailed);
+                        CaptureLibrary.CreateCollection(p[1]);
+                        break;
+                    case "rename":
+                        if (p[2].Trim().Length == 0) throw new CliException("A collection needs a name.");
+                        CaptureLibrary.RenameCollection(FindCollection(p[1]).Id, p[2]);
+                        break;
+                    case "delete":
+                        CaptureLibrary.DeleteCollection(FindCollection(p[1]).Id);
+                        break;
+                }
+            });
+        if (!ok) throw new CliException(LibraryClosedReason(), ExitFailed);
+
+        if (verb != "list")
+        {
+            if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("action", verb); j.WriteString("collection", p[^1].Trim()); j.WriteEndObject(); }));
+            else Out.WriteLine(p[^1].Trim());
+            return ExitOk;
+        }
+        if (o.Has("json"))
+            Out.WriteLine(Json(j =>
+            {
+                j.WriteStartObject();
+                j.WriteStartArray("collections");
+                foreach (var c in list) { j.WriteStartObject(); j.WriteString("name", c.Name); j.WriteNumber("captures", c.Count); j.WriteEndObject(); }
+                j.WriteEndArray();
+                j.WriteEndObject();
+            }));
+        else foreach (var c in list) Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{c.Count,6}  {c.Name}"));
         return ExitOk;
     }
 
@@ -1430,6 +1525,7 @@ public static class Program
           text <image|region> [--copy]    Read the text in a picture on this computer.
           text --languages                List the installed text recognition languages.
           recording pause|resume|stop|cancel  Control the running KillerShot's recording.
+          collections [create|rename|delete]  List or manage collections; delete needs --yes.
           print <image>                   Open the picture in KillerShot's print preview.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
@@ -1503,6 +1599,8 @@ public static class Program
           --export <n> --out <file|folder>  Save a copy of capture n.
           --open <n>                      Open capture n in the editor.
           --delete <n> --yes              Delete capture n from the album. Cannot be undone.
+          --move <n> --to <name|none>     Move capture n into a collection, or out of one.
+          --note <n> --text <text>        Set capture n's note; empty text clears it.
           --json                          Print the result as JSON.
 
         Options left out follow your KillerShot settings.

@@ -219,11 +219,15 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>Deletes one capture for the command line, under the same locks as a command-line add.</summary>
-    public static bool TryDeleteFromCli(long id)
+    public static bool TryDeleteFromCli(long id) => TryWriteForCli(() => Delete([id]));
+
+    /// <summary>Runs a command-line album change under the same locks as a command-line add, and
+    /// tells a running KillerShot the album changed.</summary>
+    public static bool TryWriteForCli(Action write)
     {
-        bool deleted = TryUseAlbumFromCli(() => { Delete([id]); return true; }, out _);
-        if (deleted) NotifyExternalChange();
-        return deleted;
+        bool written = TryUseAlbumFromCli(() => { write(); return true; }, out _);
+        if (written) NotifyExternalChange();
+        return written;
     }
 
     /// <summary>Loads command-line recent data while holding the transition lock. The caller
