@@ -927,8 +927,9 @@ public static class Program
 
     private static int SettingsCommand(string[] args)
     {
-        var o = Options.Parse(args, [], ["json"]);
+        var o = Options.Parse(args, ["set"], ["json"]);
         o.NoPositionals();
+        if (o.Value("set") is { } assignment) return SetSetting(assignment, o.Has("json"));
         var capture = new (string Key, object Value)[]
         {
             ("lastMode", ModeName(CaptureSettings.LastMode)),
@@ -945,6 +946,13 @@ public static class Program
             ("askToSave", CaptureSettings.AskToSave),
             ("openEditorAfterCapture", CaptureSettings.OpenEditorAfterCapture),
             ("notify", CaptureSettings.Notify),
+            ("reviewFirst", CaptureSettings.ReviewFirst),
+            ("copyFilePath", CaptureSettings.CopyFilePath),
+            ("openWithApps", CaptureSettings.OpenWithApps),
+            ("email", CaptureSettings.EmailCapture),
+            ("printShrink", CaptureSettings.PrintShrink),
+            ("printEnlarge", CaptureSettings.PrintEnlarge),
+            ("printRotate", CaptureSettings.PrintRotate),
         };
         var video = new (string Key, object Value)[]
         {
@@ -960,17 +968,20 @@ public static class Program
             ("includeCursor", VideoSettings.IncludeCursor),
             ("countdown", VideoSettings.Countdown),
             ("copyFile", VideoSettings.CopyFile),
+            ("notify", VideoSettings.Notify),
             ("outputFolder", VideoSettings.OutputFolder),
             ("fileNamePattern", VideoSettings.FileNamePattern),
         };
         var shortcuts = Enum.GetValues<ShortcutAction>().Select(a => (Key: ShortcutName(a), Value: (object)CaptureSettings.ShortcutText(a))).ToArray();
+        var text = new (string Key, object Value)[] { ("language", TextRecognition.LanguageTag ?? "windows") };
+        var sections = new[] { ("capture", capture), ("recording", video), ("text", text), ("shortcuts", shortcuts) };
 
         if (o.Has("json"))
         {
             Out.WriteLine(Json(j =>
             {
                 j.WriteStartObject();
-                foreach (var (name, items) in new[] { ("capture", capture), ("recording", video), ("shortcuts", shortcuts) })
+                foreach (var (name, items) in sections)
                 {
                     j.WriteStartObject(name);
                     foreach (var (key, value) in items)
@@ -989,10 +1000,88 @@ public static class Program
         }
         else
         {
-            foreach (var (name, items) in new[] { ("capture", capture), ("recording", video), ("shortcuts", shortcuts) })
+            foreach (var (name, items) in sections)
                 foreach (var (key, value) in items)
                     Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{name}.{key} = {(value is bool b ? (b ? "true" : "false") : value)}"));
         }
+        return ExitOk;
+    }
+
+    /// <summary>settings --set section.key=value: the names the settings command prints. Each value
+    /// is checked before anything is written; a running KillerShot reads the change when it restarts.</summary>
+    private static int SetSetting(string assignment, bool json)
+    {
+        int eq = assignment.IndexOf('=');
+        if (eq <= 0) throw new CliException("--set takes name=value, for example capture.copyToClipboard=false.");
+        string name = assignment[..eq].Trim(), raw = assignment[(eq + 1)..].Trim();
+
+        static bool Bool(string v) => v.ToLowerInvariant() switch
+        {
+            "true" or "on" or "yes" or "1" => true,
+            "false" or "off" or "no" or "0" => false,
+            _ => throw new CliException("Use true or false."),
+        };
+        static int Number(string v, int min, int max) =>
+            int.TryParse(v, NumberStyles.None, CultureInfo.InvariantCulture, out int n) && n >= min && n <= max
+                ? n : throw new CliException($"Use a whole number from {min} to {max}.");
+        static int Choice(string v, int[] choices) =>
+            int.TryParse(v, NumberStyles.None, CultureInfo.InvariantCulture, out int n) && choices.Contains(n)
+                ? n : throw new CliException("Use one of " + string.Join(", ", choices) + ".");
+        static string Folder(string v)
+        {
+            string full = Path.GetFullPath(v);
+            return Directory.Exists(full) ? full : throw new CliException("That folder does not exist: " + full, ExitFailed);
+        }
+        static string OneOf(string v, params string[] allowed) =>
+            allowed.FirstOrDefault(a => a.Equals(v, StringComparison.OrdinalIgnoreCase)) ?? throw new CliException("Use " + string.Join(", ", allowed) + ".");
+
+        Action apply = name.ToLowerInvariant() switch
+        {
+            "capture.copytoclipboard" => () => CaptureSettings.CopyToClipboard = Bool(raw),
+            "capture.savetofolder" => () => CaptureSettings.SaveToFolder = Bool(raw),
+            "capture.outputfolder" => () => CaptureSettings.OutputFolder = Folder(raw),
+            "capture.filenamepattern" => () => CaptureSettings.FileNamePattern = raw.Length > 0 ? raw : throw new CliException("The pattern cannot be empty."),
+            "capture.format" => () => CaptureSettings.Format = OneOf(raw, "png", "jpg"),
+            "capture.jpegquality" => () => CaptureSettings.JpegQuality = Number(raw, 10, 100),
+            "capture.delayseconds" => () => CaptureSettings.DelaySeconds = Number(raw, 0, 30),
+            "capture.includecursor" => () => CaptureSettings.IncludeCursor = Bool(raw),
+            "capture.playsound" => () => CaptureSettings.PlaySound = Bool(raw),
+            "capture.pickwindow" => () => CaptureSettings.PickWindow = Bool(raw),
+            "capture.asktosave" => () => CaptureSettings.AskToSave = Bool(raw),
+            "capture.openeditoraftercapture" => () => CaptureSettings.OpenEditorAfterCapture = Bool(raw),
+            "capture.notify" => () => CaptureSettings.Notify = Bool(raw),
+            "capture.reviewfirst" => () => CaptureSettings.ReviewFirst = Bool(raw),
+            "capture.copyfilepath" => () => CaptureSettings.CopyFilePath = Bool(raw),
+            "capture.openwithapps" => () => CaptureSettings.OpenWithApps = Bool(raw),
+            "capture.email" => () => CaptureSettings.EmailCapture = Bool(raw),
+            "capture.printshrink" => () => CaptureSettings.PrintShrink = Bool(raw),
+            "capture.printenlarge" => () => CaptureSettings.PrintEnlarge = Bool(raw),
+            "capture.printrotate" => () => CaptureSettings.PrintRotate = Bool(raw),
+            "recording.format" => () => VideoSettings.Format = OneOf(raw, "mp4", "gif"),
+            "recording.mp4fps" => () => VideoSettings.Mp4Fps = Choice(raw, VideoSettings.Mp4FpsChoices),
+            "recording.mp4quality" => () => VideoSettings.Mp4Quality = OneOf(raw, "small", "balanced", "high") switch { "small" => 0, "high" => 2, _ => 1 },
+            "recording.giffps" => () => VideoSettings.GifFps = Choice(raw, VideoSettings.GifFpsChoices),
+            "recording.gifcolors" => () => VideoSettings.GifColors = Choice(raw, VideoSettings.GifColorChoices),
+            "recording.gifsize" => () => VideoSettings.GifSize = Choice(raw, VideoSettings.GifSizeChoices),
+            "recording.gifloop" => () => VideoSettings.GifLoop = Bool(raw),
+            "recording.sound" => () => VideoSettings.Sound = ParseSound(raw),
+            "recording.audiokbps" => () => VideoSettings.AudioKbps = Choice(raw, VideoSettings.AudioKbpsChoices),
+            "recording.includecursor" => () => VideoSettings.IncludeCursor = Bool(raw),
+            "recording.countdown" => () => VideoSettings.Countdown = Bool(raw),
+            "recording.copyfile" => () => VideoSettings.CopyFile = Bool(raw),
+            "recording.notify" => () => VideoSettings.Notify = Bool(raw),
+            "recording.outputfolder" => () => VideoSettings.OutputFolder = Folder(raw),
+            "recording.filenamepattern" => () => VideoSettings.FileNamePattern = raw.Length > 0 ? raw : throw new CliException("The pattern cannot be empty."),
+            "text.language" => () => TextRecognition.LanguageTag = raw.Length == 0 || raw.Equals("windows", StringComparison.OrdinalIgnoreCase) ? null
+                : TextRecognition.Languages.Any(l => l.Tag.Equals(raw, StringComparison.OrdinalIgnoreCase)) ? raw
+                : throw new CliException("That language is not installed; see killershot text --languages."),
+            _ => throw new CliException($"Unknown setting {name}. The settings command lists the names; shortcuts are set in the app."),
+        };
+        try { apply(); }
+        catch (CliException error) when (!error.Message.StartsWith("Unknown", StringComparison.Ordinal) && error.Code == ExitUsage)
+        { throw new CliException($"{name}: {error.Message}"); }
+        if (json) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("set", name); j.WriteString("value", raw); j.WriteEndObject(); }));
+        else Out.WriteLine($"{name} = {raw}");
         return ExitOk;
     }
 
@@ -1109,7 +1198,10 @@ public static class Program
         ShortcutAction.Window => "window",
         ShortcutAction.Monitor => "monitor",
         ShortcutAction.AllMonitors => "all",
-        _ => "record",
+        ShortcutAction.Video => "record",
+        ShortcutAction.RepeatRegion => "repeatRegion",
+        ShortcutAction.Interval => "interval",
+        _ => action.ToString(),
     };
 
     private static Win32.RECT ParseRect(string text)
@@ -1304,6 +1396,9 @@ public static class Program
           monitors                        List monitors with their numbers and bounds.
           windows [--limit <n>]           List capturable windows with their handles and titles.
           settings                        Show the capture and recording settings in use.
+          settings --set <name>=<value>   Change one, using a name the list shows, such as
+                                          capture.copyToClipboard=false or text.language=en-US.
+                                          A running KillerShot uses it after a restart.
           version                         Print the KillerShot version.
           help                            Show this help.
 
