@@ -35,6 +35,7 @@
     <sys:String x:Key="Str_Dlg_AllFiles">Tutti i file</sys:String>
     <sys:String x:Key="Str_Dlg_FileName">Nome file:</sys:String>
     <sys:String x:Key="Str_Dlg_FileType">Tipo di file:</sys:String>
+    <sys:String x:Key="Str_Dlg_Places">Posizioni</sys:String>
     <sys:String x:Key="Str_Dlg_NoMatchingFiles">Qui non c'è nulla che corrisponda al tipo di file attuale.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFile">Quel file non esiste.</sys:String>
     <sys:String x:Key="Str_Dlg_NoSuchFolder">Quella cartella non esiste.</sys:String>

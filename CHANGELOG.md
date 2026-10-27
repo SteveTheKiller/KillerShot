@@ -66,6 +66,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Desktop, accessibility and localization
 
+- The print preview caption switches between the wordmark and the plain title when the theme changes while it is open, and its wordmark takes the main title bar's spacing so its brush strokes have room. The file picker's recent locations and places lists are named for screen readers.
 - File dialogs cancel stale loads, bound large listings and identify incomplete results without blocking the interface.
 - Black table headers match the content surface, and softer grain keeps dark surfaces from looking gray.
 - About groups settings in two columns and can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts.
