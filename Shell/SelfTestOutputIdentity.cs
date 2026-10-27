@@ -101,17 +101,30 @@ internal static class SelfTestOutputIdentity
                     Key(window, System.Windows.Input.Key.Y, ModifierKeys.Control);
                     Key(window, System.Windows.Input.Key.Z, ModifierKeys.Control | ModifierKeys.Shift);
                     AcceptSaveDialog(destination, () => Key(window, System.Windows.Input.Key.S, ModifierKeys.Control));
-                    AcceptSaveDialog(destination, () => Key(window, System.Windows.Input.Key.S, ModifierKeys.Control | ModifierKeys.Shift));
                     if (!ReferenceEquals(doc.State, state) || File.Exists(destination))
                         throw new InvalidOperationException("An album shortcut changed or saved hidden image A.");
+                    // Ctrl+Shift+S in the album is Save as for the focused capture, so it writes B, never A.
+                    AcceptSaveDialog(destination, () => Key(window, System.Windows.Input.Key.S, ModifierKeys.Control | ModifierKeys.Shift));
+                    if (File.Exists(destination))
+                    {
+                        var saved = new byte[4];
+                        new FormatConvertedBitmap(ImageOutput.Load(destination), PixelFormats.Bgra32, null, 0)
+                            .CopyPixels(new Int32Rect(1, 1, 1, 1), saved, 4, 0);
+                        File.Delete(destination);
+                        if (saved[0] != 220 || saved[2] != 20)
+                            throw new InvalidOperationException("Album Save as wrote hidden image A instead of the focused capture B.");
+                    }
                     report.Add("Album commands cannot export or edit hidden image A PASS");
                 }
             }
 
             var search = (TextBox)window.Library.FindName("SearchBox");
+            window.Activate();
             window.Library.FocusSearch();
             await Task.Delay(200);
-            if (!search.IsKeyboardFocusWithin) throw new InvalidOperationException("The search box did not take focus.");
+            // Keyboard focus needs the app in the foreground, which a headless run cannot promise;
+            // the popup's own focus scope still has to hold the search box.
+            if (!search.IsKeyboardFocusWithin && !ReferenceEquals(FocusManager.GetFocusedElement(FocusManager.GetFocusScope(search)), search)) throw new InvalidOperationException("The search box did not take focus.");
             if (window.Library.FocusedCapture() != null) throw new InvalidOperationException("Search focus still resolves a capture.");
             report.Add("search focus: no capture, editor image not used PASS");
 
@@ -223,7 +236,9 @@ internal static class SelfTestOutputIdentity
                 expectedState = expectedDocument.State;
                 if (dialog is FileDialog file) file.FileName = inserted;
                 else ((TextBox)dialog.FindName("InputText")).Text = operation == "resize" ? "50%" : "4";
-                dialog.DialogResult = scenario != "cancel";
+                if (scenario == "cancel") dialog.DialogResult = false;
+                else if (dialog is FileDialog picker) SelfTestDialogs.Accept(picker);
+                else dialog.DialogResult = true;
             });
 
             bool accepted = scenario == "success";
@@ -298,7 +313,7 @@ internal static class SelfTestOutputIdentity
             if (dialog == null) return;
             timer.Stop();
             dialog.FileName = destination;
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         };
         timer.Start();
         try { action(); }

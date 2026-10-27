@@ -101,7 +101,7 @@ internal static class SelfTestAlbumMarks
                 if (dialog == null) return;
                 timer.Stop();
                 dialog.FileName = export;
-                dialog.DialogResult = true;
+                SelfTestDialogs.Accept(dialog);
             };
             timer.Start();
             try
@@ -111,7 +111,7 @@ internal static class SelfTestAlbumMarks
             }
             finally { timer.Stop(); }
             if (recovery.Dirty || recovery.FilePath != export || Pixel(ImageOutput.Load(export), 30, 30)[1] != 0)
-                throw new InvalidOperationException("Recovery Save As did not preserve the redacted picture.");
+                throw new InvalidOperationException($"Recovery Save As did not preserve the redacted picture: dirty={recovery.Dirty}, path={recovery.FilePath}, exists={File.Exists(export)}.");
             if (!App.Instance.SetDocument(null))
                 throw new InvalidOperationException("A successful file export remained trapped by the failed album write.");
             if (CaptureLibrary.LoadMarks(recoveryId) != null)
@@ -135,7 +135,7 @@ internal static class SelfTestAlbumMarks
             if (dialog == null) return;
             exportTimer.Stop();
             dialog.FileName = Path.Combine(folder, "healthy-export.png");
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         };
         exportTimer.Start();
         try

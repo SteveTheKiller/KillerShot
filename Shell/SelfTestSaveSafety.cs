@@ -49,7 +49,7 @@ internal static class SelfTestSaveSafety
             {
                 suggested = dialog.FileName;
                 dialog.FileName = exported;
-                dialog.DialogResult = true;
+                SelfTestDialogs.Accept(dialog);
             });
             Check(File.ReadAllBytes(original).SequenceEqual(animation), "Ordinary Save replaced the animated original.");
             Check(opened && suggested == "animated-static.png", "Ordinary Save must offer a distinct static PNG filename.");
@@ -64,7 +64,7 @@ internal static class SelfTestSaveSafety
             WithSaveDialog(window, "SaveBtn", dialog =>
             {
                 dialog.FileName = original;
-                dialog.DialogResult = true;
+                SelfTestDialogs.Accept(dialog);
             });
             Check(File.ReadAllBytes(original).SequenceEqual(animation) && document.FilePath == original,
                 "Choosing the original APNG as the export destination destroyed its animation.");
@@ -102,7 +102,7 @@ internal static class SelfTestSaveSafety
             Check(App.Instance.SetDocument(b), "The replacement entry did not accept clean A.");
             b.Crop(new Int32Rect(0, 0, 3, 3));
             dialog.FileName = destination;
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         }), "Save As never displayed its real modal dialog.");
         Check(File.ReadAllBytes(destination).SequenceEqual(original), "Replacement B overwrote A's destination.");
         Check(ReferenceEquals(App.Instance.Document, b) && b.Dirty && b.FilePath == null,
@@ -116,7 +116,7 @@ internal static class SelfTestSaveSafety
         {
             App.Instance.OpenImage(bPath);
             dialog.FileName = destination;
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         });
         Check(File.ReadAllBytes(destination).SequenceEqual(original)
             && App.Instance.Document?.FilePath == bPath && App.Instance.Document.PixelWidth == 4,
@@ -128,14 +128,14 @@ internal static class SelfTestSaveSafety
         WithSaveDialog(window, "SaveAsBtn", dialog =>
         {
             dialog.FileName = Path.Combine(folder, "unsupported.gif");
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         });
         Check(a.Dirty && a.FilePath == destination && !File.Exists(Path.Combine(folder, "unsupported.gif")),
             "Failed output cleared dirty state or changed the document path.");
         WithSaveDialog(window, "SaveAsBtn", dialog =>
         {
             dialog.FileName = Path.Combine(folder, "saved-A.png");
-            dialog.DialogResult = true;
+            SelfTestDialogs.Accept(dialog);
         });
         Check(!a.Dirty && ImageOutput.Load(a.FilePath!).PixelWidth == 1, "Successful Save As failed to save intended edits.");
         report.Add("External open, cancel, output failure and successful dirty-document Save As: PASS");
