@@ -613,6 +613,7 @@ namespace KillerShot.Shell
         private void SaveAsBtn_Click(object sender, RoutedEventArgs e) => SaveAs();
         private void CopyBtn_Click(object sender, RoutedEventArgs e) => CopyResult();
         private void PrintBtn_Click(object sender, RoutedEventArgs e) => PrintResult();
+        internal void PrintOpenPicture() => PrintResult();
 
         private void PrintResult()
         {

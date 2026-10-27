@@ -88,6 +88,8 @@ public static class Program
             case "qr": return QrAsync(rest);
             case "edit": return Task.FromResult(Edit(rest));
             case "text": return TextAsync(rest);
+            case "recording": return RecordingControlAsync(rest);
+            case "print": return PrintAsync(rest);
             case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
@@ -150,6 +152,43 @@ public static class Program
         }
         else foreach (var code in codes) Out.WriteLine(code.Text);
         return ExitOk;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // recording and print: requests for the running app, through its open-request queue.
+    // ------------------------------------------------------------------------------------------
+
+    private static async Task<int> RecordingControlAsync(string[] args)
+    {
+        var o = Options.Parse(args, [], ["json"]);
+        if (o.Positionals.Count != 1 || o.Positionals[0].ToLowerInvariant() is not ("pause" or "resume" or "stop" or "cancel"))
+            throw new CliException("recording needs pause, resume, stop or cancel.");
+        string verb = o.Positionals[0].ToLowerInvariant();
+        await SendToApp("record-" + verb);
+        if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("sent", verb); j.WriteEndObject(); }));
+        else Out.WriteLine($"Sent {verb} to KillerShot.");
+        return ExitOk;
+    }
+
+    private static async Task<int> PrintAsync(string[] args)
+    {
+        var o = Options.Parse(args, [], ["json"]);
+        if (o.Positionals.Count != 1) throw new CliException("print needs one image path.");
+        string path = Path.GetFullPath(o.Positionals[0]);
+        if (!File.Exists(path)) throw new CliException("The image does not exist: " + path, ExitFailed);
+        try { ImageOutput.Load(path); }
+        catch (Exception ex) { throw new CliException("KillerShot cannot read that image: " + OneLine(ex.Message), ExitFailed); }
+        await SendToApp("print:" + path);
+        if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("printing", path); j.WriteEndObject(); }));
+        else Out.WriteLine(path);
+        return ExitOk;
+    }
+
+    private static async Task SendToApp(string command)
+    {
+        try { await App.SendCommandAsync(command); }
+        catch (InvalidOperationException error) { throw new CliException(error.Message + " Start it, then try again.", ExitFailed); }
+        catch (TimeoutException error) { throw new CliException(error.Message, ExitFailed); }
     }
 
     // ------------------------------------------------------------------------------------------
@@ -1390,6 +1429,8 @@ public static class Program
           edit <image> [options]          Rotate, flip, resize, frame or trim a picture file.
           text <image|region> [--copy]    Read the text in a picture on this computer.
           text --languages                List the installed text recognition languages.
+          recording pause|resume|stop|cancel  Control the running KillerShot's recording.
+          print <image>                   Open the picture in KillerShot's print preview.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.

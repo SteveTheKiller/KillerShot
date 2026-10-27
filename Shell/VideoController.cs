@@ -157,6 +157,8 @@ internal sealed class VideoController
         }
     }
 
+    public bool IsPaused => _recorder?.IsPaused == true;
+
     public void TogglePause()
     {
         if (_recorder == null) return;

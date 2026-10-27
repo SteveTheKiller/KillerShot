@@ -160,7 +160,7 @@ public partial class App : Application
         }
         if (!demo)
         {
-            _wake = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\KillerShot-Wake");
+            _wake = new EventWaitHandle(false, EventResetMode.AutoReset, WakeName);
             _wakeWait = ThreadPool.RegisterWaitForSingleObject(_wake, (_, _) => Dispatcher.BeginInvoke(() =>
                 {
                     OpenRequested();
@@ -226,17 +226,55 @@ public partial class App : Application
     {
         try
         {
-            OpenRequests.Drain(path => { if (path.Length > 0) OpenImage(path); ShowEditor(); });
+            OpenRequests.Drain(path =>
+            {
+                if (path.StartsWith(CommandPrefix, StringComparison.Ordinal)) { RunRemoteCommand(path[CommandPrefix.Length..]); return; }
+                if (path.Length > 0) OpenImage(path);
+                ShowEditor();
+            });
             if (!OpenRequests.IsDraining && OpenRequests.HasPending)
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(OpenRequested));
         }
         catch (Exception ex) { Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message); }
     }
 
+    // Command-line requests for the running app share the open-request queue. No full Windows path
+    // starts with "cmd:", so a command can never be read as an image to open.
+    private const string CommandPrefix = "cmd:";
+    private const string WakeName = @"Local\KillerShot-Wake";
+
+    /// <summary>Hands a command to the running KillerShot and waits for it to confirm delivery.</summary>
+    internal static async Task SendCommandAsync(string command)
+    {
+        if (!EventWaitHandle.TryOpenExisting(WakeName, out var wake)) throw new InvalidOperationException("KillerShot is not running.");
+        wake.Dispose();
+        await OpenRequests.SendAsync(CommandPrefix + command, WakeName, TimeSpan.FromSeconds(10));
+    }
+
+    private void RunRemoteCommand(string command)
+    {
+        var video = Video;
+        switch (command)
+        {
+            case "record-pause": if (video is { IsRecording: true, IsPaused: false }) video.TogglePause(); break;
+            case "record-resume": if (video is { IsRecording: true, IsPaused: true }) video.TogglePause(); break;
+            case "record-stop": if (video is { IsRecording: true }) _ = video.StopAsync(false); break;
+            case "record-cancel": if (video is { IsRecording: true }) _ = video.StopAsync(true); break;
+            default:
+                if (command.StartsWith("print:", StringComparison.Ordinal))
+                {
+                    OpenImage(command["print:".Length..]);
+                    ShowEditor();
+                    _editor?.PrintOpenPicture();
+                }
+                break;
+        }
+    }
+
     private async Task DeliverSecondaryOpenAsync(string? path)
     {
         int code = 0;
-        try { await OpenRequests.SendAsync(path ?? "", @"Local\KillerShot-Wake", TimeSpan.FromSeconds(10)); }
+        try { await OpenRequests.SendAsync(path ?? "", WakeName, TimeSpan.FromSeconds(10)); }
         catch (Exception ex)
         {
             code = 1;
