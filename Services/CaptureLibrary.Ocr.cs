@@ -26,7 +26,8 @@ internal static partial class CaptureLibrary
         lock (_gate)
         {
             if (_db == null) return;
-            Exec("UPDATE captures SET ocr_text = NULL");
+            // The search index is kept by hand, so old text must leave it too or it keeps matching.
+            Exec("UPDATE captures SET ocr_text = NULL; UPDATE capture_search SET ocr = '';");
         }
         Interlocked.Increment(ref _ocrGeneration);
         lock (_ocrFailed) _ocrFailed.Clear();

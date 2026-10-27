@@ -37,7 +37,8 @@ public static class MarksFormat
         }
         // A partial parse could omit a redaction. The caller must use the flattened output.
         catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException
-            or NullReferenceException or NotSupportedException or ArgumentException or OverflowException or System.IO.IOException) { return null; }
+            or NullReferenceException or NotSupportedException or ArgumentException or OverflowException or System.IO.IOException
+            or System.Runtime.InteropServices.ExternalException) { return null; }
     }
 
     private static JsonObject? ToJson(Annotation mark) => mark switch
