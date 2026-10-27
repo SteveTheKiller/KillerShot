@@ -84,6 +84,18 @@ namespace KillerShot.Shell
                 return;
             }
 
+            // Alt+Shift+T and Alt+Shift+L open the rail's theme and language menus, beside the
+            // family's Alt+Shift+G film grain chord.
+            if (alt && shift && !ctrl && e.Key == Key.System && e.SystemKey is Key.T or Key.L)
+            {
+                if (!e.IsRepeat)
+                {
+                    if (e.SystemKey == Key.T) _themePicker.Toggle(); else _languageMenu.Open();
+                }
+                e.Handled = true;
+                return;
+            }
+
             // Alt+M hides or shows the toolbar, as in KillerPDF. Alt combinations arrive as
             // Key.System with the letter in SystemKey.
             if (alt && !ctrl && e.Key == Key.System && e.SystemKey == Key.M)
@@ -107,6 +119,12 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.Q when shift: QrReadingButton_Click(QrReadingButton, new RoutedEventArgs()); break;
+                    case Key.Q: StartCapture(Capture.CaptureMode.Qr); break;
+                    case Key.OemComma when shift: ShowVideoSettings(); break;
+                    case Key.OemComma: ShowCaptureSettings(); break;
+                    case Key.Delete when InReview && !TypingInField(): DiscardReview(); break;
+                    case Key.L when shift: ShowLibrarySettings(); break;
                     case Key.L: ToggleLibrary(); break;
                     case Key.F when Library.IsVisible: Library.FocusSearch(); break;
                     case Key.R when shift: if (!e.IsRepeat) App.Instance.Video?.TogglePause(); break;
