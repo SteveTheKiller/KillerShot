@@ -123,6 +123,10 @@ namespace KillerShot.Shell
             new("Ctrl+,",   "Str_TT_CaptureSettings", KsCat.View, true, "Comma"),
             new("Ctrl+Shift+,", "Str_TT_VideoSettings", KsCat.View, true, "Comma"),
             new("Ctrl+Shift+L", "Str_Btn_Library", KsCat.View, true, "L"),
+            new("Ctrl+Shift+N", "Str_Lib_NewCollection", KsCat.File, true, "N"),
+            new("Ctrl+M",   "Str_Lib_MoveTo",     KsCat.File, true, "M"),
+            new("F2",       "Str_Lib_Note",       KsCat.File, false, "F2"),
+            new("Ctrl+E",   "Str_Lib_ShowInExplorer", KsCat.File, true, "E"),
             new("Alt+Shift+T", "Str_TT_Theme",    KsCat.View, false),
             new("Alt+Shift+L", "Str_TT_Language", KsCat.View, false),
 

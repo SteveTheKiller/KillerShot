@@ -113,12 +113,23 @@ namespace KillerShot.Shell
                 return;
             }
 
+            // F2 over the album edits the focused capture's note; in the editor it edits text.
+            if (!ctrl && !alt && !shift && e.Key == Key.F2 && Library.IsVisible && !TypingInField())
+            {
+                Library.NoteFocused();
+                e.Handled = true;
+                return;
+            }
+
             if (ctrl && !alt)
             {
                 bool handled = true;
                 switch (e.Key)
                 {
+                    case Key.N when shift: NewCollectionButton_Click(NewCollectionButton, new RoutedEventArgs()); break;
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.E when Library.IsVisible && !TypingInField(): Library.ShowFocusedInExplorer(); break;
+                    case Key.M when Library.IsVisible && !shift && !TypingInField(): Library.MoveFocused(); break;
                     case Key.Q when shift: QrReadingButton_Click(QrReadingButton, new RoutedEventArgs()); break;
                     case Key.Q: StartCapture(Capture.CaptureMode.Qr); break;
                     case Key.OemComma when shift: ShowVideoSettings(); break;
@@ -140,7 +151,7 @@ namespace KillerShot.Shell
                     case Key.I when !shift && !TypingInField(): if (!RunImageCommand(PromptResize)) handled = false; break;
                     case Key.M when !shift && !TypingInField(): if (!RunImageCommand(PromptMargin)) handled = false; break;
                     case Key.T when !shift && !TypingInField(): if (!RunImageCommand(TrimBorder)) handled = false; break;
-                    case Key.S when shift: SaveAs(); break;
+                    case Key.S when shift: if (Library.IsVisible) Library.SaveAsFocused(); else SaveAs(); break;
                     case Key.S: Save(); break;
                     // Over the album these act on the capture in view, never the hidden editor image.
                     case Key.C when shift && !TypingInField() && _doc != null && !Library.IsVisible: _ = ReadPictureTextAsync(null, copy: true); break;

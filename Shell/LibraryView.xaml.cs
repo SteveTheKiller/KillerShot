@@ -872,34 +872,21 @@ namespace KillerShot.Shell
             {
                 // A file in the Screenshots folder: the folder keeps it, so no collections, notes
                 // or delete here, only a way to it and a way into the encrypted library.
-                Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item));
+                Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item), "Ctrl+E");
                 Add("Str_Lib_AddToLibrary", () => AddToLibrary(item));
                 menu.IsOpen = true;
                 Anim.FadeIn(menu);
                 return;
             }
-            Add("Str_Lib_SaveAs", () => SaveAs(item));
+            Add("Str_Lib_SaveAs", () => SaveAs(item), "Ctrl+Shift+S");
             Add("Str_Marks_OpenOriginal", () => RecoverOriginal(item));
             if (BuildOcrLinksMenu(item.Id, anchor) is { } links) menu.Items.Add(links);
             menu.Items.Add(new Separator());
 
-            var move = new MenuItem { Header = Loc("Str_Lib_MoveTo") };
-            var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
-            none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null, item.Session));
-            move.Items.Add(none);
-            foreach (var c in CaptureLibrary.Collections())
-            {
-                var target = c;
-                var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
-                mi.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], target.Id, item.Session));
-                move.Items.Add(mi);
-            }
-            move.Items.Add(new Separator());
-            var create = new MenuItem { Header = Loc("Str_Lib_NewCollectionDots") };
-            create.Click += (_, _) => NewCollection(item);
-            move.Items.Add(create);
+            var move = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M" };
+            FillMoveItems(move, item);
             menu.Items.Add(move);
-            Add("Str_Lib_Note", () => EditNote(item));
+            Add("Str_Lib_Note", () => EditNote(item), "F2");
             Add("Str_Lib_CardColor", PickCardColor);
             if (!CardColors.CardIsDefault) Add("Str_Lib_CardColorDefault", () => CardColors.SetCard(null));
             menu.Items.Add(new Separator());
@@ -1012,6 +999,60 @@ namespace KillerShot.Shell
             if (FocusedCapture() is { } item) Copy(item);
             else StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused"));
         }
+
+        /// <summary>The Move to list: no collection, each collection, then New collection.</summary>
+        private void FillMoveItems(ItemsControl target, CaptureItem item)
+        {
+            var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
+            none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null, item.Session));
+            target.Items.Add(none);
+            foreach (var c in CaptureLibrary.Collections())
+            {
+                var collection = c;
+                var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
+                mi.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], collection.Id, item.Session));
+                target.Items.Add(mi);
+            }
+            target.Items.Add(new Separator());
+            var create = new MenuItem { Header = Loc("Str_Lib_NewCollectionDots") };
+            create.Click += (_, _) => NewCollection(item);
+            target.Items.Add(create);
+        }
+
+        // Keys over the album act on the focused capture, as Ctrl+C and Ctrl+P do.
+        private bool WithFocused(Action<CaptureItem> action)
+        {
+            if (FocusedCapture() is not { } item) { StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused")); return false; }
+            action(item);
+            return true;
+        }
+
+        /// <summary>Ctrl+Shift+S over the album.</summary>
+        internal void SaveAsFocused() => WithFocused(item =>
+        {
+            if (!FolderCaptures.IsFolderId(item.Id)) SaveAs(item);
+        });
+
+        /// <summary>Ctrl+E over the album: a Screenshots-folder file, shown in Explorer.</summary>
+        internal void ShowFocusedInExplorer() => WithFocused(item =>
+        {
+            if (FolderCaptures.IsFolderId(item.Id)) ShowInExplorer(item);
+        });
+
+        /// <summary>F2 over the album: the focused capture's note.</summary>
+        internal void NoteFocused() => WithFocused(item =>
+        {
+            if (!FolderCaptures.IsFolderId(item.Id)) EditNote(item);
+        });
+
+        /// <summary>Ctrl+M over the album: the Move to list, opened on the focused capture.</summary>
+        internal void MoveFocused() => WithFocused(item =>
+        {
+            if (FolderCaptures.IsFolderId(item.Id)) return;
+            var menu = new ContextMenu { PlacementTarget = Keyboard.FocusedElement as UIElement ?? this };
+            FillMoveItems(menu, item);
+            menu.IsOpen = true;
+        });
 
         /// <summary>Ctrl+P over the album: prints the focused capture, or reports there is none.</summary>
         internal void PrintFocused()
