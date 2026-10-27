@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>killershot</id>
+    <version>REPLACE_VERSION</version>
+    <packageSourceUrl>https://github.com/SteveTheKiller/KillerShot</packageSourceUrl>
+    <owners>SteveTheKiller</owners>
+    <title>KillerShot</title>
+    <authors>Steve the Killer</authors>
+    <copyright>Copyright (c) 2026 Steve the Killer</copyright>
+    <projectUrl>https://killershot.net</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/SteveTheKiller/KillerShot@vREPLACE_VERSION/Resources/kst-icon.ico</iconUrl>
+    <licenseUrl>https://github.com/SteveTheKiller/KillerShot/blob/main/LICENSE.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/SteveTheKiller/KillerShot</projectSourceUrl>
+    <docsUrl>https://killershot.net/help.html</docsUrl>
+    <bugTrackerUrl>https://github.com/SteveTheKiller/KillerShot/issues</bugTrackerUrl>
+    <tags>screenshot screen-capture screen-recorder snipping-tool ocr qr encrypted portable</tags>
+    <summary>Encrypted screenshot album and screen capture tool for Windows, with an editor, text search inside pictures and MP4 or GIF recording.</summary>
+    <description>Free and open-source screenshot and screen recording tool for Windows. Captures go straight to the clipboard and into an encrypted album on your own computer, where you can find them again by the text inside the picture. Install or run portable.
+
+- Print Screen taken over: region, window, monitor and all-monitor captures, each with a shortcut you can change or turn off
+- Region capture over a frozen copy of the desktop, so menus and tooltips stay in the picture, across monitors with different scaling
+- Window capture through Windows Graphics Capture, so a partly covered window still comes out whole
+- Scrolling capture, repeat last region, saved regions and interval capture
+- An editor for arrows, shapes, text, callouts, numbered steps, highlights and real redaction, plus crop, rotate, resize, margins and trim
+- An encrypted album (SQLCipher, AES-256) with collections, notes, shelf, carousel, grid and timeline views
+- Text recognition on this computer through Windows, so captures are searchable by the words inside them
+- Local QR reading that shows a link's real destination before you open it
+- Screen recording to MP4 or GIF with system audio and microphone
+- A command line for capture, recording, editing, text, QR and the album
+- Thirteen themes and twenty languages, switchable without a restart
+- One signed Windows EXE: runs portable, installs per user without UAC or machine-wide with /silent, and uninstalls without deleting your album
+- GPLv3, no account, no telemetry. The only connection it makes on its own is an update check, which can be turned off
+    </description>
+    <releaseNotes>https://github.com/SteveTheKiller/KillerShot/releases/tag/vREPLACE_VERSION</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
