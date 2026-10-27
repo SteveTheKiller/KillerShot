@@ -4,6 +4,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">calcolo in corso...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">All'avvio controlla sempre aggiornamenti</sys:String>
+    <sys:String x:Key="Str_About_Downloading">Download...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Non ora</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">All'avvio cerca aggiornamenti</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Vuoi scaricarlo e installarlo ora? L'app si chiuderà e si riaprirà automaticamente.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">È disponibile {0} {1}</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Aggiornamento disponibile: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">L'app si chiuderà e si riaprirà automaticamente.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">Scaricare e installare {0} {1}?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Aggiorna</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve">.</sys:String>
     <sys:String x:Key="Str_About_Publisher">EDITORE</sys:String>
     <sys:String x:Key="Str_About_Sha">SHA-256 DELL'EXE</sys:String>

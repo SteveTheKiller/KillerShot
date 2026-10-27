@@ -4,59 +4,23 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using KillerShot.Controls;
-using KillerShot.Features;
+using KillerShot.Features.About;
+using KillerShot.Services;
 
 namespace KillerShot.Shell
 {
     /// <summary>
     /// The About overlay's window half: the fade, the click handling, and the IAboutHost
     /// implementation that maps the controller's values onto the named XAML elements.
+    /// Everything the card SAYS is decided in Features/About/AboutController.cs. Rows only this
+    /// app's card has (Start with Windows, Close to tray, KillerScan's vendor database) are mapped
+    /// in the app's own Shell/About.Extras.cs.
     /// </summary>
     public partial class MainWindow : IAboutHost
     {
-        private readonly AboutController _about = null!;
+        private AboutController _about = null!;
 
-        private void ShowAboutOverlay()
-        {
-            if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
-            if (CaptureSettingsOverlay.Visibility == Visibility.Visible) CaptureSettingsOverlay.Visibility = Visibility.Collapsed;
-            if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
-            SyncRenderModeRadios();
-            _syncingCloseToTray = true;
-            CloseToTrayCheck.IsChecked = App.CloseToTray;
-            _syncingCloseToTray = false;
-            _about.Show();
-        }
-
-        // ---- Close to system tray ----
-
-        private bool _syncingCloseToTray;
-
-        private void CloseToTray_Changed(object sender, RoutedEventArgs e)
-        {
-            if (!_syncingCloseToTray) App.CloseToTray = CloseToTrayCheck.IsChecked == true;
-        }
-
-        // ---- Rendering mode ----
-
-        private bool _syncingRenderMode;
-
-        private void SyncRenderModeRadios()
-        {
-            _syncingRenderMode = true;
-            var mode = Services.RenderModeService.Choice;
-            RenderAutoRadio.IsChecked = mode == Services.RenderChoice.Auto;
-            RenderHardwareRadio.IsChecked = mode == Services.RenderChoice.Hardware;
-            RenderSoftwareRadio.IsChecked = mode == Services.RenderChoice.Software;
-            _syncingRenderMode = false;
-        }
-
-        private void RenderMode_Checked(object sender, RoutedEventArgs e)
-        {
-            if (_syncingRenderMode || sender is not FrameworkElement { Tag: string tag }) return;
-            if (System.Enum.TryParse<Services.RenderChoice>(tag, out var choice))
-                Services.RenderModeService.Set(choice);
-        }
+        private void ShowAboutOverlay() => _about.Show();
 
         // ---- IAboutHost ----
 
@@ -66,20 +30,35 @@ namespace KillerShot.Shell
         string IAboutHost.Alias       { set => AboutAkaRun.Text = value; }
         string IAboutHost.Thumbprint  { set => AboutThumbprintBlock.Text = value; }
         string IAboutHost.Sha256      { set => AboutSha256Block.Text = value; }
-        bool IAboutHost.StartWithWindows { set => AboutStartWithWindows.IsChecked = value; }
+        string IAboutHost.UpdateText  { set => AboutUpdateText.Text = value; }
 
         bool IAboutHost.AliasVisible
         {
             set => AboutAkaBlock.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        bool IAboutHost.UpdateVisible
+        {
+            set => AboutUpdateButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        bool IAboutHost.UpdateEnabled { set => AboutUpdateButton.IsEnabled = value; }
+
+        bool IAboutHost.StartupUpdateCheck { set => AboutStartupUpdateCheck.IsChecked = value; }
+
         void IAboutHost.ShowCard() => FadeOverlayIn(AboutOverlay);
 
-        // ---- Overlay fade ----
+        // ---- Overlay fade (shared with the shortcuts overlay, ShortcutsOverlay.cs) ----
+
+        /// <summary>App hook: an overlay is about to show (KillerScan dims the frame behind it).</summary>
+        partial void OnOverlayShowing(UIElement overlay);
+
+        /// <summary>App hook: an overlay finished hiding.</summary>
+        partial void OnOverlayHidden(UIElement overlay);
 
         private void FadeOverlayIn(UIElement o)
         {
-            ClassicFrameChrome.Opacity = 0.42;
+            OnOverlayShowing(o);
             o.Visibility = Visibility.Visible;
             Anim.FadeIn(o);
         }
@@ -93,7 +72,7 @@ namespace KillerShot.Shell
             a.Completed += (_, _) =>
             {
                 o.Visibility = Visibility.Collapsed;
-                ClassicFrameChrome.Opacity = 1;
+                OnOverlayHidden(o);
             };
             o.BeginAnimation(UIElement.OpacityProperty, a);
         }
@@ -107,12 +86,23 @@ namespace KillerShot.Shell
 
         private void AboutVersion_Click(object sender, MouseButtonEventArgs e) => _about.OpenReleaseNotes();
 
-        private void AboutStartWithWindows_Click(object sender, RoutedEventArgs e)
-            => _about.SetStartWithWindows(AboutStartWithWindows.IsChecked == true);
+        /// <summary>The footer version opens the About card, as in every app. One overlay at a
+        /// time, so the F1 overlay steps aside first.</summary>
+        private void VersionLabel_Click(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
+            ShowAboutOverlay();
+        }
+
+        private void AboutUpdateButton_Click(object sender, RoutedEventArgs e) => _about.Update();
+
+        private void AboutStartupUpdateCheck_Click(object sender, RoutedEventArgs e)
+            => _about.SetStartupCheck(AboutStartupUpdateCheck.IsChecked == true);
 
         private void AboutLink_Navigate(object sender, RequestNavigateEventArgs e)
         {
-            Services.WebLink.Open(e.Uri.AbsoluteUri);
+            WebLink.Open(e.Uri.AbsoluteUri);
             e.Handled = true;
         }
     }

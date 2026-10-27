@@ -7,6 +7,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">computing...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">Always check on startup</sys:String>
+    <sys:String x:Key="Str_About_Downloading">Downloading...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Not now</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">Check for updates on startup</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Would you like to download and install it now? The app will close and reopen automatically.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} is available</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Update available: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">The app will close and reopen automatically.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">Download and install {0} {1}?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Update</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> utility.</sys:String>
     <sys:String x:Key="Str_About_Publisher">PUBLISHER</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>

@@ -4,6 +4,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">есептелуде...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">Іске қосылғанда жаңартуларды әрдайым тексеру</sys:String>
+    <sys:String x:Key="Str_About_Downloading">Жүктелуде...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Қазір емес</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">Іске қосылғанда жаңартуларды тексеру</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Оны қазір жүктеп, орнатқыңыз келе ме? Қолданба автоматты түрде жабылып, қайта ашылады.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} қолжетімді</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Жаңарту бар: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">Қолданба автоматты түрде жабылып, қайта ашылады.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">{0} {1} жүктеп орнату керек пе?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Жаңарту</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve">.</sys:String>
     <sys:String x:Key="Str_About_Publisher">ЖАРИЯЛАУШЫ</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>

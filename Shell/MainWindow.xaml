@@ -1217,6 +1217,10 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
+                                    <CheckBox x:Name="AboutStartupUpdateCheck" FontSize="11" Margin="0,0,0,6"
+                                              Click="AboutStartupUpdateCheck_Click">
+                                        <TextBlock Text="{DynamicResource Str_About_StartupUpdateCheck}" TextWrapping="Wrap"/>
+                                    </CheckBox>
                                     <CheckBox x:Name="AboutStartWithWindows" FontSize="11" Click="AboutStartWithWindows_Click">
                                         <TextBlock Text="{DynamicResource Str_About_StartWithWindows}" TextWrapping="Wrap"/>
                                     </CheckBox>
@@ -1254,6 +1258,13 @@
                                            TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
+
+                            <!-- Update notice: shown only when a newer release is found -->
+                            <Button x:Name="AboutUpdateButton" Style="{StaticResource OutlineButton}" Padding="14,7" Visibility="Collapsed" Margin="0,14,0,0"
+                                    HorizontalAlignment="Left" Cursor="Hand" Click="AboutUpdateButton_Click">
+                                <TextBlock x:Name="AboutUpdateText" Text="Update available" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+                            </Button>
 
                         </StackPanel>
                     </Grid>

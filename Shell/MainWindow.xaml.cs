@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
-using KillerShot.Features;
+using KillerShot.Features.About;
 
 // The main window's constructor and the handlers that belong to no feature. The rest of MainWindow
 // is split by surface: Chrome.cs (caption buttons, placement, grain), ThemeFlyout.cs, About.cs,
@@ -39,6 +39,7 @@ namespace KillerShot.Shell
                 FadeInContent();
                 ZoomToFit();
                 Editor.Focus();
+                _about.CheckOnStartup();
             };
 
             Controls.FlyoutPlacement.UsePane(ContentPane);
@@ -61,13 +62,6 @@ namespace KillerShot.Shell
 
             _about = new AboutController(this);
             VersionLabel.Text = "v" + Services.AppInfo.Version;
-        }
-
-        /// <summary>The footer version label opens the About card.</summary>
-        private void VersionLabel_Click(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-            ShowAboutOverlay();
         }
     }
 }

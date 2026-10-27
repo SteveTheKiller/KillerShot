@@ -4,6 +4,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">beregner...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">Se alltid etter ved oppstart</sys:String>
+    <sys:String x:Key="Str_About_Downloading">Laster ned...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Ikke nå</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">Se etter oppdateringer ved oppstart</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Vil du laste den ned og installere den nå? Appen lukkes og åpnes på nytt automatisk.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} er tilgjengelig</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Oppdatering tilgjengelig: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">Appen lukkes og åpnes på nytt automatisk.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">Laste ned og installere {0} {1}?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Oppdater</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> verktøy.</sys:String>
     <sys:String x:Key="Str_About_Publisher">UTGIVER</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>

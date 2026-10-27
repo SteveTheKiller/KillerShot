@@ -1,4 +1,4 @@
-namespace KillerShot.Features
+namespace KillerShot.Features.About
 {
     /// <summary>
     /// What AboutController needs from the window hosting it, beyond the shared shell services.
@@ -26,11 +26,32 @@ namespace KillerShot.Features
         /// <summary>SHA-256 of the running exe, filled in once it has been computed.</summary>
         string Sha256 { set; }
 
-        /// <summary>The "Start with Windows" checkbox, under the rendering options and above Close to
-        /// system tray. Off until the user turns it on.</summary>
-        bool StartWithWindows { set; }
+        /// <summary>The line above the update button.</summary>
+        string UpdateText { set; }
+
+        /// <summary>The update button appears only when a newer release exists, and goes insensitive
+        /// while a download is running.</summary>
+        bool UpdateVisible { set; }
+        bool UpdateEnabled { set; }
+
+        /// <summary>The "Check for updates on startup" checkbox, first of the card's checkboxes.</summary>
+        bool StartupUpdateCheck { set; }
 
         /// <summary>Fades the About card in.</summary>
         void ShowCard();
+    }
+
+    /// <summary>A card with the "Start with Windows" checkbox, under the update checkbox. Off until
+    /// the user turns it on.</summary>
+    internal interface IAboutStartup
+    {
+        bool StartWithWindows { set; }
+    }
+
+    /// <summary>A card with the "Close to system tray" checkbox, under Start with Windows. Off until
+    /// the user turns it on (KillerShot, a tray app, defaults to on).</summary>
+    internal interface IAboutTray
+    {
+        bool CloseToTray { set; }
     }
 }

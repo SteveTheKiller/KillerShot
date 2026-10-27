@@ -4,6 +4,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">計算中...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">啟動時一律檢查更新</sys:String>
+    <sys:String x:Key="Str_About_Downloading">正在下載...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">稍後再說</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">啟動時檢查更新</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">要立即下載並安裝嗎？應用程式將關閉並自動重新開啟。</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} 已推出</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">有可用更新：{0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">應用程式將關閉並自動重新開啟。</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">下載並安裝 {0} {1}？</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">更新</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> 工具。</sys:String>
     <sys:String x:Key="Str_About_Publisher">發行者</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>

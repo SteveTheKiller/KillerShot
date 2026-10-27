@@ -2,6 +2,16 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="Str_About_Computing">izračunavanje...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">Vedno preveri ob zagonu</sys:String>
+    <sys:String x:Key="Str_About_Downloading">Prenašanje...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Ne zdaj</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">Ob zagonu preveri posodobitve</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Želiš posodobitev prenesti in namestiti zdaj? Program se bo samodejno zaprl in ponovno odprl.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">Na voljo je {0} {1}</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Na voljo je posodobitev: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">Program se bo samodejno zaprl in ponovno odprl.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">Prenesem in namestim {0} {1}?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Posodobi</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve">.</sys:String>
     <sys:String x:Key="Str_About_Publisher">IZDAJATELJ</sys:String>
     <sys:String x:Key="Str_About_Sha">SHA-256 DATOTEKE EXE</sys:String>

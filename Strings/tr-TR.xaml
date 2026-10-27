@@ -4,6 +4,16 @@
 
     <!-- Shared family strings: file dialog, system menu, toolbar style, themes, shortcuts card. -->
     <sys:String x:Key="Str_About_Computing">hesaplanıyor...</sys:String>
+    <sys:String x:Key="Str_About_AlwaysCheckOnStartup">Başlangıçta her zaman güncellemeleri denetle</sys:String>
+    <sys:String x:Key="Str_About_Downloading">İndiriliyor...</sys:String>
+    <sys:String x:Key="Str_About_NotNow">Şimdi değil</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateCheck">Başlangıçta güncellemeleri denetle</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateDetail">Şimdi indirip yüklemek ister misiniz? Uygulama kapanacak ve otomatik olarak yeniden açılacak.</sys:String>
+    <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} kullanılabilir</sys:String>
+    <sys:String x:Key="Str_About_UpdateAvailable">Güncelleme mevcut: {0}</sys:String>
+    <sys:String x:Key="Str_About_UpdateDetail">Uygulama kapanacak ve otomatik olarak yeniden açılacak.</sys:String>
+    <sys:String x:Key="Str_About_UpdateHeading">{0} {1} indirilip yüklensin mi?</sys:String>
+    <sys:String x:Key="Str_About_UpdateNow">Güncelle</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> aracı.</sys:String>
     <sys:String x:Key="Str_About_Publisher">YAYIMCI</sys:String>
     <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>

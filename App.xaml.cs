@@ -195,7 +195,7 @@ public partial class App : Application
             Tray.Start();
             // Start with Windows (About card): keep the Run value pointing at this exe.
             KillerFamily.Deployment.StartupRegistration.Refresh(KillerShot.Services.AppInfo.DisplayName,
-                                                                KillerShot.Features.AboutController.StartArgument);
+                                                                KillerShot.Features.About.AboutController.StartArgument);
         }
 
         // Started with Windows: stay in the notification area. Started by hand or asked to open

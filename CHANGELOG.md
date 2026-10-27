@@ -84,6 +84,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Twenty languages, including Slovenian, cover the app and help, with live language changes updating the sidebars and footer. F1 opens the shortcut list and keyboard map; F12 opens About.
 - Optional Start with Windows and Close to system tray settings control background use. The tray reports Print Screen conflicts and links to the relevant Windows setting; About offers hardware or software rendering.
 - One signed KillerShot.exe runs portable or installs itself. The PORTABLE badge in the footer installs it for you or for everyone, with an optional desktop shortcut, after the same checks as Exit for unsaved edits, recordings and waiting captures. `KillerShot.exe /silent` installs machine-wide with admin rights or for the current user without, Add/Remove Programs and `/uninstall-silent` remove it, and only validly signed builds install. Albums, captures and settings stay after uninstall. A failed uninstall step leaves an uninstall entry that still works, and an all-users uninstall waits for its confirmation and clears its helper and empty program folder at the next restart.
+- About checks for a newer release, on startup unless that is turned off, and installs it in one click. The download must match the release checksum, carry a valid signature from the same certificate as the running copy and be a newer KillerShot version before it replaces the running copy, which then reopens.
 
 ### Help and website
 
