@@ -154,6 +154,15 @@ namespace KillerShot
         /// exe elevated with /silent - the same machine-wide path winget and choco use - so UAC
         /// only appears when the user actually asked for it. False if elevation was declined.
         /// </summary>
+        /// <summary>The family engine shape the kit's Shell/Install.cs names. The footer badge never
+        /// takes this path: Shell/Install.Extras.cs runs the exit checks first and calls the
+        /// overload below with the approval it captured.</summary>
+        internal static bool InstallAndRelaunch(bool wantDesktop, bool allUsers)
+            => InstallAndRelaunch(wantDesktop, allUsers, Instance.CaptureExitApproval(), out _);
+
+        /// <summary>Demo mode, under the name the kit's Shell/Install.cs reads.</summary>
+        internal static bool IsDemo => Shell.DemoMode.IsDemo;
+
         internal static bool InstallAndRelaunch(bool wantDesktop, bool allUsers, ExitApproval approval, out bool relaunchDeferred)
         {
             relaunchDeferred = false;
