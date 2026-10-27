@@ -348,9 +348,10 @@ internal static class SelfTestImageMenus
             var themeButton = (Button)window.FindName("ThemeButton");
             themeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var themeMenu = (ContextMenu)window.FindName("ThemeMenu");
-            if (!themeMenu.IsOpen || !ReferenceEquals(themeMenu.PlacementTarget, themeButton)
-                || themeMenu.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom)
-                throw new InvalidOperationException("The theme flyout is not anchored to its own rail button.");
+            // Family rule (FlyoutPlacement.cs): the theme menu always opens in the content pane's corner.
+            if (!themeMenu.IsOpen || themeMenu.Placement != System.Windows.Controls.Primitives.PlacementMode.Custom
+                || ReferenceEquals(themeMenu.PlacementTarget, themeButton))
+                throw new InvalidOperationException("The theme flyout does not open in the content pane's corner.");
             themeMenu.IsOpen = false;
             FrameworkElement[] expectedRail = [dockButton,
                 (Button)window.FindName("LibrarySearchButton"), (Button)window.FindName("NewCollectionButton"),
@@ -370,7 +371,7 @@ internal static class SelfTestImageMenus
             if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail)
                 || rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
                 throw new InvalidOperationException("Restoring rail order must retain every control at the fixed right end.");
-            report.Add("Rail menu: fixed ends, reversible order and theme flyout anchored to its button PASS");
+            report.Add("Rail menu: fixed ends, reversible order and theme flyout in the pane corner PASS");
             var printPreview = new PrintPreviewWindow(window, doc.Render(), "Edited screenshot");
             printPreview.Show();
             await Task.Delay(100);

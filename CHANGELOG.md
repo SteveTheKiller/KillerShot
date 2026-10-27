@@ -102,6 +102,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Look and family
 
+- Menus and submenus taller than the screen scroll, so a long collection list reaches its last entry.
 - The footer shows the capture count and the family status light beside the status line: green when things are fine, amber while a crop or text region waits on you, red when something failed. The collection dropdown lives in the toolbar only.
 - Dialogs, the color picker and print preview are edged in the app border color and follow theme changes.
 - Wordmarks and headings are raised with a subtle bevel in their own color, and wordmarks carry a drop shadow. The Dark theme's red accent is the brand red.

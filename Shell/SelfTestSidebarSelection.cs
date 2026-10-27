@@ -93,7 +93,7 @@ internal static class SelfTestSidebarSelection
                 ((Button)window.FindName("LangButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
                 var languageMenu = (ContextMenu)window.FindName("LangMenu");
-                var language = Descendants<RadioButton>(languageMenu).Single(button => Equals(button.Tag, locale.ToString()));
+                var language = Descendants<RadioButton>(languageMenu).Single(button => Equals(button.Tag, locale));
                 language.IsChecked = true;
                 language.RaiseEvent(new RoutedEventArgs(RadioButton.ClickEvent));
                 languageMenu.IsOpen = false;

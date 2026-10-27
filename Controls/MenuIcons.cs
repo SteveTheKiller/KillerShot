@@ -37,7 +37,10 @@ internal static class MenuIcons
         ("Str_Btn_Image", 0xE8B9), ("Str_Img_Paste", 0xE77F), ("Str_Img_InsertFile", 0xE8B9),
         ("Str_Img_RotateRight", 0xE7AD), ("Str_Img_RotateLeft", 0xE7A6),
         ("Str_Img_FlipH", 0xE8AB), ("Str_Img_FlipV", 0xE8CB),
-        ("Str_Img_Resize", 0xE740), ("Str_Img_Margin", 0xE739), ("Str_Img_AutoCrop", 0xE7A8)
+        ("Str_Img_Resize", 0xE740), ("Str_Img_Margin", 0xE739), ("Str_Img_AutoCrop", 0xE7A8),
+        ("Str_Img_ResizeCustom", 0xE70F), ("Str_KS_Duplicate", 0xE8C8),
+        ("Str_KS_BringToFront", 0xE74A), ("Str_KS_BringForward", 0xE70E),
+        ("Str_KS_SendBackward", 0xE70D), ("Str_KS_SendToBack", 0xE74B)
     ];
 
     internal static void Install()
@@ -60,6 +63,8 @@ internal static class MenuIcons
             // A command without a known glyph gets no icon; a stand-in gear made every unmapped item look like Settings.
             int glyph = item.Icon == null && item.Header is string header
                 ? Commands.FirstOrDefault(c => LocaleManager.Loc(c.Key) == header).Glyph : 0;
+            // The resize presets are plain percentages, not localized commands.
+            if (glyph == 0 && item.Icon == null && item.Header is string percent && percent.EndsWith('%')) glyph = 0xE740;
             if (glyph != 0)
             {
                 item.Icon = new Glyph { Text = char.ConvertFromUtf32(glyph),

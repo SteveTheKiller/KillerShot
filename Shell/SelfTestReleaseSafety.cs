@@ -317,7 +317,12 @@ internal static class SelfTestReleaseSafety
             seen = true;
             timer.Stop();
             if (renderPath != null) Render(dialog, renderPath);
-            ((Button)dialog.FindName(alternative ? "AlternativeButton" : accept ? "OkButton" : "CancelButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // The family dialog adds extra choices as unnamed buttons just before OK.
+            var row = (Panel)dialog.FindName("ButtonRow");
+            var target = alternative
+                ? row.Children.OfType<Button>().Last(b => b.Name is not ("OkButton" or "CancelButton"))
+                : (Button)dialog.FindName(accept ? "OkButton" : "CancelButton");
+            target.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         };
         timer.Start();
         try { action(); }

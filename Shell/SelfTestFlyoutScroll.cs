@@ -77,8 +77,9 @@ internal static class SelfTestFlyoutScroll
                     {
                         var print = (CheckBox)window.FindName("PrintShrinkToggle");
                         var after = (CheckBox)window.FindName("NotifyToggle");
-                        Check(Math.Abs(Bounds(print, card).Left - Bounds(after, card).Left) < 1,
-                            prefix + " Printing must share the left column with After capture", failures);
+                        // Printing sits in the right column so the two columns end at about the same height.
+                        Check(Bounds(print, card).Left > Bounds(after, card).Right,
+                            prefix + " Printing must sit in the right column, beside After capture", failures);
                     }
                     window.TestCloseOverlays();
                 }

@@ -20,8 +20,12 @@ namespace KillerShot.Shell
 
         private void WatchStatusTone()
         {
-            DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock))
-                .AddValueChanged(StatusText, (_, _) => ApplyStatusTone());
+            // The descriptor holds its handlers strongly, so the hook comes off when the window
+            // closes or the window would never be collected.
+            var text = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
+            EventHandler changed = (_, _) => ApplyStatusTone();
+            text.AddValueChanged(StatusText, changed);
+            Closed += (_, _) => text.RemoveValueChanged(StatusText, changed);
             ApplyStatusTone();
         }
 
