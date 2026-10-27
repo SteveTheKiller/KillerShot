@@ -28,6 +28,7 @@ internal static partial class CaptureLibrary
             .Any(ext => File.Exists(Sidecar(path, ext)))) return true;
         foreach (string journal in Directory.EnumerateFiles(_folder, ".album-rename-*.json"))
         {
+            if (TornJournal(journal)) continue;   // recovery removes it; it names nothing
             var entry = System.Text.Json.JsonSerializer.Deserialize<RenameJournal>(File.ReadAllText(journal));
             if (entry == null || string.Equals(Path.GetFileName(path), entry.OldName, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(Path.GetFileName(path), entry.NewName, StringComparison.OrdinalIgnoreCase)) return true;
@@ -36,6 +37,26 @@ internal static partial class CaptureLibrary
     }
 
     private static string Sidecar(string album, string extension) => Path.ChangeExtension(album, extension);
+
+    /// <summary>An empty or unparsable rename journal: the write was cut off before any file moved.</summary>
+    private static bool TornJournal(string journal)
+    {
+        try
+        {
+            string text = File.ReadAllText(journal);
+            if (string.IsNullOrWhiteSpace(text)) return true;
+            using var parsed = System.Text.Json.JsonDocument.Parse(text);
+            return false;
+        }
+        catch (System.Text.Json.JsonException) { return true; }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try { File.Delete(path); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        { System.Diagnostics.Trace.TraceWarning("Could not remove {0}: {1}", path, error.Message); }
+    }
 
     public static string RenameAlbum(string path, string name)
     {
@@ -60,11 +81,14 @@ internal static partial class CaptureLibrary
                 string journal = Path.Combine(_folder, ".album-rename-" + Guid.NewGuid().ToString("N") + ".json");
                 var entry = new RenameJournal(Path.GetFileName(path), Path.GetFileName(destination), active,
                     AlbumSidecars.Where(ext => File.Exists(Sidecar(path, ext))).ToArray());
-                using (var record = new FileStream(journal, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                // Written aside and moved into place, so a journal that exists is always whole.
+                string pendingJournal = journal + ".tmp";
+                using (var record = new FileStream(pendingJournal, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 {
                     System.Text.Json.JsonSerializer.Serialize(record, entry);
                     record.Flush(true);
                 }
+                File.Move(pendingJournal, journal);
                 bool moved = false, committed = false;
                 try
                 {
@@ -123,8 +147,11 @@ internal static partial class CaptureLibrary
 
     private static void RecoverAlbumRenames()
     {
+        foreach (string stale in Directory.EnumerateFiles(_folder, ".album-rename-*.json.tmp")) TryDeleteFile(stale);
         foreach (string journal in Directory.EnumerateFiles(_folder, ".album-rename-*.json"))
         {
+            // A torn journal is from a crash while it was first written, before anything moved.
+            if (TornJournal(journal)) { TryDeleteFile(journal); continue; }
             var entry = System.Text.Json.JsonSerializer.Deserialize<RenameJournal>(File.ReadAllText(journal))
                 ?? throw new InvalidDataException(Loc("Str_Album_RecoveryIncomplete"));
             string oldPath = AlbumPath(entry.OldName), newPath = AlbumPath(entry.NewName);
