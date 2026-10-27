@@ -90,6 +90,9 @@ public partial class MainWindow
     }
 
     /// <summary>Ctrl+Shift+V: the clipboard's picture opens as a new picture of its own.</summary>
+    /// <summary>killershot paste: the clipboard's picture opens as a new picture.</summary>
+    internal void PasteFromCommandLine() => PasteAsNewPicture();
+
     private void PasteAsNewPicture()
     {
         try

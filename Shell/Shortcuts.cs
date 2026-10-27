@@ -96,6 +96,16 @@ namespace KillerShot.Shell
                 return;
             }
 
+            // Alt+1 to Alt+9 capture the saved regions in the order the Saved regions menu lists them.
+            if (alt && !ctrl && !shift && e.Key == Key.System && e.SystemKey is >= Key.D1 and <= Key.D9)
+            {
+                int index = e.SystemKey - Key.D1;
+                if (!e.IsRepeat && App.Instance.Capture is { } capture && index < Services.RegionMemory.Presets.Count)
+                    _ = capture.CapturePreset(Services.RegionMemory.Presets[index]);
+                e.Handled = true;
+                return;
+            }
+
             // Alt+M hides or shows the toolbar, as in KillerPDF. Alt combinations arrive as
             // Key.System with the letter in SystemKey.
             if (alt && !ctrl && e.Key == Key.System && e.SystemKey == Key.M)
@@ -130,6 +140,9 @@ namespace KillerShot.Shell
                     case Key.N: StartCapture(Capture.CaptureMode.Region); break;
                     case Key.E when Library.IsVisible && !TypingInField(): Library.ShowFocusedInExplorer(); break;
                     case Key.M when Library.IsVisible && !shift && !TypingInField(): Library.MoveFocused(); break;
+                    case Key.P when shift: if (!e.IsRepeat && App.Instance.Capture is { } scroller) _ = scroller.ScrollingCapture(); break;
+                    case Key.T when shift && !TypingInField() && _doc != null && !Library.IsVisible: BeginRegionTextRead(); break;
+                    case Key.X when shift && !TypingInField(): App.Instance.RequestExit(); break;
                     case Key.Q when shift: QrReadingButton_Click(QrReadingButton, new RoutedEventArgs()); break;
                     case Key.Q: StartCapture(Capture.CaptureMode.Qr); break;
                     case Key.OemComma when shift: ShowVideoSettings(); break;

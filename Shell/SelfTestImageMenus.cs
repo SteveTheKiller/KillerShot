@@ -157,12 +157,13 @@ internal static class SelfTestImageMenus
             report.Add("Toolbar: one row with file actions left and annotations right PASS");
             if (leftBar.Children.OfType<Button>().Any(b => b.IsVisible && b.Name is "RecentBtn" or "SaveAsBtn" or "FitBtn" or "ActualSizeBtn" or "CollectionPickerBtn"))
                 throw new InvalidOperationException("The compact toolbar must group file actions and leave collection and zoom in the footer.");
+            // The toolbar carries the collection dropdown, so the footer shows only the count and status.
             var collectionPicker = (Button)window.FindName("CollectionPickerBtn");
-            if (!collectionPicker.IsVisible || collectionPicker.TranslatePoint(new Point(), window).Y < window.ActualHeight - 45)
-                throw new InvalidOperationException("The collection picker must be in the footer.");
+            if (collectionPicker.IsVisible)
+                throw new InvalidOperationException("The footer must not repeat the toolbar's collection dropdown.");
             if (window.TestStrip!.TestCarousel.TranslatePoint(new Point(), window.TestStrip).Y > 8)
                 throw new InvalidOperationException("The carousel must start immediately below its top padding, without a caption row.");
-            report.Add("Compact toolbar: grouped file actions, footer collection picker and no carousel header PASS");
+            report.Add("Compact toolbar: grouped file actions, no footer collection picker and no carousel header PASS");
             var librarySettings = window.FindName("LibrarySettingsButton") as Button;
             if (librarySettings == null || !librarySettings.IsVisible)
                 throw new InvalidOperationException("Library settings must be available in the title bar.");

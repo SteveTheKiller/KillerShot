@@ -128,13 +128,7 @@ public partial class MainWindow
             return button;
         }
         Action("Str_Ocr_CopyAll", (_, _) => CopyRecognizedText());
-        Action("Str_Ocr_Region", (_, _) =>
-        {
-            _textPopup!.IsOpen = false;
-            StatusText.Text = Loc("Str_Ocr_RegionHint");
-            Editor.BeginRegionPick(area => { if (area is { } a) _ = ReadPictureTextAsync(a, copy: true); });
-            Editor.Focus();
-        });
+        Action("Str_Ocr_Region", (_, _) => BeginRegionTextRead());
         content.Children.Add(buttons);
 
         var language = new DockPanel();
@@ -185,5 +179,14 @@ public partial class MainWindow
             _textLanguage.SelectedItem = chosen;
         }
         finally { _syncingTextLanguage = false; }
+    }
+
+    /// <summary>Read a region (Ctrl+Shift+T): drag over part of the open picture and its text is copied.</summary>
+    private void BeginRegionTextRead()
+    {
+        if (_textPopup != null) _textPopup.IsOpen = false;
+        StatusText.Text = Loc("Str_Ocr_RegionHint");
+        Editor.BeginRegionPick(area => { if (area is { } a) _ = ReadPictureTextAsync(a, copy: true); });
+        Editor.Focus();
     }
 }

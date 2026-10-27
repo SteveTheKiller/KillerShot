@@ -260,6 +260,9 @@ public partial class App : Application
             case "record-resume": if (video is { IsRecording: true, IsPaused: true }) video.TogglePause(); break;
             case "record-stop": if (video is { IsRecording: true }) _ = video.StopAsync(false); break;
             case "record-cancel": if (video is { IsRecording: true }) _ = video.StopAsync(true); break;
+            case "scroll": if (Capture is { } capture) _ = capture.ScrollingCapture(); break;
+            case "exit": RequestExit(); break;
+            case "paste": ShowEditor(); _editor?.PasteFromCommandLine(); break;
             default:
                 if (command.StartsWith("print:", StringComparison.Ordinal))
                 {

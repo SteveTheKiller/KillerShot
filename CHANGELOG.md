@@ -68,6 +68,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - More keys: Ctrl+Q reads a QR code and Ctrl+Shift+Q turns QR reading on or off, Ctrl+, opens capture settings and Ctrl+Shift+, video settings, Ctrl+Shift+L the library settings, Alt+Shift+T the theme and Alt+Shift+L the language menu, and Ctrl+Delete discards a capture under review. Over the album, Ctrl+Shift+S saves the focused capture elsewhere, Ctrl+M moves it to a collection, F2 edits its note and Ctrl+E shows a Screenshots-folder file in Explorer; Ctrl+Shift+N starts a new collection.
 - `killershot edit` trims, rotates, flips, resizes or frames a picture file with the editor's own commands and saves the result beside the original unless `--out` names a file.
 - `killershot text` reads the text in a picture file or a selected region on this computer and can copy it; `text --languages` lists the recognition languages. `killershot recent --delete <n> --yes` removes a capture from the album, and `killershot settings --set name=value` changes any capture, recording or text recognition setting it lists. `killershot collections` lists, creates, renames and deletes collections, and `recent --move` and `recent --note` file a capture or set its note. `killershot recording pause|resume|stop|cancel` controls the running app's recording, and `killershot print` opens a picture in its print preview.
+- Ctrl+Shift+P starts a scrolling capture, Ctrl+Shift+T reads the text in a dragged part of the open picture, Alt+1 to Alt+9 capture the saved regions in menu order, and Ctrl+Shift+X exits. On the command line, `killershot scroll` starts a scrolling capture, `killershot paste` saves the clipboard's picture with `--out` or opens it in the app, `killershot regions` lists and removes saved regions, `text <image> --rect` reads part of a picture, and `killershot exit` closes the app.
 - `killershot qr` reads QR codes with JSON output and link warnings. `killershot --help` lists commands; `--cli` and `KillerShot.Cli.exe` remain supported, and portable copies run from their folder or full path.
 - `KillerShot.exe --open` hands images to a running instance. Concurrent requests queue in order, confirm delivery and retain the correct album. Command-line captures refresh the open album, report failed saves and password limits, and cancel when selection closes. Completed recordings survive audio errors and report a warning.
 
@@ -101,6 +102,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Look and family
 
+- The footer shows the capture count and the family status light beside the status line: green when things are fine, amber while a crop or text region waits on you, red when something failed. The collection dropdown lives in the toolbar only.
 - Dialogs, the color picker and print preview are edged in the app border color and follow theme changes.
 - Wordmarks and headings are raised with a subtle bevel in their own color, and wordmarks carry a drop shadow. The Dark theme's red accent is the brand red.
 - Theme menu hover rows reach the right edge with the same inset as the left.

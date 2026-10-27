@@ -91,6 +91,10 @@ public static class Program
             case "recording": return RecordingControlAsync(rest);
             case "collections": return Task.FromResult(CollectionsCommand(rest));
             case "print": return PrintAsync(rest);
+            case "scroll": return SimpleAppCommandAsync(rest, "scroll", "Started a scrolling capture in KillerShot.");
+            case "exit": return SimpleAppCommandAsync(rest, "exit", "Asked KillerShot to exit.");
+            case "paste": return PasteAsync(rest);
+            case "regions": return Task.FromResult(Regions(rest));
             case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
@@ -185,6 +189,83 @@ public static class Program
         return ExitOk;
     }
 
+    private static async Task<int> SimpleAppCommandAsync(string[] args, string command, string done)
+    {
+        var o = Options.Parse(args, [], ["json"]);
+        o.NoPositionals();
+        await SendToApp(command);
+        if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("sent", command); j.WriteEndObject(); }));
+        else Out.WriteLine(done);
+        return ExitOk;
+    }
+
+    // paste: the clipboard's picture to a file, or into the running KillerShot as a new picture.
+    private static async Task<int> PasteAsync(string[] args)
+    {
+        var o = Options.Parse(args, ["out", "quality"], ["overwrite", "json"]);
+        o.NoPositionals();
+        if (o.Value("out") is not { } outPath)
+        {
+            if (o.Has("overwrite") || o.Value("quality") != null) throw new CliException("--overwrite and --quality go with --out.");
+            await SendToApp("paste");
+            if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("sent", "paste"); j.WriteEndObject(); }));
+            else Out.WriteLine("Sent the clipboard's picture to KillerShot.");
+            return ExitOk;
+        }
+        var image = ClipboardImages.FromClipboard() ?? throw new CliException("The clipboard holds no picture.", ExitFailed);
+        string file = Path.GetFullPath(outPath);
+        ImageOutput.Save(image, file, o.Int("quality", 10, 100) ?? CaptureSettings.JpegQuality, o.Has("overwrite"));
+        if (o.Has("json")) Out.WriteLine(Json(j => { j.WriteStartObject(); j.WriteString("path", file); j.WriteNumber("width", image.PixelWidth); j.WriteNumber("height", image.PixelHeight); j.WriteEndObject(); }));
+        else Out.WriteLine(file);
+        return ExitOk;
+    }
+
+    // regions: the app's Saved regions, which capture --preset and Alt+1 to Alt+9 use.
+    private static int Regions(string[] args)
+    {
+        var o = Options.Parse(args, [], ["json", "yes"]);
+        if (o.Positionals is ["remove", var name])
+        {
+            var preset = RegionMemory.Presets.FirstOrDefault(p => p.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+                ?? throw new CliException($"There is no saved region named '{name}'.", ExitFailed);
+            if (!o.Has("yes")) throw new CliException("regions remove needs --yes.");
+            RegionMemory.RemovePreset(preset.Name);
+            Out.WriteLine(o.Has("json") ? Json(j => { j.WriteStartObject(); j.WriteString("removed", preset.Name); j.WriteEndObject(); }) : "Removed " + preset.Name + ".");
+            return ExitOk;
+        }
+        o.NoPositionals();
+        if (o.Has("yes")) throw new CliException("--yes goes with regions remove.");
+        var presets = RegionMemory.Presets;
+        if (o.Has("json"))
+        {
+            Out.WriteLine(Json(j =>
+            {
+                j.WriteStartArray();
+                for (int i = 0; i < presets.Count; i++)
+                {
+                    var p = presets[i];
+                    j.WriteStartObject();
+                    j.WriteString("name", p.Name);
+                    if (i < 9) j.WriteString("shortcut", $"Alt+{i + 1}"); else j.WriteNull("shortcut");
+                    j.WriteNumber("width", p.Width);
+                    j.WriteNumber("height", p.Height);
+                    if (p.Place is { } at) { j.WriteNumber("x", at.Left); j.WriteNumber("y", at.Top); }
+                    j.WriteEndObject();
+                }
+                j.WriteEndArray();
+            }));
+            return ExitOk;
+        }
+        if (presets.Count == 0) { Out.WriteLine("No saved regions. Save one from the capture menu's Saved regions."); return ExitOk; }
+        for (int i = 0; i < presets.Count; i++)
+        {
+            var p = presets[i];
+            string where = p.Place is { } at ? $"{p.Width} x {p.Height} at {at.Left}, {at.Top}" : $"{p.Width} x {p.Height} around the pointer";
+            Out.WriteLine($"{(i < 9 ? $"Alt+{i + 1}" : "     ")}  {p.Name}  {where}");
+        }
+        return ExitOk;
+    }
+
     private static async Task SendToApp(string command)
     {
         try { await App.SendCommandAsync(command); }
@@ -198,7 +279,7 @@ public static class Program
 
     private static async Task<int> TextAsync(string[] args)
     {
-        var o = Options.Parse(args, [], ["json", "copy", "languages"]);
+        var o = Options.Parse(args, ["rect"], ["json", "copy", "languages"]);
         if (o.Has("languages"))
         {
             if (o.Positionals.Count != 0 || o.Has("copy")) throw new CliException("--languages takes no image.");
@@ -220,6 +301,7 @@ public static class Program
         BitmapSource image;
         if (o.Positionals[0].Equals("region", StringComparison.OrdinalIgnoreCase))
         {
+            if (o.Has("rect")) throw new CliException("--rect reads part of a picture file; with region, drag the area instead.");
             App.InitializeKit();
             var frozen = FrozenDesktop.Capture(false);
             var selected = await new RegionSelector(frozen).RunAsync();
@@ -231,6 +313,14 @@ public static class Program
             string path = Path.GetFullPath(o.Positionals[0]);
             if (!File.Exists(path)) throw new CliException("The image file does not exist.", ExitFailed);
             image = ImageOutput.Load(path);
+            if (o.Value("rect") is { } rectText)
+            {
+                // --rect is in the picture's own pixels here, not screen pixels.
+                var r = ParseRect(rectText);
+                if (r.Left < 0 || r.Top < 0 || r.Right > image.PixelWidth || r.Bottom > image.PixelHeight)
+                    throw new CliException($"--rect falls outside the {image.PixelWidth} x {image.PixelHeight} picture.");
+                image = new CroppedBitmap(image, new System.Windows.Int32Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top));
+            }
         }
         string text = await TextRecognition.ReadAsync(image)
             ?? throw new CliException("Windows has no text recognition language installed.", ExitFailed);
@@ -1523,10 +1613,16 @@ public static class Program
           qr <image|region> [--json]       Read QR codes locally without opening their links.
           edit <image> [options]          Rotate, flip, resize, frame or trim a picture file.
           text <image|region> [--copy]    Read the text in a picture on this computer.
+          text <image> --rect <x,y,w,h>   Read only that part of the picture, in its pixels.
           text --languages                List the installed text recognition languages.
           recording pause|resume|stop|cancel  Control the running KillerShot's recording.
           collections [create|rename|delete]  List or manage collections; delete needs --yes.
           print <image>                   Open the picture in KillerShot's print preview.
+          scroll                          Start a scrolling capture in the running KillerShot.
+          paste [--out <file>]            Save the clipboard's picture to a file, or without
+                                          --out open it in the running KillerShot.
+          regions [remove <name> --yes]   List the saved regions, or remove one.
+          exit                            Close the running KillerShot.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.
