@@ -15,7 +15,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - Installation and removal serialize changes, preserve newer installations, and restore the previous image, shortcuts and registration when setup fails.
 - Unsaved edits require confirmation before another image opens or the app exits, with Save, Discard and Cancel choices. Save As and image-edit dialogs reject a replaced image, and editor output controls are disabled while the album is visible. Retention changes apply only after Save.
 - Saving animated PNG, GIF, TIFF, BMP or mismatched image files offers a separate static PNG or JPEG export to preserve the original. Image edits retain transparency, and reopened files show their latest contents.
-- Fixed concurrent album edits, search recovery, settings writes and output-file collisions. Failed retention preserves search results, missing search entries repair on reopen, and capture IDs remain unique after deletion. OCR failures stay with their own album.
+- Concurrent album edits, search recovery, settings writes and output-file collisions are handled safely. Failed retention preserves search results, missing search entries repair on reopen, and capture IDs remain unique after deletion. OCR failures stay with their own album.
 - QR and image-text links are checked locally for hidden destinations, disguised downloads and invisible address characters. Checks do not visit destinations or submit links to a third party. Links never open automatically, and warnings explain each finding.
 - Updated the encrypted album engine to SQLCipher 4.19.0 and SQLite bindings to 10.0.13 for upstream security and reliability fixes.
 
@@ -99,14 +99,14 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - The website, Help, Technical and About pages explain the encrypted screenshot album and its protection limits. The website and MCP guide include Slovenian, and navigation labels follow the selected language.
 - Website guides and dialogs support keyboard access and adjust to resizing and font changes. Album help points to the current settings location. The website's theme menu can turn Film Grain off (Alt+Shift+G).
 
-### Changed
+### Look and family
 
 - Dialogs, the color picker and print preview are edged in the app border color and follow theme changes.
-- Wordmarks and headings are raised with a subtle bevel in their own color instead of a dark outline; wordmarks keep their drop shadow. The Dark theme's red accent is the brand red again instead of a pink tint.
+- Wordmarks and headings are raised with a subtle bevel in their own color, and wordmarks carry a drop shadow. The Dark theme's red accent is the brand red.
 - Theme menu hover rows reach the right edge with the same inset as the left.
 - Hovered menu and list items show their text in the theme accent, lightened or darkened only as far as needed to stay readable on the hover fill.
-- KillerShot now shares the family's theme engine, control styles and palettes with KillerShell, KillerScan and the KillerUI template, so its colors, grain and geometry match the rest of the family. Visible differences: outline buttons are bare until hovered, title bar buttons hover in the accent, the close button is gray until hovered, combo boxes use the family field color, the window has the family 1px edge, wordmarks carry the family emboss, and 98SE uses the family's caption buttons, tabs and scroll bars. Hold Alt and drag anywhere in a window to move it.
-- Outline buttons show their accent outline at rest again, as dialog buttons did before. Shared family files for the window caption menu, language menu and control styles now match the KillerUI template with no other visible change.
+- KillerShot shares the family's theme engine, control styles and palettes with KillerShell, KillerScan and the KillerUI template, so its colors, grain and geometry match the rest of the family: outline buttons with an accent outline, title bar buttons that hover in the accent, a gray close button until hovered, family combo boxes, the family 1px window edge and wordmark emboss, and 98SE caption buttons, tabs and scroll bars. Hold Alt and drag anywhere in a window to move it.
+- The window caption menu, language menu and control styles come from the KillerUI template.
 - The theme and language menus open in the content pane's lower corner beside the sidebar, as in the rest of the family.
-- The file picker is now the family picker shared with the other Killer apps. Accept still stays off while a folder loads or an accept is running, and a mistyped folder still returns to the last folder that worked. Visible differences: the picker gains the family image preview, pictures in the icon view show their shell icon instead of a thumbnail, and the folder picker no longer moves focus to Select when its first folder loads.
-- The footer's Install button runs on the shared KillerUI template code, with the same exit checks, all-users choice and deferred restart as before.
+- The file picker is the family picker shared with the other Killer apps, with an image preview and shell icons in the icon view. Accept stays off while a folder loads or an accept is running, and a mistyped folder returns to the last folder that worked.
+- The footer's Install button runs on the shared KillerUI template code, with exit checks, an all-users choice and a deferred restart.
