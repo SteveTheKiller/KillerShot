@@ -75,7 +75,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 - The print preview caption switches between the wordmark and the plain title when the theme changes while it is open, and its wordmark takes the main title bar's spacing so its brush strokes have room. The file picker's recent locations and places lists are named for screen readers.
 - File dialogs cancel stale loads, bound large listings and identify incomplete results without blocking the interface.
 - Black table headers match the content surface, and softer grain keeps dark surfaces from looking gray.
-- About groups settings in two columns and can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts.
+- About groups settings in two columns and can hide shortcut hints in menus and tooltips without disabling keyboard shortcuts. Hover tooltips clear large pointers while preserving custom placement.
 - Every album view keeps the themed content pane, with subtly shaded screenshot cards and restrained photo shadows in carousels.
 - Portable stays clear of footer controls and long image readouts in narrow windows.
 - In 98SE, menu hover fill follows the selected accent.
