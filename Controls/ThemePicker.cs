@@ -79,7 +79,7 @@ namespace KillerShot.Controls
             if (_menu.IsOpen) { _menu.IsOpen = false; return; }
             Build();
             FlyoutPlacement.UsePane(_pane);
-            FlyoutPlacement.Attach(_menu, _button);
+            FlyoutPlacement.Attach(_menu, null);   // a big menu: always the pane corner
             _menu.IsOpen = true;
             _menu.BeginAnimation(UIElement.OpacityProperty,
                 new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150))
