@@ -7,3 +7,17 @@ publish/
 
 # Private working artwork, including source files and exports.
 /brand/
+
+# Test and tool output.
+TestResults/
+*.log
+*.binlog
+*_wpftmp.csproj
+
+# Editor and OS clutter.
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+*.orig
+*.rej
