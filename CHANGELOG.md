@@ -6,6 +6,7 @@ KillerShot combines screenshot and screen recording tools with an encrypted capt
 
 ### Data protection and recovery
 
+- Self-update checks the downloaded and staged copies for the publisher's signature inside the helper, keeps every parent folder pinned while it publishes, refuses redirected paths and malformed requests, and offers only stable releases.
 - Unreadable album edits open the flattened image safely and preserve recovery data. QR and text recognition follow edits and reject obsolete results; album actions stay bound to their original album.
 - Redactions keep hidden pixels covered when resizing inserted pictures, including transparent and fractional layers.
 - Albums recover after interrupted password changes or removal, preserving captures and recovery copies when cleanup fails. Failed setup keeps the album closed until the problem is corrected. (#1) (#4)
