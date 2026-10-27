@@ -218,6 +218,14 @@ internal static partial class CaptureLibrary
         return saved;
     }
 
+    /// <summary>Deletes one capture for the command line, under the same locks as a command-line add.</summary>
+    public static bool TryDeleteFromCli(long id)
+    {
+        bool deleted = TryUseAlbumFromCli(() => { Delete([id]); return true; }, out _);
+        if (deleted) NotifyExternalChange();
+        return deleted;
+    }
+
     /// <summary>Loads command-line recent data while holding the transition lock. The caller
     /// performs clipboard, file, and editor actions after this returns.</summary>
     public static bool TryReadForCli(Action read) =>

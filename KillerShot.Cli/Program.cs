@@ -639,11 +639,14 @@ public static class Program
 
     private static int Recent(string[] args)
     {
-        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "out"], ["json", "overwrite"]);
+        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "delete", "out"], ["json", "overwrite", "yes"]);
         o.NoPositionals();
-        string[] actions = ["copy", "export", "open"];
+        string[] actions = ["copy", "export", "open", "delete"];
         var chosen = actions.Where(o.Has).ToArray();
-        if (chosen.Length > 1) throw new CliException("Use one of --copy, --export and --open at a time.");
+        if (chosen.Length > 1) throw new CliException("Use one of --copy, --export, --open and --delete at a time.");
+        // Deleting cannot be undone, so it is never the result of a typo alone.
+        if (chosen is ["delete"] && !o.Has("yes")) throw new CliException("--delete removes the capture from the album for good; add --yes to confirm.");
+        if (o.Has("yes") && chosen is not ["delete"]) throw new CliException("--yes goes with --delete.");
         if (o.Has("out") && (chosen.Length == 0 || chosen[0] != "export")) throw new CliException("--out goes with --export.");
         string? action = chosen.Length == 0 ? null : chosen[0];
         if (action != null && o.Has("limit")) throw new CliException("--limit only applies to the list.");
@@ -751,6 +754,9 @@ public static class Program
                 break;
             case "open":
                 OpenInEditor(result);
+                break;
+            case "delete":
+                if (!CaptureLibrary.TryDeleteFromCli(item.Id)) throw new CliException(LibraryClosedReason(), ExitFailed);
                 break;
         }
         if (o.Has("json"))
@@ -1305,6 +1311,7 @@ public static class Program
           --copy <n>                      Copy capture n to the clipboard. 1 is the newest.
           --export <n> --out <file|folder>  Save a copy of capture n.
           --open <n>                      Open capture n in the editor.
+          --delete <n> --yes              Delete capture n from the album. Cannot be undone.
           --json                          Print the result as JSON.
 
         Options left out follow your KillerShot settings.
