@@ -177,7 +177,7 @@ internal static class SelfTestAccessiblePickers
             };
             window.Show();
             var menu = new ContextMenu { ItemContainerStyle = (Style)Application.Current.FindResource("PanelMenuItem") };
-            var picker = new ThemePicker(window, menu, button, button);
+            var picker = new ThemePicker(window, menu, button);
             try
             {
                 picker.Toggle();
