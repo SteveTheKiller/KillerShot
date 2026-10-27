@@ -226,7 +226,9 @@ namespace KillerFamily.Layout
             // The rail and body share one track, so the splitter resizes the pane against both.
             var inner = new List<(GridLength Size, UIElement Element)>
             {
-                (new GridLength(RailSize), _railGrid),
+                // A rail with no buttons and no pane to fold has nothing to show; an empty 24px
+                // band under the toolbar read as a gap.
+                (new GridLength(_rail == null && (_pane == null || !ShowPane) ? 0 : RailSize), _railGrid),
                 (new GridLength(1, GridUnitType.Star), _body),
             };
             if (!atStart) inner.Reverse();
