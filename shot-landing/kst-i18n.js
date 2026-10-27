@@ -2146,7 +2146,7 @@ I18N.sl = {
   "h_keys_1": "Pet globalnih bližnjic lahko spremeniš ali izklopiš v nastavitvah zajema: klikni bližnjico in pritisni nove tipke. Backspace jo izklopi, Esc pa ohrani. Bližnjice orodij z eno črko med pisanjem ne delujejo.",
   "page_index_title": "KillerShot: Šifrirani album posnetkov zaslona za Windows",
   "page_index_description": "Hrani vse posnetke zaslona v šifriranem albumu z iskanjem na svojem računalniku. KillerShot za Windows zajema s Print Screen, označuje, prekriva občutljive podatke in snema MP4 ali GIF.",
-  "tagline": "<b>Tvoji posnetki zaslona v šifriranem albumu.</b> Zajemaj s Print Screen, razvrsti slike v zbirke in jih poišči po besedilu na njih. Album ostane v tvojem računalniku, zaščiten s šifriranjem AES-256. Brez računa v oblaku, naročnine ali telemetrije.",
+  "tagline": "<b>Tvoji posnetki zaslona v šifriranem albumu.</b> S Print Screen zajemi območje, okno ali vse zaslone, sliko označi in zakrij občutljive dele, nato jo znova najdi po besedilu na njej. Ko slika ni dovolj, posnemi zaslon v MP4 ali GIF.",
   "cta_guide": "Preberi navodila",
   "ui_status": "stanje",
   "ui_in_development": "V razvoju",
