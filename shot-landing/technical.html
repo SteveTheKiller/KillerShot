@@ -213,6 +213,10 @@
 <h2 data-i18n="t_render">Rendering</h2>
 <p data-i18n="t_render_1">The About card (F12) has a rendering choice: Automatic, Hardware or Software. Automatic uses software rendering during Remote Desktop and remote-control sessions, where hardware rendering can show a black window. The choice applies the next time the window opens.</p>
 </div>
+<div class="tech-sec" id="limits">
+<h2 data-i18n="t_limits">What is not captured</h2>
+<p data-i18n="t_limits_1">Content an app marks as protected, such as some streaming video, comes out black; Windows withholds it from every screen capture. A minimized window cannot be captured in window mode. A desktop capture of an HDR monitor is converted to standard range by Windows and can look washed out.</p>
+</div>
 </div>
 <div class="tech-column">
 <div class="tech-sec" id="model">
@@ -255,10 +259,6 @@
 <p data-i18n="t_rec_mp4"><b>Large MP4 recordings.</b> The H.264 encoder in Windows accepts frames up to 4096 x 2304 pixels: 36,864 blocks of 16 x 16 pixels with no side over 4096, the frame size limit of H.264 level 5.1. One 4K monitor fits. A larger area is scaled down to fit before it reaches the encoder, keeping its shape, so three 1920 pixel screens side by side at 5760 x 1080 come out at 4096 x 768. GIF recordings keep the full size.</p>
 <p data-i18n="t_rec_3">GIF frames are reduced to a palette per frame and only the area that changed since the last frame is stored. That keeps a recording of a mostly still screen small.</p>
 </div>
-<div class="tech-sec" id="limits">
-<h2 data-i18n="t_limits">What is not captured</h2>
-<p data-i18n="t_limits_1">Content an app marks as protected, such as some streaming video, comes out black; Windows withholds it from every screen capture. A minimized window cannot be captured in window mode. A desktop capture of an HDR monitor is converted to standard range by Windows and can look washed out.</p>
-</div>
 <div class="tech-sec" id="cli">
 <h2 data-i18n="t_cli">Command line and KillerMCP</h2>
 <p data-i18n="t_cli_1">The command line is compiled into KillerShot.exe and runs behind its <code>--cli</code> switch, in its own process, without the tray, the shortcuts or the single-instance claim. It uses the same capture, recording and file code as the window. See the <a href="help.html#command-line">command reference</a>.</p>
@@ -266,7 +266,7 @@
 </div>
 <div class="tech-sec" id="privacy">
 <h2 data-i18n="t_privacy">Privacy &amp; footprint</h2>
-<p data-i18n="t_privacy_1">KillerShot has no account, no analytics and no update check. It makes no network connections on its own. The release notes link on the About card opens the GitHub releases page in your browser.</p>
+<p data-i18n="t_privacy_1">KillerShot has no account and no analytics. Its one network request is the update check: on startup unless you turn it off on the About card (F12), and whenever you open About, it asks GitHub for the latest release. Installing an update is always your choice, and the release notes link opens the GitHub releases page in your browser.</p>
 <p data-i18n="t_privacy_2">Encryption protects the album at rest, including its image data, metadata and search index. PNG and JPEG exports and MP4 and GIF recordings are ordinary files outside it. The live Windows Screenshots collection reads existing files without encrypting them; adding one to the album does not encrypt or remove the original. Clipboard copies follow Windows clipboard history and sync settings, which can send a copy to other devices if enabled.</p>
 <p data-i18n="t_privacy_3">To redact before anything leaves KillerShot, turn on Review before copying or saving in capture settings. Each capture then waits in the editor, and nothing reaches the clipboard, a file, another program or email until you choose Copy and save. The album still keeps the encrypted original, and anything copied or saved from the album is the edited result.</p>
 </div>
@@ -283,7 +283,7 @@
 </footer>
 <div class="egg-toast" id="eggToast"></div>
 <div class="dlightbox" id="diagram-lightbox" role="dialog" aria-modal="true" aria-label="Expanded diagram" hidden><div class="dlb-inner"><button type="button" class="dlb-close" aria-label="Close diagram">&times;</button><div class="dlb-image"></div></div></div>
-<script src="kst-i18n.js?v=4"></script>
+<script src="kst-i18n.js?v=5"></script>
 <script src="kst.js?v=3"></script>
 <script>
 (function(){
