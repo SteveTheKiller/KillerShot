@@ -28,25 +28,18 @@ public partial class MainWindow
         MenuItem Item(string key, Action action, string gesture = "")
         {
             var item = new MenuItem { Header = Loc(key), InputGestureText = gesture, IsEnabled = has };
-            item.Click += (_, _) =>
-            {
-                if (_doc == null) return;
-                Editor.CommitText();
-                // A turn or trim of a very large picture can run out of memory; the picture stays as it was.
-                try { action(); }
-                catch (OutOfMemoryException error) { StatusText.Text = error.Message; }
-            };
+            item.Click += (_, _) => RunImageCommand(action);
             return item;
         }
         yield return Item("Str_Img_Paste", PasteIntoPicture, "Ctrl+V");
-        yield return Item("Str_Img_InsertFile", InsertImageFile);
+        yield return Item("Str_Img_InsertFile", InsertImageFile, "Ctrl+Shift+O");
         yield return new Separator();
-        yield return Item("Str_Img_RotateRight", () => _doc!.Rotate(clockwise: true));
-        yield return Item("Str_Img_RotateLeft", () => _doc!.Rotate(clockwise: false));
-        yield return Item("Str_Img_FlipH", () => _doc!.Flip(horizontal: true));
-        yield return Item("Str_Img_FlipV", () => _doc!.Flip(horizontal: false));
+        yield return Item("Str_Img_RotateRight", RotateRight, "Ctrl+H");
+        yield return Item("Str_Img_RotateLeft", RotateLeft, "Ctrl+G");
+        yield return Item("Str_Img_FlipH", FlipHorizontal, "Ctrl+Shift+H");
+        yield return Item("Str_Img_FlipV", FlipVertical, "Ctrl+Shift+G");
         yield return new Separator();
-        var resize = new MenuItem { Header = Loc("Str_Img_Resize"), IsEnabled = has };
+        var resize = new MenuItem { Header = Loc("Str_Img_Resize"), IsEnabled = has, InputGestureText = "Ctrl+I" };
         foreach (int percent in new[] { 50, 75, 150, 200 })
         {
             int p = percent;
@@ -59,11 +52,29 @@ public partial class MainWindow
         custom.Click += (_, _) => PromptResize();
         resize.Items.Add(custom);
         yield return resize;
-        yield return Item("Str_Img_Margin", PromptMargin);
-        yield return Item("Str_Img_AutoCrop", () =>
-        {
-            if (!_doc!.AutoCrop()) StatusText.Text = Loc("Str_Status_NoBorder");
-        });
+        yield return Item("Str_Img_Margin", PromptMargin, "Ctrl+M");
+        yield return Item("Str_Img_AutoCrop", TrimBorder, "Ctrl+T");
+    }
+
+    /// <summary>Runs an Image command from the menu or its key: pending text is committed first,
+    /// and a turn or trim of a very large picture that runs out of memory leaves it as it was.</summary>
+    private bool RunImageCommand(Action action)
+    {
+        if (_doc == null || Library.IsVisible) return false;
+        Editor.CommitText();
+        try { action(); }
+        catch (OutOfMemoryException error) { StatusText.Text = error.Message; }
+        return true;
+    }
+
+    private void RotateRight() => _doc!.Rotate(clockwise: true);
+    private void RotateLeft() => _doc!.Rotate(clockwise: false);
+    private void FlipHorizontal() => _doc!.Flip(horizontal: true);
+    private void FlipVertical() => _doc!.Flip(horizontal: false);
+
+    private void TrimBorder()
+    {
+        if (!_doc!.AutoCrop()) StatusText.Text = Loc("Str_Status_NoBorder");
     }
 
     /// <summary>Ctrl+V on an open picture: the clipboard's picture goes on top as an object.</summary>

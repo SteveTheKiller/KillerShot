@@ -114,7 +114,14 @@ namespace KillerShot.Shell
                         if (!e.IsRepeat && App.Instance.Video is { IsRecording: true } recording) _ = recording.StopAsync(true);
                         break;
                     case Key.R: if (!e.IsRepeat) App.Instance.Video?.Toggle(); break;
+                    // The Image menu's commands act on the open picture, never over the album.
+                    case Key.O when shift && !TypingInField(): if (!RunImageCommand(InsertImageFile)) handled = false; break;
                     case Key.O: OpenFile(); break;
+                    case Key.H when !TypingInField(): if (!RunImageCommand(shift ? FlipHorizontal : RotateRight)) handled = false; break;
+                    case Key.G when !TypingInField(): if (!RunImageCommand(shift ? FlipVertical : RotateLeft)) handled = false; break;
+                    case Key.I when !shift && !TypingInField(): if (!RunImageCommand(PromptResize)) handled = false; break;
+                    case Key.M when !shift && !TypingInField(): if (!RunImageCommand(PromptMargin)) handled = false; break;
+                    case Key.T when !shift && !TypingInField(): if (!RunImageCommand(TrimBorder)) handled = false; break;
                     case Key.S when shift: SaveAs(); break;
                     case Key.S: Save(); break;
                     // Over the album these act on the capture in view, never the hidden editor image.

@@ -86,6 +86,7 @@ public static class Program
                 return Task.FromResult(ExitOk);
             case "capture": return CaptureAsync(rest);
             case "qr": return QrAsync(rest);
+            case "edit": return Task.FromResult(Edit(rest));
             case "record": return RecordAsync(rest, audioSources);
             case "recent": return Task.FromResult(Recent(rest));
             case "open": return Task.FromResult(Open(rest));
@@ -147,6 +148,93 @@ public static class Program
             }));
         }
         else foreach (var code in codes) Out.WriteLine(code.Text);
+        return ExitOk;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // edit: the Image menu's commands on a file, through the same EditorDocument the app uses.
+    // Steps run in a fixed order (trim, rotate, flip, resize, margin) whatever order they are given.
+    // ------------------------------------------------------------------------------------------
+
+    private static int Edit(string[] args)
+    {
+        var o = Options.Parse(args, ["rotate", "flip", "resize", "margin", "margin-color", "out", "quality"], ["trim", "overwrite", "json"]);
+        if (o.Positionals.Count != 1) throw new CliException("edit needs one image path.");
+        string source = Path.GetFullPath(o.Positionals[0]);
+        if (!File.Exists(source)) throw new CliException("The image file does not exist.", ExitFailed);
+        if (!o.Has("trim") && o.Value("rotate") == null && o.Value("flip") == null && o.Value("resize") == null && o.Value("margin") == null)
+            throw new CliException("edit needs at least one of --trim, --rotate, --flip, --resize or --margin.");
+        int quality = o.Int("quality", 10, 100) ?? CaptureSettings.JpegQuality;
+
+        var doc = new KillerShot.Editor.EditorDocument(ImageOutput.Load(source), source);
+        var done = new List<string>();
+        if (o.Has("trim")) done.Add(doc.AutoCrop() ? "trim" : "trim (no plain border)");
+        switch (o.Value("rotate")?.ToLowerInvariant())
+        {
+            case null: break;
+            case "right" or "90": doc.Rotate(clockwise: true); done.Add("rotate right"); break;
+            case "left" or "-90" or "270": doc.Rotate(clockwise: false); done.Add("rotate left"); break;
+            case "180": doc.Rotate(clockwise: true); doc.Rotate(clockwise: true); done.Add("rotate 180"); break;
+            default: throw new CliException("--rotate must be right, left or 180.");
+        }
+        switch (o.Value("flip")?.ToLowerInvariant())
+        {
+            case null: break;
+            case "h" or "horizontal": doc.Flip(horizontal: true); done.Add("flip horizontal"); break;
+            case "v" or "vertical": doc.Flip(horizontal: false); done.Add("flip vertical"); break;
+            default: throw new CliException("--flip must be horizontal or vertical.");
+        }
+        if (o.Value("resize") is { } resize)
+        {
+            var size = KillerShot.Shell.MainWindow.ParseResize(resize, doc.PixelWidth, doc.PixelHeight)
+                ?? throw new CliException("--resize takes a percentage (50%), a size (1280x720) or a width (1280).");
+            try { doc.Scale(size.Width, size.Height); }
+            catch (ImageTooLargeException error) { throw new CliException(error.Message, ExitFailed); }
+            done.Add($"resize {size.Width}x{size.Height}");
+        }
+        if (o.Int("margin", 1, 2000) is int pixels)
+        {
+            var color = System.Windows.Media.Colors.White;
+            if (o.Value("margin-color") is { } hex)
+            {
+                try { color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex.StartsWith('#') ? hex : "#" + hex); }
+                catch (FormatException) { throw new CliException("--margin-color takes a hex color such as #FFFFFF."); }
+            }
+            try { doc.AddMargin(pixels, color); }
+            catch (ImageTooLargeException error) { throw new CliException(error.Message, ExitFailed); }
+            done.Add($"margin {pixels}");
+        }
+
+        var image = doc.Render();
+        string saved;
+        if (o.Value("out") is { } outArg)
+        {
+            saved = Path.GetFullPath(outArg);
+            if (string.Equals(saved, source, StringComparison.OrdinalIgnoreCase) && !o.Has("overwrite"))
+                throw new CliException("--out names the original; add --overwrite to replace it.");
+            if (File.Exists(saved) && !o.Has("overwrite")) throw new CliException("The --out file exists; add --overwrite to replace it.", ExitFailed);
+            ImageOutput.Save(image, saved, quality, o.Has("overwrite"));
+        }
+        else
+        {
+            // The original is never replaced by default: the result goes beside it under a new name.
+            string ext = Path.GetExtension(source).ToLowerInvariant() is ".jpg" or ".jpeg" ? ".jpg" : ".png";
+            saved = ImageOutput.SaveUnique(image, Path.GetDirectoryName(source)!, Path.GetFileNameWithoutExtension(source) + " edited" + ext, quality);
+        }
+
+        if (o.Has("json"))
+            Out.WriteLine(Json(writer =>
+            {
+                writer.WriteStartObject();
+                writer.WriteString("path", saved);
+                writer.WriteNumber("width", image.PixelWidth);
+                writer.WriteNumber("height", image.PixelHeight);
+                writer.WriteStartArray("steps");
+                foreach (string step in done) writer.WriteStringValue(step);
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }));
+        else Out.WriteLine(saved);
         return ExitOk;
     }
 
@@ -1148,6 +1236,7 @@ public static class Program
         Commands:
           capture [options]               Take a screenshot and print where it was saved.
           qr <image|region> [--json]       Read QR codes locally without opening their links.
+          edit <image> [options]          Rotate, flip, resize, frame or trim a picture file.
           record --seconds <n> [options]  Record the screen to MP4 or GIF for a set time.
           recent [options]                List, copy, export or open captures in the library.
           open <image>                    Open an image in the KillerShot editor.
@@ -1181,6 +1270,17 @@ public static class Program
           --no-recent                     Leave the capture out of the library.
           --overwrite                     Replace an existing --out file.
           --json                          Print the result as JSON.
+
+        edit options (applied in this order; the original is kept unless --out names it):
+          --trim                          Trim a plain border.
+          --rotate right|left|180         Turn the picture.
+          --flip horizontal|vertical      Mirror the picture.
+          --resize <50%|1280x720|1280>    Resize; a lone width keeps the shape.
+          --margin <1-2000>               Add a border of this many pixels.
+          --margin-color <#RRGGBB>        Border color. Default: white.
+          --out <file>                    Save here. Default: "<name> edited" beside the original.
+          --quality <10-100>              JPEG quality.
+          --overwrite, --json             The same as for capture.
 
         record options:
           --seconds <1-3600>              How long to record. Required. Ctrl+C stops early.
