@@ -33,6 +33,10 @@
 - One signed Windows EXE: runs portable, installs per user without UAC or machine-wide with /silent, and uninstalls without deleting your album
 - GPLv3, no account, no telemetry. The only connection it makes on its own is an update check, which can be turned off
     </description>
+    <!-- KillerShot is framework-dependent: it needs the .NET 10 Desktop Runtime. -->
+    <dependencies>
+      <dependency id="dotnet-10.0-desktopruntime" version="[10.0.0,11.0.0)" />
+    </dependencies>
     <releaseNotes>https://github.com/SteveTheKiller/KillerShot/releases/tag/vREPLACE_VERSION</releaseNotes>
   </metadata>
   <files>
