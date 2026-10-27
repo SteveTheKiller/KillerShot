@@ -38,6 +38,7 @@ public static class QrLink
     private static readonly HashSet<string> DownloadExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".exe", ".msi", ".msix", ".msixbundle", ".appx", ".appxbundle", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".scr", ".com", ".dll",
+        ".hta", ".lnk", ".jar", ".reg", ".wsf", ".wsh", ".cpl", ".url", ".vbe", ".jse", ".msp", ".pif", ".appinstaller", ".application", ".library-ms",
         ".zip", ".7z", ".rar", ".iso", ".img", ".dmg", ".pkg", ".apk", ".deb", ".rpm", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"
     };
 
@@ -76,7 +77,9 @@ public static class QrLink
         }
         string normalizedHost = url.IdnHost.TrimEnd('.');
         if (normalizedHost.Split('.').Length > 4) warnings.Add("DeepSubdomains");
-        if (Shorteners.Contains(normalizedHost)) warnings.Add("Shortener");
+        // www.bit.ly and other subdomains reach the same shortener.
+        if (Shorteners.Contains(normalizedHost) || Shorteners.Any(s => normalizedHost.EndsWith("." + s, StringComparison.OrdinalIgnoreCase)))
+            warnings.Add("Shortener");
         string path = Decode(url.AbsolutePath).TrimEnd('/');
         int dot = path.LastIndexOf('.');
         if (dot >= 0 && DownloadExtensions.Contains(path[dot..])) warnings.Add("DirectDownload");
