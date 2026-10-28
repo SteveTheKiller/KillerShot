@@ -46,6 +46,8 @@ namespace KillerShot.Shell
             PrintScreenKeyToggle.IsChecked = key.State == PrintScreenKeyState.On;
             PrintScreenKeyToggle.IsEnabled = key.CanChange;
             PrintScreenKeyNote.Text = Loc(key.NoteKey);
+            PrintScreenKeyToggle.ToolTip = Loc(key.NoteKey);
+            PrintScreenKeyNote.Visibility = key.State == PrintScreenKeyState.ChangedElsewhere ? Visibility.Visible : Visibility.Collapsed;
             _syncingOptionsPrintScreen = was;
         }
 
