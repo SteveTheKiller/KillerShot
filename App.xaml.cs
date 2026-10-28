@@ -90,6 +90,7 @@ public partial class App : Application
         // The interface self-test runs without the tray, the shortcuts or the single-instance
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
+        if (SelfTestLibraryMenu.TryRun(e.Args)) return;
         if (SelfTestChromeInteraction.TryRun(e.Args)) return;
         if (SelfTestReleaseSafety.TryRun(e.Args)) return;
         if (SelfTestInstallation.TryRun(e.Args)) return;
