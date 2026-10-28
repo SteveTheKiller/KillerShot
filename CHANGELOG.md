@@ -9,6 +9,8 @@ KillerShot 1.1.1 fixes problems found after 1.1.0.
 - With the sidebar on the right, the theme and language menus open in the bottom-right corner beside the rail, instead of across the window in the bottom-left corner.
 - The theme menu's accent colors are drawn whole instead of cut off on the right, and they sit right beside the theme names.
 - With "Use KillerShot for the Print Screen key" on, the tray menu shows the Print Screen shortcuts again.
+- Alt+Print Screen no longer leaves the captured window's menu bar selected, and a Windows key shortcut on Print Screen no longer opens Start.
+- The Print Screen key keeps working after KillerShot is busy for a while. Windows could quietly take the key back if KillerShot's window was slow to respond, until KillerShot was restarted.
 
 ### Changed
 

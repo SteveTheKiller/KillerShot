@@ -31,6 +31,9 @@ internal sealed class TrayHost : IDisposable
     private bool _suspended;
     /// <summary>The shortcuts on the Print Screen key, which the hook serves when the switch is on.</summary>
     private readonly Dictionary<ShortcutAction, Shortcut> _printScreen = new();
+    /// <summary>A copy of <see cref="_printScreen"/> for the hook, which reads it on its own thread
+    /// while RegisterShortcuts refills the original.</summary>
+    private volatile IReadOnlyDictionary<ShortcutAction, Shortcut> _hookShortcuts = new Dictionary<ShortcutAction, Shortcut>();
     private PrintScreenHook? _printScreenHook;
 
     /// <summary>Raised for a shortcut or a menu command, with the window that was in front.</summary>
@@ -152,16 +155,20 @@ internal sealed class TrayHost : IDisposable
     private void UpdatePrintScreenHook()
     {
         bool want = !_suspended && PrintScreenKey.Enabled && _printScreen.Count > 0;
+        _hookShortcuts = new Dictionary<ShortcutAction, Shortcut>(_printScreen);
         if (want && _printScreenHook == null)
+        {
+            var dispatcher = Application.Current.Dispatcher;
             _printScreenHook = new PrintScreenHook(mods =>
             {
-                if (!PrintScreenHook.Matches(_printScreen, mods, out var action)) return false;
-                // Read the foreground window now, then leave the hook at once: the capture runs
-                // after it returns, as a low-level hook must answer within the system's timeout.
+                // On the hook's thread: read the foreground window now, then leave at once. The
+                // capture runs on the UI thread after the hook answers.
+                if (!PrintScreenHook.Matches(_hookShortcuts, mods, out var action)) return false;
                 var fg = Win32.GetForegroundWindow();
-                Application.Current.Dispatcher.BeginInvoke(new Action(() => CaptureRequested?.Invoke(action, null, fg)));
+                dispatcher.BeginInvoke(new Action(() => CaptureRequested?.Invoke(action, null, fg)));
                 return true;
             });
+        }
         else if (!want && _printScreenHook != null)
         {
             _printScreenHook.Dispose();

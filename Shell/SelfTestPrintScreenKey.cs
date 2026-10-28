@@ -58,10 +58,44 @@ internal static class SelfTestPrintScreenKey
         Check(!PrintScreenHook.Matches(active, Win32.MOD_CONTROL, out _), "A shortcut on another key must never match Print Screen.");
         report.Add("each Print Screen press runs its own shortcut, and the rest pass to Windows: PASS");
 
-        // A real hook, passing every press through, put on and taken off.
+        // Alt or Windows held through a taken press gets one mask key, so Windows does not read the
+        // modifier as pressed alone (a menu bar in keyboard mode, or Start). No real key is sent.
+        const int keyDown = 0x100, keyUp = 0x101, sysKeyDown = 0x104, sysKeyUp = 0x105;
+        foreach (var (mods, down, up, masks) in new[]
+        {
+            (Win32.MOD_ALT, sysKeyDown, sysKeyUp, 1),
+            (Win32.MOD_WIN, keyDown, keyUp, 1),
+            (Win32.MOD_CONTROL | Win32.MOD_SHIFT, keyDown, keyUp, 0),
+            (0u, keyDown, keyUp, 0),
+        })
+        {
+            int sent = 0;
+            var keys = new PrintScreenHook(_ => true, () => sent++, install: false);
+            Check(keys.Handle(down, Win32.VK_SNAPSHOT, mods) && keys.Handle(down, Win32.VK_SNAPSHOT, mods) && keys.Handle(up, Win32.VK_SNAPSHOT, mods),
+                "A taken press, its repeat and its release must all be swallowed.");
+            Check(sent == masks, $"Modifiers 0x{mods:X} sent {sent} mask keys, expected {masks}.");
+        }
+        int passedMasks = 0;
+        var passing = new PrintScreenHook(_ => false, () => passedMasks++, install: false);
+        Check(!passing.Handle(sysKeyDown, Win32.VK_SNAPSHOT, Win32.MOD_ALT) && !passing.Handle(sysKeyUp, Win32.VK_SNAPSHOT, Win32.MOD_ALT) && passedMasks == 0,
+            "A press with no KillerShot shortcut must pass to Windows untouched.");
+        int keyUpMasks = 0;
+        var keyUpOnly = new PrintScreenHook(_ => true, () => keyUpMasks++, install: false);
+        Check(keyUpOnly.Handle(sysKeyUp, Win32.VK_SNAPSHOT, Win32.MOD_ALT) && keyUpMasks == 1,
+            "A keyboard that sends only the key-up must still be served and masked.");
+        report.Add("Alt and Windows are masked after a taken press, and nothing else is: PASS");
+
+        // A real hook, passing every press through, put on and taken off, on its own thread so a
+        // stalled UI thread cannot get it removed.
         using (var hook = new PrintScreenHook(_ => false))
+        {
             Check(hook.Installed, "The keyboard hook must install.");
-        report.Add("the keyboard hook installs and comes off: PASS");
+            Check(hook.HookThread is { IsAlive: true } thread && thread != Thread.CurrentThread,
+                "The keyboard hook must run on its own thread, not the UI thread.");
+            hook.Dispose();
+            Check(!hook.HookThread!.IsAlive && !hook.Installed, "Disposing the hook must take it off and end its thread.");
+        }
+        report.Add("the keyboard hook installs on its own thread and comes off: PASS");
 
         // The first version's record: nothing recorded leaves the key alone.
         SetValue(0);
