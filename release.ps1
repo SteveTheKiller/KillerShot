@@ -22,9 +22,13 @@
        the landing site (shot-landing) and commits and pushes it. A dry run checks that every
        one of those facts can still be found in the site's markup, without writing anything.
 
+    It also builds and signs KillerShot-Store.exe, the same app with the .NET runtime inside, and
+    attaches it to the release for the Microsoft Store's package URL
+    (killershot.net/store/<version>/KillerShot-Store.exe). Submitting it in Partner Center stays
+    manual. WinGet and Chocolatey publish from their GitHub workflows when the release appears.
+
     The self-tests need an interactive desktop and are not run here. Run the full suite on the
-    release candidate first. WinGet, Chocolatey and the Store are not handled here yet; add them
-    from the Killendar or KillerShell scripts.
+    release candidate first.
 
 .PARAMETER CertThumbprint
     Preferred. SHA1 thumbprint of the code-signing certificate (40 hex chars, no spaces).
@@ -327,6 +331,26 @@ if (-not $SkipSign) {
     $actualCN = "(not signed)"; $actualThumb = "(not signed)"
 }
 
+# --- 8b. Microsoft Store package ---
+# The Store installs KillerShot-Store.exe, which killershot.net/store/<version>/ serves from this
+# release. It is the same app with the .NET runtime inside, so a silent Store install never needs
+# the runtime on the PC, and it carries the same signed Print Screen helper.
+Write-Host "`n==> Publishing KillerShot-Store.exe..." -ForegroundColor Cyan
+$storeDir = Join-Path $PSScriptRoot "bin\Release\publish\store-win-x64"
+$storeExe = Join-Path $releaseDir "KillerShot-Store.exe"
+if (Test-Path $storeDir) { Remove-Item $storeDir -Recurse -Force }
+dotnet publish $proj -p:PublishProfile=PortableSingleFile -p:SelfContained=true -p:EnableCompressionInSingleFile=true `
+    -p:PrintScreenHelperPrebuilt=true "-p:PublishDir=$storeDir\" --nologo -v quiet
+if ($LASTEXITCODE -ne 0) { throw "Publishing the Store package failed." }
+Copy-Item -LiteralPath (Join-Path $storeDir 'KillerShot.exe') -Destination $storeExe -Force
+$storeVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($storeExe).FileVersion
+if ($storeVersion -ne $expectedFileVersion) { throw "KillerShot-Store.exe is file version $storeVersion, expected $expectedFileVersion" }
+# With the runtime inside it is about 65 MB; much less means the runtime did not go in.
+if ((Get-Item $storeExe).Length -lt 40MB) { throw "KillerShot-Store.exe is only $('{0:N1}' -f ((Get-Item $storeExe).Length / 1MB)) MB; the runtime is missing." }
+if (-not $SkipSign) { Invoke-CodeSign $storeExe "KillerShot" }
+$storeOut = (& $storeExe version 2>&1 | Out-String).Trim()
+if ($LASTEXITCODE -ne 0 -or $storeOut -ne $Version) { throw "KillerShot-Store.exe version answered '$storeOut' (exit $LASTEXITCODE), expected $Version." }
+
 # --- 9. Command line smoke test ---
 Write-Host "`n==> Command line smoke test..." -ForegroundColor Cyan
 $versionOut = (& $exe version 2>&1 | Out-String).Trim()
@@ -343,7 +367,7 @@ try {
 } finally { Pop-Location }
 
 # --- 11. SHA256SUMS.txt ---
-$assets = @($exe, $licenseOut) + $thirdPartyLicenses + @($srcZip)
+$assets = @($exe, $storeExe, $licenseOut) + $thirdPartyLicenses + @($srcZip)
 $sumsPath = Join-Path $releaseDir "SHA256SUMS.txt"
 # The standard "hash  name" form, so sha256sum -c can check a download.
 $lines = foreach ($a in $assets) { "$((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($a))" }
