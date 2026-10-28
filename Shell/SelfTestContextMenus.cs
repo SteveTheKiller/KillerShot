@@ -121,6 +121,11 @@ internal static class SelfTestContextMenus
                     "To the left, the card's right edge must touch the pointer.");
             }
             report.Add("menu cards open against the pointer in every direction, at 100% and 150%: PASS");
+            // The tray icon's menu has no element to measure from: it must keep WPF's own pointer
+            // placement, not land in the screen's top-left corner.
+            Check(!PointerMenus.Takes(new ContextMenu()), "A menu with no target, like the tray menu, must not be taken over.");
+            Check(PointerMenus.Takes(new ContextMenu { PlacementTarget = library }), "A menu on an on-screen element must be placed at the pointer.");
+            report.Add("the tray menu keeps its own placement at the pointer: PASS");
 
             // The capture bar is title-bar height: built but never shown, measured, and rendered.
             var monitor = new KillerShot.Capture.MonitorBounds(IntPtr.Zero, new KillerShot.Native.Win32.RECT { Left = 0, Top = 0, Right = 1920, Bottom = 1080 }, true);

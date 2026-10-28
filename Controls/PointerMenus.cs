@@ -36,12 +36,21 @@ internal static class PointerMenus
     {
         if (sender is not ContextMenu menu || !ReferenceEquals(e.OriginalSource, menu)) return;
         if (Taken.TryGetValue(menu, out _) || menu.Placement != PlacementMode.MousePoint) return;
+        // Only a menu that belongs to an element on screen: the tray icon's menu has no target, and
+        // a Custom placement without one is measured from the screen's top-left corner, which put
+        // it there (2026-10-27). Those keep WPF's own placement at the pointer.
+        if (!Takes(menu)) return;
         var click = Taken.GetOrCreateValue(menu);
         menu.HorizontalOffset = menu.VerticalOffset = 0;
         menu.CustomPopupPlacementCallback = (popupSize, _, _) => Place(menu, click, popupSize);
         // Already open at WPF's spot; changing the mode places it again before its fade-in shows.
         menu.Placement = PlacementMode.Custom;
     }
+
+    /// <summary>Whether a menu can be placed against the pointer: it needs an on-screen element
+    /// to measure from.</summary>
+    internal static bool Takes(ContextMenu menu) =>
+        menu.PlacementTarget is UIElement target && PresentationSource.FromVisual(target) != null;
 
     private static void OnClosed(object sender, RoutedEventArgs e)
     {

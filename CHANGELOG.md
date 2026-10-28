@@ -12,7 +12,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Dragging the carousel quickly through a large folder no longer leaves the pictures it lands on blank. Thumbnails load for the pictures in view first, and ones skipped along the way load when you come back to them.
 - A large linked folder fills in as it is scanned instead of showing only a loading spinner until the last file is read.
 - Window mode can pick KillerShot's own editor window, so KillerShot can take a picture of itself. Its capture overlays and bar stay out of the picker.
-- A right-click menu opens right against the pointer. A tall menu no longer starts about 30 pixels above the click and runs far up the screen.
+- A right-click menu opens right against the pointer. A tall menu no longer starts about 30 pixels above the click and runs far up the screen, and the tray icon's menu opens at the pointer too.
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
 - In a maximized window, each carousel in Multiple carousels reaches both ends of the window when it has enough pictures, instead of filling a column in the middle.
