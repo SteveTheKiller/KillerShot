@@ -91,6 +91,7 @@ public partial class App : Application
         // claim, so it can run beside a working copy of KillerShot.
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestLibraryMenu.TryRun(e.Args)) return;
+        if (SelfTestPrintScreenKey.TryRun(e.Args)) return;
         if (SelfTestChromeInteraction.TryRun(e.Args)) return;
         if (SelfTestReleaseSafety.TryRun(e.Args)) return;
         if (SelfTestInstallation.TryRun(e.Args)) return;

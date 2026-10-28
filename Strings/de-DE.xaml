@@ -163,6 +163,10 @@
     <sys:String x:Key="Str_Review_Sent">Die geprüfte Aufnahme wurde weitergegeben.</sys:String>
     <sys:String x:Key="Str_Review_Discarded">Die Aufnahme wurde verworfen. Das Album behält das Original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Windows-Einstellung für die Druck-Taste öffnen</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKey">KillerShot für die Druck-Taste verwenden</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Schaltet die Windows-Einstellung aus, die mit der Druck-Taste das Snipping Tool öffnet, damit die Tastenkombination von KillerShot die Taste erhält. Beim Ausschalten wird die Einstellung wiederhergestellt. Win+Umschalt+S öffnet weiterhin das Snipping Tool.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Installieren Sie KillerShot, um es für die Druck-Taste zu verwenden. Eine portable Kopie könnte die Windows-Einstellung nach dem Löschen nicht wiederherstellen.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows hat die Druck-Taste zurückgenommen, nachdem KillerShot sie freigegeben hatte. Schalten Sie dies erneut ein, um KillerShot zu verwenden.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klicken Sie auf eine Tastenkombination und drücken Sie die neuen Tasten. Rücktaste schaltet sie aus, Esc behält sie.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klicken und die neue Tastenkombination drücken</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBALE TASTENKOMBINATIONEN</sys:String>

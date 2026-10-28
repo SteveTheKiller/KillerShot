@@ -74,7 +74,8 @@ namespace KillerShot
 
         /// <summary>Persists a setting before changing the cache. Lifecycle changes must fail
         /// visibly when they cannot record the file to reopen next time.</summary>
-        internal static void SetRequired(string key, string value)
+        /// <param name="value">Null removes the setting.</param>
+        internal static void SetRequired(string key, string? value)
         {
             lock (Gate)
             {
@@ -82,12 +83,13 @@ namespace KillerShot
                 using var writeLock = AcquireWriteLock();
                 // Re-read while locked so another process's settings survive this write.
                 var current = ReadCurrent();
-                if (current.TryGetValue(key, out var old) && old == value)
+                if (value == null ? !current.ContainsKey(key) : current.TryGetValue(key, out var old) && old == value)
                 {
                     _cache = current;
                     return;
                 }
-                current[key] = value;
+                if (value == null) current.Remove(key);
+                else current[key] = value;
                 string temp = Path.Combine(Dir, $"settings.json.{Guid.NewGuid():N}.tmp");
                 try
                 {

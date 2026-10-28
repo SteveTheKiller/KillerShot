@@ -163,6 +163,10 @@
     <sys:String x:Key="Str_Review_Sent">Đã gửi ảnh chụp đã xem lại.</sys:String>
     <sys:String x:Key="Str_Review_Discarded">Đã bỏ ảnh chụp. Album vẫn giữ bản gốc.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Mở cài đặt Windows của phím Print Screen</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKey">Dùng KillerShot cho phím Print Screen</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Tắt cài đặt Windows mở Công cụ Cắt bằng Print Screen để phím tắt của KillerShot nhận phím này. Tắt tùy chọn sẽ khôi phục cài đặt. Win+Shift+S vẫn mở Công cụ Cắt.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Hãy cài đặt KillerShot để dùng cho Print Screen. Bản di động không thể khôi phục cài đặt Windows sau khi bị xóa.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows đã lấy lại phím Print Screen sau khi KillerShot giải phóng nó. Bật lại để dùng KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Bấm vào một phím tắt rồi nhấn phím mới. Backspace sẽ tắt nó, Esc giữ nguyên.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Bấm rồi nhấn phím tắt mới</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">PHÍM TẮT TOÀN CỤC</sys:String>

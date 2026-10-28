@@ -163,6 +163,10 @@
     <sys:String x:Key="Str_Review_Sent">Se envió la captura revisada.</sys:String>
     <sys:String x:Key="Str_Review_Discarded">Se descartó la captura. El álbum conserva el original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Abrir la configuración de Windows de la tecla Impr Pant</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKey">Usar KillerShot para la tecla Impr Pant</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Desactiva la configuración de Windows que abre Recortes con Impr Pant, para que el atajo de KillerShot reciba la tecla. Al desactivarlo se restaura la configuración. Win+Mayús+S sigue abriendo Recortes.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Instala KillerShot para usarlo con Impr Pant. Una copia portátil no podría restaurar la configuración de Windows una vez eliminada.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows recuperó la tecla Impr Pant después de que KillerShot la liberara. Vuelve a activarlo para usar KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Haz clic en un atajo y pulsa las teclas nuevas. Retroceso lo desactiva y Esc lo conserva.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Haz clic y pulsa el nuevo atajo</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">ATAJOS GLOBALES</sys:String>

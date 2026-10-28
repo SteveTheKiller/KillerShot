@@ -696,6 +696,10 @@
                                                    FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                         <TextBlock x:Name="ShortcutConflictText" Visibility="Collapsed" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
                                                    Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
+                                        <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from Windows' own
+                                             screen capture, KillerShell's default-terminal pattern. The note says what it does or why not. -->
+                                        <CheckBox x:Name="PrintScreenKeyToggle" Content="{DynamicResource Str_CS_PrintScreenKey}" Style="{StaticResource CsCheck}" Margin="0,10,0,0"/>
+                                        <TextBlock x:Name="PrintScreenKeyNote" Foreground="{DynamicResource DimTextBrush}" FontSize="10" TextWrapping="Wrap" Margin="24,0,0,0"/>
 
                                         <TextBlock Text="{DynamicResource Str_CS_AfterCapture}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
                                         <CheckBox x:Name="ReviewFirstToggle" Content="{DynamicResource Str_CS_ReviewFirst}" Style="{StaticResource CsCheck}"/>

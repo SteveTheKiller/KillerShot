@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -105,6 +106,7 @@ namespace KillerShot.Shell
             PrintShrinkToggle.IsChecked = CaptureSettings.PrintShrink;
             PrintEnlargeToggle.IsChecked = CaptureSettings.PrintEnlarge;
             PrintRotateToggle.IsChecked = CaptureSettings.PrintRotate;
+            SyncPrintScreenKey();
 
             OutputFolderBox.Text = CaptureSettings.OutputFolder;
             FileNamePatternBox.Text = CaptureSettings.FileNamePattern;
@@ -258,6 +260,43 @@ namespace KillerShot.Shell
             else if (box == PrintShrinkToggle) CaptureSettings.PrintShrink = on;
             else if (box == PrintEnlargeToggle) CaptureSettings.PrintEnlarge = on;
             else if (box == PrintRotateToggle) CaptureSettings.PrintRotate = on;
+            else if (box == PrintScreenKeyToggle) SetPrintScreenKey(on);
+        }
+
+        /// <summary>The Print Screen checkbox and its note, from the Windows setting as it is now.</summary>
+        private void SyncPrintScreenKey()
+        {
+            bool was = _syncingOptions;
+            _syncingOptions = true;
+            var key = PrintScreenKey.Current;
+            PrintScreenKeyToggle.IsChecked = key.State == PrintScreenKeyState.On;
+            PrintScreenKeyToggle.IsEnabled = key.CanChange;
+            PrintScreenKeyNote.Text = Loc(key.NoteKey);
+            _syncingOptions = was;
+        }
+
+        /// <summary>Frees Print Screen from Windows' screen capture, or gives it back, then claims the
+        /// shortcuts again. Windows can take a moment to let go, so a failed claim is tried once more.</summary>
+        private void SetPrintScreenKey(bool on)
+        {
+            try
+            {
+                var key = PrintScreenKey.Current;
+                if (on) key.TurnOn(); else key.TurnOff();
+            }
+            catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+            {
+                StatusText.Text = error.Message;
+            }
+            void Claim()
+            {
+                _shortcutHost?.RegisterShortcuts();
+                BuildShortcutRows();
+            }
+            Claim();
+            if (on && _shortcutHost?.FailedShortcuts.Count > 0)
+                Dispatcher.BeginInvoke(async () => { await Task.Delay(600); Claim(); });
+            SyncPrintScreenKey();
         }
 
         private void BuildShortcutRows()

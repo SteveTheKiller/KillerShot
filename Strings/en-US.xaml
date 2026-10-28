@@ -166,6 +166,10 @@
     <sys:String x:Key="Str_Review_Sent">The reviewed capture was sent.</sys:String>
     <sys:String x:Key="Str_Review_Discarded">The capture was discarded. The album keeps the original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Open the Windows Print Screen setting</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKey">Use KillerShot for the Print Screen key</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning this off puts the setting back. Win+Shift+S still opens Snipping Tool.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Install KillerShot to use it for Print Screen. A portable copy could not put the Windows setting back once it is deleted.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows took the Print Screen key back after KillerShot freed it. Turn this on again to use KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Click a shortcut, then press the new keys. Backspace turns it off and Esc keeps it.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Click, then press the new shortcut</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBAL SHORTCUTS</sys:String>

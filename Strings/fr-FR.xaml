@@ -163,6 +163,10 @@
     <sys:String x:Key="Str_Review_Sent">La capture vérifiée a été transmise.</sys:String>
     <sys:String x:Key="Str_Review_Discarded">La capture a été abandonnée. L'album garde l'original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Ouvrir le réglage Windows de la touche Impr. écran</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKey">Utiliser KillerShot pour la touche Impr. écran</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Désactive le paramètre Windows qui ouvre l'Outil Capture avec Impr. écran, pour que le raccourci de KillerShot reçoive la touche. Le désactiver rétablit le paramètre. Win+Maj+S ouvre toujours l'Outil Capture.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Installez KillerShot pour l'utiliser avec Impr. écran. Une copie portable ne pourrait pas rétablir le paramètre Windows une fois supprimée.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows a repris la touche Impr. écran après que KillerShot l'a libérée. Réactivez cette option pour utiliser KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Cliquez sur un raccourci, puis appuyez sur les nouvelles touches. Retour arrière le désactive, Échap le conserve.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Cliquez, puis appuyez sur le nouveau raccourci</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">RACCOURCIS GLOBAUX</sys:String>

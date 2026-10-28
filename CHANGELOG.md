@@ -22,6 +22,10 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
 - The album manager opens as its own window with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click.
 
+### Added
+
+- "Use KillerShot for the Print Screen key" in Capture settings turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool, and a portable copy cannot turn it on.
+
 ## [1.0.0] - 2026-10-27
 
 KillerShot combines screenshot and screen recording tools with an encrypted capture album, image editing and local QR reading.
