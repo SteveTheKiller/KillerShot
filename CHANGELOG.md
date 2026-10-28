@@ -13,6 +13,7 @@ KillerShot 1.1.1 fixes problems found after 1.1.0.
 ### Changed
 
 - Clicking the tray icon opens KillerShot instead of starting a region capture. Print Screen and the tray menu still capture, and a click still stops a recording.
+- The footer shows the picture's size with its unit, for example "1920 x 1080 px".
 
 ## [1.1.0] - 2026-10-27
 

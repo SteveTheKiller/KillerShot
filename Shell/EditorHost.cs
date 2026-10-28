@@ -136,7 +136,7 @@ namespace KillerShot.Shell
             // The zoom shows on the footer's zoom button (FooterView.cs).
             string zoom = Math.Round(Editor.Zoom * 100).ToString(CultureInfo.CurrentCulture) + "%";
             if (!Equals(ZoomLevelBtn.Content, zoom)) ZoomLevelBtn.Content = zoom;
-            string text = $"{_doc.PixelWidth} x {_doc.PixelHeight}";
+            string text = $"{_doc.PixelWidth} x {_doc.PixelHeight} px";
             if (Editor.PixelUnderMouse() is Point p) text += $"   {p.X:0}, {p.Y:0}";
             if (ImageInfoText.Text != text) ImageInfoText.Text = text;
         }

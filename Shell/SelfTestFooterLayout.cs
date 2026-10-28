@@ -56,11 +56,11 @@ internal static class SelfTestFooterLayout
                     window.Width = width;
                     await Task.Delay(120);
                     var information = (TextBlock)window.FindName("ImageInfoText");
-                    if (editor) information.Text = "10000 x 10000   9999, 9999";
+                    if (editor) information.Text = "10000 x 10000 px   9999, 9999";
                     window.UpdateLayout();
                     await window.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                     window.UpdateLayout();
-                    if (editor && information.Text != "10000 x 10000   9999, 9999")
+                    if (editor && information.Text != "10000 x 10000 px   9999, 9999")
                         throw new InvalidOperationException("The long footer readout fixture changed before its layout assertion.");
                     Rect badge = Bounds(portable);
                     var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
