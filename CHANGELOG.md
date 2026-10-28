@@ -8,6 +8,11 @@ KillerShot 1.1.1 fixes problems found after 1.1.0.
 
 - With the sidebar on the right, the theme and language menus open in the bottom-right corner beside the rail, instead of across the window in the bottom-left corner.
 - The theme menu's accent colors are drawn whole instead of cut off on the right, and they sit right beside the theme names.
+- With "Use KillerShot for the Print Screen key" on, the tray menu shows the Print Screen shortcuts again.
+
+### Changed
+
+- Clicking the tray icon opens KillerShot instead of starting a region capture. Print Screen and the tray menu still capture, and a click still stops a recording.
 
 ## [1.1.0] - 2026-10-27
 

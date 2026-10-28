@@ -15,7 +15,7 @@ namespace KillerShot.Shell;
 /// Explorer restarts.</summary>
 internal sealed class TrayHost : IDisposable
 {
-    private const int CallbackMessage = Win32.WM_APP + 1;
+    internal const int CallbackMessage = Win32.WM_APP + 1;
     private const uint IconId = 1;
     private const int NIN_BALLOONUSERCLICK = 0x0405;
 
@@ -137,10 +137,13 @@ internal sealed class TrayHost : IDisposable
         }
         UpdatePrintScreenHook();
         // The hook serves Print Screen shortcuts without a registration, so with it on a refused
-        // registration is not a lost shortcut.
+        // registration is not a lost shortcut, and the tray menu still shows its key.
         if (_printScreenHook?.Installed == true)
             foreach (var (action, sc) in _printScreen)
+            {
                 if (_failedActions.Remove(action)) _failed.Remove(sc.Short);
+                _active[action] = sc;
+            }
         UpdateTip();
     }
 
@@ -181,7 +184,7 @@ internal sealed class TrayHost : IDisposable
             if (mouse == Win32.WM_LBUTTONUP)
             {
                 if (_recording) RecordRequested?.Invoke();   // a click on the tray stops a recording
-                else DeferCapture(null, CaptureMode.Region);
+                else OpenEditorRequested?.Invoke();
             }
             else if (mouse is Win32.WM_RBUTTONUP or 0x7B) ShowMenu();
             else if (mouse == NIN_BALLOONUSERCLICK)
@@ -208,6 +211,7 @@ internal sealed class TrayHost : IDisposable
     }
 
     private string Gesture(ShortcutAction action) => _active.TryGetValue(action, out var sc) ? sc.Short : "";
+    internal string TestGesture(ShortcutAction action) => Gesture(action);
 
     private void ShowMenu()
     {
