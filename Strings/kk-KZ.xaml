@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen пернесінің Windows параметрін ашу</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Print Screen пернесі үшін KillerShot пайдалану</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Print Screen арқылы Қиып алу құралын ашатын Windows параметрін өшіреді, сонда перне KillerShot пернелер тіркесіміне өтеді. Өшірсеңіз, параметр қалпына келеді. Win+Shift+S әлі де Қиып алу құралын ашады.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Print Screen үшін пайдалану үшін KillerShot орнатыңыз. Портативті көшірме жойылғаннан кейін Windows параметрін қалпына келтіре алмас еді.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Бұл портативті көшірме. Жоймас бұрын мұны өшіріңіз, әйтпесе Windows параметрлерінде өзгертпейінше Print Screen Қиып алу құралын ашпайды.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot пернені босатқаннан кейін Windows Print Screen пернесін қайта алды. KillerShot пайдалану үшін мұны қайта қосыңыз.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Тіркесімді басып, жаңа пернелерді басыңыз. Backspace оны өшіреді, Esc өзгеріссіз қалдырады.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Басып, жаңа тіркесімді енгізіңіз</sys:String>

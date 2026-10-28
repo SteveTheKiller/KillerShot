@@ -161,7 +161,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Odpri nastavitev Print Screen v sistemu Windows</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Uporabi KillerShot za tipko Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Izklopi nastavitev sistema Windows, ki s tipko Print Screen odpre Orodje za izrezovanje, tako da tipko dobi bližnjica KillerShota. Z izklopom se nastavitev povrne. Win+Shift+S še vedno odpre Orodje za izrezovanje.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Namestite KillerShot, če ga želite uporabljati za Print Screen. Prenosna kopija po izbrisu ne bi mogla povrniti nastavitve sistema Windows.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">To je prenosna kopija. Pred izbrisom to izklopite, sicer tipka Print Screen ne bo odpirala Orodja za izrezovanje, dokler tega ne spremenite v nastavitvah sistema Windows.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows je vzel tipko Print Screen nazaj, potem ko jo je KillerShot sprostil. Znova vklopite, če želite uporabljati KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klikni bližnjico in pritisni nove tipke. Backspace jo izklopi, Esc pa ohrani.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klikni in pritisni novo bližnjico</sys:String>

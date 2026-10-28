@@ -13,7 +13,9 @@ using Microsoft.Win32;
 // It is the user's own choice made in KillerShot, so it never happens on its own and is always
 // undone the same way, as KillerShell's default terminal switch is: the value it replaced is saved
 // first and put back on the way out (turning it off, or uninstalling), but only while the key is
-// still free. A choice made later in Settings is never overwritten. Win+Shift+S is not part of it:
+// still free. A choice made later in Settings is never overwritten. Unlike KillerShell's, it works
+// from a portable copy too, whose note asks for it to be turned off before the copy is deleted.
+// Win+Shift+S is not part of it:
 // Windows keeps that shortcut for itself.
 namespace KillerShot.Services
 {
@@ -40,8 +42,10 @@ namespace KillerShot.Services
         private readonly string _keyPath;
         private readonly bool _portable;
 
-        /// <param name="portable">A portable copy cannot turn it on: nothing would put the key back
-        /// once the exe is deleted.</param>
+        /// <param name="portable">A portable copy can turn it on too, unlike KillerShell's default
+        /// terminal: nothing here points at the exe, and the worst a deleted copy leaves behind is
+        /// Print Screen free of Snipping Tool, which Settings turns back. Its note says to turn the
+        /// switch off before deleting the copy.</param>
         /// <param name="keyPath">Self-tests use a scratch key in place of the real one.</param>
         internal PrintScreenKey(bool portable, string keyPath = KeyboardKey)
         {
@@ -63,22 +67,20 @@ namespace KillerShot.Services
             }
         }
 
-        /// <summary>Whether the checkbox takes a click: to turn it on, or to turn it off again
-        /// from a portable copy that finds it on.</summary>
-        internal bool CanChange => State == PrintScreenKeyState.On || !_portable;
+        /// <summary>Whether the checkbox takes a click. Always: installed and portable copies alike.</summary>
+        internal bool CanChange => true;
 
-        /// <summary>The note under the checkbox: why it cannot be turned on, what happened, or what it does.</summary>
+        /// <summary>The note under the checkbox: what happened, what to do before deleting a portable
+        /// copy, or what it does.</summary>
         internal string NoteKey =>
-            _portable && State != PrintScreenKeyState.On ? "Str_CS_PrintScreenKeyPortable"
-          : State == PrintScreenKeyState.ChangedElsewhere ? "Str_CS_PrintScreenKeyChanged"
+            State == PrintScreenKeyState.ChangedElsewhere ? "Str_CS_PrintScreenKeyChanged"
+          : _portable ? "Str_CS_PrintScreenKeyPortable"
           : "Str_CS_PrintScreenKeyHint";
 
-        /// <summary>Frees the Print Screen key from Windows' screen capture. False when this copy
-        /// cannot, with nothing changed.</summary>
+        /// <summary>Frees the Print Screen key from Windows' screen capture.</summary>
         internal bool TurnOn()
         {
             if (State == PrintScreenKeyState.On) return true;
-            if (_portable) return false;
             int? current = Read();
             Settings.SetRequired(PreviousSetting, current?.ToString(CultureInfo.InvariantCulture) ?? "");
             Write(0);

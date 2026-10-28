@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Åpne Windows-innstillingen for Print Screen-tasten</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Bruk KillerShot for Print Screen-tasten</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Slår av Windows-innstillingen som åpner Utklippsverktøy med Print Screen, slik at KillerShots snarvei får tasten. Slår du dette av, settes innstillingen tilbake. Win+Shift+S åpner fortsatt Utklippsverktøy.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Installer KillerShot for å bruke det til Print Screen. En bærbar kopi kunne ikke satt Windows-innstillingen tilbake etter at den ble slettet.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Dette er en bærbar kopi. Slå av dette før du sletter den, ellers åpner ikke Print Screen Utklippsverktøy før du endrer det i Windows-innstillinger.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows tok tilbake Print Screen-tasten etter at KillerShot frigjorde den. Slå dette på igjen for å bruke KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klikk en hurtigtast, og trykk de nye tastene. Tilbaketast slår den av, og Esc beholder den.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klikk, og trykk den nye hurtigtasten</sys:String>

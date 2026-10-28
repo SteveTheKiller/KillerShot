@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">打开 Print Screen 键的 Windows 设置</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">使用 KillerShot 处理 Print Screen 键</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">关闭用 Print Screen 键打开截图工具的 Windows 设置，让 KillerShot 的快捷键获得此键。关闭此项会恢复该设置。Win+Shift+S 仍会打开截图工具。</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">安装 KillerShot 后才能将其用于 Print Screen。便携版删除后无法恢复 Windows 设置。</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">这是便携版。删除前请先关闭此项，否则在 Windows 设置中改回之前，Print Screen 键不会打开截图工具。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot 释放 Print Screen 键后，Windows 又将其收回。重新打开此项即可使用 KillerShot。</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">点击一个快捷键，然后按下新的按键。Backspace 关闭它，Esc 保持不变。</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">点击后按下新的快捷键</sys:String>

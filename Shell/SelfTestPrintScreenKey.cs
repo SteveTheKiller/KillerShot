@@ -11,7 +11,7 @@ namespace KillerShot.Shell;
 /// KillerShot.exe --selftest-print-screen-key &lt;folder&gt;: the Print Screen switch against a
 /// scratch registry key and scratch settings. Turning it on frees the key and saves what it
 /// replaced; turning it off puts that back, but never over a choice made since in Settings; a
-/// portable copy cannot turn it on; uninstall undoes only what KillerShot did.
+/// portable copy can use it too; uninstall undoes only what KillerShot did.
 ///
 /// KillerShot.exe --selftest-print-screen-live &lt;folder&gt;: the real Windows setting, turned on
 /// for a moment and put back exactly. It also reports whether Print Screen registers either way;
@@ -72,11 +72,11 @@ internal static class SelfTestPrintScreenKey
         report.Add("a value that did not exist is removed again on the way out: PASS");
 
         SetValue(1);
-        Check(!portable.TurnOn() && Value() == 1 && !portable.CanChange && portable.NoteKey == "Str_CS_PrintScreenKeyPortable",
-            "A portable copy must not turn it on.");
-        SetValue(0);
-        Check(portable.CanChange, "A portable copy that finds it on must still be able to turn it off.");
-        report.Add("a portable copy cannot turn it on but can turn it off: PASS");
+        Check(portable.CanChange && portable.NoteKey == "Str_CS_PrintScreenKeyPortable", "A portable copy must offer the switch, with its delete-first note.");
+        Check(portable.TurnOn() && Value() == 0 && portable.State == PrintScreenKeyState.On, "A portable copy must be able to turn it on.");
+        portable.TurnOff();
+        Check(Value() == 1 && Settings.Get(PrintScreenKey.PreviousSetting) == null, "A portable copy must put the value back when turned off.");
+        report.Add("a portable copy can turn it on and off, with its note: PASS");
 
         SetValue(0);   // freed by the user, not by KillerShot
         installed.Undo();

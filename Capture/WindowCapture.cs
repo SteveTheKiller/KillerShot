@@ -43,8 +43,19 @@ internal static class WindowCapture
         return null;
     }
 
+    private static readonly HashSet<IntPtr> OwnCapturable = [];
+
+    /// <summary>Lets one of KillerShot's own windows be picked and captured, as any other app's
+    /// is: the editor, so KillerShot can take a picture of itself. Its overlays, the capture bar
+    /// and its popups stay out of the picker.</summary>
+    public static void AllowOwnWindow(IntPtr hwnd, bool allow)
+    {
+        lock (OwnCapturable)
+            if (allow) OwnCapturable.Add(hwnd); else OwnCapturable.Remove(hwnd);
+    }
+
     /// <summary>The top-level window worth capturing, or zero for the desktop, the taskbar,
-    /// a minimized or cloaked window, or one of KillerShot's own windows.</summary>
+    /// a minimized or cloaked window, or one of KillerShot's own windows other than the editor.</summary>
     public static IntPtr CapturableRoot(IntPtr hwnd)
     {
         if (hwnd == IntPtr.Zero) return IntPtr.Zero;
@@ -52,7 +63,7 @@ internal static class WindowCapture
         if (hwnd == IntPtr.Zero || !Win32.IsWindowVisible(hwnd) || Win32.IsIconic(hwnd)) return IntPtr.Zero;
         if (Win32.DwmGetWindowAttribute(hwnd, Win32.DWMWA_CLOAKED, out int cloaked, 4) == 0 && cloaked != 0) return IntPtr.Zero;
         Win32.GetWindowThreadProcessId(hwnd, out uint pid);
-        if (pid == (uint)Environment.ProcessId) return IntPtr.Zero;
+        if (pid == (uint)Environment.ProcessId) lock (OwnCapturable) if (!OwnCapturable.Contains(hwnd)) return IntPtr.Zero;
         string cls = Win32.ClassName(hwnd);
         if (cls is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd") return IntPtr.Zero;
         return hwnd;

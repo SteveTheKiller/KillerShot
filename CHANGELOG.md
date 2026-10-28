@@ -11,6 +11,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - In High Contrast, hovered menu items use the system highlight colors.
 - Dragging the carousel quickly through a large folder no longer leaves the pictures it lands on blank. Thumbnails load for the pictures in view first, and ones skipped along the way load when you come back to them.
 - A large linked folder fills in as it is scanned instead of showing only a loading spinner until the last file is read.
+- Window mode can pick KillerShot's own editor window, so KillerShot can take a picture of itself. Its capture overlays and bar stay out of the picker.
 - A right-click menu opens right against the pointer. A tall menu no longer starts about 30 pixels above the click and runs far up the screen.
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
@@ -30,7 +31,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 
 - Minimize collections, in the sidebar's right-click menu, shows each collection as one line with its name and count, so many more fit in the sidebar. The preview style comes back when it is turned off.
 - The picture's right-click menu in the editor has Delete for an album or folder capture.
-- "Use KillerShot for the Print Screen key" in Capture settings turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool, and a portable copy cannot turn it on.
+- "Use KillerShot for the Print Screen key" in Capture settings turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool. A portable copy can use it too; turn it off before deleting that copy.
 
 ## [1.0.0] - 2026-10-27
 

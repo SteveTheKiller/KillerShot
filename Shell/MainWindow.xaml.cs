@@ -44,6 +44,9 @@ namespace KillerShot.Shell
             };
 
             Controls.FlyoutPlacement.UsePane(ContentPane);
+            // The editor can be picked in Window mode like any other app's window.
+            SourceInitialized += (_, _) => Capture.WindowCapture.AllowOwnWindow(new System.Windows.Interop.WindowInteropHelper(this).Handle, true);
+            Closed += (_, _) => Capture.WindowCapture.AllowOwnWindow(new System.Windows.Interop.WindowInteropHelper(this).Handle, false);
 
             InitThemePicker();
             InitLanguageMenu();

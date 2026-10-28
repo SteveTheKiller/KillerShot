@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Открыть параметр Windows для клавиши Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Использовать KillerShot для клавиши Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Отключает параметр Windows, открывающий «Ножницы» по Print Screen, чтобы клавишу получило сочетание KillerShot. При отключении параметр восстанавливается. Win+Shift+S по-прежнему открывает «Ножницы».</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Установите KillerShot, чтобы использовать его для Print Screen. Портативная копия после удаления не смогла бы вернуть параметр Windows.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Это портативная копия. Отключите это перед её удалением, иначе Print Screen не будет открывать «Ножницы», пока вы не измените это в параметрах Windows.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows забрала клавишу Print Screen обратно после того, как KillerShot её освободил. Включите снова, чтобы использовать KillerShot.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Нажмите на сочетание, затем нажмите новые клавиши. Backspace отключает его, Esc оставляет как есть.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Нажмите, затем введите новое сочетание</sys:String>

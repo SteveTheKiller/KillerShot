@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen キーの Windows 設定を開く</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">PrintScreen キーに KillerShot を使う</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">PrintScreen キーで Snipping Tool を開く Windows の設定をオフにし、KillerShot のショートカットがキーを使えるようにします。オフにすると設定は元に戻ります。Win+Shift+S は引き続き Snipping Tool を開きます。</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">PrintScreen キーで使うには KillerShot をインストールしてください。ポータブル版は削除後に Windows の設定を元に戻せません。</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">これはポータブル版です。削除する前にオフにしてください。オフにしないと、Windows の設定で変更するまで PrintScreen キーで Snipping Tool が開きません。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot がキーを解放した後、Windows が PrintScreen キーを取り戻しました。KillerShot を使うにはもう一度オンにしてください。</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">ショートカットをクリックして新しいキーを押します。Backspace でオフ、Esc で変更しません。</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">クリックして新しいショートカットを押します</sys:String>

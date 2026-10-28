@@ -165,7 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen tuşunun Windows ayarını aç</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Print Screen tuşu için KillerShot'ı kullan</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Print Screen ile Ekran Alıntısı Aracı'nı açan Windows ayarını kapatır, böylece tuşu KillerShot kısayolu alır. Kapatıldığında ayar geri yüklenir. Win+Shift+S hâlâ Ekran Alıntısı Aracı'nı açar.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Print Screen için kullanmak üzere KillerShot'ı yükleyin. Taşınabilir bir kopya silindikten sonra Windows ayarını geri yükleyemezdi.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Bu taşınabilir bir kopya. Silmeden önce bunu kapatın, yoksa Windows Ayarları'nda değiştirene kadar Print Screen Ekran Alıntısı Aracı'nı açmaz.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot tuşu serbest bıraktıktan sonra Windows Print Screen tuşunu geri aldı. KillerShot'ı kullanmak için bunu yeniden açın.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Bir kısayola tıklayın, ardından yeni tuşlara basın. Geri tuşu kapatır, Esc olduğu gibi bırakır.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Tıklayın, ardından yeni kısayola basın</sys:String>
