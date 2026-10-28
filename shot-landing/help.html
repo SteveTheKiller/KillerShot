@@ -174,8 +174,8 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <p data-i18n="h_first_2">KillerShot is a system tray app. Close the editor and it keeps running in the notification area, so Print Screen keeps working. Turn off <b>Close to system tray</b> in About (F12) to quit when the window closes instead. Click the tray icon to capture a region, or to stop a recording. Right-click it to capture in a specific mode, record, save or print the last capture, open the output folder, or exit.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_prtsc_t">When Print Screen opens Snipping Tool instead</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_prtsc_1">Windows 11 can give Print Screen to Snipping Tool. When that setting is on, or another program already holds a shortcut, KillerShot cannot register it and says so in a notification.</p>
-<p data-i18n="h_prtsc_2">Open <b>Capture settings</b> on the rail and choose <b>Open the Windows Print Screen setting</b>, turn off <b>Use the Print screen key to open screen capture</b>, then choose <b>Try the shortcuts again</b> from the tray menu. You can also give any action a different shortcut.</p>
+<p data-i18n="h_prtsc_1">Windows 11 gives Print Screen to Snipping Tool by default, so KillerShot only gets the key while its own window has focus.</p>
+<p data-i18n="h_prtsc_2">Tick <b>Use KillerShot for the Print Screen key</b> in <b>About</b>, or <b>Use for Print Screen</b> in the tray icon's menu. KillerShot turns off the Windows setting that hands Print Screen to Snipping Tool and takes the key at once; untick it and the setting is put back. Win+Shift+S still opens Snipping Tool.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_startup_t">Start with Windows</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_startup_1">Turn on <b>Start with Windows</b> on the About card (F12). KillerShot then starts in the notification area without opening the editor, and Print Screen works from the moment you sign in.</p>
@@ -209,8 +209,8 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 <p data-i18n="h_recent_4">Windows' <b>Screenshots</b> folder shows as the first collection when you group by collection. It is read live from the files, so pictures saved there by Windows or by KillerShot appear as they arrive; it is not copied into the encrypted library unless you choose <b>Add to the library</b>. To turn it off, open <b>Library</b> from the title bar.</p>
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_strip_t">The collection strip</span><span class="kbd">Alt + Shift + arrows</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
-<p data-i18n="h_strip_1">With a picture open, its collection runs beside it: a carousel when the strip is at the top or bottom, a column of thumbnails when it is at the side. Click a picture, or move with the arrow keys, to open it. Pick another collection, or All captures, from the list at the strip's top left.</p>
-<p data-i18n="h_strip_2"><b>Alt+Shift</b> with an arrow key docks the strip to that side of the window. The arrow of the side it is already on minimizes it to a thin bar, and again brings it back. Drag its edge to resize it.</p>
+<p data-i18n="h_strip_1">With a picture open, its collection runs in a photo carousel at the top or bottom, and every collection is listed in the sidebar at the left or right. Click a picture, or move with the arrow keys, to open it. Pick another collection, or All captures, in the sidebar.</p>
+<p data-i18n="h_strip_2"><b>Alt+Shift</b> with Left or Right moves the collections sidebar to that side, and Up or Down moves the photo carousel. The arrow of the side it is already on hides it, and again brings it back. Drag its edge to resize it.</p>
 </div></div></div>
 <h2 class="help-cat" id="editor" data-i18n="h_editor">Editor</h2>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_tools_t">Editor tools</span><span class="kbd">V P H A R E T X C</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
@@ -337,8 +337,8 @@ shift: { Enter:['appt','Start a new line of text'], Left:['appt','Move the selec
   Up:['appt','Move the selected mark 10 px'], Down:['appt','Move the selected mark 10 px'], PrtSc:['file','Capture all monitors'] },
 ctrlshift: { D1:['view','Small icons'], D2:['view','Large icons'], D3:['view','No text'], D4:['view','Text beside the icons'],
   D5:['view','Text under the icons'], D6:['view','Text only'], Z:['appt','Redo'], S:['file','Save as'], PrtSc:['file','Start or stop a video recording'] },
-altshift: { G:['view','Film Grain'], Left:['view','Dock the collection strip left'], Right:['view','Dock the collection strip right'],
-  Up:['view','Dock the collection strip at the top'], Down:['view','Dock the collection strip at the bottom'] } };
+altshift: { G:['view','Film Grain'], Left:['view','Sidebar on the left'], Right:['view','Sidebar on the right'],
+  Up:['view','Carousel at the top'], Down:['view','Carousel at the bottom'] } };
 var CATNAME = { file:'FILE', view:'VIEW', nav:'TOOLS', appt:'EDIT', help:'HELP' };
 var KBROWS = [
 [['Esc','Esc',1],['',0.8],['F1','F1',1],['F2','F2',1],['F3','F3',1],['F4','F4',1],['',0.6],['F5','F5',1],['F6','F6',1],['F7','F7',1],['F8','F8',1],['',0.6],['F9','F9',1],['F10','F10',1],['F11','F11',1],['F12','F12',1],['',0.6],['PrtSc','PrtSc',1]],
@@ -428,7 +428,7 @@ window.addEventListener('resize', fit);
 <div class="kbd-row"><span class="k">Ctrl + Shift + D</span><span class="d">Discard a recording</span></div>
 <div class="kbd-row"><span class="k">Ctrl + L</span><span class="d" data-i18n="hk_library">Show or hide the capture library</span></div>
 <div class="kbd-row"><span class="k">Ctrl + F</span><span class="d" data-i18n="hk_libsearch">Search the library</span></div>
-<div class="kbd-row"><span class="k">Alt + Shift + arrows</span><span class="d" data-i18n="hk_strip">Dock the collection strip to that side, or minimize it on its own side</span></div>
+<div class="kbd-row"><span class="k">Alt + Shift + arrows</span><span class="d" data-i18n="hk_strip">Move the sidebar (Left, Right) or the carousel (Up, Down) to that side, or hide it on its own side</span></div>
 <div class="kbd-row"><span class="k">Ctrl + O</span><span class="d" data-i18n="hk_open">Open an image</span></div>
 <div class="kbd-row"><span class="k">Ctrl + S</span><span class="d" data-i18n="hk_save">Save</span></div>
 <div class="kbd-row"><span class="k">Ctrl + Shift + S</span><span class="d" data-i18n="hk_saveas">Save as</span></div>
