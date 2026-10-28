@@ -24,20 +24,50 @@ namespace KillerShot.Shell
             LibrarySettingsScroll.MaxHeight = height;
         }
 
+        private AlbumsDialog? _albumsDialog;
+
+        /// <summary>The open album manager, for self-tests.</summary>
+        internal AlbumsDialog? TestAlbumsDialog => _albumsDialog;
+
+        /// <summary>How the album manager is shown: modal for the user, modeless for self-tests,
+        /// which drive it while it is open.</summary>
+        internal Func<AlbumsDialog, bool?> PresentAlbums { get; set; } = dialog => dialog.ShowDialog();
+
+        /// <summary>Self-tests: show the album manager without blocking, so the test can drive it.</summary>
+        internal void TestUseModelessAlbums() => PresentAlbums = dialog => { dialog.ShowActivated = false; dialog.Opacity = Opacity; dialog.Show(); return null; };
+        internal bool TestAlbumsOpen => _albumsDialog?.IsVisible == true;
+        internal FrameworkElement? TestAlbumsCard => _albumsDialog?.Content as FrameworkElement;
+        internal void TestCloseAlbums() => _albumsDialog?.Close();
+
+        /// <summary>The window prompts from the album manager belong to: the manager while it is
+        /// open, so they stack over it, and this window otherwise.</summary>
+        private Window AlbumOwner => (Window?)_albumsDialog ?? this;
+
+        /// <summary>The album manager: a modal window like the KillerNotes and Killendar database
+        /// dialogs. Its controls live in MainWindow.xaml and are lent to the window while it is open.</summary>
         private void ShowLibrarySettings()
         {
-            if (LibrarySettingsPopup.IsOpen) { LibrarySettingsPopup.IsOpen = false; return; }
+            if (_albumsDialog != null) { _albumsDialog.Activate(); return; }
             RefreshAlbumManager();
-            LibrarySettingsCard.Width = Math.Max(200, Math.Min(460, ContentPane.ActualWidth - 16));
-            // The flyout is a popup, so it may reach past the window down to the taskbar: in a small
-            // window it shows everything rather than cutting its last controls off. It only
-            // scrolls when the screen itself is too short. It opens 8 below the pane's top and keeps
-            // 10 clear at the bottom.
-            double bottom = Math.Max(ContentPane.ActualHeight, WorkAreaBottom(ContentPane) ?? 0);
-            LibrarySettingsScroll.MaxHeight = Math.Max(100, bottom - 18);
-            FlyoutPlacement.AttachInsidePane(LibrarySettingsPopup, LibrarySettingsButton, alignRight: true);
-            LibrarySettingsPopup.IsOpen = true;
-            Dispatcher.BeginInvoke(new Action(() => AlbumList.Focus()));
+            var home = (Panel)LibrarySettingsScroll.Parent;
+            int index = home.Children.IndexOf(LibrarySettingsScroll);
+            home.Children.Remove(LibrarySettingsScroll);
+            // The window grows to fit the controls and scrolls only on a screen too short for them.
+            LibrarySettingsScroll.MaxHeight = Math.Max(240, SystemParameters.WorkArea.Height - 120);
+            AlbumsHeading.Visibility = Visibility.Collapsed;   // the caption carries "Albums"
+            var dialog = new AlbumsDialog(this, LibrarySettingsScroll);
+            dialog.PreviewKeyDown += LibrarySettingsPopup_PreviewKeyDown;
+            dialog.Closed += (_, _) =>
+            {
+                dialog.Release();
+                home.Children.Insert(index, LibrarySettingsScroll);
+                AlbumsHeading.Visibility = Visibility.Visible;
+                _albumsDialog = null;
+                if (IsActive) LibrarySettingsButton.Focus();
+            };
+            _albumsDialog = dialog;
+            dialog.Loaded += (_, _) => AlbumList.Focus();
+            PresentAlbums(dialog);
         }
 
         private void LibrarySettingsPopup_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -47,7 +77,8 @@ namespace KillerShot.Shell
             if (e.Key == Key.F2) { e.Handled = true; AlbumRename_Click(sender, e); return; }
             if (e.Key == Key.Enter && AlbumList.IsKeyboardFocusWithin) { e.Handled = true; AlbumOpen_Click(sender, e); return; }
             if (e.Key != Key.Escape) return;
-            LibrarySettingsPopup.IsOpen = false;
+            if (_albumsDialog != null) _albumsDialog.Close();
+            else LibrarySettingsPopup.IsOpen = false;
             e.Handled = true;
         }
 
@@ -58,8 +89,8 @@ namespace KillerShot.Shell
 
         private bool? ShowAlbumDialog(Window dialog)
         {
-            try { return dialog.ShowDialog(); }
-            finally { LibrarySettingsPopup.IsOpen = true; }
+            dialog.Owner = AlbumOwner;
+            return dialog.ShowDialog();
         }
 
         private void RefreshAlbumManager(string? selectedPath = null)
@@ -121,7 +152,7 @@ namespace KillerShot.Shell
         private async Task<T> AlbumWorkAsync<T>(Func<T> work)
         {
             _albumBusy = true;
-            var content = LibrarySettingsPopup.Child;
+            UIElement content = LibrarySettingsScroll;
             if (content != null) content.IsEnabled = false;
             RefreshLibraryStatus(Loc("Str_Album_Working"));
             try
@@ -181,7 +212,7 @@ namespace KillerShot.Shell
                     }
                     if (!needsPassword) return;
                     var dialog = new PromptDialog(string.Format(Loc("Str_Album_UnlockTitle"), Path.GetFileNameWithoutExtension(path)),
-                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
+                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = AlbumOwner };
                     if (ShowAlbumDialog(dialog) != true) return;
                     password = dialog.Password;
                 }
@@ -190,13 +221,12 @@ namespace KillerShot.Shell
             finally
             {
                 ThawAfterAlbumSwitch();
-                LibrarySettingsPopup.IsOpen = true;
             }
         }
 
         private void AlbumNew_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new PromptDialog(Loc("Str_Album_NewTitle"), "", Loc("Str_Lib_Create")) { Owner = this };
+            var dialog = new PromptDialog(Loc("Str_Album_NewTitle"), "", Loc("Str_Lib_Create")) { Owner = AlbumOwner };
             if (ShowAlbumDialog(dialog) != true || string.IsNullOrWhiteSpace(dialog.Text)) return;
             try
             {
@@ -210,7 +240,7 @@ namespace KillerShot.Shell
         private void AlbumRename_Click(object sender, RoutedEventArgs e)
         {
             if ((AlbumList.SelectedItem as ListBoxItem)?.Tag is not CaptureLibrary.AlbumInfo album) return;
-            var dialog = new PromptDialog(Loc("Str_Album_RenameTitle"), "", Loc("Str_Lib_Rename"), album.Name) { Owner = this };
+            var dialog = new PromptDialog(Loc("Str_Album_RenameTitle"), "", Loc("Str_Lib_Rename"), album.Name) { Owner = AlbumOwner };
             if (ShowAlbumDialog(dialog) != true || string.IsNullOrWhiteSpace(dialog.Text)) return;
             try { RefreshAlbumManager(CaptureLibrary.RenameAlbum(album.Path, dialog.Text)); }
             catch (Exception error) { RefreshLibraryStatus(string.Format(Loc("Str_Album_Failed"), error.Message)); }
@@ -221,8 +251,7 @@ namespace KillerShot.Shell
             if (_albumBusy) return;
             var dialog = new FileDialog(FileDialogMode.Open) { Title = Loc("Str_Album_OpenFile"), Filter = Loc("Str_Album_Filter"), DefaultExt = ".kshot" };
             bool? chosen;
-            try { chosen = dialog.ShowDialog(this); }
-            finally { LibrarySettingsPopup.IsOpen = true; }
+            chosen = dialog.ShowDialog(AlbumOwner);
             if (chosen != true) return;
             string? password = null;
             try
@@ -236,7 +265,7 @@ namespace KillerShot.Shell
                     if (path != null) { RefreshAlbumManager(path); await OpenAlbumAsync(path, password); return; }
                     if (!needsPassword) return;
                     var unlock = new PromptDialog(string.Format(Loc("Str_Album_UnlockTitle"), Path.GetFileNameWithoutExtension(dialog.FileName)),
-                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
+                        password != null ? Loc("Str_Lib_WrongPassword") : "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = AlbumOwner };
                     if (ShowAlbumDialog(unlock) != true) return;
                     password = unlock.Password;
                 }
@@ -316,7 +345,7 @@ namespace KillerShot.Shell
         private bool ConfirmCurrentLibraryPassword()
         {
             if (!CaptureLibrary.HasPassword) return true;
-            var dlg = new PromptDialog(Loc("Str_CS_CurrentPasswordTitle"), "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = this };
+            var dlg = new PromptDialog(Loc("Str_CS_CurrentPasswordTitle"), "", Loc("Str_Lib_Unlock"), kind: PromptKind.Password) { Owner = AlbumOwner };
             if (ShowAlbumDialog(dlg) != true) return false;
             if (CaptureLibrary.CheckPassword(dlg.Password)) return true;
             RefreshLibraryStatus(Loc("Str_Lib_WrongPassword"));
@@ -326,7 +355,7 @@ namespace KillerShot.Shell
         private void LibraryPassword_Click(object sender, RoutedEventArgs e)
         {
             if (!ConfirmCurrentLibraryPassword()) return;
-            var dlg = new PromptDialog(Loc("Str_CS_SetPasswordTitle"), Loc("Str_CS_SetPasswordDetail"), Loc("Str_CS_SetPasswordOk"), kind: PromptKind.NewPassword) { Owner = this };
+            var dlg = new PromptDialog(Loc("Str_CS_SetPasswordTitle"), Loc("Str_CS_SetPasswordDetail"), Loc("Str_CS_SetPasswordOk"), kind: PromptKind.NewPassword) { Owner = AlbumOwner };
             if (ShowAlbumDialog(dlg) != true) return;
             ApplyLibraryPassword(dlg.Password);
         }
@@ -335,7 +364,7 @@ namespace KillerShot.Shell
         {
             if (!ConfirmCurrentLibraryPassword()) return;
             var dlg = new ConfirmDialog(Loc("Str_CS_RemovePasswordTitle"), Loc("Str_CS_RemovePasswordDetail"),
-                Loc("Str_CS_RemovePassword"), Loc("Str_Btn_Cancel")) { Owner = this };
+                Loc("Str_CS_RemovePassword"), Loc("Str_Btn_Cancel")) { Owner = AlbumOwner };
             ShowAlbumDialog(dlg);
             if (dlg.Confirmed) ApplyLibraryPassword(null);
         }

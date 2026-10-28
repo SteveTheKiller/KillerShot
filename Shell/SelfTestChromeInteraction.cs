@@ -99,25 +99,26 @@ internal static class SelfTestChromeInteraction
                 var face = (FrameworkElement)menu.Template.FindName("MenuRoot", menu);
                 CheckPaneInset(face, pane, false, theme + " capture menu");
                 menu.IsOpen = false;
+                // The album manager is its own window now, centered on the editor like the
+                // database dialogs, so it has no pane inset to check; it must open and close.
+                window.TestUseModelessAlbums();
                 ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 await Task.Delay(200);
-                var popup = (Popup)window.FindName("LibrarySettingsPopup");
-                CheckPaneInset((FrameworkElement)popup.Child, pane, true, theme + " album manager");
-                popup.IsOpen = false;
+                if (!window.TestAlbumsOpen) failures.Add(theme + " album manager window did not open.");
+                window.TestCloseAlbums();
             }
 
-            // A short window: the album flyout reaches past it toward the taskbar and shows all of
-            // its controls instead of cutting the last ones off.
+            // A short window: the album manager is its own window, so it still shows all of its
+            // controls instead of cutting the last ones off.
             window.Height = 420;
             await Task.Delay(150);
             window.UpdateLayout();
             ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Task.Delay(300);
             var albumScroll = (ScrollViewer)window.FindName("LibrarySettingsScroll");
-            var albumPopup = (Popup)window.FindName("LibrarySettingsPopup");
-            report.Add($"short window album flyout: viewport={albumScroll.ViewportHeight:F0} extent={albumScroll.ExtentHeight:F0} scrollable={albumScroll.ScrollableHeight:F0}");
-            if (albumScroll.ScrollableHeight > 0.5) failures.Add("In a short window the album flyout cuts off its last controls.");
-            albumPopup.IsOpen = false;
+            report.Add($"short window album manager: viewport={albumScroll.ViewportHeight:F0} extent={albumScroll.ExtentHeight:F0} scrollable={albumScroll.ScrollableHeight:F0}");
+            if (albumScroll.ScrollableHeight > 0.5) failures.Add("In a short window the album manager cuts off its last controls.");
+            window.TestCloseAlbums();
             window.Close();
 
             void CheckPaneInset(FrameworkElement face, FrameworkElement pane, bool right, string name)

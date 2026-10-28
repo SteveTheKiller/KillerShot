@@ -171,18 +171,19 @@ internal static class SelfTestImageMenus
             if (buttonPosition.Y >= 40 || buttonPosition.X <= window.ActualWidth / 2)
                 throw new InvalidOperationException("Library settings must be on the right of the title bar.");
             string keepBefore = CaptureLibrary.Keep;
+            window.TestUseModelessAlbums();
             librarySettings.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            var libraryPopup = (System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup");
-            // The card opens in its own popup window; give it time to lay out on a busy machine.
-            for (int wait = 0; wait < 40 && !(libraryPopup.IsOpen && ((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible); wait++)
+            // The album manager opens as its own window, like the KillerNotes and Killendar
+            // database dialogs; give it time to lay out on a busy machine.
+            for (int wait = 0; wait < 40 && !(window.TestAlbumsOpen && ((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible); wait++)
                 await Task.Delay(50);
-            if (!libraryPopup.IsOpen || !ReferenceEquals(libraryPopup.PlacementTarget, librarySettings)
-                || !((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible
+            if (!window.TestAlbumsOpen || !((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible
+                || Window.GetWindow((FrameworkElement)window.FindName("LibraryKeepCombo")) is not AlbumsDialog
                 || ((FrameworkElement)window.FindName("CaptureSettingsOverlay")).IsVisible)
-                throw new InvalidOperationException("The title-bar button must open its own library settings card.");
-            libraryPopup.IsOpen = false;
+                throw new InvalidOperationException("The title-bar button must open the album manager window.");
+            window.TestCloseAlbums();
             if (CaptureLibrary.Keep != keepBefore) throw new InvalidOperationException("Opening library settings changed retention.");
-            report.Add("Library settings: right title-bar button, anchored card and unchanged retention PASS");
+            report.Add("Library settings: right title-bar button, album manager window and unchanged retention PASS");
             var editor = (EditorCanvas)window.FindName("Editor");
             var stage = (FrameworkElement)window.FindName("EditorStage");
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");

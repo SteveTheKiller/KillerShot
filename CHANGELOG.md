@@ -20,6 +20,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 
 - The download is about 7 MB instead of 33 MB. Window and screen capture, recording and text recognition now call Windows directly instead of shipping the 25 MB Windows SDK projection.
 - Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
+- The album manager opens as its own window with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click.
 
 ## [1.0.0] - 2026-10-27
 

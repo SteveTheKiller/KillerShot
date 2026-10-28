@@ -11,8 +11,8 @@ using KillerShot.Services;
 namespace KillerShot.Shell;
 
 /// <summary>KillerShot.exe --selftest-library-menu &lt;folder&gt;: Library from the sidebar's
-/// right-click menu opens the themed album flyout without stalling the window. The window sits
-/// off-screen and the flyout is fully transparent, so nothing shows.</summary>
+/// right-click menu opens the album manager window, with its close button, without stalling the
+/// editor. The editor sits off-screen and the manager is fully transparent, so nothing shows.</summary>
 internal static class SelfTestLibraryMenu
 {
     public static bool TryRun(string[] args)
@@ -43,8 +43,9 @@ internal static class SelfTestLibraryMenu
                 Left = -20000, Top = -20000, Width = 1280, Height = 820 };
             window.Show();
             await Idle();
-            var popup = (Popup)window.FindName("LibrarySettingsPopup");
-            if (popup.Child is UIElement card) { card.Opacity = 0; card.IsHitTestVisible = false; }
+            // Shown without blocking and fully transparent, so the test can look at it and nothing shows.
+            window.PresentAlbums = dialog => { dialog.ShowActivated = false; dialog.Opacity = 0; dialog.Show(); return null; };
+            var scroll = (FrameworkElement)window.FindName("LibrarySettingsScroll");
 
             // The sidebar's own menu, opened for real (transparent), and Library clicked through its
             // automation peer: the same path as a mouse click, with the menu holding the mouse.
@@ -66,20 +67,44 @@ internal static class SelfTestLibraryMenu
             var wait = Idle();
             if (await Task.WhenAny(wait, Task.Delay(5000)) != wait) report.Add("ui_thread_stalled_after_library_click=TRUE");
             report.Add($"idle_after_click_ms={idle.ElapsedMilliseconds}");
-            report.Add($"popup_open={popup.IsOpen}");
-            var opened = PresentationSource.CurrentSources.OfType<System.Windows.Interop.HwndSource>()
-                .Select(source => source.RootVisual).OfType<Window>().Where(w => w != window).Select(w => w.GetType().FullName + " title=" + w.Title);
-            report.Add("other_windows=" + string.Join(", ", opened));
-            if (popup.Child is Border border)
-                report.Add($"card_background={(border.Background as SolidColorBrush)?.Color.ToString() ?? border.Background?.ToString() ?? "none"}");
+            var dialog = window.TestAlbumsDialog;
+            report.Add($"albums_window_open={dialog?.IsVisible == true}");
+            bool inside = dialog != null && ReferenceEquals(Window.GetWindow(scroll), dialog);
+            report.Add($"album_controls_in_window={inside}");
+            bool hasClose = dialog != null && Descendants(dialog).OfType<Button>().Any(button =>
+                System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc("Str_Sys_Close")
+                || Equals(button.ToolTip, LocaleManager.Loc("Str_Sys_Close")));
+            report.Add($"close_button={hasClose}");
+            report.Add($"title={dialog?.Title}");
+            if (dialog?.Content is FrameworkElement face)
+            {
+                await Task.Delay(500);   // past the fade-in
+                var picture = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(face.ActualWidth),
+                    (int)Math.Ceiling(face.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+                picture.Render(face);
+                ImageOutput.SavePng(picture, Path.Combine(folder, "albums-window.png"));
+            }
+            dialog?.Close();
+            await Idle();
+            bool home = ReferenceEquals(Window.GetWindow(scroll), window);
+            report.Add($"controls_back_home_after_close={home}");
             foreach (string error in errors) report.Add("unhandled=" + error);
-            exit = errors.Count == 0 && popup.IsOpen ? 0 : 1;
-            popup.IsOpen = false;
+            exit = errors.Count == 0 && inside && hasClose && home && window.TestAlbumsDialog == null ? 0 : 1;
         }
         catch (Exception error) { report.Add(error.ToString()); foreach (string e in errors) report.Add("unhandled=" + e); }
         finally { try { window?.Close(); } catch { } }
         File.WriteAllLines(Path.Combine(folder, "library-menu-report.txt"), report);
         Application.Current.Shutdown(exit);
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var deeper in Descendants(child)) yield return deeper;
+        }
     }
 
     private static Task Idle() => Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle).Task;

@@ -1320,7 +1320,7 @@
                     <StackPanel x:Name="LibrarySettingsContent"
                                 TextElement.FontFamily="{DynamicResource UiFont}" TextElement.Foreground="{DynamicResource TextBrush}"
                                 KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
-                        <TextBlock Text="{DynamicResource Str_Album_Title}" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
+                        <TextBlock x:Name="AlbumsHeading" Text="{DynamicResource Str_Album_Title}" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
                         <WrapPanel Margin="0,0,0,10">
                             <Button Content="{DynamicResource Str_Album_New}" Style="{StaticResource OutlineButton}"

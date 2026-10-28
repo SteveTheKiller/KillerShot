@@ -37,17 +37,17 @@ internal static partial class SelfTestAlbums
         var document = App.Instance.Document!;
         long editedId = App.Instance.CurrentItem!.Id;
         document.Crop(new Int32Rect(0, 0, 1, 1));
-        var popup = (Popup)window.FindName("LibrarySettingsPopup");
+        window.TestUseModelessAlbums();
         var list = (ListBox)window.FindName("AlbumList");
 
         async Task ShowManager()
         {
-            if (!popup.IsOpen) await ManagerClickAsync((Button)window.FindName("LibrarySettingsButton"));
+            if (!window.TestAlbumsOpen) await ManagerClickAsync((Button)window.FindName("LibrarySettingsButton"));
             await Task.Delay(70);
-            Check(popup.IsOpen, "The album manager must remain open after a dialog.");
+            Check(window.TestAlbumsOpen, "The album manager must remain open after a dialog.");
         }
         Button Named(string name) => (Button)window.FindName(name);
-        Button NewButton() => ManagerVisuals(popup.Child).OfType<Button>()
+        Button NewButton() => ManagerVisuals(window.TestAlbumsCard!).OfType<Button>()
             .Single(button => Equals(button.Content, LocaleManager.Loc("Str_Album_New")));
         void Select(string path)
         {
@@ -62,7 +62,7 @@ internal static partial class SelfTestAlbums
         await ShowManager();
         await ManagerClickAsync(NewButton(), dialog => ManagerCancel<PromptDialog>(dialog));
         Preserved("Canceling New must preserve the original album and unsaved editor.");
-        Check(CaptureLibrary.Albums().Count == 1 && popup.IsOpen, "Canceling New must not create a file or hide the manager.");
+        Check(CaptureLibrary.Albums().Count == 1 && window.TestAlbumsOpen, "Canceling New must not create a file or hide the manager.");
         report.Add("New dialog Cancel preserves album, files, unsaved editor, and manager: PASS");
 
         // An album capture keeps its edits in its album, so a new album opens without asking to
@@ -72,7 +72,7 @@ internal static partial class SelfTestAlbums
         Check(CaptureLibrary.FilePath == work && CaptureLibrary.Count == 0 && App.Instance.Document == null
             && App.Instance.CurrentItem == null && ((TextBlock)window.FindName("TitleLibraryLabel")).Text == "Work",
             "New must activate Work and clear the old editor context.");
-        Check(popup.IsOpen, "Creating an album must leave the manager visible.");
+        Check(window.TestAlbumsOpen, "Creating an album must leave the manager visible.");
         report.Add("New activates the album without a discard prompt; the album capture's edits stay in its album: PASS");
 
         await ManagerClickAsync(NewButton(), dialog => ManagerText(dialog, "Personal"));
@@ -92,7 +92,7 @@ internal static partial class SelfTestAlbums
         await ManagerClickAsync(Named("AlbumRenameBtn"), dialog => ManagerText(dialog, "Work"));
         var status = (TextBlock)window.FindName("LibraryStatusText");
         Check(CaptureLibrary.FilePath == project && CaptureLibrary.Count == 1 && File.Exists(work)
-            && popup.IsOpen && status.IsVisible && status.Text.Contains("already exists", StringComparison.OrdinalIgnoreCase),
+            && window.TestAlbumsOpen && status.IsVisible && status.Text.Contains("already exists", StringComparison.OrdinalIgnoreCase),
             "A duplicate rename must preserve both albums and show its error in the manager.");
         report.Add("Rename Cancel, successful active rename with key preservation, and visible duplicate-name rejection: PASS");
 
@@ -115,7 +115,7 @@ internal static partial class SelfTestAlbums
         Check(CaptureLibrary.LoadMarks(editedId)?.Image.PixelWidth == 1, "The original album lost the edits made before switching.");
         Select(project);
         await ManagerClickAsync(Named("AlbumOpenBtn"), dialog => ManagerCancel<PromptDialog>(dialog));
-        Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1 && popup.IsOpen,
+        Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1 && window.TestAlbumsOpen,
             "Canceling the unlock prompt must preserve the active album and manager.");
         await ManagerClickAsync(Named("AlbumOpenBtn"), dialog => ManagerPassword(dialog, "wrong password"), dialog =>
         {
@@ -125,11 +125,11 @@ internal static partial class SelfTestAlbums
                 "The original album must remain live while retrying a password.");
             ManagerPassword(dialog, "manager fixture password");
         });
-        Check(CaptureLibrary.FilePath == project && CaptureLibrary.HasPassword && CaptureLibrary.Count == 1 && popup.IsOpen,
+        Check(CaptureLibrary.FilePath == project && CaptureLibrary.HasPassword && CaptureLibrary.Count == 1 && window.TestAlbumsOpen,
             "Correct password retry must activate the selected album without losing captures.");
         report.Add("Password mismatch, account-album reopen, unlock Cancel, wrong-password retry, and successful unlock: PASS");
         Check(Settings.Get("ActiveAlbum") == "Project.kshot", "The manager's final selection must be persisted for restart.");
-        popup.IsOpen = false;
+        window.TestCloseAlbums();
         App.Instance.Document?.MarkSaved();
         window.Close();
     }
