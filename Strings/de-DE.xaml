@@ -164,6 +164,7 @@
     <sys:String x:Key="Str_Review_Discarded">Die Aufnahme wurde verworfen. Das Album behält das Original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Windows-Einstellung für die Druck-Taste öffnen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">KillerShot für die Druck-Taste verwenden</sys:String>
+    <sys:String x:Key="Str_Tray_PrintScreenKey">Für die Druck-Taste verwenden</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Schaltet die Windows-Einstellung aus, die mit der Druck-Taste das Snipping Tool öffnet, damit die Tastenkombination von KillerShot die Taste erhält. Beim Ausschalten wird die Einstellung wiederhergestellt. Win+Umschalt+S öffnet weiterhin das Snipping Tool.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Dies ist eine portable Kopie. Schalten Sie dies aus, bevor Sie sie löschen, sonst öffnet die Druck-Taste das Snipping Tool erst wieder, wenn Sie es in den Windows-Einstellungen ändern.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows hat die Druck-Taste zurückgenommen, nachdem KillerShot sie freigegeben hatte. Schalten Sie dies erneut ein, um KillerShot zu verwenden.</sys:String>

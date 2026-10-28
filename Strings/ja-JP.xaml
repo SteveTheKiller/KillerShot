@@ -164,6 +164,7 @@
     <sys:String x:Key="Str_Review_Discarded">キャプチャを破棄しました。アルバムには元の画像が残ります。</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen キーの Windows 設定を開く</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">PrintScreen キーに KillerShot を使う</sys:String>
+    <sys:String x:Key="Str_Tray_PrintScreenKey">PrintScreen キーで使う</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">PrintScreen キーで Snipping Tool を開く Windows の設定をオフにし、KillerShot のショートカットがキーを使えるようにします。オフにすると設定は元に戻ります。Win+Shift+S は引き続き Snipping Tool を開きます。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyPortable">これはポータブル版です。削除する前にオフにしてください。オフにしないと、Windows の設定で変更するまで PrintScreen キーで Snipping Tool が開きません。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot がキーを解放した後、Windows が PrintScreen キーを取り戻しました。KillerShot を使うにはもう一度オンにしてください。</sys:String>

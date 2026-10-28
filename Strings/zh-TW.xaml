@@ -164,6 +164,7 @@
     <sys:String x:Key="Str_Review_Discarded">已捨棄擷取畫面。相簿保留原圖。</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">開啟 Print Screen 鍵的 Windows 設定</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">使用 KillerShot 處理 Print Screen 鍵</sys:String>
+    <sys:String x:Key="Str_Tray_PrintScreenKey">用於 Print Screen 鍵</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">關閉以 Print Screen 鍵開啟剪取工具的 Windows 設定，讓 KillerShot 的快速鍵取得此鍵。關閉此項會還原該設定。Win+Shift+S 仍會開啟剪取工具。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyPortable">這是可攜版。刪除前請先關閉此項，否則在 Windows 設定中改回之前，Print Screen 鍵不會開啟剪取工具。</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot 釋放 Print Screen 鍵後，Windows 又將其收回。重新開啟此項即可使用 KillerShot。</sys:String>

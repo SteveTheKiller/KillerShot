@@ -192,7 +192,9 @@ internal sealed class TrayHost : IDisposable
         open.FontWeight = FontWeights.SemiBold;
         // The Snipping Tool switch, where a tray app's user looks for it: ticked while KillerShot
         // has the Print Screen key. The same switch as About's.
-        var printScreen = Item(Loc("Str_CS_PrintScreenKey"), "", TogglePrintScreenKey);
+        // Short in the tray: the menu is KillerShot's own, and the full wording made it twice as wide.
+        var printScreen = Item(Loc("Str_Tray_PrintScreenKey"), "", TogglePrintScreenKey);
+        printScreen.ToolTip = Loc("Str_CS_PrintScreenKey");
         printScreen.IsCheckable = true;
         printScreen.IsChecked = PrintScreenKey.Current.State == PrintScreenKeyState.On;
         menu.Items.Add(new Separator());

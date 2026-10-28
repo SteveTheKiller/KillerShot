@@ -163,6 +163,7 @@
     <sys:String x:Key="Str_Review_Discarded">A felvétel elvetve. Az album megtartja az eredetit.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">A Print Screen billentyű Windows-beállításának megnyitása</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">A KillerShot használata a Print Screen billentyűhöz</sys:String>
+    <sys:String x:Key="Str_Tray_PrintScreenKey">Használat a Print Screenhez</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Kikapcsolja azt a Windows-beállítást, amely a Print Screen billentyűvel a Kivágóeszközt nyitja meg, így a billentyűt a KillerShot billentyűparancsa kapja. Kikapcsolva a beállítás visszaáll. A Win+Shift+S továbbra is a Kivágóeszközt nyitja meg.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Ez egy hordozható példány. Törlés előtt kapcsolja ki ezt, különben a Print Screen nem nyitja meg a Kivágóeszközt, amíg a Windows beállításaiban meg nem változtatja.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">A Windows visszavette a Print Screen billentyűt, miután a KillerShot felszabadította. Kapcsolja be újra a KillerShot használatához.</sys:String>

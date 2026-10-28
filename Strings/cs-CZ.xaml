@@ -164,6 +164,7 @@
     <sys:String x:Key="Str_Review_Discarded">Snímek byl zahozen. Album si ponechá originál.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Otevřít nastavení klávesy Print Screen ve Windows</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Používat KillerShot pro klávesu Print Screen</sys:String>
+    <sys:String x:Key="Str_Tray_PrintScreenKey">Používat pro Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Vypne nastavení Windows, které klávesou Print Screen otevírá Výstřižky, takže klávesu dostane zkratka KillerShotu. Vypnutím se nastavení vrátí. Win+Shift+S dál otevírá Výstřižky.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Toto je přenosná kopie. Před jejím smazáním toto vypněte, jinak klávesa Print Screen nebude otevírat Výstřižky, dokud to nezměníte v Nastavení Windows.</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows si klávesu Print Screen vzal zpět poté, co ji KillerShot uvolnil. Zapněte to znovu, chcete-li používat KillerShot.</sys:String>
