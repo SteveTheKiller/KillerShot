@@ -10,7 +10,8 @@ namespace KillerShot.Shell;
 /// <summary>
 /// The rail's big menus (theme, language) open in the content pane's bottom corner on the rail's
 /// side: the visible card 8px in from the pane's right edge with the sidebar on the right, and
-/// from its left edge with the sidebar on the left, and 8px above the pane's foot.
+/// from its left edge with the sidebar on the left, and 8px above the pane's foot. The theme
+/// menu's accent pills are drawn whole.
 /// </summary>
 internal static class SelfTestFlyoutSide
 {
@@ -66,6 +67,13 @@ internal static class SelfTestFlyoutSide
                     double vertical = paneBottomRight.Y - inset - cardBottomRight.Y;
                     bool inside = cardTopLeft.X >= paneTopLeft.X && cardBottomRight.X <= paneBottomRight.X;
                     report.Add($"{side} {menuName}: horizontal_error_px={horizontal:0.##} vertical_error_px={vertical:0.##} inside={inside}");
+                    // Every accent pill is drawn whole: nothing in its slot cuts it short.
+                    foreach (var pill in Descendants(card).OfType<Border>().Where(b => b.Width == 26))
+                    {
+                        var clip = LayoutInformation.GetLayoutClip(pill);
+                        if (clip != null && clip.Bounds.Width < pill.Width)
+                            throw new InvalidOperationException($"An accent pill is clipped to {clip.Bounds.Width:0.#}px of {pill.Width}px.");
+                    }
                     // What the screen actually shows, for the rendered check.
                     Point windowTopLeft = window.PointToScreen(new Point());
                     Point windowBottomRight = window.PointToScreen(new Point(window.ActualWidth, window.ActualHeight));
@@ -87,6 +95,16 @@ internal static class SelfTestFlyoutSide
             File.WriteAllLines(Path.Combine(folder, "flyout-side-report.txt"), report);
             window?.Close();
             App.Instance.Shutdown(code);
+        }
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var deeper in Descendants(child)) yield return deeper;
         }
     }
 }
