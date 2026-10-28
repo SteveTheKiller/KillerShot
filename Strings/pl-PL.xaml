@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Otwórz ustawienie klawisza Print Screen w Windows</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Używaj KillerShot dla klawisza Print Screen</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Używaj dla Print Screen</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Wyłącza ustawienie systemu Windows, które klawiszem Print Screen otwiera Narzędzie Wycinanie, więc klawisz trafia do skrótu KillerShot. Wyłączenie przywraca ustawienie. Win+Shift+S nadal otwiera Narzędzie Wycinanie.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">To jest kopia przenośna. Wyłącz to przed jej usunięciem, inaczej Print Screen nie otworzy Narzędzia Wycinanie, dopóki nie zmienisz tego w Ustawieniach systemu Windows.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows odebrał klawisz Print Screen po tym, jak KillerShot go zwolnił. Włącz to ponownie, aby używać KillerShot.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Gdy KillerShot działa, Print Screen otwiera KillerShot zamiast Narzędzia Wycinanie. Gdy KillerShot jest zamknięty, Print Screen znowu otwiera Narzędzie Wycinanie. Ustawienie systemu Windows się nie zmienia, a Win+Shift+S nadal otwiera Narzędzie Wycinanie.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Kliknij skrót i naciśnij nowe klawisze. Backspace go wyłącza, a Esc pozostawia bez zmian.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Kliknij i naciśnij nowy skrót</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">SKRÓTY GLOBALNE</sys:String>

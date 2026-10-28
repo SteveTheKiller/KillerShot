@@ -1246,11 +1246,6 @@
                                     <CheckBox x:Name="PrintScreenKeyToggle" FontSize="11" Margin="0,6,0,0" Click="PrintScreenKey_Click">
                                         <TextBlock Text="{DynamicResource Str_CS_PrintScreenKey}" TextWrapping="Wrap"/>
                                     </CheckBox>
-                                    <!-- Shown only when something needs attention (Windows took the key back), as
-                                         KillerShell's default-terminal note is; otherwise the explanation is the
-                                         checkbox's tooltip, so the columns keep their length in every state. -->
-                                    <TextBlock x:Name="PrintScreenKeyNote" Foreground="{DynamicResource DimTextBrush}" FontSize="10"
-                                               Margin="0,4,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
                                 </StackPanel>
                                 <!-- Two columns of even length, each ending with its option that carries an
                                      explanation: Print Screen on the left, Close to system tray on the right

@@ -164,9 +164,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">A Print Screen billentyű Windows-beállításának megnyitása</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">A KillerShot használata a Print Screen billentyűhöz</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Használat a Print Screenhez</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Kikapcsolja azt a Windows-beállítást, amely a Print Screen billentyűvel a Kivágóeszközt nyitja meg, így a billentyűt a KillerShot billentyűparancsa kapja. Kikapcsolva a beállítás visszaáll. A Win+Shift+S továbbra is a Kivágóeszközt nyitja meg.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Ez egy hordozható példány. Törlés előtt kapcsolja ki ezt, különben a Print Screen nem nyitja meg a Kivágóeszközt, amíg a Windows beállításaiban meg nem változtatja.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">A Windows visszavette a Print Screen billentyűt, miután a KillerShot felszabadította. Kapcsolja be újra a KillerShot használatához.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Amíg a KillerShot fut, a Print Screen a Kivágóeszköz helyett a KillerShotot nyitja meg. Ha a KillerShot be van zárva, a Print Screen ismét a Kivágóeszközt nyitja meg. A Windows saját beállítása nem változik, és a Win+Shift+S továbbra is a Kivágóeszközt nyitja meg.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Kattintson egy billentyűparancsra, majd nyomja le az új billentyűket. A Backspace kikapcsolja, az Esc megtartja.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Kattintson, majd nyomja le az új billentyűparancsot</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBÁLIS BILLENTYŰPARANCSOK</sys:String>

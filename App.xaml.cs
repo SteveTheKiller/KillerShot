@@ -181,6 +181,10 @@ public partial class App : Application
         if (demo) DemoMode.BeginSeed();
         else CaptureLibrary.BeginOpen();
 
+        // The first Print Screen switch changed Windows' own setting; put it back once, before the
+        // tray claims the shortcuts (Services/PrintScreenKey.cs). Best effort.
+        try { PrintScreenKey.RestoreLegacy(); }
+        catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or IOException) { }
         Tray = new TrayHost();
         CaptureLibrary.WriteFailed += error => Dispatcher.BeginInvoke(new Action(() =>
             Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_SaveFailedTitle"), error)));

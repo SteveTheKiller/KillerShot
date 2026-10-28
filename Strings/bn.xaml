@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen কী-এর Windows সেটিং খুলুন</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">প্রিন্ট স্ক্রিন কী-এর জন্য KillerShot ব্যবহার করুন</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">প্রিন্ট স্ক্রিনের জন্য ব্যবহার করুন</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">প্রিন্ট স্ক্রিন থেকে স্নিপিং টুল খোলার Windows সেটিংটি বন্ধ করে, যাতে কী-টি KillerShot-এর শর্টকাট পায়। এটি বন্ধ করলে সেটিংটি আগের মতো ফিরে আসে। Win+Shift+S এখনও স্নিপিং টুল খোলে।</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">এটি একটি পোর্টেবল কপি। মুছে ফেলার আগে এটি বন্ধ করুন, নইলে Windows সেটিংসে না বদলানো পর্যন্ত প্রিন্ট স্ক্রিন স্নিপিং টুল খুলবে না।</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot কী-টি মুক্ত করার পর Windows প্রিন্ট স্ক্রিন কী আবার নিয়ে নিয়েছে। KillerShot ব্যবহার করতে এটি আবার চালু করুন।</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot চালু থাকলে প্রিন্ট স্ক্রিন স্নিপিং টুলের বদলে KillerShot খোলে। KillerShot বন্ধ থাকলে প্রিন্ট স্ক্রিন আবার স্নিপিং টুল খোলে। Windows-এর নিজস্ব সেটিং বদলায় না, এবং Win+Shift+S এখনও স্নিপিং টুল খোলে।</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">একটি শর্টকাটে ক্লিক করে নতুন কী চাপুন। Backspace এটি বন্ধ করে, Esc আগের মতো রাখে।</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">ক্লিক করে নতুন শর্টকাট চাপুন</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">গ্লোবাল শর্টকাট</sys:String>

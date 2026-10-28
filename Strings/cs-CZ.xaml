@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Otevřít nastavení klávesy Print Screen ve Windows</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Používat KillerShot pro klávesu Print Screen</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Používat pro Print Screen</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Vypne nastavení Windows, které klávesou Print Screen otevírá Výstřižky, takže klávesu dostane zkratka KillerShotu. Vypnutím se nastavení vrátí. Win+Shift+S dál otevírá Výstřižky.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Toto je přenosná kopie. Před jejím smazáním toto vypněte, jinak klávesa Print Screen nebude otevírat Výstřižky, dokud to nezměníte v Nastavení Windows.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows si klávesu Print Screen vzal zpět poté, co ji KillerShot uvolnil. Zapněte to znovu, chcete-li používat KillerShot.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Když KillerShot běží, Print Screen otevře KillerShot místo Výstřižků. Když je KillerShot zavřený, Print Screen znovu otevře Výstřižky. Nastavení Windows se nemění a Win+Shift+S dál otevírá Výstřižky.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klikněte na zkratku a stiskněte nové klávesy. Backspace ji vypne, Esc ji ponechá.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Klikněte a stiskněte novou zkratku</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">GLOBÁLNÍ ZKRATKY</sys:String>

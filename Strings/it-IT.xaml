@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Apri l'impostazione di Windows del tasto Stamp</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Usa KillerShot per il tasto Stamp</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Usa per il tasto Stamp</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Disattiva l'impostazione di Windows che apre lo Strumento di cattura con il tasto Stamp, così la scorciatoia di KillerShot riceve il tasto. Disattivandola, l'impostazione viene ripristinata. Win+Maiusc+S apre ancora lo Strumento di cattura.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Questa è una copia portatile. Disattiva l'opzione prima di eliminarla, altrimenti il tasto Stamp non aprirà lo Strumento di cattura finché non lo cambi nelle Impostazioni di Windows.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows si è ripreso il tasto Stamp dopo che KillerShot lo aveva liberato. Riattiva l'opzione per usare KillerShot.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Mentre KillerShot è in esecuzione, il tasto Stamp apre KillerShot al posto dello Strumento di cattura. Quando KillerShot è chiuso, Stamp apre di nuovo lo Strumento di cattura. L'impostazione di Windows non viene modificata e Win+Maiusc+S apre ancora lo Strumento di cattura.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Fai clic su una scorciatoia, poi premi i nuovi tasti. Backspace la disattiva, Esc la mantiene.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Fai clic, poi premi la nuova scorciatoia</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">SCORCIATOIE GLOBALI</sys:String>

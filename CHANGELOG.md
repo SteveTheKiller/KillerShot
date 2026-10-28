@@ -37,7 +37,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 
 - Minimize collections, in the sidebar's right-click menu, shows each collection as one line with its name and count, so many more fit in the sidebar. The preview style comes back when it is turned off.
 - The picture's right-click menu in the editor has Delete for an album or folder capture.
-- "Use KillerShot for the Print Screen key", in About and as a tick item in the tray icon's menu, turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool. A portable copy can use it too; turn it off before deleting that copy.
+- "Use KillerShot for the Print Screen key", in About and as a tick item in the tray icon's menu, gives Print Screen to KillerShot instead of Snipping Tool while KillerShot is running. Closing KillerShot gives the key straight back to Snipping Tool, and Windows' own setting is never changed. Win+Shift+S stays with Snipping Tool.
 
 ## [1.0.0] - 2026-10-27
 

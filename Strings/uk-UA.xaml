@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Відкрити параметр Windows для клавіші Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Використовувати KillerShot для клавіші Print Screen</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Використовувати для Print Screen</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Вимикає параметр Windows, що відкриває «Ножиці» клавішею Print Screen, щоб клавішу отримало сполучення KillerShot. Вимкнення повертає параметр. Win+Shift+S і далі відкриває «Ножиці».</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">Це портативна копія. Вимкніть це перед її видаленням, інакше Print Screen не відкриватиме «Ножиці», доки ви не зміните це в параметрах Windows.</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">Windows забрала клавішу Print Screen назад після того, як KillerShot її звільнив. Увімкніть знову, щоб використовувати KillerShot.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">Поки KillerShot запущено, Print Screen відкриває KillerShot замість «Ножиць». Коли KillerShot закрито, Print Screen знову відкриває «Ножиці». Параметр Windows не змінюється, а Win+Shift+S і далі відкриває «Ножиці».</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Клацніть сполучення, потім натисніть нові клавіші. Backspace вимикає його, Esc залишає без змін.</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">Клацніть, потім натисніть нове сполучення</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">ГЛОБАЛЬНІ СПОЛУЧЕННЯ</sys:String>

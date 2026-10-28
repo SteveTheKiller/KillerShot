@@ -165,9 +165,7 @@
     <sys:String x:Key="Str_CS_OpenWindowsSetting">開啟 Print Screen 鍵的 Windows 設定</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">使用 KillerShot 處理 Print Screen 鍵</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">用於 Print Screen 鍵</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyHint">關閉以 Print Screen 鍵開啟剪取工具的 Windows 設定，讓 KillerShot 的快速鍵取得此鍵。關閉此項會還原該設定。Win+Shift+S 仍會開啟剪取工具。</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyPortable">這是可攜版。刪除前請先關閉此項，否則在 Windows 設定中改回之前，Print Screen 鍵不會開啟剪取工具。</sys:String>
-    <sys:String x:Key="Str_CS_PrintScreenKeyChanged">KillerShot 釋放 Print Screen 鍵後，Windows 又將其收回。重新開啟此項即可使用 KillerShot。</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot 執行時，Print Screen 鍵會開啟 KillerShot 而不是剪取工具。KillerShot 關閉後，Print Screen 鍵會再次開啟剪取工具。Windows 本身的設定不會變更，Win+Shift+S 仍會開啟剪取工具。</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">按一下快速鍵，再按下新的按鍵。Backspace 會關閉它，Esc 則保持不變。</sys:String>
     <sys:String x:Key="Str_CS_RecordTip">按一下後按下新的快速鍵</sys:String>
     <sys:String x:Key="Str_CS_Shortcuts">全域快速鍵</sys:String>

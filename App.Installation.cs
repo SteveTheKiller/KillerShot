@@ -555,10 +555,10 @@ namespace KillerShot
                 if (Services.CommandLinePath.WithoutEntry(value, targetDir) != value)
                     throw new IOException("The installed command path remains registered.");
             }
-            // Gives Print Screen back to Windows' screen capture if KillerShot took it, as KillerShell
-            // puts the default terminal back. Best effort: the key is a preference, never a reason
-            // to leave a half-removed install.
-            try { new Services.PrintScreenKey(portable: false).Undo(); }
+            // Puts back Windows' Print Screen setting if the first version of the Print Screen switch
+            // changed it (the switch now uses a keyboard hook and leaves the setting alone). Best
+            // effort: the key is a preference, never a reason to leave a half-removed install.
+            try { Services.PrintScreenKey.RestoreLegacy(); }
             catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or IOException) { }
             if (!KillerFamily.Deployment.StartupRegistration.Set(Services.AppInfo.DisplayName, false))
                 throw new UnauthorizedAccessException("The startup registration could not be removed.");

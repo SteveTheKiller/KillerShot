@@ -29,6 +29,9 @@ internal sealed class TrayHost : IDisposable
     private readonly HashSet<ShortcutAction> _failedActions = new();
     private bool _iconAdded;
     private bool _suspended;
+    /// <summary>The shortcuts on the Print Screen key, which the hook serves when the switch is on.</summary>
+    private readonly Dictionary<ShortcutAction, Shortcut> _printScreen = new();
+    private PrintScreenHook? _printScreenHook;
 
     /// <summary>Raised for a shortcut or a menu command, with the window that was in front.</summary>
     public event Action<ShortcutAction?, CaptureMode?, IntPtr>? CaptureRequested;
@@ -90,6 +93,8 @@ internal sealed class TrayHost : IDisposable
         _suspended = true;
         foreach (var id in _hotkeyIds.Keys) Win32.UnregisterHotKey(Handle, id);
         _hotkeyIds.Clear();
+        // Recording a new shortcut needs Print Screen to reach the recorder.
+        UpdatePrintScreenHook();
     }
 
     public void Resume()
@@ -108,7 +113,8 @@ internal sealed class TrayHost : IDisposable
         _active.Clear();
         _failed.Clear();
         _failedActions.Clear();
-        if (_suspended) { UpdateTip(); return; }
+        _printScreen.Clear();
+        if (_suspended) { UpdatePrintScreenHook(); UpdateTip(); return; }
 
         int next = 1;
         foreach (ShortcutAction action in Enum.GetValues<ShortcutAction>())
@@ -116,6 +122,7 @@ internal sealed class TrayHost : IDisposable
             var text = CaptureSettings.ShortcutText(action);
             if (string.IsNullOrWhiteSpace(text)) continue;   // turned off
             if (!Shortcut.TryParse(text, out var sc)) { _failed.Add(text); _failedActions.Add(action); continue; }
+            if (sc.Key == Win32.VK_SNAPSHOT) _printScreen[action] = sc;
             int id = next++;
             if (Win32.RegisterHotKey(Handle, id, sc.Modifiers | Win32.MOD_NOREPEAT, sc.Key))
             {
@@ -128,7 +135,35 @@ internal sealed class TrayHost : IDisposable
                 _failedActions.Add(action);
             }
         }
+        UpdatePrintScreenHook();
+        // The hook serves Print Screen shortcuts without a registration, so with it on a refused
+        // registration is not a lost shortcut.
+        if (_printScreenHook?.Installed == true)
+            foreach (var (action, sc) in _printScreen)
+                if (_failedActions.Remove(action)) _failed.Remove(sc.Short);
         UpdateTip();
+    }
+
+    /// <summary>The Print Screen hook, on while the switch is on, the shortcuts are claimed (not
+    /// paused for recording a new one) and at least one shortcut is on Print Screen.</summary>
+    private void UpdatePrintScreenHook()
+    {
+        bool want = !_suspended && PrintScreenKey.Enabled && _printScreen.Count > 0;
+        if (want && _printScreenHook == null)
+            _printScreenHook = new PrintScreenHook(mods =>
+            {
+                if (!PrintScreenHook.Matches(_printScreen, mods, out var action)) return false;
+                // Read the foreground window now, then leave the hook at once: the capture runs
+                // after it returns, as a low-level hook must answer within the system's timeout.
+                var fg = Win32.GetForegroundWindow();
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => CaptureRequested?.Invoke(action, null, fg)));
+                return true;
+            });
+        else if (!want && _printScreenHook != null)
+        {
+            _printScreenHook.Dispose();
+            _printScreenHook = null;
+        }
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -196,7 +231,7 @@ internal sealed class TrayHost : IDisposable
         var printScreen = Item(Loc("Str_Tray_PrintScreenKey"), "", TogglePrintScreenKey);
         printScreen.ToolTip = Loc("Str_CS_PrintScreenKey");
         printScreen.IsCheckable = true;
-        printScreen.IsChecked = PrintScreenKey.Current.State == PrintScreenKeyState.On;
+        printScreen.IsChecked = PrintScreenKey.Enabled;
         menu.Items.Add(new Separator());
         Item(Loc("Str_Mode_Region"), "", () => DeferCapture(null, CaptureMode.Region));
         Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
@@ -262,26 +297,16 @@ internal sealed class TrayHost : IDisposable
     /// <summary>The Print Screen switch changed from the tray menu; About shows it if open.</summary>
     public event Action? PrintScreenKeyChanged;
 
-    /// <summary>Frees Print Screen from Windows' Snipping Tool, or gives it back, then claims the
-    /// shortcuts again. Windows can take a moment to let go, so a failed claim is tried once more.</summary>
+    /// <summary>Turns the Print Screen switch over, then claims the shortcuts again, which puts
+    /// the hook on or takes it off.</summary>
     private void TogglePrintScreenKey()
     {
-        try
-        {
-            var key = PrintScreenKey.Current;
-            if (key.State == PrintScreenKeyState.On) key.TurnOff(); else key.TurnOn();
-        }
+        try { PrintScreenKey.Enabled = !PrintScreenKey.Enabled; }
         catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or System.IO.IOException)
         {
             ShowInfo(Loc("Str_CS_PrintScreenKey"), error.Message);
         }
         RegisterShortcuts();
-        if (_failed.Count > 0)
-        {
-            var retry = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
-            retry.Tick += (_, _) => { retry.Stop(); RegisterShortcuts(); PrintScreenKeyChanged?.Invoke(); };
-            retry.Start();
-        }
         PrintScreenKeyChanged?.Invoke();
     }
 
@@ -362,6 +387,8 @@ internal sealed class TrayHost : IDisposable
     {
         foreach (var id in _hotkeyIds.Keys) Win32.UnregisterHotKey(Handle, id);
         _hotkeyIds.Clear();
+        _printScreenHook?.Dispose();
+        _printScreenHook = null;
         if (_iconAdded)
         {
             var d = NewData(0);
