@@ -14,13 +14,13 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
 - Dragging the carousel slider moves the carousel as fast as the pointer. A long jump lands at once and glides only the last few pictures, instead of slowly turning past every picture on the way.
-- Library in the sidebar's right-click menu opens the album panel after the menu closes, instead of leaving the window not responding.
 
 ### Changed
 
 - The download is about 7 MB instead of 33 MB. Window and screen capture, recording and text recognition now call Windows directly instead of shipping the 25 MB Windows SDK projection.
 - Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
 - The album manager opens as its own window with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click.
+- The sidebar's right-click menu no longer offers Library, which opened the album manager a second way and could leave the window not responding. The album manager opens from its button in the title bar.
 
 ### Added
 

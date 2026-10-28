@@ -60,19 +60,8 @@ public partial class MainWindow
             item.Click += (_, _) => action();
             menu.Items.Add(item);
         }
-        // The album flyout closes when it loses the mouse, and the menu holds the mouse until it
-        // has closed. Opened from inside the click, the two fight over mouse capture and the window
-        // stops responding, so the flyout waits for the menu to finish closing.
-        Add("Str_Btn_Library", () =>
-        {
-            void Open(object? sender, RoutedEventArgs e)
-            {
-                menu.Closed -= Open;
-                Dispatcher.BeginInvoke(ShowLibrarySettings, System.Windows.Threading.DispatcherPriority.Input);
-            }
-            if (menu.IsOpen) menu.Closed += Open;
-            else ShowLibrarySettings();
-        });
+        // No Library row: the album manager has its own button in the title bar, and a second way
+        // in from the sidebar only made it unclear which menu it belonged to.
         if (_strip != null)
         {
             var source = new MenuItem { Header = Loc("Str_Strip_Collection") };

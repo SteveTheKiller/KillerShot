@@ -10,9 +10,9 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
-/// <summary>KillerShot.exe --selftest-library-menu &lt;folder&gt;: Library from the sidebar's
-/// right-click menu opens the album manager window, with its close button, without stalling the
-/// editor. The editor sits off-screen and the manager is fully transparent, so nothing shows.</summary>
+/// <summary>KillerShot.exe --selftest-library-menu &lt;folder&gt;: the sidebar's right-click menu
+/// has no Library row, and the title-bar Library button opens the album manager window, with its
+/// close button, without stalling the editor. The editor sits off-screen and the manager is fully transparent, so nothing shows.</summary>
 internal static class SelfTestLibraryMenu
 {
     public static bool TryRun(string[] args)
@@ -47,18 +47,24 @@ internal static class SelfTestLibraryMenu
             window.PresentAlbums = dialog => { dialog.ShowActivated = false; dialog.Opacity = 0; dialog.Show(); return null; };
             var scroll = (FrameworkElement)window.FindName("LibrarySettingsScroll");
 
-            // The sidebar's own menu, opened for real (transparent), and Library clicked through its
-            // automation peer: the same path as a mouse click, with the menu holding the mouse.
+            // The sidebar's own menu, opened for real (transparent): it must not offer Library, which
+            // has its own button in the title bar.
             var sidebar = (FrameworkElement)window.FindName("NavigationDock");
             var menu = sidebar.ContextMenu;
             menu.Opacity = 0;
             menu.IsOpen = true;
             await Idle();
-            var library = menu.Items.OfType<MenuItem>().First(item => (string)item.Header == LocaleManager.Loc("Str_Btn_Library"));
             report.Add("menu_rows=" + string.Join(" | ", menu.Items.OfType<MenuItem>().Select(item => item.Header)));
+            bool noLibraryRow = !menu.Items.OfType<MenuItem>().Any(item => (string)item.Header == LocaleManager.Loc("Str_Btn_Library"));
+            report.Add($"sidebar_menu_without_library={noLibraryRow}");
+            menu.IsOpen = false;
+            await Idle();
+
+            // The title-bar button, clicked through its automation peer as a mouse click would.
+            var button = (Button)window.FindName("LibrarySettingsButton");
             File.WriteAllLines(Path.Combine(folder, "library-menu-report.txt"), [.. report, "clicking_library=STARTED"]);
             var timer = Stopwatch.StartNew();
-            var peer = (System.Windows.Automation.Provider.IInvokeProvider)new System.Windows.Automation.Peers.MenuItemAutomationPeer(library)
+            var peer = (System.Windows.Automation.Provider.IInvokeProvider)new System.Windows.Automation.Peers.ButtonAutomationPeer(button)
                 .GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke);
             peer.Invoke();
             timer.Stop();
@@ -89,7 +95,7 @@ internal static class SelfTestLibraryMenu
             bool home = ReferenceEquals(Window.GetWindow(scroll), window);
             report.Add($"controls_back_home_after_close={home}");
             foreach (string error in errors) report.Add("unhandled=" + error);
-            exit = errors.Count == 0 && inside && hasClose && home && window.TestAlbumsDialog == null ? 0 : 1;
+            exit = errors.Count == 0 && noLibraryRow && inside && hasClose && home && window.TestAlbumsDialog == null ? 0 : 1;
         }
         catch (Exception error) { report.Add(error.ToString()); foreach (string e in errors) report.Add("unhandled=" + e); }
         finally { try { window?.Close(); } catch { } }
