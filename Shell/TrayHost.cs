@@ -156,6 +156,13 @@ internal sealed class TrayHost : IDisposable
     {
         bool want = !_suspended && PrintScreenKey.Enabled && _printScreen.Count > 0;
         _hookShortcuts = new Dictionary<ShortcutAction, Shortcut>(_printScreen);
+        // A hook Windows refused is tried again on the next claim (the tray's Retry, a settings
+        // change) instead of being kept as a dead object until the switch is toggled.
+        if (_printScreenHook is { Installed: false })
+        {
+            _printScreenHook.Dispose();
+            _printScreenHook = null;
+        }
         if (want && _printScreenHook == null)
         {
             var dispatcher = Application.Current.Dispatcher;
@@ -236,8 +243,8 @@ internal sealed class TrayHost : IDisposable
 
         var open = Item(Loc("Str_Tray_Open"), "", () => OpenEditorRequested?.Invoke());
         open.FontWeight = FontWeights.SemiBold;
-        // The Snipping Tool switch, where a tray app's user looks for it: ticked while KillerShot
-        // has the Print Screen key. The same switch as About's.
+        // The Print Screen switch, where a tray app's user looks for it: ticked while the switch is
+        // on, the saved setting, whether or not a hook is live right now. The same switch as About's.
         // Short in the tray: the menu is KillerShot's own, and the full wording made it twice as wide.
         var printScreen = Item(Loc("Str_Tray_PrintScreenKey"), "", TogglePrintScreenKey);
         printScreen.ToolTip = Loc("Str_CS_PrintScreenKey");

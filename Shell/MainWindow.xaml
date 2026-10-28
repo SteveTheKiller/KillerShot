@@ -1240,9 +1240,10 @@
                                               IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
                                         <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
                                     </CheckBox>
-                                    <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from
-                                         Windows' Snipping Tool, as KillerShell's About card makes it the default terminal.
-                                         Also a tick item in the tray menu. Last in the column, so its note closes it. -->
+                                    <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): while KillerShot
+                                         runs, a keyboard hook takes the Print Screen shortcuts ahead of Snipping Tool, and
+                                         Windows' own setting is never changed. The same switch is a tick item in the tray
+                                         menu. Its explanation is the tooltip. -->
                                     <CheckBox x:Name="PrintScreenKeyToggle" FontSize="11" Margin="0,6,0,0" Click="PrintScreenKey_Click">
                                         <TextBlock Text="{DynamicResource Str_CS_PrintScreenKey}" TextWrapping="Wrap"/>
                                     </CheckBox>
