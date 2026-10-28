@@ -44,13 +44,16 @@ internal static class SelfTestCarousel
                 var viewport = (Viewport3D)VisualTreeHelper.GetChild(control, 0);
                 var scene = (Model3DGroup)((ModelVisual3D)viewport.Children[0]).Content;
                 var firstCard = scene.Children.OfType<Model3DGroup>().Single(c => Math.Abs(c.Transform.Value.OffsetX) < .001 && Math.Abs(c.Transform.Value.OffsetY) < .001);
+                // A long jump (the slider dragged far) keeps up with the pointer: it leaves the
+                // starting cards at once and settles well inside a second, instead of gliding past
+                // every picture on the way.
                 flow.SelectedIndex = 40;
                 await Task.Delay(100);
-                if (!scene.Children.Contains(firstCard)) throw new InvalidOperationException($"{control.GetType().Name} skipped past its initial card window within 100ms.");
-                await Task.Delay(3000);
+                if (scene.Children.Contains(firstCard)) throw new InvalidOperationException($"{control.GetType().Name} was still crawling past its starting cards 100ms after a 40-picture jump.");
+                await Task.Delay(900);
                 var front = scene.Children.OfType<Model3DGroup>().Select(c => c.Transform.Value).Any(m => Math.Abs(m.OffsetX) < .001 && Math.Abs(m.OffsetY) < .001);
-                if (!front) throw new InvalidOperationException("Navigation did not settle on a card.");
-                report.Add(control.GetType().Name + ": continuous start and settled destination PASS");
+                if (!front) throw new InvalidOperationException("A 40-picture jump did not settle on a card within one second.");
+                report.Add(control.GetType().Name + ": long jump keeps up with the pointer and settles within one second PASS");
                 if (Mouse.LeftButton != MouseButtonState.Released) throw new InvalidOperationException("Release the mouse before the carousel input check.");
                 control.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left) { RoutedEvent = Mouse.MouseDownEvent });
                 // Windows can omit button-up when focus or a popup changes during the gesture.

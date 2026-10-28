@@ -13,6 +13,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - A large linked folder fills in as it is scanned instead of showing only a loading spinner until the last file is read.
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
+- Dragging the carousel slider moves the carousel as fast as the pointer. A long jump lands at once and glides only the last few pictures, instead of slowly turning past every picture on the way.
 - Library in the sidebar's right-click menu opens the album panel after the menu closes, instead of leaving the window not responding.
 
 ### Changed

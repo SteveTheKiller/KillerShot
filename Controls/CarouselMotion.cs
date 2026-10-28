@@ -56,6 +56,16 @@ internal sealed class CarouselMotion
         int count = _maximum() + 1;
         _target = _cyclic ? index + Math.Round((Position - index) / count) * count : index;
         if (!_owner.IsLoaded) { Reset(index); _changed(); return; }
+        // A long jump, such as the slider dragged across thousands of pictures, lands just short
+        // of the target at once and glides the last few, so the carousel keeps up with the
+        // pointer instead of crawling past every picture at the glide's top speed.
+        const double glide = 6;
+        if (Math.Abs(_target - Position) > glide)
+        {
+            Position = _target - Math.Sign(_target - Position) * glide;
+            _velocity = 0;
+            _changed();
+        }
         Start();
     }
 
