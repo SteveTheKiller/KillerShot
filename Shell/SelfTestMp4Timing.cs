@@ -38,23 +38,12 @@ internal static class SelfTestMp4Timing
                 }
                 await encoder.FinishAsync(TimeSpan.FromMilliseconds(1250)).WaitAsync(TimeSpan.FromSeconds(20));
             }
-            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
-            var clip = await Windows.Media.Editing.MediaClip.CreateFromFileAsync(file);
-            report.Add($"Requested 1250 ms, decoded duration {clip.OriginalDuration.TotalMilliseconds:F1} ms");
-            if (Math.Abs(clip.OriginalDuration.TotalMilliseconds - 1250) > 110)
+            var probe = SelfTestMp4Probe.Read(path, TimeSpan.FromMilliseconds(1100));
+            report.Add($"Requested 1250 ms, decoded duration {probe.Duration.TotalMilliseconds:F1} ms");
+            if (Math.Abs(probe.Duration.TotalMilliseconds - 1250) > 110)
                 throw new InvalidOperationException("The MP4 lost the final held frame duration.");
-            var composition = new Windows.Media.Editing.MediaComposition();
-            composition.Clips.Add(clip);
-            using var thumbnail = await composition.GetThumbnailAsync(TimeSpan.FromMilliseconds(1100), 64, 64,
-                Windows.Media.Editing.VideoFramePrecision.NearestFrame);
-            var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(thumbnail);
-            var data = await decoder.GetPixelDataAsync(Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8,
-                Windows.Graphics.Imaging.BitmapAlphaMode.Ignore, new Windows.Graphics.Imaging.BitmapTransform(),
-                Windows.Graphics.Imaging.ExifOrientationMode.IgnoreExifOrientation,
-                Windows.Graphics.Imaging.ColorManagementMode.DoNotColorManage);
-            byte[] decoded = data.DetachPixelData();
-            int center = (32 * 64 + 32) * 4;
-            if (decoded[center] < 180 || decoded[center + 2] > 80)
+            var center = SelfTestMp4Probe.PixelAt(probe.Pixels, probe.Width, probe.Height, .5, .5);
+            if (center.B < 180 || center.R > 80)
                 throw new InvalidOperationException("The MP4 tail does not retain the last blue frame.");
             report.Add("Sparse recording retains its final frame through Stop: PASS");
             await CheckRecorderAsync(folder, report, paused: false);
@@ -86,10 +75,9 @@ internal static class SelfTestMp4Timing
         }
         finally { await recorder.StopAsync().WaitAsync(TimeSpan.FromSeconds(20)); }
         double expected = recorder.Elapsed.TotalMilliseconds;
-        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
-        var clip = await Windows.Media.Editing.MediaClip.CreateFromFileAsync(file);
-        report.Add($"Recorder paused={paused}: stopped {expected:F1} ms, decoded {clip.OriginalDuration.TotalMilliseconds:F1} ms");
-        if (!recorder.IsFinalized || expected < 500 || Math.Abs(clip.OriginalDuration.TotalMilliseconds - expected) > 110)
+        var decoded = SelfTestMp4Probe.Read(path, TimeSpan.Zero).Duration;
+        report.Add($"Recorder paused={paused}: stopped {expected:F1} ms, decoded {decoded.TotalMilliseconds:F1} ms");
+        if (!recorder.IsFinalized || expected < 500 || Math.Abs(decoded.TotalMilliseconds - expected) > 110)
             throw new InvalidOperationException("The finalized Recorder duration does not match its clock with pauses removed.");
         report.Add($"Recorder paused={paused}: duration PASS");
     }

@@ -309,21 +309,12 @@ internal static class SelfTestUi
         }
         await mp4.FinishAsync(TimeSpan.FromSeconds(2));
         long mp4Bytes = new FileInfo(mp4Path).Length;
-        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(mp4Path);
-        var clip = await Windows.Media.Editing.MediaClip.CreateFromFileAsync(file);
-        var comp = new Windows.Media.Editing.MediaComposition();
-        comp.Clips.Add(clip);
-        var thumb = await comp.GetThumbnailAsync(TimeSpan.FromMilliseconds(500), W, H, Windows.Media.Editing.VideoFramePrecision.NearestFrame);
-        var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(thumb);
-        var data = await decoder.GetPixelDataAsync(Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8, Windows.Graphics.Imaging.BitmapAlphaMode.Ignore,
-            new Windows.Graphics.Imaging.BitmapTransform(), Windows.Graphics.Imaging.ExifOrientationMode.IgnoreExifOrientation, Windows.Graphics.Imaging.ColorManagementMode.DoNotColorManage);
-        var px = data.DetachPixelData();
-        int tw = (int)decoder.PixelWidth;
-        int o1 = (20 * tw + 20) * 4;
-        bool topRed = px[o1 + 2] > 150 && px[o1] < 100;
-        log.AppendLine($"mp4_audio_tracks={clip.EmbeddedAudioTracks.Count}");
-        if (clip.EmbeddedAudioTracks.Count != 1) throw new InvalidOperationException("MP4 has no sound track.");
-        log.AppendLine($"mp4_bytes={mp4Bytes} duration={clip.OriginalDuration.TotalSeconds:F1}s top_pixel_bgr={px[o1]},{px[o1 + 1]},{px[o1 + 2]} upright={topRed}");
+        var probe = SelfTestMp4Probe.Read(mp4Path, TimeSpan.FromMilliseconds(500));
+        var top = SelfTestMp4Probe.PixelAt(probe.Pixels, probe.Width, probe.Height, 20.0 / W, 20.0 / H);
+        bool topRed = top.R > 150 && top.B < 100;
+        log.AppendLine($"mp4_audio_tracks={probe.AudioTracks}");
+        if (probe.AudioTracks != 1) throw new InvalidOperationException("MP4 has no sound track.");
+        log.AppendLine($"mp4_bytes={mp4Bytes} duration={probe.Duration.TotalSeconds:F1}s top_pixel_bgr={top.B},{top.G},{top.R} upright={topRed}");
         if (mp4Bytes < 1000) throw new InvalidOperationException("MP4 is empty.");
         if (!topRed) throw new InvalidOperationException("MP4 frames are upside down.");
 

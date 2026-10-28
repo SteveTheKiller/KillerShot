@@ -4,7 +4,7 @@ param(
     [switch]$BareCommand
 )
 $ErrorActionPreference = 'Stop'
-if (!$App) { $App = Join-Path $PSScriptRoot '..\bin\Debug\net10.0-windows10.0.26100.0\KillerShot.exe' }
+if (!$App) { $App = Join-Path $PSScriptRoot '..\bin\Debug\net10.0-windows\KillerShot.exe' }
 if (!(Test-Path -LiteralPath $Image -PathType Leaf)) { throw 'The QR test image is missing' }
 if (!(Test-Path -LiteralPath $App -PathType Leaf)) { throw 'Build KillerShot before the QR CLI check' }
 $arguments = @('qr', $Image, '--json')

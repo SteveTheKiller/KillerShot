@@ -531,16 +531,10 @@ internal static class SelfTestRecordingSafety
             await controller.StopAsync(discard: false);
             if (controller.LastVideoPath is not { } path || !File.Exists(path))
                 throw new InvalidOperationException("An audio source error discarded the finalized recording.");
-            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
-            var clip = await Windows.Media.Editing.MediaClip.CreateFromFileAsync(file);
-            var composition = new Windows.Media.Editing.MediaComposition();
-            composition.Clips.Add(clip);
-            using var thumbnail = await composition.GetThumbnailAsync(TimeSpan.Zero, 160, 120,
-                Windows.Media.Editing.VideoFramePrecision.NearestFrame);
-            var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(thumbnail);
-            if (decoder.PixelWidth != 160 || decoder.PixelHeight != 120 || clip.OriginalDuration <= TimeSpan.Zero)
+            var probe = SelfTestMp4Probe.Read(path, TimeSpan.Zero);
+            if (probe.Width != 320 || probe.Height != 240 || probe.Duration <= TimeSpan.Zero)
                 throw new InvalidOperationException("The retained recording could not be decoded.");
-            report.Add($"Audio source failure retains a playable MP4: PASS ({new FileInfo(path).Length} bytes, {clip.OriginalDuration.TotalMilliseconds:F1} ms)");
+            report.Add($"Audio source failure retains a playable MP4: PASS ({new FileInfo(path).Length} bytes, {probe.Duration.TotalMilliseconds:F1} ms)");
         }
         finally
         {

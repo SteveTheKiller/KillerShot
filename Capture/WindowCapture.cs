@@ -1,10 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using KillerShot.Native;
-using Windows.Graphics.Capture;
-using Windows.Graphics.DirectX;
-using Windows.Graphics.DirectX.Direct3D11;
-using WinRT;
 
 namespace KillerShot.Capture;
 
@@ -14,19 +10,6 @@ namespace KillerShot.Capture;
 /// inconsistently.</summary>
 internal static class WindowCapture
 {
-    [ComImport, Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IGraphicsCaptureItemInterop
-    {
-        IntPtr CreateForWindow([In] IntPtr window, [In] ref Guid iid);
-        IntPtr CreateForMonitor([In] IntPtr monitor, [In] ref Guid iid);
-    }
-
-    [ComImport, Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IDirect3DDxgiInterfaceAccess
-    {
-        IntPtr GetInterface([In] ref Guid iid);
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     private struct D3D11_TEXTURE2D_DESC
     {
@@ -44,28 +27,13 @@ internal static class WindowCapture
         public uint RowPitch, DepthPitch;
     }
 
-    [DllImport("d3d11.dll")]
-    private static extern int D3D11CreateDevice(IntPtr adapter, int driverType, IntPtr software, uint flags,
-        IntPtr featureLevels, uint featureLevelCount, uint sdkVersion, out IntPtr device, out int featureLevel, out IntPtr context);
-
-    [DllImport("d3d11.dll")]
-    private static extern int CreateDirect3D11DeviceFromDXGIDevice(IntPtr dxgiDevice, out IntPtr graphicsDevice);
-
-    private static readonly Guid IID_IGraphicsCaptureItem = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
-    private static readonly Guid IID_IDXGIDevice = new("54ec77fa-1377-44e6-8c32-88fd5f44c84c");
-    private static readonly Guid IID_ID3D11Texture2D = new("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
-
     // Vtable slots. ID3D11Device: CreateTexture2D = 5. ID3D11Texture2D: GetDesc = 10.
     // ID3D11DeviceContext: Map = 14, Unmap = 15, CopyResource = 47.
     private const int Slot_CreateTexture2D = 5, Slot_GetDesc = 10, Slot_Map = 14, Slot_Unmap = 15, Slot_CopyResource = 47;
 
-    private static IntPtr _d3dDevice, _d3dContext;
-    private static IDirect3DDevice? _device;
+    private static GraphicsCapture.Device? _device;
 
-    public static bool IsSupported
-    {
-        get { try { return GraphicsCaptureSession.IsSupported(); } catch { return false; } }
-    }
+    public static bool IsSupported => GraphicsCapture.IsSupported;
 
     /// <summary>Extended frame bounds: the visible window without the invisible resize border.</summary>
     public static Win32.RECT? FrameBounds(IntPtr hwnd)
@@ -141,67 +109,46 @@ internal static class WindowCapture
         }
     }
 
-    private static void EnsureDevice()
-    {
-        if (_device != null) return;
-        // 0x20 = D3D11_CREATE_DEVICE_BGRA_SUPPORT. Hardware first, WARP if no usable adapter.
-        int hr = D3D11CreateDevice(IntPtr.Zero, 1, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _d3dContext);
-        if (hr < 0) hr = D3D11CreateDevice(IntPtr.Zero, 5, IntPtr.Zero, 0x20, IntPtr.Zero, 0, 7, out _d3dDevice, out _, out _d3dContext);
-        Marshal.ThrowExceptionForHR(hr);
-
-        var iid = IID_IDXGIDevice;
-        Marshal.ThrowExceptionForHR(Marshal.QueryInterface(_d3dDevice, in iid, out IntPtr dxgi));
-        try
-        {
-            Marshal.ThrowExceptionForHR(CreateDirect3D11DeviceFromDXGIDevice(dxgi, out IntPtr inspectable));
-            try { _device = MarshalInterface<IDirect3DDevice>.FromAbi(inspectable); }
-            finally { Marshal.Release(inspectable); }
-        }
-        finally { Marshal.Release(dxgi); }
-    }
-
-    private static GraphicsCaptureItem CreateItem(IntPtr hwnd)
-    {
-        var factory = ActivationFactory.Get("Windows.Graphics.Capture.GraphicsCaptureItem");
-        var interop = factory.AsInterface<IGraphicsCaptureItemInterop>();
-        var iid = IID_IGraphicsCaptureItem;
-        IntPtr ptr = interop.CreateForWindow(hwnd, ref iid);
-        try { return GraphicsCaptureItem.FromAbi(ptr); }
-        finally { Marshal.Release(ptr); }
-    }
+    private static void EnsureDevice() => _device ??= new GraphicsCapture.Device();
 
     private static async Task<(byte[], int, int)?> GrabAsync(IntPtr hwnd, int timeoutMs, bool includeCursor)
     {
         EnsureDevice();
-        var item = CreateItem(hwnd);
-        try { await GraphicsCaptureAccess.RequestAccessAsync(GraphicsCaptureAccessKind.Borderless); }
-        catch { /* Borderless is a request, not a requirement. */ }
-
-        using var pool = Direct3D11CaptureFramePool.CreateFreeThreaded(_device!, DirectXPixelFormat.B8G8R8A8UIntNormalized, 1, item.Size);
-        using var session = pool.CreateCaptureSession(item);
-        try { session.IsCursorCaptureEnabled = includeCursor; } catch { }
-        try { session.IsBorderRequired = false; } catch { }
-
-        var tcs = new TaskCompletionSource<Direct3D11CaptureFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
-        pool.FrameArrived += (p, _) =>
+        GraphicsCapture.RequestBorderless(1000);
+        IntPtr item = IntPtr.Zero, pool = IntPtr.Zero, session = IntPtr.Zero, frame = IntPtr.Zero;
+        try
         {
-            var f = p.TryGetNextFrame();
-            if (f != null && !tcs.TrySetResult(f)) f.Dispose();
-        };
-        session.StartCapture();
-        if (await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs)) != tcs.Task) return null;
+            item = GraphicsCapture.CreateItemForWindow(hwnd);
+            pool = GraphicsCapture.CreateFreeThreadedPool(_device!.WinRT, 1, GraphicsCapture.ItemSize(item));
+            session = GraphicsCapture.CreateSession(pool, item);
+            try { GraphicsCapture.ConfigureSession(session, includeCursor); } catch { }
+            GraphicsCapture.StartCapture(session);
 
-        using var frame = tcs.Task.Result;
-        return ReadSurface(frame.Surface, frame.ContentSize.Width, frame.ContentSize.Height);
+            // The pool is free-threaded, so the first frame is polled rather than awaited on an event.
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            while ((frame = GraphicsCapture.TryGetNextFrame(pool)) == IntPtr.Zero)
+            {
+                if (clock.ElapsedMilliseconds >= timeoutMs) return null;
+                await Task.Delay(5);
+            }
+            var size = GraphicsCapture.FrameContentSize(frame);
+            return ReadSurface(frame, size.Width, size.Height);
+        }
+        finally
+        {
+            GraphicsCapture.Close(ref frame);
+            GraphicsCapture.Close(ref session);
+            GraphicsCapture.Close(ref pool);
+            GraphicsCapture.Close(ref item);
+        }
     }
 
     private static unsafe void* Slot(IntPtr com, int index) => (*(void***)com)[index];
 
-    private static unsafe (byte[], int, int) ReadSurface(IDirect3DSurface surface, int contentW, int contentH)
+    private static unsafe (byte[], int, int) ReadSurface(IntPtr frame, int contentW, int contentH)
     {
-        var access = surface.As<IDirect3DDxgiInterfaceAccess>();
-        var texIid = IID_ID3D11Texture2D;
-        IntPtr tex = access.GetInterface(ref texIid);
+        IntPtr tex = GraphicsCapture.FrameTexture(frame);
+        IntPtr device = _device!.D3D, context = _device.Context;
         try
         {
             D3D11_TEXTURE2D_DESC desc;
@@ -216,13 +163,13 @@ internal static class WindowCapture
             desc.MiscFlags = 0;
 
             IntPtr staging;
-            int hr = ((delegate* unmanaged[Stdcall]<IntPtr, D3D11_TEXTURE2D_DESC*, IntPtr, IntPtr*, int>)Slot(_d3dDevice, Slot_CreateTexture2D))(_d3dDevice, &desc, IntPtr.Zero, &staging);
+            int hr = ((delegate* unmanaged[Stdcall]<IntPtr, D3D11_TEXTURE2D_DESC*, IntPtr, IntPtr*, int>)Slot(device, Slot_CreateTexture2D))(device, &desc, IntPtr.Zero, &staging);
             Marshal.ThrowExceptionForHR(hr);
             try
             {
-                ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, IntPtr, void>)Slot(_d3dContext, Slot_CopyResource))(_d3dContext, staging, tex);
+                ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, IntPtr, void>)Slot(context, Slot_CopyResource))(context, staging, tex);
                 D3D11_MAPPED_SUBRESOURCE map;
-                hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint, int, uint, D3D11_MAPPED_SUBRESOURCE*, int>)Slot(_d3dContext, Slot_Map))(_d3dContext, staging, 0, 1, 0, &map);
+                hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint, int, uint, D3D11_MAPPED_SUBRESOURCE*, int>)Slot(context, Slot_Map))(context, staging, 0, 1, 0, &map);
                 Marshal.ThrowExceptionForHR(hr);
                 try
                 {
@@ -235,7 +182,7 @@ internal static class WindowCapture
                 }
                 finally
                 {
-                    ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint, void>)Slot(_d3dContext, Slot_Unmap))(_d3dContext, staging, 0);
+                    ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint, void>)Slot(context, Slot_Unmap))(context, staging, 0);
                 }
             }
             finally { Marshal.Release(staging); }
