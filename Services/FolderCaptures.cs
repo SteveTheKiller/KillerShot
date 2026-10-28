@@ -286,20 +286,55 @@ internal static partial class FolderCaptures
             : ImageOutput.EncodePng(ImageOutput.Load(path));
     }
 
+    /// <summary>Whether a delete in this folder can go to the Recycle Bin. A network share or a
+    /// removable drive has none, and Windows would delete the file for good without a word, so
+    /// only a local fixed drive whose Recycle Bin answers counts (audit BF-001, 2026-10-27).</summary>
+    public static bool CanRecycle(string path)
+    {
+        try
+        {
+            if (path.StartsWith(@"\\", StringComparison.Ordinal)) return false;
+            string? root = Path.GetPathRoot(Path.GetFullPath(path));
+            if (string.IsNullOrEmpty(root) || new DriveInfo(root).DriveType != DriveType.Fixed) return false;
+            var info = new ShQueryRbInfo { Size = Marshal.SizeOf<ShQueryRbInfo>() };
+            return SHQueryRecycleBinW(root, ref info) == 0;
+        }
+        catch (Exception error) when (error is ArgumentException or IOException or UnauthorizedAccessException or NotSupportedException) { return false; }
+    }
+
     /// <summary>Sends a folder picture to the Recycle Bin, so a mistaken delete can be undone from
-    /// there, and rescans the collections that showed it.</summary>
-    public static void Recycle(long id)
+    /// there, and rescans the collections that showed it. Call it only where CanRecycle says the
+    /// folder has a Recycle Bin; if Windows still cannot recycle the file (too large, or the bin is
+    /// turned off) it asks before destroying it rather than doing so silently.</summary>
+    public static void Recycle(long id, IntPtr owner = default)
     {
         string path = PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
         var operation = new ShFileOperation
         {
+            Window = owner,
             Func = FoDelete,
             From = path + "\0\0",
-            Flags = FofAllowUndo | FofNoConfirmation | FofSilent | FofNoErrorUi,
+            Flags = FofAllowUndo | FofNoConfirmation | FofSilent | FofNoErrorUi | FofWantNukeWarning,
         };
         int result = SHFileOperationW(ref operation);
         if (result != 0 || operation.AnyOperationsAborted || File.Exists(path))
             throw new IOException(new System.ComponentModel.Win32Exception(result == 0 ? 5 : result).Message);
+        Forget(path);
+    }
+
+    /// <summary>Deletes a folder picture for good, for a folder with no Recycle Bin, after the
+    /// user has confirmed exactly that. Off the interface thread, so a slow share cannot freeze it.</summary>
+    public static async Task DeleteForGoodAsync(long id)
+    {
+        string path = PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
+        await Task.Run(() => File.Delete(path));
+        if (File.Exists(path)) throw new IOException(new System.ComponentModel.Win32Exception(5).Message);
+        Forget(path);
+    }
+
+    /// <summary>After a delete: the collections that showed the file read their folders again.</summary>
+    private static void Forget(string path)
+    {
         Touched(path);
         _ = RefreshScreenshotsAsync();
         string[] sources;
@@ -309,7 +344,18 @@ internal static partial class FolderCaptures
     }
 
     private const uint FoDelete = 3;
-    private const ushort FofSilent = 0x4, FofNoConfirmation = 0x10, FofAllowUndo = 0x40, FofNoErrorUi = 0x400;
+    private const ushort FofSilent = 0x4, FofNoConfirmation = 0x10, FofAllowUndo = 0x40, FofNoErrorUi = 0x400, FofWantNukeWarning = 0x4000;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ShQueryRbInfo
+    {
+        public int Size;
+        public long Bytes;
+        public long Items;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SHQueryRecycleBinW(string rootPath, ref ShQueryRbInfo info);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct ShFileOperation

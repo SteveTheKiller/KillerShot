@@ -122,10 +122,19 @@ internal static class WindowCapture
 
     private static void EnsureDevice() => _device ??= new GraphicsCapture.Device();
 
+    private static bool _borderlessRequested;
+
     private static async Task<(byte[], int, int)?> GrabAsync(IntPtr hwnd, int timeoutMs, bool includeCursor)
     {
         EnsureDevice();
-        GraphicsCapture.RequestBorderless(1000);
+        // Borderless access is granted to the process, so it is asked for once, not on every
+        // grab: the request waits on its operation, and the grab runs on the interface thread
+        // (audit BF-011, 2026-10-27).
+        if (!_borderlessRequested)
+        {
+            _borderlessRequested = true;
+            GraphicsCapture.RequestBorderless(1000);
+        }
         IntPtr item = IntPtr.Zero, pool = IntPtr.Zero, session = IntPtr.Zero, frame = IntPtr.Zero;
         try
         {

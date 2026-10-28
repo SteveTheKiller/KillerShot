@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Бұл түсірілімді жою керек пе?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Ол кітапханадан біржола жойылады.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Файл қоқыс жәшігіне жіберіледі.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">Бұл қалтада қоқыс жәшігі жоқ, сондықтан файл біржола жойылады.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Жинақтың атын өзгерту...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Жинақтың атын өзгерту</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Атын өзгерту</sys:String>

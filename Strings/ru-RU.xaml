@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Удалить этот снимок?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Он будет удалён из библиотеки навсегда.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Файл будет перемещён в корзину.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">У этой папки нет корзины, поэтому файл будет удалён навсегда.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Переименовать коллекцию...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Переименовать коллекцию</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Переименовать</sys:String>

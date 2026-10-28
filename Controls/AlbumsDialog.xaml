@@ -82,7 +82,7 @@
                                    Foreground="{DynamicResource MutedTextBrush}"/>
                         </StackPanel>
                         <!-- Same X as the About card: the family overlay glyph on a card, the classic caption button on 98SE. -->
-                        <Button Content="&#xE8BB;" Click="Cancel_Click" Style="{StaticResource ChromeCloseButton}"
+                        <Button Content="&#xE8BB;" Click="Cancel_Click" Style="{StaticResource ChromeCloseButton}" ToolTip="{DynamicResource Str_Sys_Close}"
                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                 Margin="{DynamicResource DialogCaptionCloseMargin}" Visibility="{DynamicResource DialogPlainTitleVisibility}"/>
                         <Button Content="&#x2715;" Click="Cancel_Click" Style="{StaticResource OverlayCloseButton}"

@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">刪除此擷取?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">它將從擷取庫中永久刪除。</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">檔案將移至資源回收筒。</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">此資料夾沒有資源回收筒，檔案將被永久刪除。</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">重新命名收藏集...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">重新命名收藏集</sys:String>
     <sys:String x:Key="Str_Lib_Rename">重新命名</sys:String>

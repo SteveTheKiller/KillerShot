@@ -435,6 +435,7 @@ public partial class App : Application
             };
             _editor.Show();
         }
+        _editor.CancelHideToTray();
         if (_editor.WindowState == WindowState.Minimized) _editor.WindowState = WindowState.Normal;
         if (!_editor.IsVisible) _editor.Show();
         _editor.Activate();

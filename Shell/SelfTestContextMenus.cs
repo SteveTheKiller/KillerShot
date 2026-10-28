@@ -126,6 +126,18 @@ internal static class SelfTestContextMenus
             Check(!PointerMenus.Takes(new ContextMenu()), "A menu with no target, like the tray menu, must not be taken over.");
             Check(PointerMenus.Takes(new ContextMenu { PlacementTarget = library }), "A menu on an on-screen element must be placed at the pointer.");
             report.Add("the tray menu keeps its own placement at the pointer: PASS");
+            // A menu that is opened again (the picture menu, the sidebar's) is placed at the pointer
+            // every time, even after WPF resets its placement for the next open.
+            var reused = new ContextMenu { PlacementTarget = library };
+            reused.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent, reused));
+            Check(reused.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom, "A menu must be taken over on its first open.");
+            reused.RaiseEvent(new RoutedEventArgs(ContextMenu.ClosedEvent, reused));
+            reused.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+            reused.HorizontalOffset = -17; reused.VerticalOffset = -13;
+            reused.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent, reused));
+            Check(reused.Placement == System.Windows.Controls.Primitives.PlacementMode.Custom && reused.HorizontalOffset == 0 && reused.VerticalOffset == 0,
+                "A reused menu must be placed at the pointer on its second open too.");
+            report.Add("a reused menu is placed at the pointer every time: PASS");
             // The tray menu (the family's CloseToTray, and KillerShot's own tray icon) rises out of
             // the tray: its card's bottom-left corner at the pointer, whatever its height.
             foreach (double height in new[] { 120.0, 400.0 })
@@ -172,6 +184,28 @@ internal static class SelfTestContextMenus
             Check(!dock.IsMinimized && open != null && Math.Abs(open.ActualWidth - Math.Max(dock.MinPaneSize, width)) < 2,
                 "Restoring must slide the sidebar back to its width.");
             report.Add($"sidebar slides closed and open (midway {midway:F0} of {width:F0} px): PASS");
+            // A toggle during a slide reverses it instead of saving a half-slid width, and a second
+            // minimize while one is sliding keeps the width the sidebar had (audit BF-002).
+            dock.Minimize();
+            await Task.Delay(50);
+            dock.Toggle();
+            await Task.Delay(500);
+            await Idle();
+            var reversed = (ColumnDefinition?)Field(dock, "_paneTrack");
+            Check(!dock.IsMinimized && Math.Abs(dock.PaneWidth - width) < 1 && reversed != null && Math.Abs(reversed.ActualWidth - width) < 2,
+                $"A toggle during the minimize slide must bring the sidebar back at {width:F0} px (width {dock.PaneWidth:F0}).");
+            dock.Minimize();
+            await Task.Delay(40);
+            dock.Minimize();
+            await Task.Delay(500);
+            await Idle();
+            Check(dock.IsMinimized && Math.Abs(dock.PaneWidth - width) < 1, $"Two quick minimizes must keep the width {width:F0} (now {dock.PaneWidth:F0}).");
+            dock.Restore();
+            await Task.Delay(500);
+            await Idle();
+            var back = (ColumnDefinition?)Field(dock, "_paneTrack");
+            Check(back != null && Math.Abs(back.ActualWidth - width) < 2, "The sidebar must reopen at its own width.");
+            report.Add("toggling during a slide reverses it and never shrinks the saved width: PASS");
             // The Print Screen switch lives in About (and the tray menu), not in Capture settings.
             var printScreen = (CheckBox?)window.FindName("PrintScreenKeyToggle");
             Check(printScreen != null && !IsInside(printScreen, (FrameworkElement)window.FindName("CaptureSettingsOverlay")),
@@ -191,8 +225,17 @@ internal static class SelfTestContextMenus
             await Idle();
             Check(!closed && window.IsVisible && ReferenceEquals(App.Instance.EditorWindow, window),
                 "Open from the tray must show the same window again.");
-            editorField.SetValue(App.Instance, null);
             report.Add("closing to the tray hides the editor and Open shows the same window: PASS");
+            // Reopened during the hide's fade: the window must stay shown, not vanish when the fade
+            // ends (audit BF-006).
+            window.Close();
+            await Task.Delay(40);
+            App.Instance.ShowEditor();
+            await Task.Delay(500);
+            await Idle();
+            Check(!closed && window.IsVisible, "Opening the editor during its hide fade must keep it shown.");
+            report.Add("reopening during the hide fade keeps the window shown: PASS");
+            editorField.SetValue(App.Instance, null);
             exit = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

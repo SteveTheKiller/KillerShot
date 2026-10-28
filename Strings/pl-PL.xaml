@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Usunąć ten zrzut?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Zostanie trwale usunięty z biblioteki.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Plik trafi do Kosza.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">Ten folder nie ma Kosza, więc plik zostanie usunięty na zawsze.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Zmień nazwę kolekcji...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Zmień nazwę kolekcji</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Zmień nazwę</sys:String>

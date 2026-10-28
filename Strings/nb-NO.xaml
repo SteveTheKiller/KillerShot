@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Slette dette skjermbildet?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Det fjernes fra biblioteket for godt.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Filen flyttes til papirkurven.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">Denne mappen har ingen papirkurv, så filen slettes for godt.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Gi samlingen nytt navn...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Gi samlingen nytt navn</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Gi nytt navn</sys:String>

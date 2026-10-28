@@ -35,7 +35,10 @@ internal static class PointerMenus
     private static void OnOpened(object sender, RoutedEventArgs e)
     {
         if (sender is not ContextMenu menu || !ReferenceEquals(e.OriginalSource, menu)) return;
-        if (Taken.TryGetValue(menu, out _) || menu.Placement != PlacementMode.MousePoint) return;
+        // Every open that arrives on WPF's pointer placement, the first and every later one: WPF
+        // puts a reused menu back on MousePoint, with the style's offsets, for its next open. A
+        // menu opened from the keyboard comes as Center and keeps it (audit 2026-10-27).
+        if (menu.Placement != PlacementMode.MousePoint) return;
         // Only a menu that belongs to an element on screen: the tray icon's menu has no target, and
         // a Custom placement without one is measured from the screen's top-left corner, which put
         // it there (2026-10-27). Those keep WPF's own placement at the pointer.

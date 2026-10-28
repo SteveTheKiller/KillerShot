@@ -241,7 +241,7 @@ namespace KillerShot.Shell
                 Header = Loc(minimizeHost.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"),
                 InputGestureText = "Alt+Shift+" + arrowOfSide,
             };
-            minimize.Click += (_, _) => { if (minimizeHost.IsMinimized) minimizeHost.Restore(); else minimizeHost.Minimize(); };
+            minimize.Click += (_, _) => minimizeHost.Toggle();
             menu.Items.Add(minimize);
             menu.IsOpen = true;
         }

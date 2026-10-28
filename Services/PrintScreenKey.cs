@@ -82,8 +82,10 @@ namespace KillerShot.Services
         {
             if (State == PrintScreenKeyState.On) return true;
             int? current = Read();
-            Settings.SetRequired(PreviousSetting, current?.ToString(CultureInfo.InvariantCulture) ?? "");
+            // The key first, the saved value after: a refused write must leave no saved value, or
+            // the switch would report that Windows took the key back (audit BF-007, 2026-10-27).
             Write(0);
+            Settings.SetRequired(PreviousSetting, current?.ToString(CultureInfo.InvariantCulture) ?? "");
             return true;
         }
 

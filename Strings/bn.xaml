@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">এই ক্যাপচারটি মুছবেন?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">এটি লাইব্রেরি থেকে স্থায়ীভাবে সরানো হবে।</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">ফাইলটি রিসাইকেল বিনে যাবে।</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">এই ফোল্ডারের কোনো রিসাইকেল বিন নেই, তাই ফাইলটি স্থায়ীভাবে মুছে যাবে।</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">সংগ্রহের নাম বদলান...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">সংগ্রহের নাম বদলান</sys:String>
     <sys:String x:Key="Str_Lib_Rename">নাম বদলান</sys:String>

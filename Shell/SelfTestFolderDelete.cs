@@ -51,11 +51,29 @@ internal static partial class SelfTestLibrary
             if (Directory.EnumerateFiles(root, "*.png").Count() != 599)
                 throw new InvalidOperationException("Delete removed more than the one file.");
             report.Add("folder_delete_recycles_one_file_and_collection_follows=PASS");
+
+            // A folder with no Recycle Bin (a network share, a removable drive) must never be
+            // treated as recyclable: Windows would delete the file for good without a word.
+            Check(!FolderCaptures.CanRecycle(@"\\server\share\photo.png"), "A network share must not count as recyclable.");
+            Check(FolderCaptures.CanRecycle(Path.Combine(root, "photo-000.png")), "A folder on a local fixed drive must count as recyclable.");
+            var doomed = items[^2];
+            string doomedPath = FolderCaptures.PathOf(doomed.Id)!;
+            await FolderCaptures.DeleteForGoodAsync(doomed.Id);
+            if (File.Exists(doomedPath)) throw new InvalidOperationException("Delete for good left the file in place.");
+            await FolderCaptures.RefreshFolderAsync(source);
+            if (FolderCaptures.LinkedItems(source).Any(item => item.Id == doomed.Id))
+                throw new InvalidOperationException("The collection still shows the file deleted for good.");
+            report.Add("no_recycle_bin_is_detected_and_delete_for_good_follows=PASS");
             FolderCaptures.RemoveFolder(source);
             exit = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
         File.WriteAllLines(Path.Combine(folder, "folder-delete-report.txt"), report);
         App.Instance.Shutdown(exit);
+    }
+
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new InvalidOperationException(message);
     }
 }

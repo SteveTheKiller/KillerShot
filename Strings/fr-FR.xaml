@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Supprimer cette capture ?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Elle sera retirée définitivement de la bibliothèque.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Le fichier est placé dans la Corbeille.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">Ce dossier n'a pas de Corbeille : le fichier sera supprimé définitivement.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Renommer la collection...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Renommer la collection</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Renommer</sys:String>

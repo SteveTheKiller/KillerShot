@@ -81,6 +81,14 @@ internal static class SelfTestLibraryMenu
                 System.Windows.Automation.AutomationProperties.GetName(button) == LocaleManager.Loc("Str_Sys_Close")
                 || Equals(button.ToolTip, LocaleManager.Loc("Str_Sys_Close")));
             report.Add($"close_button={hasClose}");
+            // Every button in the window has a name a screen reader can read, the classic close
+            // button included (audit BF-010).
+            var unnamed = dialog == null ? [] : Descendants(dialog).OfType<Button>()
+                .Where(button => string.IsNullOrEmpty(System.Windows.Automation.AutomationProperties.GetName(button))
+                    && button.ToolTip is not string && button.Content is not string { Length: > 1 })
+                .Select(button => button.Content?.ToString() ?? "?").ToArray();
+            report.Add($"unnamed_buttons={unnamed.Length}");
+            if (unnamed.Length > 0) errors.Add("Unnamed buttons in the album manager: " + string.Join(", ", unnamed));
             report.Add($"title={dialog?.Title}");
             if (dialog?.Content is FrameworkElement face)
             {

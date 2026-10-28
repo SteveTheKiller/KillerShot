@@ -140,7 +140,7 @@ namespace KillerFamily.Layout
             // The collapse chevron, styled like the rail's other buttons, at the rail's start.
             _toggle = new Button { FontSize = 16 };
             _toggle.SetResourceReference(StyleProperty, "RailButton");
-            _toggle.Click += (_, _) => { if (IsMinimized) Restore(); else Minimize(); };
+            _toggle.Click += (_, _) => Toggle();
         }
 
         /// <summary>Alt+Shift+arrow: dock to that side, or minimize and restore on the side it is
@@ -156,7 +156,7 @@ namespace KillerFamily.Layout
                 _ => null,
             };
             if (side is not DockSide target || !Allows(target)) return false;
-            if (target == Side) { if (IsMinimized) Restore(); else Minimize(); }
+            if (target == Side) Toggle();
             else DockTo(target);
             e.Handled = true;
             return true;
@@ -165,7 +165,9 @@ namespace KillerFamily.Layout
         public void DockTo(DockSide side)
         {
             if (!Allows(side)) return;
-            bool moving = side != Side || IsMinimized;
+            // Already sliding open on this side: let it finish rather than freeze it part way.
+            if (side == Side && _sliding && !_slidingClosed) return;
+            bool moving = side != Side || ClosedOrClosing;
             StopSlide();
             IsMinimized = false;
             Side = side;
@@ -173,12 +175,24 @@ namespace KillerFamily.Layout
             if (moving) SlideOpen();
         }
 
+        /// <summary>Minimized, or on its way there: what a toggle reads, so a second press during a
+        /// slide turns it around instead of repeating it (audit BF-002, 2026-10-27).</summary>
+        public bool ClosedOrClosing => _sliding ? _slidingClosed : IsMinimized;
+
+        /// <summary>The chevron, the arrow of the side the pane is on, and the menus' Minimize.</summary>
+        public void Toggle()
+        {
+            if (ClosedOrClosing) Restore(); else Minimize();
+        }
+
         public void Minimize()
         {
-            if (IsMinimized) return;
+            if (ClosedOrClosing) return;
+            double from = CurrentExtent();
+            // Only a pane at rest has a width worth keeping; mid-slide it is part way.
+            if (!_sliding) RememberSize();
             StopSlide();
-            RememberSize();
-            double from = _paneTrack is ColumnDefinition column ? column.ActualWidth : _paneTrack is RowDefinition row ? row.ActualHeight : 0;
+            _slidingClosed = true;
             Slide(from, 0, () =>
             {
                 IsMinimized = true;
@@ -188,13 +202,30 @@ namespace KillerFamily.Layout
 
         public void Restore()
         {
-            if (!IsMinimized) return;
+            if (!ClosedOrClosing) return;
+            if (_sliding && _slidingClosed)
+            {
+                // Turned around part way through a minimize: still open, so slide back from here.
+                double from = CurrentExtent();
+                StopSlide();
+                _slidingClosed = false;
+                Slide(from, OpenSize(), () => { });
+                _pane?.Focus();
+                return;
+            }
             StopSlide();
             IsMinimized = false;
             LayoutChanged?.Invoke();
             SlideOpen();
             _pane?.Focus();
         }
+
+        /// <summary>The pane's current size: the slide's value while one runs, else its track.</summary>
+        private double CurrentExtent() =>
+            _sliding ? (double)GetValue(ExtentProperty)
+          : _paneTrack is ColumnDefinition column ? column.ActualWidth : _paneTrack is RowDefinition row ? row.ActualHeight : 0;
+
+        private double OpenSize() => Math.Max(MinPaneSize, IsHorizontal ? PaneHeight : PaneWidth);
 
         // ---- the slide ----
         //
@@ -212,6 +243,8 @@ namespace KillerFamily.Layout
         /// <summary>The pane's track in the current layout, or null when the pane is not open.</summary>
         private DefinitionBase? _paneTrack;
         private bool _sliding;
+        private bool _slidingClosed;
+        private int _slideGeneration;
 
         private void ApplyExtent(double extent)
         {
@@ -223,8 +256,8 @@ namespace KillerFamily.Layout
 
         private void SlideOpen()
         {
-            double to = Math.Max(MinPaneSize, IsHorizontal ? PaneHeight : PaneWidth);
-            Slide(0, to, () => { });
+            _slidingClosed = false;
+            Slide(0, OpenSize(), () => { });
         }
 
         private void Slide(double from, double to, Action done)
@@ -241,9 +274,12 @@ namespace KillerFamily.Layout
             {
                 EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut },
             };
+            // A slide that was stopped or turned around still raises Completed later; only the
+            // current one may finish, or a reversed minimize would minimize after all.
+            int generation = ++_slideGeneration;
             animation.Completed += (_, _) =>
             {
-                if (!_sliding) return;
+                if (!_sliding || generation != _slideGeneration) return;
                 FinishSlide(to);
                 done();
             };

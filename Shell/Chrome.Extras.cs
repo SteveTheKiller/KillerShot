@@ -107,6 +107,7 @@ namespace KillerShot.Shell
         }
 
         private bool _hidingToTray;
+        private int _hideGeneration;
 
         /// <summary>Fades the window out and hides it, keeping everything in it, and saves where it
         /// sat as a real close would. It fades back in when shown again.</summary>
@@ -118,11 +119,24 @@ namespace KillerShot.Shell
             bool savePlacement = true;
             AdjustSaveWindowPlacement(ref savePlacement);
             if (savePlacement) WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
+            int generation = ++_hideGeneration;
             Anim.FadeOut(RootGrid, () =>
             {
+                // Asked to show again during the fade, or the app is going: leave the window be.
+                if (generation != _hideGeneration || App.Instance.IsExiting || Dispatcher.HasShutdownStarted) return;
                 Hide();
                 _hidingToTray = false;
             });
+        }
+
+        /// <summary>Show was asked for while the window was still fading out to the tray: the hide is
+        /// called off and the window fades back in (audit BF-006, 2026-10-27).</summary>
+        internal void CancelHideToTray()
+        {
+            if (!_hidingToTray) return;
+            _hidingToTray = false;
+            _hideGeneration++;
+            FadeInContent();
         }
 
         /// <summary>The bottom of this monitor's work area (above the taskbar) as a y position in

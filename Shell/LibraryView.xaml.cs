@@ -1142,15 +1142,23 @@ namespace KillerShot.Shell
 
         internal Func<ConfirmDialog, bool> PresentConfirmation { get; set; } = dialog => { dialog.ShowDialog(); return dialog.Confirmed; };
 
-        internal void Delete(CaptureItem item)
+        internal async void Delete(CaptureItem item)
         {
             if (FolderCaptures.IsFolderId(item.Id))
             {
                 // A folder file is not in the encrypted album, so Delete sends the file itself to
-                // the Recycle Bin, where a mistake can still be undone.
-                var recycle = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_RecycleDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
-                if (!PresentConfirmation(recycle)) return;
-                try { FolderCaptures.Recycle(item.Id); }
+                // the Recycle Bin, where a mistake can still be undone. A folder with no Recycle Bin
+                // (a network share, a removable drive) says the file goes for good before asking.
+                bool recyclable = FolderCaptures.PathOf(item.Id) is { } path && FolderCaptures.CanRecycle(path);
+                var confirm = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc(recyclable ? "Str_Lib_RecycleDetail" : "Str_Lib_PermanentDetail"),
+                    Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
+                if (!PresentConfirmation(confirm)) return;
+                try
+                {
+                    if (recyclable)
+                        FolderCaptures.Recycle(item.Id, OwnerWindow is { } owner ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero);
+                    else await FolderCaptures.DeleteForGoodAsync(item.Id);
+                }
                 catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
                 return;
             }

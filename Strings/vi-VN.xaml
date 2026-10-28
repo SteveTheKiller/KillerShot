@@ -456,6 +456,7 @@
     <sys:String x:Key="Str_Lib_DeleteTitle">Xóa ảnh chụp này?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Ảnh sẽ bị xóa vĩnh viễn khỏi thư viện.</sys:String>
     <sys:String x:Key="Str_Lib_RecycleDetail">Tệp sẽ được chuyển vào Thùng rác.</sys:String>
+    <sys:String x:Key="Str_Lib_PermanentDetail">Thư mục này không có Thùng rác, nên tệp sẽ bị xóa vĩnh viễn.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Đổi tên bộ sưu tập...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Đổi tên bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Đổi tên</sys:String>
