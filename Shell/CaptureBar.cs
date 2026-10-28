@@ -20,6 +20,7 @@ namespace KillerShot.Shell;
 internal sealed class CaptureBar : Window
 {
     private readonly RegionSelector _selector;
+    private readonly double _controlHeight;
     private readonly ComboBox _modes = new() { MinWidth = 130, Margin = new Thickness(6, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
     private readonly Button _folder;
     private readonly ToggleButton _photo, _video;
@@ -41,7 +42,11 @@ internal sealed class CaptureBar : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         Left = -20000; Top = -20000;
         SetResourceReference(ForegroundProperty, "TextBrush");
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(8), VerticalAlignment = VerticalAlignment.Center };
+        // The bar is title-bar height, like the mode dropdown in it: every control is the same
+        // height, two pixels inside the card and its 1px border (Steve, 2026-10-27).
+        _controlHeight = Math.Max(16, (TryFindResource("TitleBarHeight") is double bar ? bar : 32) - 6);
+        _modes.Height = _controlHeight;
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(6, 2, 6, 2), VerticalAlignment = VerticalAlignment.Center };
         var dots = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         for (int i = 0; i < 3; i++)
         {
@@ -131,7 +136,8 @@ internal sealed class CaptureBar : Window
 
     private ToggleButton Choice(string key, int glyph, bool video)
     {
-        var button = new ToggleButton { Content = Label(key, glyph), Style = (Style)FindResource("ChipToggle"), Padding = new Thickness(10, 7, 10, 7), Margin = new Thickness(2, 0, 2, 0) };
+        var button = new ToggleButton { Content = Label(key, glyph), Style = (Style)FindResource("ChipToggle"), Padding = new Thickness(10, 0, 10, 0),
+            Height = _controlHeight, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 2, 0) };
         AutomationProperties.SetName(button, LocaleManager.Loc(key));
         button.Click += (_, _) => { _selector.SetVideo(video); Sync(); };
         return button;
@@ -139,7 +145,8 @@ internal sealed class CaptureBar : Window
 
     private Button Action(string key, int glyph, Action run, bool primary = false)
     {
-        var button = new Button { Content = Label(key, glyph), Style = (Style)FindResource(primary ? "PrimaryButton" : "SurfaceButton"), Padding = new Thickness(10, 7, 10, 7), Margin = new Thickness(2, 0, 2, 0) };
+        var button = new Button { Content = Label(key, glyph), Style = (Style)FindResource(primary ? "PrimaryButton" : "SurfaceButton"), Padding = new Thickness(10, 0, 10, 0),
+            Height = _controlHeight, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 2, 0) };
         AutomationProperties.SetName(button, LocaleManager.Loc(key));
         button.Click += (_, _) => run();
         return button;

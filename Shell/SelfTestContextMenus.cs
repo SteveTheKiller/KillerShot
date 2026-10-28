@@ -122,6 +122,25 @@ internal static class SelfTestContextMenus
             }
             report.Add("menu cards open against the pointer in every direction, at 100% and 150%: PASS");
 
+            // The capture bar is title-bar height: built but never shown, measured, and rendered.
+            var monitor = new KillerShot.Capture.MonitorBounds(IntPtr.Zero, new KillerShot.Native.Win32.RECT { Left = 0, Top = 0, Right = 1920, Bottom = 1080 }, true);
+            var frozen = new KillerShot.Capture.FrozenDesktop(monitor.Bounds, new byte[1920 * 1080 * 4], [monitor], []);
+            var bar = new CaptureBar(new RegionSelector(frozen, showBar: true), monitor);
+            var card = (FrameworkElement)bar.Content;
+            card.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            card.Arrange(new Rect(card.DesiredSize));
+            card.UpdateLayout();
+            double titleBar = window.TryFindResource("TitleBarHeight") is double t ? t : 32;
+            double visible = card.DesiredSize.Height - card.Margin.Top - card.Margin.Bottom;
+            var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth + card.Margin.Left + card.Margin.Right),
+                (int)Math.Ceiling(card.ActualHeight + card.Margin.Top + card.Margin.Bottom), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            bitmap.Render(card);
+            ImageOutput.SavePng(bitmap, Path.Combine(folder, "capture-bar.png"));
+            report.Add($"capture_bar_visible_height={visible:F0} title_bar={titleBar:F0}");
+            Check(Math.Abs(visible - titleBar) <= 1, "The capture bar must be title-bar height.");
+            bar.Close();
+            report.Add("capture bar is title-bar height: PASS");
+
             var dock = (DockHost)window.FindName("NavigationDock");
             double width = dock.PaneWidth;
             dock.Minimize();
