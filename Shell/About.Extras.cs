@@ -1,5 +1,6 @@
 using System.Windows;
 using KillerShot.Features.About;
+using KillerShot.Services;
 
 namespace KillerShot.Shell
 {
@@ -24,7 +25,54 @@ namespace KillerShot.Shell
             _syncingCloseToTray = true;
             CloseToTrayCheck.IsChecked = App.CloseToTray;
             _syncingCloseToTray = false;
+            SyncPrintScreenKey();
         }
+
+        // ---- Use KillerShot for the Print Screen key ----
+
+        private bool _syncingOptionsPrintScreen;
+
+        private void PrintScreenKey_Click(object sender, RoutedEventArgs e) => SetPrintScreenKey(PrintScreenKeyToggle.IsChecked == true);
+
+        /// <summary>The tray menu changed it: the card shows the new state if it is open.</summary>
+        internal void PrintScreenKeyChangedElsewhere() => SyncPrintScreenKey();
+
+        /// <summary>The Print Screen checkbox and its note, from the Windows setting as it is now.</summary>
+        private void SyncPrintScreenKey()
+        {
+            bool was = _syncingOptionsPrintScreen;
+            _syncingOptionsPrintScreen = true;
+            var key = PrintScreenKey.Current;
+            PrintScreenKeyToggle.IsChecked = key.State == PrintScreenKeyState.On;
+            PrintScreenKeyToggle.IsEnabled = key.CanChange;
+            PrintScreenKeyNote.Text = Loc(key.NoteKey);
+            _syncingOptionsPrintScreen = was;
+        }
+
+        /// <summary>Frees Print Screen from Windows' screen capture, or gives it back, then claims the
+        /// shortcuts again. Windows can take a moment to let go, so a failed claim is tried once more.</summary>
+        private void SetPrintScreenKey(bool on)
+        {
+            try
+            {
+                var key = PrintScreenKey.Current;
+                if (on) key.TurnOn(); else key.TurnOff();
+            }
+            catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or System.IO.IOException)
+            {
+                StatusText.Text = error.Message;
+            }
+            void Claim()
+            {
+                _shortcutHost?.RegisterShortcuts();
+                BuildShortcutRows();
+            }
+            Claim();
+            if (on && _shortcutHost?.FailedShortcuts.Count > 0)
+                Dispatcher.BeginInvoke(async () => { await Task.Delay(600); Claim(); });
+            SyncPrintScreenKey();
+        }
+
 
         partial void OnOverlayShowing(UIElement overlay) => ClassicFrameChrome.Opacity = 0.42;
 

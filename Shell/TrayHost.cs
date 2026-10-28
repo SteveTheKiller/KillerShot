@@ -190,6 +190,11 @@ internal sealed class TrayHost : IDisposable
 
         var open = Item(Loc("Str_Tray_Open"), "", () => OpenEditorRequested?.Invoke());
         open.FontWeight = FontWeights.SemiBold;
+        // The Snipping Tool switch, where a tray app's user looks for it: ticked while KillerShot
+        // has the Print Screen key. The same switch as About's.
+        var printScreen = Item(Loc("Str_CS_PrintScreenKey"), "", TogglePrintScreenKey);
+        printScreen.IsCheckable = true;
+        printScreen.IsChecked = PrintScreenKey.Current.State == PrintScreenKeyState.On;
         menu.Items.Add(new Separator());
         Item(Loc("Str_Mode_Region"), "", () => DeferCapture(null, CaptureMode.Region));
         Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
@@ -245,9 +250,37 @@ internal sealed class TrayHost : IDisposable
         }
         Item(Loc("Str_Tray_Exit"), "", () => App.Instance.RequestExit());
 
+        // Only what can be done right now: nothing greyed out.
+        Controls.MenuTidy.HideInactive(menu);
         // The menu closes on an outside click only when this process owns the foreground.
         Win32.SetForegroundWindow(Handle);
         menu.IsOpen = true;
+    }
+
+    /// <summary>The Print Screen switch changed from the tray menu; About shows it if open.</summary>
+    public event Action? PrintScreenKeyChanged;
+
+    /// <summary>Frees Print Screen from Windows' Snipping Tool, or gives it back, then claims the
+    /// shortcuts again. Windows can take a moment to let go, so a failed claim is tried once more.</summary>
+    private void TogglePrintScreenKey()
+    {
+        try
+        {
+            var key = PrintScreenKey.Current;
+            if (key.State == PrintScreenKeyState.On) key.TurnOff(); else key.TurnOn();
+        }
+        catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or System.IO.IOException)
+        {
+            ShowInfo(Loc("Str_CS_PrintScreenKey"), error.Message);
+        }
+        RegisterShortcuts();
+        if (_failed.Count > 0)
+        {
+            var retry = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
+            retry.Tick += (_, _) => { retry.Stop(); RegisterShortcuts(); PrintScreenKeyChanged?.Invoke(); };
+            retry.Start();
+        }
+        PrintScreenKeyChanged?.Invoke();
     }
 
     public static void OpenPrintScreenSetting()

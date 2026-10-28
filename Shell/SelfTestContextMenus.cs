@@ -172,6 +172,27 @@ internal static class SelfTestContextMenus
             Check(!dock.IsMinimized && open != null && Math.Abs(open.ActualWidth - Math.Max(dock.MinPaneSize, width)) < 2,
                 "Restoring must slide the sidebar back to its width.");
             report.Add($"sidebar slides closed and open (midway {midway:F0} of {width:F0} px): PASS");
+            // The Print Screen switch lives in About (and the tray menu), not in Capture settings.
+            var printScreen = (CheckBox?)window.FindName("PrintScreenKeyToggle");
+            Check(printScreen != null && !IsInside(printScreen, (FrameworkElement)window.FindName("CaptureSettingsOverlay")),
+                "The Print Screen switch must be in About, not Capture settings.");
+            report.Add("Print Screen switch is in About: PASS");
+
+            // Close to system tray keeps the window: closing the app's editor hides it, Open shows
+            // the same window again, and nothing is rebuilt.
+            var editorField = typeof(App).GetField("_editor", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            editorField.SetValue(App.Instance, window);
+            bool closed = false;
+            window.Closed += (_, _) => closed = true;
+            window.Close();
+            await Task.Delay(500);
+            Check(!closed && !window.IsVisible, "Closing to the tray must hide the window, not close it.");
+            App.Instance.ShowEditor();
+            await Idle();
+            Check(!closed && window.IsVisible && ReferenceEquals(App.Instance.EditorWindow, window),
+                "Open from the tray must show the same window again.");
+            editorField.SetValue(App.Instance, null);
+            report.Add("closing to the tray hides the editor and Open shows the same window: PASS");
             exit = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -201,6 +222,13 @@ internal static class SelfTestContextMenus
         var pixels = new byte[width * height * 4];
         for (int i = 3; i < pixels.Length; i += 4) pixels[i] = 255;
         return System.Windows.Media.Imaging.BitmapSource.Create(width, height, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, pixels, width * 4);
+    }
+
+    private static bool IsInside(DependencyObject element, DependencyObject container)
+    {
+        for (var node = element; node != null; node = LogicalTreeHelper.GetParent(node) ?? System.Windows.Media.VisualTreeHelper.GetParent(node))
+            if (ReferenceEquals(node, container)) return true;
+        return false;
     }
 
     private static IEnumerable<MenuItem> Visible(ItemsControl menu)

@@ -695,10 +695,6 @@
                                                    FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                         <TextBlock x:Name="ShortcutConflictText" Visibility="Collapsed" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
                                                    Foreground="{DynamicResource TextBrush}"><Run x:Name="ShortcutConflictRun"/><Run Text=" "/><Hyperlink Click="PrintScreenSetting_Click" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None"><Run Text="{DynamicResource Str_CS_OpenWindowsSetting}"/></Hyperlink></TextBlock>
-                                        <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from Windows' own
-                                             screen capture, KillerShell's default-terminal pattern. The note says what it does or why not. -->
-                                        <CheckBox x:Name="PrintScreenKeyToggle" Content="{DynamicResource Str_CS_PrintScreenKey}" Style="{StaticResource CsCheck}" Margin="0,10,0,0"/>
-                                        <TextBlock x:Name="PrintScreenKeyNote" Foreground="{DynamicResource DimTextBrush}" FontSize="10" TextWrapping="Wrap" Margin="24,0,0,0"/>
 
                                         <TextBlock Text="{DynamicResource Str_CS_AfterCapture}" Style="{StaticResource CsHeading}" Margin="0,16,0,6"/>
                                         <CheckBox x:Name="ReviewFirstToggle" Content="{DynamicResource Str_CS_ReviewFirst}" Style="{StaticResource CsCheck}"/>
@@ -1244,6 +1240,14 @@
                                               IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
                                         <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
                                     </CheckBox>
+                                    <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from
+                                         Windows' Snipping Tool, as KillerShell's About card makes it the default terminal.
+                                         Also a tick item in the tray menu. The note says what it does. -->
+                                    <CheckBox x:Name="PrintScreenKeyToggle" FontSize="11" Margin="0,6,0,0" Click="PrintScreenKey_Click">
+                                        <TextBlock Text="{DynamicResource Str_CS_PrintScreenKey}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <TextBlock x:Name="PrintScreenKeyNote" Foreground="{DynamicResource DimTextBrush}" FontSize="10"
+                                               Margin="0,4,0,0" TextWrapping="Wrap"/>
                                     <!-- Last, so its explanation closes the column instead of splitting the
                                          checkboxes apart (Steve, 2026-10-27). -->
                                     <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,6,0,0"

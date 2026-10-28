@@ -190,6 +190,7 @@ public partial class App : Application
         Video = new VideoController(Tray);
         Tray.RecordRequested += () => Video.Toggle();
         Tray.OpenEditorRequested += ShowEditor;
+        Tray.PrintScreenKeyChanged += () => _editor?.PrintScreenKeyChangedElsewhere();
         Tray.BalloonClicked += ShowEditor;
         // The demo leaves the notification area, the global shortcuts and the Run value to the
         // real KillerShot.

@@ -43,6 +43,8 @@ namespace KillerShot.Shell
             };
 
             Controls.FlyoutPlacement.UsePane(ContentPane);
+            // Back from the tray: the same window, faded in as on first open.
+            IsVisibleChanged += (_, e) => { if (e.NewValue is true && IsLoaded) FadeInContent(); };
             // The editor can be picked in Window mode like any other app's window.
             SourceInitialized += (_, _) => Capture.WindowCapture.AllowOwnWindow(new System.Windows.Interop.WindowInteropHelper(this).Handle, true);
             Closed += (_, _) => Capture.WindowCapture.AllowOwnWindow(new System.Windows.Interop.WindowInteropHelper(this).Handle, false);

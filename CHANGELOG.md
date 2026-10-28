@@ -29,13 +29,14 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - The footer is a plain status line, as in KillerNotes, Killendar and KillerPDF, without the green light or a standing "Ready".
 - Menus show only what can be done right now, instead of greyed-out rows, and a menu with nothing to offer does not open.
 - The sidebar slides closed, open and to its other side instead of jumping.
+- With Close to system tray on, closing the window hides it and keeps everything in it, so Open from the tray shows it again at once instead of rebuilding it. The tray icon's menu leaves out what cannot be done right now.
 - The sidebar's right-click menu no longer offers Library, which opened the album manager a second way and could leave the window not responding. The album manager opens from its button in the title bar.
 
 ### Added
 
 - Minimize collections, in the sidebar's right-click menu, shows each collection as one line with its name and count, so many more fit in the sidebar. The preview style comes back when it is turned off.
 - The picture's right-click menu in the editor has Delete for an album or folder capture.
-- "Use KillerShot for the Print Screen key" in Capture settings turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool. A portable copy can use it too; turn it off before deleting that copy.
+- "Use KillerShot for the Print Screen key", in About and as a tick item in the tray icon's menu, turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool. A portable copy can use it too; turn it off before deleting that copy.
 
 ## [1.0.0] - 2026-10-27
 

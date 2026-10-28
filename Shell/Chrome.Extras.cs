@@ -88,12 +88,41 @@ namespace KillerShot.Shell
                 Dispatcher.BeginInvoke(new Action(App.Instance.RequestExit));
                 return;
             }
+            // Close to system tray means the window stays alive and only goes out of sight: the open
+            // picture, a running recording, the album and its carousels all stay as they are, and
+            // Open from the tray shows this same window at once instead of building a new one
+            // (Steve, 2026-10-27). Exit and shutdown still close it for real.
+            if (!App.Instance.IsExiting && ReferenceEquals(App.Instance.EditorWindow, this))
+            {
+                e.Cancel = true;
+                HideToTray();
+                return;
+            }
             if (Anim.FadeOutAndClose(this, ref _closeFaded))
             {
                 e.Cancel = true;
                 return;
             }
             base.OnClosing(e);
+        }
+
+        private bool _hidingToTray;
+
+        /// <summary>Fades the window out and hides it, keeping everything in it, and saves where it
+        /// sat as a real close would. It fades back in when shown again.</summary>
+        private void HideToTray()
+        {
+            if (_hidingToTray) return;
+            _hidingToTray = true;
+            CommitPendingText();
+            bool savePlacement = true;
+            AdjustSaveWindowPlacement(ref savePlacement);
+            if (savePlacement) WindowPlacement.Save(this, Services.ThemeManager.SetSetting);
+            Anim.FadeOut(RootGrid, () =>
+            {
+                Hide();
+                _hidingToTray = false;
+            });
         }
 
         /// <summary>The bottom of this monitor's work area (above the taskbar) as a y position in
