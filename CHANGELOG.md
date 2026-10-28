@@ -1,5 +1,11 @@
 # KillerShot Changelog
 
+## [1.1.1] - Unreleased
+
+KillerShot 1.1.1 fixes problems found after 1.1.0.
+
+### Fixed
+
 ## [1.1.0] - 2026-10-27
 
 KillerShot 1.1.0 is a much smaller download and fixes problems found after the first release.
