@@ -25,7 +25,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - The album manager opens as its own window in the family dialog frame, with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click. Its album list is the family database list, with the same recessed pane and row selection.
 - Right-click menus belong to where you click. The sidebar's menu holds the collection, its previews and which side the sidebar is on; the carousel's menu holds where the carousel sits and its info cards; the album area's menu holds the views. The position options read "Sidebar on the left" and "Carousel at the top" instead of "Dock on the left", and "Reverse icon order" is gone.
 - The capture bar is title-bar height, with its buttons and mode list all the same height, instead of buttons that made it taller.
-- In About, the options sit in two columns of even length, each ending with the option that carries an explanation.
+- In About, rendering is a dropdown instead of three radio rows, and the options sit in two columns of even length, each ending with the option that carries an explanation.
 - The mouse wheel steps the carousels the other way: wheel up moves forward and wheel down moves back.
 - The footer is a plain status line, as in KillerNotes, Killendar and KillerPDF, without the green light or a standing "Ready".
 - Menus show only what can be done right now, instead of greyed-out rows, and a menu with nothing to offer does not open.

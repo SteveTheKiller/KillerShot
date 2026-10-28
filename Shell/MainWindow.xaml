@@ -1236,10 +1236,6 @@
                                     <CheckBox x:Name="AboutStartWithWindows" FontSize="11" Click="AboutStartWithWindows_Click">
                                         <TextBlock Text="{DynamicResource Str_About_StartWithWindows}" TextWrapping="Wrap"/>
                                     </CheckBox>
-                                    <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,6,0,0"
-                                              IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
-                                        <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
-                                    </CheckBox>
                                     <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from
                                          Windows' Snipping Tool, as KillerShell's About card makes it the default terminal.
                                          Also a tick item in the tray menu. Last in the column, so its note closes it. -->
@@ -1251,27 +1247,26 @@
                                 </StackPanel>
                                 <!-- Two columns of even length, each ending with its option that carries an
                                      explanation: Print Screen on the left, Close to system tray on the right
-                                     (Steve, 2026-10-27). The Remote Desktop explanation lives in the tooltip. -->
+                                     (Steve, 2026-10-27). -->
                                 <StackPanel Grid.Column="2">
+                                <!-- Rendering is a dropdown: three radio rows took more room than the choice is
+                                     worth (Steve, 2026-10-27). The Remote Desktop explanation lives in the tooltip. -->
                                 <StackPanel ToolTip="{DynamicResource Str_About_RenderHint}">
-                                <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
-                                           FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4" TextWrapping="Wrap"/>
-                                <StackPanel>
-                                    <RadioButton x:Name="RenderAutoRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
-                                                 FontSize="11" Margin="8,0,0,0" Checked="RenderMode_Checked" Tag="Auto">
-                                        <TextBlock Text="{DynamicResource Str_About_RenderAuto}" TextWrapping="Wrap"/>
-                                    </RadioButton>
-                                    <RadioButton x:Name="RenderHardwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
-                                                 FontSize="11" Margin="8,4,0,0" Checked="RenderMode_Checked" Tag="Hardware">
-                                        <TextBlock Text="{DynamicResource Str_About_RenderHardware}" TextWrapping="Wrap"/>
-                                    </RadioButton>
-                                    <RadioButton x:Name="RenderSoftwareRadio" Style="{StaticResource ThemeRadio}" GroupName="RenderMode"
-                                                 FontSize="11" Margin="8,4,0,0" Checked="RenderMode_Checked" Tag="Software">
-                                        <TextBlock Text="{DynamicResource Str_About_RenderSoftware}" TextWrapping="Wrap"/>
-                                    </RadioButton>
+                                    <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
+                                               FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4" TextWrapping="Wrap"/>
+                                    <ComboBox x:Name="RenderModeCombo" FontSize="11" HorizontalAlignment="Stretch"
+                                              SelectionChanged="RenderMode_SelectionChanged"
+                                              AutomationProperties.Name="{DynamicResource Str_About_Rendering}">
+                                        <ComboBoxItem Tag="Auto" Content="{DynamicResource Str_About_RenderAuto}"/>
+                                        <ComboBoxItem Tag="Hardware" Content="{DynamicResource Str_About_RenderHardware}"/>
+                                        <ComboBoxItem Tag="Software" Content="{DynamicResource Str_About_RenderSoftware}"/>
+                                    </ComboBox>
                                 </StackPanel>
-                                </StackPanel>
-                                    <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,10,0,0"
+                                    <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,10,0,0"
+                                              IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
+                                        <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,6,0,0"
                                               Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed">
                                         <TextBlock Text="{DynamicResource Str_About_CloseToTray}" TextWrapping="Wrap"/>
                                     </CheckBox>

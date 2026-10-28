@@ -106,16 +106,15 @@ namespace KillerShot.Shell
         private void SyncRenderModeRadios()
         {
             _syncingRenderMode = true;
-            var mode = Services.RenderModeService.Choice;
-            RenderAutoRadio.IsChecked = mode == Services.RenderChoice.Auto;
-            RenderHardwareRadio.IsChecked = mode == Services.RenderChoice.Hardware;
-            RenderSoftwareRadio.IsChecked = mode == Services.RenderChoice.Software;
+            string mode = Services.RenderModeService.Choice.ToString();
+            RenderModeCombo.SelectedItem = RenderModeCombo.Items.OfType<System.Windows.Controls.ComboBoxItem>()
+                .FirstOrDefault(item => (string)item.Tag == mode);
             _syncingRenderMode = false;
         }
 
-        private void RenderMode_Checked(object sender, RoutedEventArgs e)
+        private void RenderMode_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (_syncingRenderMode || sender is not FrameworkElement { Tag: string tag }) return;
+            if (_syncingRenderMode || RenderModeCombo.SelectedItem is not System.Windows.Controls.ComboBoxItem { Tag: string tag }) return;
             if (System.Enum.TryParse<Services.RenderChoice>(tag, out var choice))
                 Services.RenderModeService.Set(choice);
         }
