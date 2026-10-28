@@ -18,7 +18,6 @@ namespace KillerShot.Shell
         {
             _shortcutHost = shortcutHost;
             InitializeComponent();
-            WatchStatusTone();
             InitChromeExtras();
             new KillerFamily.Accessibility.OverlayFocus(this)
                 .Track(ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay);

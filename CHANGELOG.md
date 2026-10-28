@@ -23,6 +23,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
 - The album manager opens as its own window with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click.
 - Right-click menus belong to where you click. The sidebar's menu holds the collection, its previews and which side the sidebar is on; the carousel's menu holds where the carousel sits and its info cards; the album area's menu holds the views. The position options read "Sidebar on the left" and "Carousel at the top" instead of "Dock on the left", and "Reverse icon order" is gone.
+- The footer is a plain status line, as in KillerNotes, Killendar and KillerPDF, without the green light or a standing "Ready".
 - Menus show only what can be done right now, instead of greyed-out rows, and a menu with nothing to offer does not open.
 - The sidebar slides closed, open and to its other side instead of jumping.
 - The sidebar's right-click menu no longer offers Library, which opened the album manager a second way and could leave the window not responding. The album manager opens from its button in the title bar.

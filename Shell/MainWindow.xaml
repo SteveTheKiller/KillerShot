@@ -502,10 +502,9 @@
                     </Button>
                     <TextBlock x:Name="CollectionCountText" DockPanel.Dock="Left" Foreground="{DynamicResource TextFooter}"
                                FontSize="11" VerticalAlignment="Center" Margin="8,0,12,0"/>
-                    <!-- The family traffic light: green fine, amber waiting on the user, red failed (StatusLight.cs). -->
-                    <Border x:Name="StatusDot" DockPanel.Dock="Left" Width="3" Height="12" Background="{DynamicResource OkBrush}"
-                            Margin="0,3,3,3" CornerRadius="2" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}" TextTrimming="CharacterEllipsis"
+                    <!-- A plain status line, as in KillerNotes, Killendar and KillerPDF: empty until there is
+                         something to say, with no traffic light and no standing "Ready" (Steve, 2026-10-27). -->
+                    <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"
                                Foreground="{DynamicResource TextFooter}"
                                FontFamily="{DynamicResource BrandSansFont}"
                                FontSize="16" TextOptions.TextFormattingMode="Ideal" VerticalAlignment="Center"

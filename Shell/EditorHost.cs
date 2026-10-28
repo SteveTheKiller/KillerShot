@@ -659,7 +659,7 @@ namespace KillerShot.Shell
             {
                 var bmp = ImageOutput.Load(path);
                 if (!App.Instance.SetDocument(new EditorDocument(bmp, path, System.IO.File.GetLastWriteTime(path)))) return false;
-                StatusText.Text = Loc("Str_Status_Ready");
+                StatusText.Text = "";
                 return true;
             }
             catch (Exception ex)
