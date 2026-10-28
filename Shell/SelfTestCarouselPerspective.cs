@@ -35,7 +35,7 @@ internal static class SelfTestCarouselPerspective
             strip.PerspectiveZoomEnabled = false;
             int selected = strip.SelectedIndex;
             strip.HandleWheel(120, ModifierKeys.Control);
-            Check(strip.SelectedIndex == selected - 1, "The collection strip's existing wheel behavior changed.");
+            Check(strip.SelectedIndex == selected + 1, "On a strip without perspective zoom, Ctrl+wheel up must step forward like the wheel.");
             report.Add("Collection-strip wheel behavior unchanged PASS");
             CheckStripTops(folder, report);
             CheckShallowDepth(folder, report, false);
@@ -215,11 +215,11 @@ internal static class SelfTestCarouselPerspective
             && minimum.Side.Height > before.Side.Height, "Negative zoom is not bounded or does not reverse the perspective.");
         Check(flow.SelectedIndex == selected, "Perspective zoom changed selection at a bound.");
         flow.HandleWheel(120, ModifierKeys.None);
-        Check(flow.SelectedIndex == selected - 1, "Ordinary wheel navigation changed.");
+        Check(flow.SelectedIndex == selected + 1, "Wheel up must step forward.");
         using (var source = new HwndSource(new HwndSourceParameters("Carousel key fixture") { WindowStyle = 0, Width = 1, Height = 1 }))
         {
-            flow.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right) { RoutedEvent = Keyboard.KeyDownEvent });
-            Check(flow.SelectedIndex == selected, "Right-arrow navigation changed.");
+            flow.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Left) { RoutedEvent = Keyboard.KeyDownEvent });
+            Check(flow.SelectedIndex == selected, "Left-arrow navigation changed.");
             long? activated = null;
             flow.ItemActivated += item => activated = item.Id;
             flow.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter) { RoutedEvent = Keyboard.KeyDownEvent });

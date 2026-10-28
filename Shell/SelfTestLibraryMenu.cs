@@ -92,6 +92,19 @@ internal static class SelfTestLibraryMenu
             }
             dialog?.Close();
             await Idle();
+
+            // The About card, opened the way the rail button opens it and rendered for review.
+            typeof(MainWindow).GetMethod("ShowAboutOverlay", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            await Task.Delay(600);
+            var about = (FrameworkElement)window.FindName("AboutOverlay");
+            if (about.IsVisible)
+            {
+                var card = System.Windows.Media.VisualTreeHelper.GetChildrenCount(about) > 0 ? about : about;
+                var aboutShot = new System.Windows.Media.Imaging.RenderTargetBitmap((int)about.ActualWidth, (int)about.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+                aboutShot.Render(about);
+                ImageOutput.SavePng(aboutShot, Path.Combine(folder, "about.png"));
+            }
+            report.Add($"about_rendered={about.IsVisible}");
             bool home = ReferenceEquals(Window.GetWindow(scroll), window);
             report.Add($"controls_back_home_after_close={home}");
             foreach (string error in errors) report.Add("unhandled=" + error);

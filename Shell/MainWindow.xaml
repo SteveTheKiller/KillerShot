@@ -1242,24 +1242,18 @@
                                     </CheckBox>
                                     <!-- Use KillerShot for Print Screen (Services/PrintScreenKey.cs): frees the key from
                                          Windows' Snipping Tool, as KillerShell's About card makes it the default terminal.
-                                         Also a tick item in the tray menu. The note says what it does. -->
+                                         Also a tick item in the tray menu. Last in the column, so its note closes it. -->
                                     <CheckBox x:Name="PrintScreenKeyToggle" FontSize="11" Margin="0,6,0,0" Click="PrintScreenKey_Click">
                                         <TextBlock Text="{DynamicResource Str_CS_PrintScreenKey}" TextWrapping="Wrap"/>
                                     </CheckBox>
                                     <TextBlock x:Name="PrintScreenKeyNote" Foreground="{DynamicResource DimTextBrush}" FontSize="10"
                                                Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                    <!-- Last, so its explanation closes the column instead of splitting the
-                                         checkboxes apart (Steve, 2026-10-27). -->
-                                    <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,6,0,0"
-                                              Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed">
-                                        <TextBlock Text="{DynamicResource Str_About_CloseToTray}" TextWrapping="Wrap"/>
-                                    </CheckBox>
-                                    <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
-                                               Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
                                 </StackPanel>
-                                <!-- The Remote Desktop explanation lives in the tooltip; the column stays as short as the options. -->
-                                <StackPanel Grid.Column="2" ToolTip="{DynamicResource Str_About_RenderHint}">
+                                <!-- Two columns of even length, each ending with its option that carries an
+                                     explanation: Print Screen on the left, Close to system tray on the right
+                                     (Steve, 2026-10-27). The Remote Desktop explanation lives in the tooltip. -->
+                                <StackPanel Grid.Column="2">
+                                <StackPanel ToolTip="{DynamicResource Str_About_RenderHint}">
                                 <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
                                            FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,0,4" TextWrapping="Wrap"/>
                                 <StackPanel>
@@ -1276,6 +1270,14 @@
                                         <TextBlock Text="{DynamicResource Str_About_RenderSoftware}" TextWrapping="Wrap"/>
                                     </RadioButton>
                                 </StackPanel>
+                                </StackPanel>
+                                    <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,10,0,0"
+                                              Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed">
+                                        <TextBlock Text="{DynamicResource Str_About_CloseToTray}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
+                                               Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
 
@@ -1337,11 +1339,49 @@
                             <Button Content="{DynamicResource Str_Album_OpenFile}" Style="{StaticResource OutlineButton}"
                                     Padding="10,4" Margin="0,0,0,4" Click="AlbumImport_Click"/>
                         </WrapPanel>
-                        <ListBox x:Name="AlbumList" MinHeight="80" Margin="0,0,0,10" BorderThickness="1"
-                                 Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource InputBorderBrush}"
-                                 HorizontalContentAlignment="Stretch" SelectionChanged="AlbumList_SelectionChanged"
-                                 MouseDoubleClick="AlbumList_DoubleClick" AutomationProperties.Name="{DynamicResource Str_Album_Title}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                        <!-- The album list is the family database list (KillerNotes' DatabasesDialog): a recessed
+                             pane with its shadow on a childless sibling, the crossed sunken bevel, grain over the
+                             rows, and rows selected with DatabaseSelectionBrush (Services/DatabaseRowPalette.cs). -->
+                        <Grid Margin="0,0,0,10">
+                            <Border IsHitTestVisible="False" Background="{DynamicResource PaneBrush}"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}" Effect="{DynamicResource PaneShadowEffect}"/>
+                            <Border Background="{DynamicResource PaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}">
+                                <ListBox x:Name="AlbumList" MinHeight="80" Margin="4" Background="Transparent" BorderThickness="0"
+                                         HorizontalContentAlignment="Stretch" SelectionChanged="AlbumList_SelectionChanged"
+                                         MouseDoubleClick="AlbumList_DoubleClick" AutomationProperties.Name="{DynamicResource Str_Album_Title}"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                        <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource DatabaseSelectionBrush}"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource DatabaseSelectionTextBrush}"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Border>
+                            <Border IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelDarkBrush}" BorderThickness="{DynamicResource BevelLightThickness}"/>
+                            <Border IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelLightBrush}" BorderThickness="{DynamicResource BevelDarkThickness}"/>
+                            <Border IsHitTestVisible="False" CornerRadius="{DynamicResource ControlCornerRadius}"
+                                    Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+                        </Grid>
                         <WrapPanel Margin="0,0,0,8">
                             <Button x:Name="AlbumOpenBtn" Content="{DynamicResource Str_Lib_Open}" Style="{StaticResource OutlineButton}"
                                     Padding="10,4" Margin="0,0,6,4" Click="AlbumOpen_Click"/>

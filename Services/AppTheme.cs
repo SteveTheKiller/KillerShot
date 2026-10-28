@@ -66,6 +66,10 @@ namespace KillerShot.Services
             ThemeManager.SetIfAbsent(d, "OverlayBevelOuterDarkBrush", square ? d["FrameOuterDarkBrush"] : clear);
             ThemeManager.SetIfAbsent(d, "OverlayBevelInnerLightBrush", square ? d["BevelLightBrush"] : clear);
             ThemeManager.SetIfAbsent(d, "OverlayBevelInnerDarkBrush", square ? d["BevelDarkBrush"] : clear);
+
+            // The album manager's rows, as in the KillerNotes and Killendar database dialogs
+            // (Services/DatabaseRowPalette.cs, copied from KillerNotes).
+            DatabaseRowPalette.Complete(d);
         }
 
         private static void Merge(ResourceDictionary d, string path, bool overwrite)

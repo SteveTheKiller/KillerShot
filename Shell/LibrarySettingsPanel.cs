@@ -104,10 +104,10 @@ namespace KillerShot.Shell
                 {
                     var content = new StackPanel { Margin = new Thickness(8, 5, 8, 5) };
                     var name = new TextBlock { Text = album.Name + (album.Active ? " (" + Loc("Str_Album_Active") + ")" : ""), FontWeight = album.Active ? FontWeights.SemiBold : FontWeights.Normal, TextTrimming = TextTrimming.CharacterEllipsis };
-                    name.SetResourceReference(TextBlock.ForegroundProperty, "TextBrush");
+                    // The name takes the row's foreground, so a selected row's text follows DatabaseSelectionTextBrush.
                     content.Children.Add(name);
                     var details = new TextBlock { Text = album.Modified.ToString("g") + "   " + (album.Bytes / 1024d).ToString("N0") + " KB", FontSize = 10, Margin = new Thickness(0, 3, 0, 0) };
-                    details.SetResourceReference(TextBlock.ForegroundProperty, "DimTextBrush");
+                    details.SetResourceReference(TextBlock.ForegroundProperty, "DatabaseMetadataBrush");
                     content.Children.Add(details);
                     var row = new ListBoxItem { Content = content, Tag = album, ToolTip = album.Path };
                     System.Windows.Automation.AutomationProperties.SetName(row, name.Text);

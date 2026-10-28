@@ -603,7 +603,9 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
             return true;
         }
         _motion.Interrupt();
-        SelectedIndex += delta > 0 ? -1 : 1;
+        // Wheel up steps forward and wheel down steps back (Steve, 2026-10-27: the other way
+        // round read as backwards).
+        SelectedIndex += delta > 0 ? 1 : -1;
         return true;
     }
 
