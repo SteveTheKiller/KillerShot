@@ -9,6 +9,10 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - Updates keep working after the publisher's code signing certificate is renewed. A release must still carry a valid signature naming the same publisher, but no longer the exact certificate of the installed copy.
 - Exit from the tray icon closes the window the normal way, so the prompt for unsaved edits can still cancel it.
 - In High Contrast, hovered menu items use the system highlight colors.
+- Dragging the carousel quickly through a large folder no longer leaves the pictures it lands on blank. Thumbnails load for the pictures in view first, and ones skipped along the way load when you come back to them.
+- A large linked folder fills in as it is scanned instead of showing only a loading spinner until the last file is read.
+- Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
+- A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
 
 ### Changed
 

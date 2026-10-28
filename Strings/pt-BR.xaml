@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Excluir</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Excluir esta captura?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Ela será removida da biblioteca para sempre.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">O arquivo vai para a Lixeira.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Renomear coleção...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Renomear a coleção</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Renomear</sys:String>

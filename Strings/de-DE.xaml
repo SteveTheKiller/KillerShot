@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Löschen</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Diese Aufnahme löschen?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Sie wird endgültig aus der Bibliothek entfernt.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">Die Datei wird in den Papierkorb verschoben.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Sammlung umbenennen...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Sammlung umbenennen</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Umbenennen</sys:String>

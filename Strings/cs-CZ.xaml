@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Odstranit</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Odstranit tento snímek?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Z knihovny bude odstraněn natrvalo.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">Soubor se přesune do koše.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Přejmenovat kolekci...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Přejmenovat kolekci</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Přejmenovat</sys:String>

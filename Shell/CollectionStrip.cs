@@ -381,7 +381,7 @@ namespace KillerShot.Shell
                 };
                 if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
                 try { SetSource(FolderCaptures.AddFolder(dialog.FileName)); }
-                catch (Exception ex) { MessageBox.Show(Window.GetWindow(this), ex.Message, Loc("Str_Btn_Select")); }
+                catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
             };
             menu.Items.Add(openFolder);
             if (_source.StartsWith("folder:", StringComparison.Ordinal))

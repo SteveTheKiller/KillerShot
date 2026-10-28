@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Elimina</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Eliminare questa cattura?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Verrà rimossa definitivamente dalla libreria.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">Il file viene spostato nel Cestino.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Rinomina raccolta...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Rinomina la raccolta</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Rinomina</sys:String>

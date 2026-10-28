@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">削除</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">このキャプチャを削除しますか?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">ライブラリから完全に削除されます。</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">ファイルはごみ箱に移動します。</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">コレクション名の変更...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">コレクション名の変更</sys:String>
     <sys:String x:Key="Str_Lib_Rename">名前の変更</sys:String>

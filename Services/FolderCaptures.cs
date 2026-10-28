@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 
 namespace KillerShot.Services;
@@ -284,6 +285,47 @@ internal static partial class FolderCaptures
             ? File.ReadAllBytes(path)
             : ImageOutput.EncodePng(ImageOutput.Load(path));
     }
+
+    /// <summary>Sends a folder picture to the Recycle Bin, so a mistaken delete can be undone from
+    /// there, and rescans the collections that showed it.</summary>
+    public static void Recycle(long id)
+    {
+        string path = PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
+        var operation = new ShFileOperation
+        {
+            Func = FoDelete,
+            From = path + "\0\0",
+            Flags = FofAllowUndo | FofNoConfirmation | FofSilent | FofNoErrorUi,
+        };
+        int result = SHFileOperationW(ref operation);
+        if (result != 0 || operation.AnyOperationsAborted || File.Exists(path))
+            throw new IOException(new System.ComponentModel.Win32Exception(result == 0 ? 5 : result).Message);
+        Touched(path);
+        _ = RefreshScreenshotsAsync();
+        string[] sources;
+        lock (LinkedGate) sources = Linked.Values.Where(folder => path.StartsWith(folder.Path.TrimEnd('\\') + "\\",
+            StringComparison.OrdinalIgnoreCase)).Select(folder => folder.Source).ToArray();
+        foreach (string source in sources) _ = RefreshFolderAsync(source);
+    }
+
+    private const uint FoDelete = 3;
+    private const ushort FofSilent = 0x4, FofNoConfirmation = 0x10, FofAllowUndo = 0x40, FofNoErrorUi = 0x400;
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct ShFileOperation
+    {
+        public IntPtr Window;
+        public uint Func;
+        public string From;
+        public string? To;
+        public ushort Flags;
+        [MarshalAs(UnmanagedType.Bool)] public bool AnyOperationsAborted;
+        public IntPtr NameMappings;
+        public string? ProgressTitle;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SHFileOperationW(ref ShFileOperation operation);
 
     /// <summary>Watches the folder so the collection follows new and removed files.</summary>
     private static void Watch(string folder)

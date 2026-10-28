@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Törlés</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Törli ezt a rögzítést?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Végleg kikerül a könyvtárból.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">A fájl a Lomtárba kerül.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Gyűjtemény átnevezése...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">A gyűjtemény átnevezése</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Átnevezés</sys:String>

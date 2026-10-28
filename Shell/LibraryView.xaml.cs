@@ -872,10 +872,12 @@ namespace KillerShot.Shell
             });
             if (FolderCaptures.IsFolderId(item.Id))
             {
-                // A file in the Screenshots folder: the folder keeps it, so no collections, notes
-                // or delete here, only a way to it and a way into the encrypted library.
+                // A file in a folder collection: the folder keeps it, so no collections or notes,
+                // only a way to it, a way into the encrypted library, and Delete to the Recycle Bin.
                 Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item), "Ctrl+E");
                 Add("Str_Lib_AddToLibrary", () => AddToLibrary(item));
+                menu.Items.Add(new Separator());
+                Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
                 menu.IsOpen = true;
                 Anim.FadeIn(menu);
                 return;
@@ -1142,7 +1144,16 @@ namespace KillerShot.Shell
 
         internal void Delete(CaptureItem item)
         {
-            if (FolderCaptures.IsFolderId(item.Id)) return;   // the folder's files are left alone
+            if (FolderCaptures.IsFolderId(item.Id))
+            {
+                // A folder file is not in the encrypted album, so Delete sends the file itself to
+                // the Recycle Bin, where a mistake can still be undone.
+                var recycle = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_RecycleDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
+                if (!PresentConfirmation(recycle)) return;
+                try { FolderCaptures.Recycle(item.Id); }
+                catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+                return;
+            }
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
             if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.Delete([item.Id], item.Session));
         }

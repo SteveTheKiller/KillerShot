@@ -454,6 +454,7 @@
     <sys:String x:Key="Str_Lib_Delete">Delete</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Delete this capture?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">It is removed from the library for good.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">The file goes to the Recycle Bin.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Rename collection...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Rename the collection</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Rename</sys:String>

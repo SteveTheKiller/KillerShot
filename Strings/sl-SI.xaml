@@ -445,6 +445,7 @@
     <sys:String x:Key="Str_Lib_Delete">Izbriši</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Izbrišem ta posnetek?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Trajno bo odstranjen iz knjižnice.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">Datoteka bo premaknjena v Koš.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Preimenuj zbirko...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Preimenuj zbirko</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Preimenuj</sys:String>

@@ -30,6 +30,11 @@ internal static partial class SelfTestLibrary
             _ = RunFolderRemoval(Path.GetFullPath(args[1]));
             return true;
         }
+        if (args.Length == 2 && args[0] == "--selftest-folder-delete")
+        {
+            _ = RunFolderDelete(Path.GetFullPath(args[1]));
+            return true;
+        }
         if (args.Length == 2 && args[0] == "--selftest-thumbnail-loading")
         {
             _ = RunThumbnailLoading(Path.GetFullPath(args[1]));

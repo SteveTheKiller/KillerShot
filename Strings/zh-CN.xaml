@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">删除</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">删除此截图?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">它将从截图库中永久删除。</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">文件将移到回收站。</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">重命名收藏集...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">重命名收藏集</sys:String>
     <sys:String x:Key="Str_Lib_Rename">重命名</sys:String>

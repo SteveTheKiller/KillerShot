@@ -196,6 +196,9 @@ internal static partial class FolderCaptures
     {
         var items = new List<CaptureItem>();
         bool available = false;
+        // A large tree takes a while; the pictures found so far show up as the scan goes, so the
+        // collection fills in instead of sitting on a spinner until the last file is read.
+        var published = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             bool complete = true;
@@ -226,6 +229,17 @@ internal static partial class FolderCaptures
                         }
                         items.Add(new CaptureItem(IdOf(file.FullName), file.LastWriteTime, width, height,
                             "file", Path.GetFileNameWithoutExtension(file.Name), null, CollectionId, null));
+                    }
+                    if (!folder.Initialized && published.Elapsed.TotalSeconds >= 2)
+                    {
+                        published.Restart();
+                        var partial = items.OrderByDescending(item => item.Taken).ThenBy(item => item.Id).ToArray();
+                        lock (LinkedGate)
+                        {
+                            if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
+                            folder.Items = partial;
+                        }
+                        Changed?.Invoke();
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }

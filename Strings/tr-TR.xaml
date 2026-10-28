@@ -450,6 +450,7 @@
     <sys:String x:Key="Str_Lib_Delete">Sil</sys:String>
     <sys:String x:Key="Str_Lib_DeleteTitle">Bu yakalama silinsin mi?</sys:String>
     <sys:String x:Key="Str_Lib_DeleteDetail">Kitaplıktan kalıcı olarak kaldırılır.</sys:String>
+    <sys:String x:Key="Str_Lib_RecycleDetail">Dosya Geri Dönüşüm Kutusu'na taşınır.</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollection">Koleksiyonu yeniden adlandır...</sys:String>
     <sys:String x:Key="Str_Lib_RenameCollectionTitle">Koleksiyonu yeniden adlandır</sys:String>
     <sys:String x:Key="Str_Lib_Rename">Yeniden adlandır</sys:String>
