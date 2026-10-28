@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Abrir outra captura?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">As marcações desta imagem não foram salvas e serão perdidas.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Abrir</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Encaixar à esquerda</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Encaixar no topo</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Encaixar à direita</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Encaixar embaixo</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Barra lateral à esquerda</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Carrossel no topo</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Barra lateral à direita</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Carrossel embaixo</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Minimizar</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Minimizar coleções</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Mostrar a faixa da coleção</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Posição da faixa</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionar a faixa da coleção</sys:String>

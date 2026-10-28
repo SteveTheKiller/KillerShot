@@ -7,38 +7,30 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
+/// <summary>
+/// Right-click menus that belong to where the click lands (Steve, 2026-10-27): the sidebar's menu
+/// holds sidebar options, the carousel's holds carousel options, and the content area's holds the
+/// views. Each attaches to its own area only, never to a dock host, because the hosts wrap the
+/// content and their menu would answer clicks there too.
+/// </summary>
 public partial class MainWindow
 {
-    private FrameworkElement[] _railOrder = [];
-
     private void InitWorkspaceMenus()
     {
-        _railOrder = RailStack.Children.OfType<FrameworkElement>().ToArray();
-        void Attach(FrameworkElement element)
+        void Attach(FrameworkElement element, Action<ContextMenu> fill)
         {
             var menu = new ContextMenu();
             element.ContextMenu = menu;
-            menu.Opened += (_, _) => FillWorkspaceMenu(menu);
+            menu.Opened += (_, _) => { fill(menu); MenuTidy.HideInactive(menu); };
         }
         RailStack.Background = Brushes.Transparent;
-        Attach(RailStack);
-        Attach(StripDock);
-        Attach(NavigationDock);
-        if (_strip != null) Attach(_strip);
-        if (_navigationStrip != null) Attach(_navigationStrip);
-        Attach(Library);
-        Attach(FooterBar);
-        NavigationDock.LayoutChanged += ApplyRailPreferences;
+        Attach(RailStack, FillSidebarMenu);
+        if (_navigationStrip != null) Attach(_navigationStrip, FillSidebarMenu);
+        if (_strip != null) Attach(_strip, FillCarouselMenu);
+        Attach(Library, FillContentMenu);
+        Attach(FooterBar, FillContentMenu);
+        NavigationDock.LayoutChanged += PlaceRailButtons;
         RailStack.LayoutUpdated += (_, _) => PlaceRailButtons();
-        ApplyRailPreferences();
-    }
-
-    private void ApplyRailPreferences()
-    {
-        bool reversed = Settings.GetBool("RailReversed", false);
-        var order = reversed ? _railOrder.Reverse() : _railOrder.AsEnumerable();
-        RailStack.Children.Clear();
-        foreach (var button in order) RailStack.Children.Add(button);
         PlaceRailButtons();
     }
 
@@ -51,44 +43,57 @@ public partial class MainWindow
         }
     }
 
-    private void FillWorkspaceMenu(ContextMenu menu)
+    private MenuItem AddItem(ContextMenu menu, string key, Action action, bool? selected = null, string gesture = "")
+    {
+        var item = new MenuItem { Header = Loc(key), IsCheckable = selected.HasValue, IsChecked = selected == true, InputGestureText = gesture };
+        item.Click += (_, _) => action();
+        menu.Items.Add(item);
+        return item;
+    }
+
+    /// <summary>The collections sidebar: which collection, how collections look, and which side.</summary>
+    private void FillSidebarMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        void Add(string key, Action action, bool? selected = null, string gesture = "")
+        if (_navigationStrip is not { } strip) return;
+        var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
+        var choices = strip.SourceMenu(CollectionPickerBtn);
+        while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
+        menu.Items.Add(source);
+        menu.Items.Add(strip.PreviewMenu());
+        AddItem(menu, "Str_Sidebar_Compact", () => strip.Compact = !strip.Compact, strip.Compact);
+        menu.Items.Add(new Separator());
+        foreach (var (side, key, arrow) in StripSides.Where(s => s.Side is DockSide.Left or DockSide.Right))
         {
-            var item = new MenuItem { Header = Loc(key), IsCheckable = selected.HasValue, IsChecked = selected == true, InputGestureText = gesture };
-            item.Click += (_, _) => action();
-            menu.Items.Add(item);
+            var target = side;
+            AddItem(menu, key, () => NavigationDock.DockTo(target), NavigationDock.Side == side, "Alt+Shift+" + arrow);
         }
-        // No Library row: the album manager has its own button in the title bar, and a second way
-        // in from the sidebar only made it unclear which menu it belonged to.
-        if (_strip != null)
+    }
+
+    /// <summary>The photo carousel: where it sits, and the cards under its pictures.</summary>
+    private void FillCarouselMenu(ContextMenu menu)
+    {
+        menu.Items.Clear();
+        foreach (var (side, key, arrow) in StripSides.Where(s => s.Side is DockSide.Top or DockSide.Bottom))
         {
-            var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
-            var choices = (_navigationStrip ?? _strip).SourceMenu(CollectionPickerBtn);
-            while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
-            menu.Items.Add(source);
-            menu.Items.Add((_navigationStrip ?? _strip).PreviewMenu());
-            foreach (var (side, key, _) in StripSides)
-            {
-                var target = side;
-                var host = side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock;
-                Add(key, () => host.DockTo(target), host.Side == side);
-            }
-            var activeHost = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock ? StripDock : NavigationDock;
-            Add("Str_Dock_Minimize", () => { if (activeHost.IsMinimized) activeHost.Restore(); else activeHost.Minimize(); }, activeHost.IsMinimized);
+            var target = side;
+            AddItem(menu, key, () => StripDock.DockTo(target), StripDock.Side == side, "Alt+Shift+" + arrow);
         }
         menu.Items.Add(new Separator());
-        Add("Str_Rail_Reverse", () => { Settings.SetBool("RailReversed", !Settings.GetBool("RailReversed", false)); ApplyRailPreferences(); }, Settings.GetBool("RailReversed", false));
-        menu.Items.Add(new Separator());
+        menu.Items.Add(ViewInfoCards.Menu());
+    }
+
+    /// <summary>The content area: the album views, and info cards where the view shows them.</summary>
+    private void FillContentMenu(ContextMenu menu)
+    {
+        menu.Items.Clear();
         foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline") })
         {
             string target = view;
-            Add(key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,
+            AddItem(menu, key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,
                 view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", _ => "F8" });
         }
-        bool stripTarget = menu.PlacementTarget == _strip || menu.PlacementTarget == StripDock || !Library.IsVisible;
-        if (stripTarget || Library.CurrentView is "shelves" or "flow")
+        if (Library.IsVisible && Library.CurrentView is "shelves" or "flow")
         {
             menu.Items.Add(new Separator());
             menu.Items.Add(ViewInfoCards.Menu());

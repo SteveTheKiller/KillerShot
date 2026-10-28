@@ -165,25 +165,110 @@ namespace KillerFamily.Layout
         public void DockTo(DockSide side)
         {
             if (!Allows(side)) return;
+            bool moving = side != Side || IsMinimized;
+            StopSlide();
             IsMinimized = false;
             Side = side;
             LayoutChanged?.Invoke();
+            if (moving) SlideOpen();
         }
 
         public void Minimize()
         {
             if (IsMinimized) return;
+            StopSlide();
             RememberSize();
-            IsMinimized = true;
-            LayoutChanged?.Invoke();
+            double from = _paneTrack is ColumnDefinition column ? column.ActualWidth : _paneTrack is RowDefinition row ? row.ActualHeight : 0;
+            Slide(from, 0, () =>
+            {
+                IsMinimized = true;
+                LayoutChanged?.Invoke();
+            });
         }
 
         public void Restore()
         {
             if (!IsMinimized) return;
+            StopSlide();
             IsMinimized = false;
             LayoutChanged?.Invoke();
+            SlideOpen();
             _pane?.Focus();
+        }
+
+        // ---- the slide ----
+        //
+        // The pane folds away and comes back by growing or shrinking its own track, so the body
+        // beside it gives way smoothly instead of jumping. Same ease-out as the family's fades
+        // (Anim), a little longer because it travels further. Like the family's fades it does not
+        // follow Windows' client-area animation switch, which many machines have off by default;
+        // it is skipped only on a host that is not on screen yet.
+
+        private const int SlideMs = 180;
+
+        private static readonly DependencyProperty ExtentProperty = DependencyProperty.Register(
+            "Extent", typeof(double), typeof(DockHost), new PropertyMetadata(0.0, (d, e) => ((DockHost)d).ApplyExtent((double)e.NewValue)));
+
+        /// <summary>The pane's track in the current layout, or null when the pane is not open.</summary>
+        private DefinitionBase? _paneTrack;
+        private bool _sliding;
+
+        private void ApplyExtent(double extent)
+        {
+            if (!_sliding) return;
+            var size = new GridLength(Math.Max(0, extent));
+            if (_paneTrack is ColumnDefinition column) column.Width = size;
+            else if (_paneTrack is RowDefinition row) row.Height = size;
+        }
+
+        private void SlideOpen()
+        {
+            double to = Math.Max(MinPaneSize, IsHorizontal ? PaneHeight : PaneWidth);
+            Slide(0, to, () => { });
+        }
+
+        private void Slide(double from, double to, Action done)
+        {
+            if (_paneTrack == null || !IsLoaded)
+            {
+                done();
+                return;
+            }
+            _sliding = true;
+            SetTrackMinimum(0);
+            ApplyExtent(from);
+            var animation = new System.Windows.Media.Animation.DoubleAnimation(from, to, new Duration(TimeSpan.FromMilliseconds(SlideMs)))
+            {
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut },
+            };
+            animation.Completed += (_, _) =>
+            {
+                if (!_sliding) return;
+                FinishSlide(to);
+                done();
+            };
+            BeginAnimation(ExtentProperty, animation);
+        }
+
+        /// <summary>Ends a slide early, leaving the track where the layout puts it.</summary>
+        private void StopSlide()
+        {
+            if (!_sliding) return;
+            FinishSlide(null);
+        }
+
+        private void FinishSlide(double? extent)
+        {
+            if (extent is double size) ApplyExtent(size);
+            _sliding = false;
+            BeginAnimation(ExtentProperty, null);
+            SetTrackMinimum(MinPaneSize);
+        }
+
+        private void SetTrackMinimum(double minimum)
+        {
+            if (_paneTrack is ColumnDefinition column) column.MinWidth = minimum;
+            else if (_paneTrack is RowDefinition row) row.MinHeight = minimum;
         }
 
         private void OnSideChanged()
@@ -241,6 +326,7 @@ namespace KillerFamily.Layout
                 if (!_inner.Children.Contains(inner[i].Element)) _inner.Children.Add(inner[i].Element);
             }
 
+            _paneTrack = null;
             if (!paneOpen)
             {
                 if (!Children.Contains(_inner)) Children.Add(_inner);
@@ -258,8 +344,10 @@ namespace KillerFamily.Layout
             for (int i = 0; i < tracks.Count; i++)
             {
                 var (size, element, min) = tracks[i];
-                if (horizontal) RowDefinitions.Add(new RowDefinition { Height = size, MinHeight = min });
-                else ColumnDefinitions.Add(new ColumnDefinition { Width = size, MinWidth = min });
+                DefinitionBase track = horizontal ? new RowDefinition { Height = size, MinHeight = min } : new ColumnDefinition { Width = size, MinWidth = min };
+                if (track is RowDefinition rowTrack) RowDefinitions.Add(rowTrack);
+                else ColumnDefinitions.Add((ColumnDefinition)track);
+                if (element == _pane) _paneTrack = track;
                 if (horizontal) { SetRow(element, i); SetColumn(element, 0); }
                 else { SetColumn(element, i); SetRow(element, 0); }
                 if (!Children.Contains(element)) Children.Add(element);

@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Otworzyć inny zrzut?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Oznaczenia na tym obrazie nie są zapisane i zostaną utracone.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Otwórz</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Zadokuj po lewej</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Zadokuj u góry</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Zadokuj po prawej</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Zadokuj u dołu</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Pasek boczny po lewej</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Karuzela u góry</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Pasek boczny po prawej</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Karuzela na dole</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Minimalizuj</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Minimalizuj kolekcje</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Pokaż pasek kolekcji</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Położenie paska</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Zmień rozmiar paska kolekcji</sys:String>

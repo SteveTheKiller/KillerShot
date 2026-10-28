@@ -494,11 +494,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Open another capture?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">The marks on this picture are not saved and will be lost.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Open it</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Dock on the left</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Dock at the top</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Dock on the right</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Dock at the bottom</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Sidebar on the left</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Carousel at the top</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Sidebar on the right</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Carousel at the bottom</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Minimize</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Minimize collections</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Show the collection strip</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Strip position</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Resize the collection strip</sys:String>

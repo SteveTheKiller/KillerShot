@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Басқа түсірілімді ашу керек пе?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Бұл суреттегі белгілер сақталмаған, олар жоғалады.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Ашу</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Сол жаққа бекіту</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Жоғарыға бекіту</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Оң жаққа бекіту</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Төменге бекіту</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Бүйірлік тақта сол жақта</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Карусель жоғарыда</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Бүйірлік тақта оң жақта</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Карусель төменде</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Кішірейту</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Жинақтарды кішірейту</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Жинақ жолағын көрсету</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Жолақ орны</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Жинақ жолағының өлшемін өзгерту</sys:String>

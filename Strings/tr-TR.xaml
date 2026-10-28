@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Başka bir yakalama açılsın mı?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Bu resimdeki işaretler kaydedilmedi ve kaybolacak.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Aç</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Sola yerleştir</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Üste yerleştir</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Sağa yerleştir</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Alta yerleştir</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Kenar çubuğu solda</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Karusel üstte</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Kenar çubuğu sağda</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Karusel altta</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Simge durumuna küçült</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Koleksiyonları küçült</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Koleksiyon şeridini göster</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Şeridin konumu</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Koleksiyon şeridini yeniden boyutlandır</sys:String>

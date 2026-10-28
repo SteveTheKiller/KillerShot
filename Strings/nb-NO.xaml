@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Åpne et annet skjermbilde?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Markeringene på dette bildet er ikke lagret og vil gå tapt.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Åpne</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Fest til venstre</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Fest øverst</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Fest til høyre</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Fest nederst</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Sidepanel til venstre</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Karusell øverst</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Sidepanel til høyre</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Karusell nederst</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Minimer</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Minimer samlinger</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Vis samlingsstripen</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Stripens plassering</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Endre størrelse på samlingsstripen</sys:String>

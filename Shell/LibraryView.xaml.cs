@@ -862,8 +862,6 @@ namespace KillerShot.Shell
                 return mi;
             }
             Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
-            if (anchor is CoverFlow)
-                menu.Items.Add(ViewInfoCards.Menu());
             Add("Str_Lib_Copy", () => Copy(item));
             Add("Str_Btn_Print", () =>
             {
@@ -878,6 +876,7 @@ namespace KillerShot.Shell
                 Add("Str_Lib_AddToLibrary", () => AddToLibrary(item));
                 menu.Items.Add(new Separator());
                 Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
+                MenuTidy.HideInactive(menu);
                 menu.IsOpen = true;
                 Anim.FadeIn(menu);
                 return;
@@ -895,6 +894,7 @@ namespace KillerShot.Shell
             if (!CardColors.CardIsDefault) Add("Str_Lib_CardColorDefault", () => CardColors.SetCard(null));
             menu.Items.Add(new Separator());
             Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
+            MenuTidy.HideInactive(menu);
             menu.IsOpen = true;
             Anim.FadeIn(menu);
         }

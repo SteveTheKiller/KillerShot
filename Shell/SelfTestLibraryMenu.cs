@@ -49,7 +49,7 @@ internal static class SelfTestLibraryMenu
 
             // The sidebar's own menu, opened for real (transparent): it must not offer Library, which
             // has its own button in the title bar.
-            var sidebar = (FrameworkElement)window.FindName("NavigationDock");
+            var sidebar = (FrameworkElement)window.FindName("RailStack");
             var menu = sidebar.ContextMenu;
             menu.Opacity = 0;
             menu.IsOpen = true;

@@ -270,7 +270,7 @@ namespace KillerShot.Shell
                     var membersByCollection = all.ToLookup(i => i.CollectionId);
                     var choices = new List<CollectionChoice>();
                     void Choice(string source, string name, IReadOnlyList<CaptureItem> members, string? status = null, string? path = null) =>
-                        choices.Add(new CollectionChoice(source, name, members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, PreviewStyle, status, path));
+                        choices.Add(new CollectionChoice(source, name, Compact ? [] : members.Take(PreviewStyle == "pile" ? 12 : 4).ToArray(), members.Count, Compact ? "rows" : PreviewStyle, status, path));
                     Choice("all", Loc("Str_Strip_All"), all);
                     if (FolderCaptures.Enabled)
                     {
@@ -416,6 +416,15 @@ namespace KillerShot.Shell
                 }
                 return null;
             }
+        }
+
+        /// <summary>Minimize collections: each collection is one line, its name and count, with no
+        /// photos, so the sidebar holds many more in the same space. The preview style stays set for
+        /// when it is turned off again.</summary>
+        public bool Compact
+        {
+            get => Settings.GetBool("CollectionSidebarCompact", false);
+            set { Settings.SetBool("CollectionSidebarCompact", value); Load(keepCurrent: true); }
         }
 
         public string PreviewStyle => Settings.Get("CollectionPreview") is "stack" or "grid" or "mini"

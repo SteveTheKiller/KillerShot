@@ -92,6 +92,7 @@ public partial class App : Application
         if (SelfTestUi.TryRun(e.Args)) return;
         if (SelfTestLibraryMenu.TryRun(e.Args)) return;
         if (SelfTestPrintScreenKey.TryRun(e.Args)) return;
+        if (SelfTestContextMenus.TryRun(e.Args)) return;
         if (SelfTestChromeInteraction.TryRun(e.Args)) return;
         if (SelfTestReleaseSafety.TryRun(e.Args)) return;
         if (SelfTestInstallation.TryRun(e.Args)) return;
@@ -356,6 +357,7 @@ public partial class App : Application
                 w.SetResourceReference(System.Windows.Controls.Control.FontFamilyProperty, "UiFont");
         }));
         RenderModeService.Apply();
+        Controls.PointerMenus.Register();
         KillerFamily.Layout.ShortcutHints.Initialize(Settings.Get, Settings.Set);
         ThemeManager.Initialize();
         FilmGrain.Initialize();

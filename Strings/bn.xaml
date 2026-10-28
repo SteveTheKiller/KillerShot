@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">অন্য একটি ক্যাপচার খুলবেন?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">এই ছবির চিহ্নগুলো সংরক্ষিত নয় এবং হারিয়ে যাবে।</sys:String>
     <sys:String x:Key="Str_Strip_Discard">খুলুন</sys:String>
-    <sys:String x:Key="Str_Dock_Left">বাঁ দিকে ডক করুন</sys:String>
-    <sys:String x:Key="Str_Dock_Top">উপরে ডক করুন</sys:String>
-    <sys:String x:Key="Str_Dock_Right">ডান দিকে ডক করুন</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">নিচে ডক করুন</sys:String>
+    <sys:String x:Key="Str_Dock_Left">বাঁ দিকে সাইডবার</sys:String>
+    <sys:String x:Key="Str_Dock_Top">উপরে ক্যারোসেল</sys:String>
+    <sys:String x:Key="Str_Dock_Right">ডান দিকে সাইডবার</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">নিচে ক্যারোসেল</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">ছোট করুন</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">সংগ্রহ ছোট করুন</sys:String>
     <sys:String x:Key="Str_Dock_Restore">সংগ্রহ স্ট্রিপ দেখান</sys:String>
     <sys:String x:Key="Str_Dock_Menu">স্ট্রিপের অবস্থান</sys:String>
     <sys:String x:Key="Str_Dock_Resize">সংগ্রহ স্ট্রিপের আকার বদলান</sys:String>

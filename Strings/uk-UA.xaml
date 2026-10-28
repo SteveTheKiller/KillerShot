@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Відкрити інший знімок?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Позначки на цьому зображенні не збережено, їх буде втрачено.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Відкрити</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Закріпити ліворуч</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Закріпити вгорі</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Закріпити праворуч</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Закріпити внизу</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Бічна панель ліворуч</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Карусель угорі</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Бічна панель праворуч</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Карусель унизу</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Згорнути</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Згорнути колекції</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Показати стрічку колекції</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Положення стрічки</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Змінити розмір стрічки колекції</sys:String>

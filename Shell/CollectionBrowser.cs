@@ -179,6 +179,12 @@ public sealed class CollectionPreview : StackPanel
         _name.Text = choice.Name;
         _count.Text = choice.Detail;
         _photos.Visibility = choice.Preview.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        // Minimized collections: one line each, the name with its count after it, and no photos.
+        bool row = choice.Style == "rows";
+        _captions.Orientation = row ? Orientation.Horizontal : Orientation.Vertical;
+        _name.Margin = row ? new Thickness(0, 3, 8, 3) : new Thickness(0, 4, 0, 0);
+        _count.VerticalAlignment = row ? VerticalAlignment.Center : VerticalAlignment.Top;
+        _count.Opacity = row ? .7 : 1;
         _photos.Height = choice.Style == "pile" ? 112 : 78;
         _captions.Margin = choice.Style == "pile" ? new Thickness(2, 0, 2, 0) : default;
         _photos.ClipToBounds = choice.Style != "pile";

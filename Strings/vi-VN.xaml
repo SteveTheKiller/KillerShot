@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Mở ảnh chụp khác?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Các đánh dấu trên ảnh này chưa được lưu và sẽ bị mất.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Mở</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Gắn bên trái</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Gắn ở trên</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Gắn bên phải</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Gắn ở dưới</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Thanh bên ở bên trái</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Băng chuyền ở trên</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Thanh bên ở bên phải</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Băng chuyền ở dưới</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Thu nhỏ</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Thu nhỏ bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Hiện dải bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Vị trí của dải</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Đổi cỡ dải bộ sưu tập</sys:String>

@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">別のキャプチャを開きますか?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">この画像の書き込みは保存されておらず、失われます。</sys:String>
     <sys:String x:Key="Str_Strip_Discard">開く</sys:String>
-    <sys:String x:Key="Str_Dock_Left">左にドッキング</sys:String>
-    <sys:String x:Key="Str_Dock_Top">上にドッキング</sys:String>
-    <sys:String x:Key="Str_Dock_Right">右にドッキング</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">下にドッキング</sys:String>
+    <sys:String x:Key="Str_Dock_Left">サイドバーを左に</sys:String>
+    <sys:String x:Key="Str_Dock_Top">カルーセルを上に</sys:String>
+    <sys:String x:Key="Str_Dock_Right">サイドバーを右に</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">カルーセルを下に</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">コレクションを最小化</sys:String>
     <sys:String x:Key="Str_Dock_Restore">コレクション ストリップを表示</sys:String>
     <sys:String x:Key="Str_Dock_Menu">ストリップの位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">コレクション ストリップのサイズ変更</sys:String>

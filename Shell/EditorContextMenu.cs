@@ -11,7 +11,13 @@ public partial class MainWindow
     private void InitEditorContextMenu()
     {
         var menu = new ContextMenu();
-        menu.Opened += (_, _) => BuildEditorContextMenu(menu);
+        // Built before it opens, so a menu with nothing usable in it never opens as an empty card.
+        EditorStage.ContextMenuOpening += (_, e) =>
+        {
+            BuildEditorContextMenu(menu);
+            if (!menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible)) e.Handled = true;
+        };
+        menu.Opened += (_, _) => { if (menu.Items.Count == 0) BuildEditorContextMenu(menu); };
         EditorStage.ContextMenu = menu;
         BuildEditorContextMenu(menu);
     }
@@ -34,6 +40,14 @@ public partial class MainWindow
             return item;
         }
         foreach (string id in new[] { "copy", "save", "saveas", "print" }) menu.Items.Add(ToolbarAction(id));
+        // The picture itself, when it came from the album or a folder collection: Delete asks
+        // first, as it does in the album (a folder file goes to the Recycle Bin).
+        if (App.Instance.CurrentItem is { } current)
+        {
+            var delete = new MenuItem { Tag = "deletecapture", Header = Loc("Str_Lib_Delete") };
+            delete.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => Library.Delete(current)));
+            menu.Items.Add(delete);
+        }
         menu.Items.Add(new Separator());
         menu.Items.Add(ToolbarAction("undo"));
         menu.Items.Add(ToolbarAction("redo"));
@@ -89,5 +103,7 @@ public partial class MainWindow
             zoom.Items.Add(item);
         }
         menu.Items.Add(zoom);
+        // Only what can be done right now: nothing greyed out.
+        Controls.MenuTidy.HideInactive(menu);
     }
 }

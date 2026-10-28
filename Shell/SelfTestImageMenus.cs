@@ -361,18 +361,16 @@ internal static class SelfTestImageMenus
                 (Button)window.FindName("LangButton"), themeButton];
             if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail))
                 throw new InvalidOperationException("Rail order must put app controls before Shortcuts, Language and Theme.");
+            // The rail belongs to the sidebar, so its menu holds sidebar options only: no reverse
+            // order, no album views (those are the content area's), and the sides it can take.
             OpenRail();
-            railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
-                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail.Reverse()))
-                throw new InvalidOperationException("Reverse order must reverse every rail control.");
-            railMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Reverse")))
-                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            window.UpdateLayout();
+            bool Has(string key) => railMenu.Items.OfType<MenuItem>().Any(m => m.Visibility == Visibility.Visible && Equals(m.Header, LocaleManager.Loc(key)));
+            if (Has("Str_Rail_Reverse") || Has("Str_Lib_ViewGrid") || Has("Str_Dock_Top") || !Has("Str_Dock_Left") || !Has("Str_Sidebar_Compact"))
+                throw new InvalidOperationException("The rail menu must hold the sidebar's options and nothing from the content area or carousel.");
             if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail)
                 || rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
-                throw new InvalidOperationException("Restoring rail order must retain every control at the fixed right end.");
-            report.Add("Rail menu: fixed ends, reversible order and theme flyout in the pane corner PASS");
+                throw new InvalidOperationException("The rail must keep every control at the fixed right end.");
+            report.Add("Rail menu: fixed ends, sidebar options only and theme flyout in the pane corner PASS");
             var printPreview = new PrintPreviewWindow(window, doc.Render(), "Edited screenshot");
             printPreview.Show();
             await Task.Delay(100);

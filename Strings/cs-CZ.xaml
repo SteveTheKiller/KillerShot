@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Otevřít jiný snímek?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Značky na tomto obrázku nejsou uložené a ztratí se.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Otevřít</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Ukotvit vlevo</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Ukotvit nahoře</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Ukotvit vpravo</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Ukotvit dole</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Postranní panel vlevo</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Karusel nahoře</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Postranní panel vpravo</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Karusel dole</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Minimalizovat</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Minimalizovat kolekce</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Zobrazit pás kolekce</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Umístění pásu</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Změnit velikost pásu kolekce</sys:String>

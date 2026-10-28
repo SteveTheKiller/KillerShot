@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">打开另一张截图?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">此图片上的标记尚未保存，将会丢失。</sys:String>
     <sys:String x:Key="Str_Strip_Discard">打开</sys:String>
-    <sys:String x:Key="Str_Dock_Left">停靠在左侧</sys:String>
-    <sys:String x:Key="Str_Dock_Top">停靠在顶部</sys:String>
-    <sys:String x:Key="Str_Dock_Right">停靠在右侧</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">停靠在底部</sys:String>
+    <sys:String x:Key="Str_Dock_Left">侧边栏在左侧</sys:String>
+    <sys:String x:Key="Str_Dock_Top">轮播在顶部</sys:String>
+    <sys:String x:Key="Str_Dock_Right">侧边栏在右侧</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">轮播在底部</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">最小化收藏集</sys:String>
     <sys:String x:Key="Str_Dock_Restore">显示收藏集栏</sys:String>
     <sys:String x:Key="Str_Dock_Menu">收藏集栏位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">调整收藏集栏大小</sys:String>

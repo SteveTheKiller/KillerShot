@@ -11,6 +11,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - In High Contrast, hovered menu items use the system highlight colors.
 - Dragging the carousel quickly through a large folder no longer leaves the pictures it lands on blank. Thumbnails load for the pictures in view first, and ones skipped along the way load when you come back to them.
 - A large linked folder fills in as it is scanned instead of showing only a loading spinner until the last file is read.
+- A right-click menu opens right against the pointer. A tall menu no longer starts about 30 pixels above the click and runs far up the screen.
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
 - Dragging the carousel slider moves the carousel as fast as the pointer. A long jump lands at once and glides only the last few pictures, instead of slowly turning past every picture on the way.
@@ -20,10 +21,15 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - The download is about 7 MB instead of 33 MB. Window and screen capture, recording and text recognition now call Windows directly instead of shipping the 25 MB Windows SDK projection.
 - Dates and numbers keep the Windows region format whatever the interface language, as in the other Killer apps.
 - The album manager opens as its own window with a title bar, a close button and a draggable caption, like the database windows in KillerNotes and Killendar, instead of a dropdown that closed on any outside click.
+- Right-click menus belong to where you click. The sidebar's menu holds the collection, its previews and which side the sidebar is on; the carousel's menu holds where the carousel sits and its info cards; the album area's menu holds the views. The position options read "Sidebar on the left" and "Carousel at the top" instead of "Dock on the left", and "Reverse icon order" is gone.
+- Menus show only what can be done right now, instead of greyed-out rows, and a menu with nothing to offer does not open.
+- The sidebar slides closed, open and to its other side instead of jumping.
 - The sidebar's right-click menu no longer offers Library, which opened the album manager a second way and could leave the window not responding. The album manager opens from its button in the title bar.
 
 ### Added
 
+- Minimize collections, in the sidebar's right-click menu, shows each collection as one line with its name and count, so many more fit in the sidebar. The preview style comes back when it is turned off.
+- The picture's right-click menu in the editor has Delete for an album or folder capture.
 - "Use KillerShot for the Print Screen key" in Capture settings turns off the Windows setting that opens Snipping Tool from Print Screen, so KillerShot's shortcut gets the key. Turning it off, or uninstalling, puts the Windows setting back unless it was changed since in Settings. Win+Shift+S stays with Snipping Tool, and a portable copy cannot turn it on.
 
 ## [1.0.0] - 2026-10-27

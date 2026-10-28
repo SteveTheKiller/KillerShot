@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Ouvrir une autre capture ?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">Les annotations de cette image ne sont pas enregistrées et seront perdues.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Ouvrir</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Ancrer à gauche</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Ancrer en haut</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Ancrer à droite</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Ancrer en bas</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Barre latérale à gauche</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Carrousel en haut</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Barre latérale à droite</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Carrousel en bas</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Réduire</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Réduire les collections</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Afficher le bandeau de collection</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Position du bandeau</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionner le bandeau de collection</sys:String>

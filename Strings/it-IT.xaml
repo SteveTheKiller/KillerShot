@@ -490,11 +490,12 @@
     <sys:String x:Key="Str_Strip_DiscardTitle">Aprire un'altra cattura?</sys:String>
     <sys:String x:Key="Str_Strip_DiscardDetail">I segni su questa immagine non sono salvati e andranno persi.</sys:String>
     <sys:String x:Key="Str_Strip_Discard">Apri</sys:String>
-    <sys:String x:Key="Str_Dock_Left">Ancora a sinistra</sys:String>
-    <sys:String x:Key="Str_Dock_Top">Ancora in alto</sys:String>
-    <sys:String x:Key="Str_Dock_Right">Ancora a destra</sys:String>
-    <sys:String x:Key="Str_Dock_Bottom">Ancora in basso</sys:String>
+    <sys:String x:Key="Str_Dock_Left">Barra laterale a sinistra</sys:String>
+    <sys:String x:Key="Str_Dock_Top">Carosello in alto</sys:String>
+    <sys:String x:Key="Str_Dock_Right">Barra laterale a destra</sys:String>
+    <sys:String x:Key="Str_Dock_Bottom">Carosello in basso</sys:String>
     <sys:String x:Key="Str_Dock_Minimize">Riduci</sys:String>
+    <sys:String x:Key="Str_Sidebar_Compact">Riduci le raccolte</sys:String>
     <sys:String x:Key="Str_Dock_Restore">Mostra la striscia della raccolta</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Posizione della striscia</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Ridimensiona la striscia della raccolta</sys:String>
