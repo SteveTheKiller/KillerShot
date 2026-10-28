@@ -126,6 +126,15 @@ internal static class SelfTestContextMenus
             Check(!PointerMenus.Takes(new ContextMenu()), "A menu with no target, like the tray menu, must not be taken over.");
             Check(PointerMenus.Takes(new ContextMenu { PlacementTarget = library }), "A menu on an on-screen element must be placed at the pointer.");
             report.Add("the tray menu keeps its own placement at the pointer: PASS");
+            // The tray menu (the family's CloseToTray, and KillerShot's own tray icon) rises out of
+            // the tray: its card's bottom-left corner at the pointer, whatever its height.
+            foreach (double height in new[] { 120.0, 400.0 })
+            {
+                var tray = KillerFamily.Shell.CloseToTray.Candidates(new Point(1500, 1400), new Size(240, height), halo, 1.0);
+                Check(Math.Abs(tray[0].Point.X + halo.Left - 1502) < .01 && Math.Abs(tray[0].Point.Y + height - halo.Bottom - 1398) < .01,
+                    $"A {height}px tray menu must open with its card's bottom-left at the pointer.");
+            }
+            report.Add("tray menus open from the pointer upward at any height: PASS");
 
             // The capture bar is title-bar height: built but never shown, measured, and rendered.
             var monitor = new KillerShot.Capture.MonitorBounds(IntPtr.Zero, new KillerShot.Native.Win32.RECT { Left = 0, Top = 0, Right = 1920, Bottom = 1080 }, true);

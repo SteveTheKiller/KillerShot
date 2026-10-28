@@ -176,7 +176,9 @@ internal sealed class TrayHost : IDisposable
 
     private void ShowMenu()
     {
-        var menu = new ContextMenu { Placement = PlacementMode.MousePoint };
+        // Bottom-left corner at the pointer, rising out of the tray, as every family app's tray menu opens.
+        var menu = new ContextMenu();
+        KillerFamily.Shell.CloseToTray.AnchorToPointer(menu);
 
         MenuItem Item(string header, string gesture, Action click, bool enabled = true)
         {
