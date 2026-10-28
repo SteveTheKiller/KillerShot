@@ -1240,6 +1240,12 @@
                                     <CheckBox x:Name="AboutStartWithWindows" FontSize="11" Click="AboutStartWithWindows_Click">
                                         <TextBlock Text="{DynamicResource Str_About_StartWithWindows}" TextWrapping="Wrap"/>
                                     </CheckBox>
+                                    <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,6,0,0"
+                                              IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
+                                        <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
+                                    </CheckBox>
+                                    <!-- Last, so its explanation closes the column instead of splitting the
+                                         checkboxes apart (Steve, 2026-10-27). -->
                                     <CheckBox x:Name="CloseToTrayCheck" FontSize="11" Margin="0,6,0,0"
                                               Checked="CloseToTray_Changed" Unchecked="CloseToTray_Changed">
                                         <TextBlock Text="{DynamicResource Str_About_CloseToTray}" TextWrapping="Wrap"/>
@@ -1247,10 +1253,6 @@
                                     <TextBlock Text="{DynamicResource Str_About_CloseToTrayHint}"
                                                Foreground="{DynamicResource DimTextBrush}" FontSize="10" Margin="0,4,0,0"
                                                TextWrapping="Wrap"/>
-                                    <CheckBox x:Name="AboutShowShortcutsInMenus" FontSize="11" Margin="0,6,0,0"
-                                              IsChecked="{Binding Source={x:Static kl:ShortcutHints.Current}, Path=Enabled, Mode=TwoWay}">
-                                        <TextBlock Text="{DynamicResource Str_About_ShowShortcutsInMenus}" TextWrapping="Wrap"/>
-                                    </CheckBox>
                                 </StackPanel>
                                 <!-- The Remote Desktop explanation lives in the tooltip; the column stays as short as the options. -->
                                 <StackPanel Grid.Column="2" ToolTip="{DynamicResource Str_About_RenderHint}">
