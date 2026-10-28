@@ -16,9 +16,13 @@
     5. Writes SHA256SUMS.txt, extracts release notes from the CHANGELOG, tags, and creates the
        GitHub release.
 
+    6. After the GitHub release exists, writes the version, release date, size and SHA-256 into
+       the landing site (shot-landing) and commits and pushes it. A dry run checks that every
+       one of those facts can still be found in the site's markup, without writing anything.
+
     The self-tests need an interactive desktop and are not run here. Run the full suite on the
-    release candidate first. WinGet, Chocolatey, the Store and the landing site are not handled
-    here yet; add them from the Killendar or KillerShell scripts once the first release exists.
+    release candidate first. WinGet, Chocolatey and the Store are not handled here yet; add them
+    from the Killendar or KillerShell scripts.
 
 .PARAMETER CertThumbprint
     Preferred. SHA1 thumbprint of the code-signing certificate (40 hex chars, no spaces).
@@ -97,6 +101,63 @@ function Read-StringMap([string]$Path) {
         if ($key) { $map[$key] = [string]$node.InnerText }
     }
     return $map
+}
+
+# Landing-page find/replace that refuses to silently do nothing, as in the KillerNotes script. A
+# plain -replace whose pattern no longer matches leaves the text untouched, the page then reads as
+# already current, and the release ships with a stale fact on the site. Changed markup stops the
+# release instead.
+function Edit-SiteFact {
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory)][string]$Pattern,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Replacement,
+        [Parameter(Mandatory)][string]$What
+    )
+    if ($Text -notmatch $Pattern) {
+        throw "Landing page: could not find $What. The markup changed; update the pattern in release.ps1 (Update-LandingFacts)."
+    }
+    return ($Text -replace $Pattern, $Replacement)
+}
+
+# The release facts on shot-landing: index.html's hero block (version, released date, size,
+# sha256) and the verEgg footer version on every page. -CheckOnly runs every edit in memory and
+# writes nothing, so a dry run finds changed markup before a real release does. Returns the
+# pages whose text changed. ReadAllText/WriteAllText keep the files BOM-less UTF-8.
+function Update-LandingFacts {
+    param(
+        [Parameter(Mandatory)][string]$Version,
+        [Parameter(Mandatory)][string]$ReleaseDate,
+        [Parameter(Mandatory)][string]$ExePath,
+        [switch]$CheckOnly,
+        [string]$SiteDir = ''
+    )
+    $siteDir = if ($SiteDir) { $SiteDir } else { Join-Path $PSScriptRoot 'shot-landing' }
+    $exeHash = (Get-FileHash -LiteralPath $ExePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $exeSize = [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0:N2} MB exe', (Get-Item -LiteralPath $ExePath).Length / 1MB)
+    $changed = New-Object System.Collections.Generic.List[string]
+
+    $indexPath = Join-Path $siteDir 'index.html'
+    $indexRaw  = [IO.File]::ReadAllText($indexPath)
+    $indexNew  = Edit-SiteFact $indexRaw '(data-i18n="ui_version">version</span>&nbsp;<span class="v">)KillerShot v[0-9]+\.[0-9]+\.[0-9]+' ('${1}' + "KillerShot v$Version") 'the hero version'
+    $indexNew  = Edit-SiteFact $indexNew '(data-i18n="ui_released">released</span>&nbsp;<span class="v">)[0-9]{4}-[0-9]{2}-[0-9]{2}' ('${1}' + $ReleaseDate) 'the hero released date'
+    $indexNew  = Edit-SiteFact $indexNew '(data-i18n="ui_size">size</span>&nbsp;<span class="v">)[^<]*' ('${1}' + $exeSize) 'the hero size'
+    $indexNew  = Edit-SiteFact $indexNew '<span class="v hash">[0-9a-f]{32}<br>[0-9a-f]{32}</span>' ('<span class="v hash">' + $exeHash.Substring(0, 32) + '<br>' + $exeHash.Substring(32, 32) + '</span>') 'the hero sha256'
+    if ($indexNew -ne $indexRaw) {
+        if (-not $CheckOnly) { [IO.File]::WriteAllText($indexPath, $indexNew) }
+        $changed.Add('index.html')
+    }
+    foreach ($page in 'index.html', 'about.html', 'help.html', 'technical.html', 'mcp.html') {
+        $path = Join-Path $siteDir $page
+        $text = if ($page -eq 'index.html' -and -not $CheckOnly) { [IO.File]::ReadAllText($path) } elseif ($page -eq 'index.html') { $indexNew } else { [IO.File]::ReadAllText($path) }
+        $new  = Edit-SiteFact $text '(id="verEgg"[^>]*>)v[0-9]+\.[0-9]+\.[0-9]+' ('${1}' + "v$Version") "the verEgg footer version in $page"
+        if ($new -ne $text) {
+            if (-not $CheckOnly) { [IO.File]::WriteAllText($path, $new) }
+            if (-not $changed.Contains($page)) { $changed.Add($page) }
+        }
+    }
+    Write-Host "    shot-landing: KillerShot v$Version, released $ReleaseDate, $exeSize, sha256 $exeHash"
+    return ,$changed
 }
 
 # --- 1. Release metadata preflight ---
@@ -204,8 +265,9 @@ $thirdPartyLicenses = @(Get-ChildItem (Join-Path $PSScriptRoot 'third_party\sqlc
     ForEach-Object { Copy-Item $_.FullName -Destination $releaseDir -Force; Join-Path $releaseDir $_.Name })
 $actual = [Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion
 if ($actual -ne $expectedFileVersion) { throw "KillerShot.exe is file version $actual, expected $expectedFileVersion" }
-# A small file means the single-file bundle lost its managed dependencies.
-if ((Get-Item $exe).Length -lt 20MB) { throw "KillerShot.exe is only $('{0:N1}' -f ((Get-Item $exe).Length / 1MB)) MB; the bundle is incomplete." }
+# A small file means the single-file bundle lost its managed dependencies. Since 1.1.0 dropped
+# the 25 MB Windows SDK projection the complete exe is about 7 MB, so the floor is 5 MB.
+if ((Get-Item $exe).Length -lt 5MB) { throw "KillerShot.exe is only $('{0:N1}' -f ((Get-Item $exe).Length / 1MB)) MB; the bundle is incomplete." }
 
 # --- 8. Sign ---
 if (-not $SkipSign) {
@@ -285,6 +347,10 @@ $notesFile = Join-Path $env:TEMP "KillerShot-$Version-notes.md"
 [IO.File]::WriteAllLines($notesFile, $notes, [Text.UTF8Encoding]::new($false))
 
 if ($DryRun) {
+    # The landing facts are written only on a real release, after the GitHub release exists. A dry
+    # run checks that every one of them can still be found, so changed markup turns up here.
+    Write-Host "`n==> Checking the landing page release facts..." -ForegroundColor Cyan
+    $null = Update-LandingFacts -Version $Version -ReleaseDate $releaseDate -ExePath $exe -CheckOnly
     Write-Host "`n==> DryRun: stopping before tag and release. Notes: $notesFile" -ForegroundColor Yellow
     exit 0
 }
@@ -300,4 +366,20 @@ try {
     gh release create $Tag @($assets + $sumsPath) --title "KillerShot $Tag" --notes-file $notesFile --verify-tag
     if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
     gh release view $Tag --json url --jq '.url'
+
+    # --- 13. Landing page release facts ---
+    # After the release exists, so the site never announces a version whose download is not up
+    # yet. Only shot-landing changes; it is committed and pushed on its own.
+    Write-Host "`n==> Updating the landing page release facts..." -ForegroundColor Cyan
+    $pages = Update-LandingFacts -Version $Version -ReleaseDate $releaseDate -ExePath $exe
+    if ($pages.Count) {
+        git add -- shot-landing
+        git commit -m "Landing: $Tag release facts" --quiet -- shot-landing
+        if ($LASTEXITCODE -ne 0) { throw "Landing page commit failed. The release is published; commit shot-landing by hand." }
+        git push origin $defaultBranch --quiet
+        if ($LASTEXITCODE -ne 0) { throw "Landing page push failed. The release is published; push $defaultBranch by hand." }
+        Write-Host "    shot-landing updated to $Tag and pushed: $($pages -join ', ')" -ForegroundColor Green
+    } else {
+        Write-Host '    shot-landing already current'
+    }
 } finally { Pop-Location }
