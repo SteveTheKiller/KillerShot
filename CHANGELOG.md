@@ -15,6 +15,7 @@ KillerShot 1.1.0 is a much smaller download and fixes problems found after the f
 - A right-click menu opens right against the pointer. A tall menu no longer starts about 30 pixels above the click and runs far up the screen.
 - Delete works on pictures in folder collections. It asks first and sends the file to the Recycle Bin, so a mistake can be undone there.
 - A folder that cannot be added as a collection reports the reason in the status line instead of an unstyled message box.
+- In a maximized window, each carousel in Multiple carousels reaches both ends of the window when it has enough pictures, instead of filling a column in the middle.
 - Dragging the carousel slider moves the carousel as fast as the pointer. A long jump lands at once and glides only the last few pictures, instead of slowly turning past every picture on the way.
 
 ### Changed

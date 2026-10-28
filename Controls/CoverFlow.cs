@@ -26,7 +26,7 @@ namespace KillerShot.Controls;
 /// </summary>
 internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
 {
-    private const int Window = 9;            // models kept on each side of the position
+    private const int MinWindow = 9;         // models kept on each side of the position, at least
     private const double SideAngle = 62;     // degrees a side picture is turned
     private const double CenterGap = 1.15;   // distance from the front picture to the first side one
     private const double SideStep = 0.40;    // distance between side pictures
@@ -261,8 +261,23 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     protected override Size ArrangeOverride(Size finalSize)
     {
         _viewport.Arrange(new Rect(finalSize));
+        int before = Window;
         UpdateCamera(finalSize);
+        // A wider carousel (a maximized window) needs more pictures on each side to reach its ends.
+        if (Window > before) Dispatcher.BeginInvoke(new Action(Rebuild), System.Windows.Threading.DispatcherPriority.Render);
         return finalSize;
+    }
+
+    /// <summary>How many pictures are kept on each side of the front one: enough to reach both
+    /// ends of the carousel at the depth the side pictures stand, so a wide carousel is filled
+    /// edge to edge instead of leaving a column in the middle (Steve, 2026-10-27).</summary>
+    private int Window
+    {
+        get
+        {
+            double halfWidth = _visibleWidth / 2 * (CameraDistance + SideDepth) / CameraDistance;
+            return Math.Clamp((int)Math.Ceiling((halfWidth - CenterGap) / SideStep) + 3, MinWindow, 80);
+        }
     }
 
     private void UpdateCamera(Size size)
