@@ -124,6 +124,9 @@ namespace KillerShot.Shell
                 DockSide.Right => new Thickness(margin.Right, margin.Top, margin.Left, margin.Bottom),
                 _ => margin,
             };
+            // The rail's flyouts open in the pane's corner on the rail's side, so they follow it too.
+            FlyoutPlacement.UsePane(ContentPane,
+                NavigationDock.Side == DockSide.Right ? SidebarSide.Right : SidebarSide.Left);
         }
 
         /// <summary>A picture chosen in the strip replaces the one in the editor. Marks that were
