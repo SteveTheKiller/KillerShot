@@ -1,8 +1,12 @@
 # KillerShot Changelog
 
-## [1.1.1] - Unreleased
+## [1.1.1] - 2026-10-28
 
-KillerShot 1.1.1 fixes problems found after 1.1.0.
+KillerShot 1.1.1 catches Print Screen in apps run as administrator and fixes problems found after 1.1.0.
+
+### Added
+
+- "Use KillerShot for the Print Screen key" now works in apps run as administrator too, such as an admin PowerShell window or Registry Editor. Windows hides those keys from ordinary programs, so KillerShot adds a small helper in Program Files that Windows allows to see them. An all-users install includes it; for any other copy, turning the switch on offers to install it with one Windows permission prompt. The helper stops whenever KillerShot closes, so Print Screen goes back to Snipping Tool as before.
 
 ### Fixed
 

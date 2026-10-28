@@ -35,6 +35,13 @@ internal sealed class TrayHost : IDisposable
     /// while RegisterShortcuts refills the original.</summary>
     private volatile IReadOnlyDictionary<ShortcutAction, Shortcut> _hookShortcuts = new Dictionary<ShortcutAction, Shortcut>();
     private PrintScreenHook? _printScreenHook;
+    /// <summary>The UI Access helper's message, its stop event while it runs, the modifier sets
+    /// it was started with, and whether it has reported in (Services/PrintScreenHelper.cs).</summary>
+    private readonly uint _helperMessage;
+    private EventWaitHandle? _helperStop;
+    private string _helperModifiers = "";
+    private int _helperRuns;
+    private bool _helperListening;
 
     /// <summary>Raised for a shortcut or a menu command, with the window that was in front.</summary>
     public event Action<ShortcutAction?, CaptureMode?, IntPtr>? CaptureRequested;
@@ -67,6 +74,7 @@ internal sealed class TrayHost : IDisposable
         _source = new HwndSource(p);
         _source.AddHook(WndProc);
         _taskbarCreated = Win32.RegisterWindowMessage("TaskbarCreated");
+        _helperMessage = Win32.RegisterWindowMessage(PrintScreenHelper.MessageName);
         // The app icon from the exe's own resources at the small-icon size. The SDK embeds
         // ApplicationIcon as icon group 32512. If that fails, the shared IDI_APPLICATION stands in.
         int size = Win32.GetSystemMetrics(Win32.SM_CXSMICON);
@@ -181,7 +189,46 @@ internal sealed class TrayHost : IDisposable
             _printScreenHook.Dispose();
             _printScreenHook = null;
         }
+        SyncHelper(want);
     }
+
+    /// <summary>
+    /// The UI Access helper, while the switch is on and it is installed: it takes the same Print
+    /// Screen shortcuts over windows run as administrator, which Windows hides from the hook above.
+    /// The hook stays on beside it, so ordinary windows still work if Windows refuses the helper;
+    /// a press reaches only whichever of the two sees it first, so it never runs twice. A change
+    /// of shortcuts restarts the helper with the new set.
+    /// </summary>
+    private void SyncHelper(bool want)
+    {
+        string modifiers = want
+            ? string.Join(",", _hookShortcuts.Values.Select(s => s.Modifiers & ~Win32.MOD_NOREPEAT).Distinct().OrderBy(m => m))
+            : "";
+        if (modifiers == _helperModifiers && (_helperStop != null || modifiers.Length == 0)) return;
+        StopHelper();
+        if (modifiers.Length == 0 || !PrintScreenHelper.IsInstalled) return;
+        string name = $@"Local\KillerShot.PrintScreen.{Environment.ProcessId}.{++_helperRuns}";
+        var stop = new EventWaitHandle(false, EventResetMode.ManualReset, name);
+        using var helper = PrintScreenHelper.Start(Handle, modifiers, name);
+        if (helper == null) { stop.Dispose(); return; }
+        _helperStop = stop;
+        _helperModifiers = modifiers;
+    }
+
+    private void StopHelper()
+    {
+        _helperListening = false;
+        _helperModifiers = "";
+        if (_helperStop == null) return;
+        _helperStop.Set();
+        _helperStop.Dispose();
+        _helperStop = null;
+    }
+
+    /// <summary>True once the UI Access helper reported it is listening.</summary>
+    internal bool HelperListening => _helperListening;
+    /// <summary>Print Screen presses the helper delivered, for its self-test.</summary>
+    internal int HelperPresses { get; private set; }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -205,6 +252,20 @@ internal sealed class TrayHost : IDisposable
             {
                 if (_balloonAction != null) _balloonAction();
                 else BalloonClicked?.Invoke();
+            }
+            handled = true;
+        }
+        else if (_helperMessage != 0 && msg == (int)_helperMessage)
+        {
+            // From the UI Access helper: -1 when it starts listening, otherwise a Print Screen
+            // press with these modifiers and the window that was in front.
+            long modifiers = wParam.ToInt64();
+            if (modifiers == -1) _helperListening = _helperStop != null;
+            else if (_helperStop != null && modifiers is >= 0 and <= 0xF
+                && PrintScreenHook.Matches(_hookShortcuts, (uint)modifiers, out var pressed))
+            {
+                HelperPresses++;
+                CaptureRequested?.Invoke(pressed, null, lParam);
             }
             handled = true;
         }
@@ -326,6 +387,9 @@ internal sealed class TrayHost : IDisposable
         }
         RegisterShortcuts();
         PrintScreenKeyChanged?.Invoke();
+        // After the menu has closed: the offer to make it work over admin windows too.
+        if (PrintScreenKey.Enabled)
+            Application.Current.Dispatcher.BeginInvoke(new Action(App.OfferPrintScreenHelper));
     }
 
     public static void OpenPrintScreenSetting()
@@ -407,6 +471,7 @@ internal sealed class TrayHost : IDisposable
         _hotkeyIds.Clear();
         _printScreenHook?.Dispose();
         _printScreenHook = null;
+        StopHelper();
         if (_iconAdded)
         {
             var d = NewData(0);

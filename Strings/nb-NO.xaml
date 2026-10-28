@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Skjermbildet ble forkastet. Albumet beholder originalen.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Åpne Windows-innstillingen for Print Screen-tasten</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Bruk KillerShot for Print Screen-tasten</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows skjuler tastetrykk i apper som kjører som administrator, så der åpner Print Screen Utklippsverktøy. En liten KillerShot-hjelper i Programfiler kan fange den der også. Vil du installere den nå? Windows ber om tillatelse én gang.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Installer hjelper</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Bruk for Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Mens KillerShot kjører, åpner Print Screen KillerShot i stedet for Utklippsverktøy. Når KillerShot er lukket, åpner Print Screen Utklippsverktøy igjen. Windows' egen innstilling endres ikke, og Win+Shift+S åpner fortsatt Utklippsverktøy.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klikk en hurtigtast, og trykk de nye tastene. Tilbaketast slår den av, og Esc beholder den.</sys:String>

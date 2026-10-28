@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Yakalama atıldı. Albüm aslını saklar.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen tuşunun Windows ayarını aç</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Print Screen tuşu için KillerShot'ı kullan</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows, yönetici olarak çalışan uygulamalarda basılan tuşları gizler, bu yüzden orada Print Screen Ekran Alıntısı Aracı'nı açar. Program Files içindeki küçük bir KillerShot yardımcısı onu orada da yakalayabilir. Şimdi yüklensin mi? Windows bir kez izin isteyecek.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Yardımcıyı yükle</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Print Screen için kullan</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot çalışırken Print Screen, Ekran Alıntısı Aracı yerine KillerShot'ı açar. KillerShot kapalıyken Print Screen yeniden Ekran Alıntısı Aracı'nı açar. Windows'un kendi ayarı değişmez ve Win+Shift+S hâlâ Ekran Alıntısı Aracı'nı açar.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Bir kısayola tıklayın, ardından yeni tuşlara basın. Geri tuşu kapatır, Esc olduğu gibi bırakır.</sys:String>

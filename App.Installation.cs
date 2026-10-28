@@ -14,7 +14,8 @@ namespace KillerShot
         private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\KillerShot";
         private static readonly string AppName = "KillerShot";
         private static readonly string ExeName = "KillerShot.exe";
-        private static readonly string[] InstalledFiles = { ExeName };
+        // The Print Screen helper sits beside the exe in an all-users install (Services/PrintScreenHelper.cs).
+        private static readonly string[] InstalledFiles = { ExeName, PrintScreenHelper.FileName };
 
         private static readonly string InstallDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", AppName);
@@ -56,7 +57,79 @@ namespace KillerShot
                 exitCode = RemoveMachineInstallConflict();
                 return true;
             }
+            if (string.Equals(first, "/install-printscreen-helper", StringComparison.OrdinalIgnoreCase))
+            {
+                exitCode = InstallPrintScreenHelper();
+                return true;
+            }
             return false;
+        }
+
+        /// <summary>
+        /// /install-printscreen-helper, run elevated from the Print Screen switch: puts the helper in
+        /// Program Files\KillerShot so a per-user or portable copy can catch Print Screen over
+        /// windows run as administrator too. Only a signed KillerShot.exe may do it.
+        /// </summary>
+        private static int InstallPrintScreenHelper()
+        {
+            try
+            {
+                if (!KillerFamily.Deployment.InstallerExitCodes.IsElevated())
+                    return KillerFamily.Deployment.InstallerExitCodes.AccessDenied;
+                if (!CodeSignature.GetSignerInfo().valid)
+                    return KillerFamily.Deployment.InstallerExitCodes.SecurityRejected;
+                PrintScreenHelper.Install(PrintScreenHelper.InstalledPath, requireSignature: true);
+                return KillerFamily.Deployment.InstallerExitCodes.Success;
+            }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine("The Print Screen helper was not installed: " + error.Message);
+                return KillerFamily.Deployment.InstallerExitCodes.FromException(error);
+            }
+        }
+
+        /// <summary>
+        /// Called when the Print Screen switch is turned on. If the helper is not in Program Files
+        /// yet, asks once whether to put it there, so Print Screen also works over windows run as
+        /// administrator. Declining keeps the switch on for every other window. An unsigned
+        /// development build cannot install it and does not ask.
+        /// </summary>
+        internal static void OfferPrintScreenHelper()
+        {
+            if (!PrintScreenKey.Enabled || PrintScreenHelper.IsInstalled || !CodeSignature.GetSignerInfo().valid) return;
+            var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_CS_PrintScreenKey"),
+                LocaleManager.Loc("Str_CS_PrintScreenHelperOffer"),
+                LocaleManager.Loc("Str_CS_PrintScreenHelperInstall"), LocaleManager.Loc("Str_Btn_Cancel"));
+            if (Current.MainWindow?.IsVisible == true) dialog.Owner = Current.MainWindow;
+            else
+            {
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowInTaskbar = true;
+            }
+            dialog.ShowDialog();
+            if (dialog.Confirmed && RunElevatedPrintScreenHelperInstall()) Instance.Tray?.RegisterShortcuts();
+        }
+
+        /// <summary>Runs /install-printscreen-helper through a permission prompt and waits for it.
+        /// False when it was declined or failed.</summary>
+        internal static bool RunElevatedPrintScreenHelperInstall()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule!.FileName, "/install-printscreen-helper")
+                {
+                    UseShellExecute = true,
+                    Verb = "runas",
+                };
+                using var p = Process.Start(psi);
+                p?.WaitForExit();
+                return p is not null && p.ExitCode == 0 && PrintScreenHelper.IsInstalled;
+            }
+            catch
+            {
+                // Declining the prompt throws Win32Exception 1223 (ERROR_CANCELLED).
+                return false;
+            }
         }
         // ============================================================
         // Install state
@@ -297,6 +370,14 @@ namespace KillerShot
                     WriteInstallKeys(hive, installDir, installExe);
                     Services.CommandLinePath.Register(installDir, machine);
                 }));
+                // An all-users install sits in Program Files, the one place Windows lets the Print
+                // Screen helper work over admin windows, so it goes in beside the exe. A helper that
+                // cannot be written (an older one still running) never fails the install.
+                if (machine)
+                {
+                    try { PrintScreenHelper.Install(Path.Combine(installDir, PrintScreenHelper.FileName), requireSignature: true); }
+                    catch (Exception helperError) { Console.Error.WriteLine("The Print Screen helper was not installed: " + helperError.Message); }
+                }
                 return KillerFamily.Deployment.InstallerExitCodes.Success;
             }
             catch (Exception ex)

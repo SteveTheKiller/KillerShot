@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">已放弃截图。相册保留原图。</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">打开 Print Screen 键的 Windows 设置</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">使用 KillerShot 处理 Print Screen 键</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows 会对以管理员身份运行的应用隐藏按键，因此在那里 Print Screen 会打开截图工具。放在 Program Files 中的小型 KillerShot 辅助程序也能在那里接收它。现在安装吗？Windows 会请求一次权限。</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">安装辅助程序</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">用于 Print Screen 键</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot 运行时，Print Screen 键打开 KillerShot 而不是截图工具。KillerShot 关闭后，Print Screen 键会再次打开截图工具。Windows 自身的设置不会更改，Win+Shift+S 仍会打开截图工具。</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">点击一个快捷键，然后按下新的按键。Backspace 关闭它，Esc 保持不变。</sys:String>

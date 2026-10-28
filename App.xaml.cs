@@ -113,6 +113,7 @@ public partial class App : Application
         if (SelfTestFlyoutScale.TryRun(e.Args)) return;
         if (SelfTestFlyoutSide.TryRun(e.Args)) return;
         if (SelfTestTray.TryRun(e.Args)) return;
+        if (SelfTestPrintScreenHelper.TryRun(e.Args)) return;
         if (SelfTestGifDuration.TryRun(e.Args)) return;
         if (SelfTestRedaction.TryRun(e.Args)) return;
         if (SelfTestOutputIdentity.TryRun(e.Args)) return;

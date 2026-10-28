@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">ক্যাপচারটি বাতিল হয়েছে। অ্যালবাম মূলটি রাখে।</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen কী-এর Windows সেটিং খুলুন</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">প্রিন্ট স্ক্রিন কী-এর জন্য KillerShot ব্যবহার করুন</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">অ্যাডমিনিস্ট্রেটর হিসেবে চলা অ্যাপে চাপা কী Windows লুকিয়ে রাখে, তাই সেখানে প্রিন্ট স্ক্রিন স্নিপিং টুলে যায়। Program Files-এ KillerShot-এর একটি ছোট সহায়ক সেখানেও এটি ধরতে পারে। এখনই ইনস্টল করবেন? Windows একবার অনুমতি চাইবে।</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">সহায়ক ইনস্টল করুন</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">প্রিন্ট স্ক্রিনের জন্য ব্যবহার করুন</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot চালু থাকলে প্রিন্ট স্ক্রিন স্নিপিং টুলের বদলে KillerShot খোলে। KillerShot বন্ধ থাকলে প্রিন্ট স্ক্রিন আবার স্নিপিং টুল খোলে। Windows-এর নিজস্ব সেটিং বদলায় না, এবং Win+Shift+S এখনও স্নিপিং টুল খোলে।</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">একটি শর্টকাটে ক্লিক করে নতুন কী চাপুন। Backspace এটি বন্ধ করে, Esc আগের মতো রাখে।</sys:String>

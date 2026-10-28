@@ -59,6 +59,7 @@ namespace KillerShot.Shell
             _shortcutHost?.RegisterShortcuts();
             BuildShortcutRows();
             SyncPrintScreenKey();
+            if (on) App.OfferPrintScreenHelper();   // so it works over admin windows too
         }
 
 

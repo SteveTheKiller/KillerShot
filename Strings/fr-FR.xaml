@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">La capture a été abandonnée. L'album garde l'original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Ouvrir le réglage Windows de la touche Impr. écran</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Utiliser KillerShot pour la touche Impr. écran</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows masque les touches pressées dans les applications exécutées en tant qu'administrateur, donc Impr. écran y ouvre l'Outil Capture. Un petit assistant KillerShot dans Program Files peut aussi l'intercepter là. L'installer maintenant ? Windows demandera l'autorisation une fois.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Installer l'assistant</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Utiliser pour Impr. écran</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Tant que KillerShot est lancé, Impr. écran ouvre KillerShot au lieu de l'Outil Capture. Quand KillerShot est fermé, Impr. écran ouvre de nouveau l'Outil Capture. Le paramètre de Windows n'est pas modifié, et Win+Maj+S ouvre toujours l'Outil Capture.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Cliquez sur un raccourci, puis appuyez sur les nouvelles touches. Retour arrière le désactive, Échap le conserve.</sys:String>

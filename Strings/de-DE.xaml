@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Die Aufnahme wurde verworfen. Das Album behält das Original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Windows-Einstellung für die Druck-Taste öffnen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">KillerShot für die Druck-Taste verwenden</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows verbirgt Tasten, die in als Administrator ausgeführten Apps gedrückt werden, daher öffnet die Druck-Taste dort das Snipping Tool. Ein kleines KillerShot-Hilfsprogramm unter Programme kann sie auch dort abfangen. Jetzt installieren? Windows fragt einmal nach der Berechtigung.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Hilfsprogramm installieren</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Für die Druck-Taste verwenden</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Solange KillerShot läuft, öffnet die Druck-Taste KillerShot statt des Snipping Tools. Ist KillerShot geschlossen, öffnet die Druck-Taste wieder das Snipping Tool. Die Windows-Einstellung selbst wird nicht geändert, und Win+Umschalt+S öffnet weiterhin das Snipping Tool.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Klicken Sie auf eine Tastenkombination und drücken Sie die neuen Tasten. Rücktaste schaltet sie aus, Esc behält sie.</sys:String>

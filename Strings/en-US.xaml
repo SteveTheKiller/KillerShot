@@ -167,6 +167,8 @@
     <sys:String x:Key="Str_Review_Discarded">The capture was discarded. The album keeps the original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Open the Windows Print Screen setting</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Use KillerShot for the Print Screen key</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows hides keys pressed in apps run as administrator, so Print Screen goes to Snipping Tool there. A small KillerShot helper in Program Files can catch it there too. Install it now? Windows asks for permission once.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Install helper</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Use for Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">While KillerShot is running, Print Screen opens KillerShot instead of Snipping Tool. When KillerShot is closed, Print Screen opens Snipping Tool again. Windows' own setting is not changed, and Win+Shift+S still opens Snipping Tool.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Click a shortcut, then press the new keys. Backspace turns it off and Esc keeps it.</sys:String>

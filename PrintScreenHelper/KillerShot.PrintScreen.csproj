@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- KillerShot.PrintScreen.exe: the UI Access helper that catches Print Screen over windows run
+       as administrator (Program.cs). KillerShot.exe carries it as a resource and puts it in
+       Program Files\KillerShot, the only kind of place Windows grants UI Access, and only to a
+       signed file. release.ps1 publishes and signs it before KillerShot.exe is built. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KillerShot.PrintScreen</AssemblyName>
+    <RootNamespace>KillerShot.PrintScreen</RootNamespace>
+    <DefineConstants>$(DefineConstants);PRINTSCREEN_HELPER</DefineConstants>
+    <ApplicationIcon>..\Resources\kst-icon.ico</ApplicationIcon>
+    <Product>KillerShot</Product>
+    <Description>KillerShot Print Screen helper</Description>
+    <Authors>Steve the Killer</Authors>
+    <Copyright>Copyright (c) 2026 Steve the Killer</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <!-- Self-tests build it with PrintScreenUiAccess=false: a UI Access file only starts from
+         Program Files with a trusted signature, and a test copy has neither. -->
+    <ApplicationManifest Condition="'$(PrintScreenUiAccess)' != 'false'">uiaccess.manifest</ApplicationManifest>
+    <ApplicationManifest Condition="'$(PrintScreenUiAccess)' == 'false'">test.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Native\PrintScreenHook.cs" Link="PrintScreenHook.cs" />
+  </ItemGroup>
+
+</Project>

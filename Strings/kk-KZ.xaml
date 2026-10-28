@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Түсірілім тасталды. Альбом түпнұсқаны сақтайды.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Print Screen пернесінің Windows параметрін ашу</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Print Screen пернесі үшін KillerShot пайдалану</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows әкімші ретінде іске қосылған қолданбаларда басылған пернелерді жасырады, сондықтан онда Print Screen Қиып алу құралын ашады. Program Files ішіндегі шағын KillerShot көмекшісі оны сол жерде де ұстай алады. Қазір орнатасыз ба? Windows бір рет рұқсат сұрайды.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Көмекшіні орнату</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Print Screen үшін пайдалану</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">KillerShot іске қосылып тұрғанда Print Screen Қиып алу құралының орнына KillerShot ашады. KillerShot жабық болса, Print Screen қайтадан Қиып алу құралын ашады. Windows-тың өз параметрі өзгермейді, ал Win+Shift+S әлі де Қиып алу құралын ашады.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Тіркесімді басып, жаңа пернелерді басыңыз. Backspace оны өшіреді, Esc өзгеріссіз қалдырады.</sys:String>

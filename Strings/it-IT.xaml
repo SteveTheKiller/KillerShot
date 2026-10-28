@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">La cattura è stata scartata. L'album conserva l'originale.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Apri l'impostazione di Windows del tasto Stamp</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Usa KillerShot per il tasto Stamp</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows nasconde i tasti premuti nelle app eseguite come amministratore, quindi lì il tasto Stamp apre lo Strumento di cattura. Un piccolo assistente di KillerShot in Programmi può intercettarlo anche lì. Installarlo ora? Windows chiederà l'autorizzazione una volta.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Installa assistente</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Usa per il tasto Stamp</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Mentre KillerShot è in esecuzione, il tasto Stamp apre KillerShot al posto dello Strumento di cattura. Quando KillerShot è chiuso, Stamp apre di nuovo lo Strumento di cattura. L'impostazione di Windows non viene modificata e Win+Maiusc+S apre ancora lo Strumento di cattura.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Fai clic su una scorciatoia, poi premi i nuovi tasti. Backspace la disattiva, Esc la mantiene.</sys:String>

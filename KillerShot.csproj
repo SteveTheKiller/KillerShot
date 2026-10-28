@@ -20,7 +20,7 @@
     <Copyright>Copyright (c) 2026 Steve the Killer</Copyright>
     <FileVersion>1.1.1.0</FileVersion>
     <!-- Shown on the About card beside the version. Keep this as Unreleased during development. -->
-    <ReleaseDate>Unreleased</ReleaseDate>
+    <ReleaseDate>2026-10-28</ReleaseDate>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
@@ -41,7 +41,34 @@
     <None Remove="KillerShot.Cli\**\*" />
     <EmbeddedResource Remove="KillerShot.Cli\**\*" />
     <Page Remove="KillerShot.Cli\**\*" />
+    <!-- The Print Screen helper is its own program (PrintScreenHelper/), built below. -->
+    <Compile Remove="PrintScreenHelper\**\*" />
+    <None Remove="PrintScreenHelper\**\*" />
+    <EmbeddedResource Remove="PrintScreenHelper\**\*" />
+    <Page Remove="PrintScreenHelper\**\*" />
   </ItemGroup>
+
+  <!-- KillerShot.PrintScreen.exe rides inside KillerShot.exe as a resource and is put in Program
+       Files\KillerShot when wanted (Services/PrintScreenHelper.cs). A normal build publishes it
+       first. release.ps1 publishes and signs it itself and passes PrintScreenHelperPrebuilt=true,
+       so the signed file is the one embedded: UI Access needs the helper's own signature. -->
+  <PropertyGroup>
+    <PrintScreenHelperDir>$(MSBuildThisFileDirectory)bin\PrintScreenHelper\</PrintScreenHelperDir>
+    <PrintScreenHelperExe>$(PrintScreenHelperDir)KillerShot.PrintScreen.exe</PrintScreenHelperExe>
+  </PropertyGroup>
+  <Target Name="EmbedPrintScreenHelper" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <_PrintScreenHelperProperties>Configuration=Release;PublishDir=$(PrintScreenHelperDir);Version=$(Version);FileVersion=$(FileVersion);AssemblyVersion=$(AssemblyVersion)</_PrintScreenHelperProperties>
+    </PropertyGroup>
+    <MSBuild Condition="'$(PrintScreenHelperPrebuilt)' != 'true'" Projects="PrintScreenHelper\KillerShot.PrintScreen.csproj"
+             Targets="Restore" Properties="$(_PrintScreenHelperProperties);MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+    <MSBuild Condition="'$(PrintScreenHelperPrebuilt)' != 'true'" Projects="PrintScreenHelper\KillerShot.PrintScreen.csproj"
+             Targets="Publish" Properties="$(_PrintScreenHelperProperties)" />
+    <Error Condition="!Exists('$(PrintScreenHelperExe)')" Text="The Print Screen helper is missing: $(PrintScreenHelperExe)" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(PrintScreenHelperExe)" LogicalName="KillerShot.PrintScreen.exe" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <!-- The capture library: SQLite, encrypted at rest with SQLCipher (AES-256), as in

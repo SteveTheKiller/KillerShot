@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
+#if !PRINTSCREEN_HELPER
 using KillerShot.Capture;
 using KillerShot.Services;
+#endif
 
 namespace KillerShot.Native;
 
@@ -26,9 +28,15 @@ namespace KillerShot.Native;
 /// comes back up. Windows reads an Alt pressed and released with nothing in between as a press of
 /// Alt alone, which put the captured window's menu bar in keyboard mode, and a lone Windows key
 /// opened Start.
+///
+/// The same file builds into KillerShot.PrintScreen.exe (PrintScreenHelper/), the UI Access
+/// helper that sees Print Screen over windows run as administrator, which Windows hides from
+/// KillerShot itself. PRINTSCREEN_HELPER leaves out the parts that need KillerShot's own types.
 /// </summary>
 internal sealed class PrintScreenHook : IDisposable
 {
+    // RegisterHotKey's MOD_ flags, here so the helper build needs nothing else from KillerShot.
+    internal const uint ModAlt = 0x1, ModControl = 0x2, ModShift = 0x4, ModWin = 0x8;
     private const int WhKeyboardLl = 13;
     private const int WmKeyDown = 0x100, WmKeyUp = 0x101, WmSysKeyDown = 0x104, WmSysKeyUp = 0x105;
     private const uint WmQuit = 0x12;
@@ -83,6 +91,7 @@ internal sealed class PrintScreenHook : IDisposable
         _hook = IntPtr.Zero;
     }
 
+#if !PRINTSCREEN_HELPER
     /// <summary>The KillerShot shortcut a Print Screen press with these modifiers runs, if any.</summary>
     public static bool Matches(IReadOnlyDictionary<ShortcutAction, Shortcut> active, uint modifiers, out ShortcutAction action)
     {
@@ -95,16 +104,17 @@ internal sealed class PrintScreenHook : IDisposable
         action = default;
         return false;
     }
+#endif
 
     /// <summary>The modifiers held right now, in RegisterHotKey's MOD_ flags.</summary>
     public static uint HeldModifiers()
     {
         static bool Down(int key) => (GetAsyncKeyState(key) & 0x8000) != 0;
         uint mods = 0;
-        if (Down(0x12)) mods |= Win32.MOD_ALT;
-        if (Down(0x11)) mods |= Win32.MOD_CONTROL;
-        if (Down(0x10)) mods |= Win32.MOD_SHIFT;
-        if (Down(0x5B) || Down(0x5C)) mods |= Win32.MOD_WIN;
+        if (Down(0x12)) mods |= ModAlt;
+        if (Down(0x11)) mods |= ModControl;
+        if (Down(0x10)) mods |= ModShift;
+        if (Down(0x5B) || Down(0x5C)) mods |= ModWin;
         return mods;
     }
 
@@ -145,7 +155,7 @@ internal sealed class PrintScreenHook : IDisposable
 
     private void MaskModifiers(uint modifiers)
     {
-        if ((modifiers & (Win32.MOD_ALT | Win32.MOD_WIN)) != 0) _sendMask();
+        if ((modifiers & (ModAlt | ModWin)) != 0) _sendMask();
     }
 
     private static void SendMask()

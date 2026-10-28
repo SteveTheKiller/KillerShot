@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">A captura foi descartada. O álbum guarda o original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Abrir a configuração do Windows da tecla Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Usar o KillerShot para a tecla Print Screen</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">O Windows esconde as teclas pressionadas em aplicativos executados como administrador, então ali a Print Screen abre a Ferramenta de Captura. Um pequeno auxiliar do KillerShot em Arquivos de Programas também pode capturá-la ali. Instalar agora? O Windows pedirá permissão uma vez.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Instalar auxiliar</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Usar para Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Enquanto o KillerShot está aberto, a Print Screen abre o KillerShot em vez da Ferramenta de Captura. Quando o KillerShot está fechado, a Print Screen volta a abrir a Ferramenta de Captura. A configuração do Windows não é alterada, e Win+Shift+S continua abrindo a Ferramenta de Captura.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Clique em um atalho e pressione as novas teclas. Backspace desliga e Esc mantém.</sys:String>

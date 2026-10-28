@@ -5,7 +5,9 @@
 .DESCRIPTION
     1. Preflight: version, CHANGELOG date, ReleaseDate, translations, package vulnerabilities, and a
        clean default branch that matches origin.
-    2. Publishes KillerShot.exe as one framework-dependent win-x64 file
+    2. Publishes and signs KillerShot.PrintScreen.exe, the helper that catches Print Screen over
+       windows run as administrator (PrintScreenHelper/), then publishes KillerShot.exe, which
+       carries that signed helper inside, as one framework-dependent win-x64 file
        (Properties\PublishProfiles\PortableSingleFile.pubxml). The same file is the download, the
        portable copy and the installer: the footer's PORTABLE badge installs it per user, and
        "KillerShot.exe /silent" installs it machine-wide with admin rights or per user without.
@@ -253,10 +255,58 @@ if ($LASTEXITCODE -ne 0) { throw "Package vulnerability audit failed to run." }
 Write-Host $auditText
 if ($auditText -match '(?i)has the following vulnerable packages') { throw "Vulnerable packages were found." }
 
+# Signs one file, retrying the timestamp across the TSA endpoints, then checks the signature and
+# that the intended certificate made it. Sets $script:actualCN and $script:actualThumb.
+$script:signtool = $null
+function Invoke-CodeSign([string]$Path, [string]$Description) {
+    if (-not $script:signtool) {
+        $kitBase = "${env:ProgramFiles(x86)}\Windows Kits\10\bin"
+        $script:signtool = Get-ChildItem "$kitBase\*\x64\signtool.exe" -Recurse -ErrorAction SilentlyContinue |
+            Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+        if (-not $script:signtool) { throw "signtool.exe not found. Install the Windows SDK." }
+    }
+    $certArgs = if ($CertThumbprint) { @("/sha1", $CertThumbprint) } else { @("/n", $CertName) }
+
+    Write-Host "`n==> Signing $(Split-Path $Path -Leaf)..." -ForegroundColor Cyan
+    $signed = $false
+    foreach ($tsa in $tsaList) {
+        & $script:signtool sign /fd sha256 /tr $tsa /td sha256 @certArgs /d $Description /du "https://killershot.net" /v $Path
+        if ($LASTEXITCODE -eq 0) { $signed = $true; break }
+        Start-Sleep -Seconds 3
+    }
+    if (-not $signed) { throw "Signing $(Split-Path $Path -Leaf) failed on all TSA endpoints." }
+
+    & $script:signtool verify /pa /v $Path
+    if ($LASTEXITCODE -ne 0) { throw "signtool verify FAILED for $(Split-Path $Path -Leaf). DO NOT RELEASE." }
+    $signature = Get-AuthenticodeSignature -LiteralPath $Path
+    if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+        throw "Authenticode validation of $(Split-Path $Path -Leaf) failed with status $($signature.Status)."
+    }
+    $signer = $signature.SignerCertificate
+    $script:actualCN = $signer.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+    $script:actualThumb = $signer.Thumbprint
+    # /n matches a subject substring, so confirm the certificate that signed is the one intended.
+    if ($CertThumbprint -and $script:actualThumb -ne $CertThumbprint.ToUpperInvariant()) { throw "Signed with $($script:actualThumb), expected $CertThumbprint." }
+    if (-not $CertThumbprint -and $script:actualCN -ne $CertName) { throw "Signed by '$($script:actualCN)', expected '$CertName'." }
+}
+
 # --- 7. Publish ---
+# The Print Screen helper first. Windows grants it UI Access (Print Screen over admin windows)
+# only with its own valid signature, so it is signed before KillerShot.exe carries it inside.
+Write-Host "`n==> Publishing KillerShot.PrintScreen.exe..." -ForegroundColor Cyan
+$helperDir = Join-Path $PSScriptRoot "bin\PrintScreenHelper"
+$helperExe = Join-Path $helperDir "KillerShot.PrintScreen.exe"
+if (Test-Path $helperDir) { Remove-Item $helperDir -Recurse -Force }
+dotnet publish (Join-Path $PSScriptRoot "PrintScreenHelper\KillerShot.PrintScreen.csproj") -c Release -o $helperDir `
+    "-p:Version=$Version" "-p:FileVersion=$expectedFileVersion" "-p:AssemblyVersion=$expectedFileVersion" --nologo -v quiet
+if ($LASTEXITCODE -ne 0) { throw "Publishing the Print Screen helper failed." }
+if (-not (Test-Path $helperExe)) { throw "The Print Screen helper was not produced: $helperExe" }
+if (-not ([IO.File]::ReadAllText($helperExe) -match 'uiAccess="true"')) { throw "The Print Screen helper lost its UI Access manifest." }
+if (-not $SkipSign) { Invoke-CodeSign $helperExe "KillerShot Print Screen helper" }
+
 Write-Host "`n==> Publishing KillerShot.exe..." -ForegroundColor Cyan
 if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
-dotnet publish $proj -p:PublishProfile=PortableSingleFile --nologo -v quiet
+dotnet publish $proj -p:PublishProfile=PortableSingleFile -p:PrintScreenHelperPrebuilt=true --nologo -v quiet
 if ($LASTEXITCODE -ne 0) { throw "Publish failed." }
 if (-not [IO.Directory]::Exists($releaseDir)) { [void][IO.Directory]::CreateDirectory($releaseDir) }
 Copy-Item -LiteralPath (Join-Path $publishDir 'KillerShot.exe') -Destination $exe -Force
@@ -271,33 +321,7 @@ if ((Get-Item $exe).Length -lt 5MB) { throw "KillerShot.exe is only $('{0:N1}' -
 
 # --- 8. Sign ---
 if (-not $SkipSign) {
-    $kitBase = "${env:ProgramFiles(x86)}\Windows Kits\10\bin"
-    $signtool = Get-ChildItem "$kitBase\*\x64\signtool.exe" -Recurse -ErrorAction SilentlyContinue |
-        Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
-    if (-not $signtool) { throw "signtool.exe not found. Install the Windows SDK." }
-    $certArgs = if ($CertThumbprint) { @("/sha1", $CertThumbprint) } else { @("/n", $CertName) }
-
-    Write-Host "`n==> Signing KillerShot.exe..." -ForegroundColor Cyan
-    $signed = $false
-    foreach ($tsa in $tsaList) {
-        & $signtool sign /fd sha256 /tr $tsa /td sha256 @certArgs /d "KillerShot" /du "https://killershot.net" /v $exe
-        if ($LASTEXITCODE -eq 0) { $signed = $true; break }
-        Start-Sleep -Seconds 3
-    }
-    if (-not $signed) { throw "Signing failed on all TSA endpoints." }
-
-    & $signtool verify /pa /v $exe
-    if ($LASTEXITCODE -ne 0) { throw "signtool verify FAILED. DO NOT RELEASE." }
-    $signature = Get-AuthenticodeSignature -LiteralPath $exe
-    if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
-        throw "Authenticode validation failed with status $($signature.Status)."
-    }
-    $signer = $signature.SignerCertificate
-    $actualCN = $signer.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
-    $actualThumb = $signer.Thumbprint
-    # /n matches a subject substring, so confirm the certificate that signed is the one intended.
-    if ($CertThumbprint -and $actualThumb -ne $CertThumbprint.ToUpperInvariant()) { throw "Signed with $actualThumb, expected $CertThumbprint." }
-    if (-not $CertThumbprint -and $actualCN -ne $CertName) { throw "Signed by '$actualCN', expected '$CertName'." }
+    Invoke-CodeSign $exe "KillerShot"
 } else {
     Write-Host "`n  WARNING: -SkipSign is set. KillerShot.exe IS NOT SIGNED. Do not distribute it." -ForegroundColor Red
     $actualCN = "(not signed)"; $actualThumb = "(not signed)"

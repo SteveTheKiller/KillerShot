@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Снимок отменён. Альбом хранит оригинал.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Открыть параметр Windows для клавиши Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Использовать KillerShot для клавиши Print Screen</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows скрывает нажатия клавиш в приложениях, запущенных от имени администратора, поэтому там Print Screen открывает «Ножницы». Небольшой помощник KillerShot в Program Files может перехватывать её и там. Установить его сейчас? Windows один раз запросит разрешение.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Установить помощника</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Использовать для Print Screen</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Пока KillerShot запущен, Print Screen открывает KillerShot вместо «Ножниц». Когда KillerShot закрыт, Print Screen снова открывает «Ножницы». Параметр Windows не меняется, а Win+Shift+S по-прежнему открывает «Ножницы».</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Нажмите на сочетание, затем нажмите новые клавиши. Backspace отключает его, Esc оставляет как есть.</sys:String>

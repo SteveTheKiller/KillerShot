@@ -164,6 +164,8 @@
     <sys:String x:Key="Str_Review_Discarded">Se descartó la captura. El álbum conserva el original.</sys:String>
     <sys:String x:Key="Str_CS_OpenWindowsSetting">Abrir la configuración de Windows de la tecla Impr Pant</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKey">Usar KillerShot para la tecla Impr Pant</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperOffer">Windows oculta las teclas pulsadas en aplicaciones ejecutadas como administrador, así que allí Impr Pant abre Recortes. Un pequeño asistente de KillerShot en Archivos de programa también puede capturarla allí. ¿Instalarlo ahora? Windows pedirá permiso una vez.</sys:String>
+    <sys:String x:Key="Str_CS_PrintScreenHelperInstall">Instalar asistente</sys:String>
     <sys:String x:Key="Str_Tray_PrintScreenKey">Usar para Impr Pant</sys:String>
     <sys:String x:Key="Str_CS_PrintScreenKeyHint">Mientras KillerShot está en ejecución, Impr Pant abre KillerShot en lugar de Recortes. Cuando KillerShot está cerrado, Impr Pant vuelve a abrir Recortes. La configuración de Windows no se cambia, y Win+Mayús+S sigue abriendo Recortes.</sys:String>
     <sys:String x:Key="Str_CS_RecordHint">Haz clic en un atajo y pulsa las teclas nuevas. Retroceso lo desactiva y Esc lo conserva.</sys:String>
