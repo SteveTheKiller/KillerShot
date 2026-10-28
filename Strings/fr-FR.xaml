@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Afficher le bandeau de collection</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Position du bandeau</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionner le bandeau de collection</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Ancrer le bandeau de collection de ce côté, ou le réduire de son propre côté</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Déplacer la barre latérale (gauche, droite) ou le carrousel (haut, bas) de ce côté, ou le masquer de son propre côté</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Supprimer la capture sélectionnée ; un fichier de dossier va dans la Corbeille</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Lecture des codes QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Lien HTTP non chiffré.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Port réseau inhabituel.</sys:String>

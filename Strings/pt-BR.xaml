@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Mostrar a faixa da coleção</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Posição da faixa</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Redimensionar a faixa da coleção</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Encaixar a faixa da coleção nesse lado, ou minimizá-la no próprio lado</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Mover a barra lateral (esquerda, direita) ou o carrossel (cima, baixo) para esse lado, ou ocultá-lo no próprio lado</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Excluir a captura selecionada; um arquivo de pasta vai para a Lixeira</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Leitura de códigos QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Link HTTP sem criptografia.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Porta de rede incomum.</sys:String>

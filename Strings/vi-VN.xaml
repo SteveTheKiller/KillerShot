@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Hiện dải bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Vị trí của dải</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Đổi cỡ dải bộ sưu tập</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Gắn dải bộ sưu tập vào phía đó, hoặc thu nhỏ nó ở chính phía của nó</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Chuyển thanh bên (trái, phải) hoặc băng chuyền (lên, xuống) sang phía đó, hoặc ẩn khi ở đúng phía của nó</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Xóa ảnh chụp đang chọn; tệp trong thư mục được chuyển vào Thùng rác</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Đọc mã QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Liên kết HTTP không được mã hóa.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Cổng mạng không thông thường.</sys:String>

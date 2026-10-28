@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">顯示收藏集列</sys:String>
     <sys:String x:Key="Str_Dock_Menu">收藏集列位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">調整收藏集列大小</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">將收藏集列停駐到該側，或在其所在一側最小化</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">將側邊欄 (左、右) 或輪播 (上、下) 移到該側，在原側則隱藏</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">刪除所選擷取；資料夾中的檔案會移至資源回收筒</sys:String>
     <sys:String x:Key="Str_TT_QrReading">讀取 QR 碼</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">未加密的 HTTP 連結。</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">不常見的網路連接埠。</sys:String>

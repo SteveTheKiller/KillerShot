@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">コレクション ストリップを表示</sys:String>
     <sys:String x:Key="Str_Dock_Menu">ストリップの位置</sys:String>
     <sys:String x:Key="Str_Dock_Resize">コレクション ストリップのサイズ変更</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">コレクション ストリップをその側にドッキング、または自分の側で最小化</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">サイドバー (左、右) またはカルーセル (上、下) をその側へ移動。同じ側なら非表示</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">選択したキャプチャを削除。フォルダーのファイルはごみ箱へ移動</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QRコードの読み取り</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">暗号化されていない HTTP リンクです。</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">通常とは異なるネットワークポートです。</sys:String>

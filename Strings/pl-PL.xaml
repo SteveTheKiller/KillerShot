@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Pokaż pasek kolekcji</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Położenie paska</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Zmień rozmiar paska kolekcji</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Zadokuj pasek kolekcji po tej stronie lub zminimalizuj go po jego własnej stronie</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Przenieś pasek boczny (lewo, prawo) lub karuzelę (góra, dół) na tę stronę albo ukryj go po jego stronie</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Usuń zaznaczone zrzuty; plik z folderu trafia do Kosza</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Odczytywanie kodów QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Nieszyfrowane łącze HTTP.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Nietypowy port sieciowy.</sys:String>

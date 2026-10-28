@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Mostrar la tira de colección</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Posición de la tira</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Cambiar el tamaño de la tira de colección</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Acoplar la tira de colección en ese lado, o minimizarla en su propio lado</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Mover la barra lateral (izquierda, derecha) o el carrusel (arriba, abajo) a ese lado, u ocultarlo en su propio lado</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Eliminar la captura seleccionada; un archivo de carpeta va a la Papelera de reciclaje</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Lectura de códigos QR</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Enlace HTTP sin cifrar.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Puerto de red poco habitual.</sys:String>

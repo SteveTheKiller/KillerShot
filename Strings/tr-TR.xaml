@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Koleksiyon şeridini göster</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Şeridin konumu</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Koleksiyon şeridini yeniden boyutlandır</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Koleksiyon şeridini o tarafa yerleştir veya kendi tarafında küçült</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Kenar çubuğunu (sol, sağ) veya karuseli (yukarı, aşağı) o tarafa taşı ya da kendi tarafındaysa gizle</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Seçili yakalamayı sil; klasördeki dosya Geri Dönüşüm Kutusu'na gider</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR kodu okuma</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Şifrelenmemiş HTTP bağlantısı.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Alışılmadık ağ bağlantı noktası.</sys:String>

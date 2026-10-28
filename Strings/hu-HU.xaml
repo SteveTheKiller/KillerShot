@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">A gyűjteménysáv megjelenítése</sys:String>
     <sys:String x:Key="Str_Dock_Menu">A sáv helye</sys:String>
     <sys:String x:Key="Str_Dock_Resize">A gyűjteménysáv átméretezése</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">A gyűjteménysáv rögzítése arra az oldalra, vagy kis méretre állítása a saját oldalán</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Az oldalsáv (balra, jobbra) vagy a körhinta (fel, le) áthelyezése arra az oldalra, vagy elrejtése a saját oldalán</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">A kijelölt felvétel törlése; a mappában lévő fájl a Lomtárba kerül</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR-kódok olvasása</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Titkosítatlan HTTP-hivatkozás.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Szokatlan hálózati port.</sys:String>

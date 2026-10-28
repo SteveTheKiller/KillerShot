@@ -504,7 +504,8 @@
     <sys:String x:Key="Str_Dock_Restore">Show the collection strip</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Strip position</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Resize the collection strip</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Dock the collection strip on that side, or minimize it on its own side</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Move the sidebar (Left, Right) or the carousel (Up, Down) to that side, or hide it on its own side</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Delete the selected capture; a folder file goes to the Recycle Bin</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR code reading</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Unencrypted HTTP link.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Unusual network port.</sys:String>

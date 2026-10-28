@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Sammlungsleiste anzeigen</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Position der Leiste</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Größe der Sammlungsleiste ändern</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Sammlungsleiste an dieser Seite andocken oder an ihrer eigenen Seite minimieren</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Seitenleiste (Links, Rechts) oder Karussell (Oben, Unten) auf diese Seite verschieben oder auf der eigenen Seite ausblenden</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Ausgewählte Aufnahme löschen; eine Ordnerdatei wird in den Papierkorb verschoben</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR-Codes lesen</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Unverschlüsselter HTTP-Link.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Ungewöhnlicher Netzwerkport.</sys:String>

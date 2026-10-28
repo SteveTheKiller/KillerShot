@@ -131,6 +131,7 @@ namespace KillerShot.Shell
             new("Ctrl+M",   "Str_Lib_MoveTo",     KsCat.File, true, "M"),
             new("F2",       "Str_Lib_Note",       KsCat.File, false, "F2"),
             new("Ctrl+E",   "Str_Lib_ShowInExplorer", KsCat.File, true, "E"),
+            new("Del",      "Str_KS_DeleteCapture", KsCat.File, false, "Del"),
             new("Alt+Shift+T", "Str_TT_Theme",    KsCat.View, false),
             new("Alt+Shift+L", "Str_TT_Language", KsCat.View, false),
 

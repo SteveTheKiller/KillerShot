@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Жинақ жолағын көрсету</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Жолақ орны</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Жинақ жолағының өлшемін өзгерту</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Жинақ жолағын сол жаққа бекіту немесе өз жағында кішірейту</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Бүйірлік тақтаны (сол, оң) немесе каруселді (жоғары, төмен) сол жаққа жылжыту не өз жағында жасыру</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Таңдалған түсірілімді жою; қалтадағы файл қоқыс жәшігіне жіберіледі</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR кодтарын оқу</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Шифрланбаған HTTP сілтемесі.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Әдеттен тыс желілік порт.</sys:String>

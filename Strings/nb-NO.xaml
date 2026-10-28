@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Vis samlingsstripen</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Stripens plassering</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Endre størrelse på samlingsstripen</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Fest samlingsstripen på den siden, eller minimer den på sin egen side</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Flytt sidepanelet (venstre, høyre) eller karusellen (opp, ned) til den siden, eller skjul den på sin egen side</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Slett det valgte opptaket; en mappefil flyttes til papirkurven</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Lese QR-koder</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Ukryptert HTTP-lenke.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Uvanlig nettverksport.</sys:String>

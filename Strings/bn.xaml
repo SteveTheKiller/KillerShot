@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">সংগ্রহ স্ট্রিপ দেখান</sys:String>
     <sys:String x:Key="Str_Dock_Menu">স্ট্রিপের অবস্থান</sys:String>
     <sys:String x:Key="Str_Dock_Resize">সংগ্রহ স্ট্রিপের আকার বদলান</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">সংগ্রহ স্ট্রিপটি সেই দিকে ডক করুন, বা নিজের দিকে ছোট করুন</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">সাইডবার (বাঁ, ডান) বা ক্যারোসেল (উপর, নিচ) সেই দিকে সরান, অথবা নিজের দিকে থাকলে লুকান</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">নির্বাচিত ক্যাপচার মুছুন; ফোল্ডারের ফাইল রিসাইকেল বিনে যায়</sys:String>
     <sys:String x:Key="Str_TT_QrReading">QR কোড পড়া</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">এনক্রিপশনবিহীন HTTP লিংক।</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">অস্বাভাবিক নেটওয়ার্ক পোর্ট।</sys:String>

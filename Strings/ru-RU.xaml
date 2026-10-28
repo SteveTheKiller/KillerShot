@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Показать ленту коллекции</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Положение ленты</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Изменить размер ленты коллекции</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Закрепить ленту коллекции с этой стороны или свернуть её на своей стороне</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Переместить боковую панель (влево, вправо) или карусель (вверх, вниз) на эту сторону либо скрыть на её стороне</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Удалить выбранный снимок; файл из папки перемещается в корзину</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Чтение QR-кодов</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Незашифрованная HTTP-ссылка.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Необычный сетевой порт.</sys:String>

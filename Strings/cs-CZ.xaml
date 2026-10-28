@@ -500,7 +500,8 @@
     <sys:String x:Key="Str_Dock_Restore">Zobrazit pás kolekce</sys:String>
     <sys:String x:Key="Str_Dock_Menu">Umístění pásu</sys:String>
     <sys:String x:Key="Str_Dock_Resize">Změnit velikost pásu kolekce</sys:String>
-    <sys:String x:Key="Str_KS_DockStrip">Ukotvit pás kolekce na tuto stranu, nebo ho minimalizovat na jeho vlastní straně</sys:String>
+    <sys:String x:Key="Str_KS_DockStrip">Přesunout postranní panel (vlevo, vpravo) nebo karusel (nahoru, dolů) na tu stranu, nebo ho na jeho straně skrýt</sys:String>
+    <sys:String x:Key="Str_KS_DeleteCapture">Odstranit vybraný snímek; soubor ze složky se přesune do koše</sys:String>
     <sys:String x:Key="Str_TT_QrReading">Čtení QR kódů</sys:String>
     <sys:String x:Key="Str_QrWarn_PlainHttp">Nešifrovaný odkaz HTTP.</sys:String>
     <sys:String x:Key="Str_QrWarn_UnusualPort">Neobvyklý síťový port.</sys:String>
