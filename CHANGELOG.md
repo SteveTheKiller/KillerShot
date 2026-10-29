@@ -1,5 +1,12 @@
 # KillerShot Changelog
 
+## [1.1.2] - Unreleased
+
+Updates are harder to tamper with and no longer report a false failure.
+
+### Fixed
+- The elevated part of an update compiles its helper code in a folder only administrators can open, so another program running as you cannot slip code into it, and an update that finished is no longer reported as failed when the app cannot be reopened afterward.
+
 ## [1.1.1] - 2026-10-28
 
 KillerShot 1.1.1 catches Print Screen in apps run as administrator and fixes problems found after 1.1.0.
