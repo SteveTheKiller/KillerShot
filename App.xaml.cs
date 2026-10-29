@@ -50,6 +50,12 @@ public partial class App : Application
     {
         // The deferred uninstall helper and the install relaunch helper run before anything else,
         // so neither touches settings, the album or the single-instance claim.
+        // The elevated machine-update helper (Services/TrustedUpdate.cs) runs headless and exits.
+        if (e.Args.Length > 0 && string.Equals(e.Args[0], Services.TrustedUpdate.HelperArgument, StringComparison.OrdinalIgnoreCase))
+        {
+            Shutdown(Services.TrustedUpdate.Apply(e.Args));
+            return;
+        }
         string runningExe = Environment.ProcessPath ?? "";
         if (DeferredUninstall.IsHelperRequest(e.Args, runningExe, MachineInstallDir, UninstallStagingRoot(false)))
         {
