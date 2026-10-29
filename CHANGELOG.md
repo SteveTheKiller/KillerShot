@@ -5,6 +5,7 @@
 Updates are harder to tamper with and no longer report a false failure.
 
 ### Fixed
+- An update that cannot finish because the app did not close says so in its recovery report, the Update button stays off once an update has started, and a translation file can no longer give a setting the wrong kind of value.
 - The elevated part of an update compiles its helper code in a folder only administrators can open, so another program running as you cannot slip code into it, and an update that finished is no longer reported as failed when the app cannot be reopened afterward.
 
 ## [1.1.1] - 2026-10-28
