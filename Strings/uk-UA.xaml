@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} кбіт/с</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF не має звуку.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Кодувальник H.264 у Windows приймає відео розміром до 4096 x 2304 пікселів, тому більша область, наприклад кілька моніторів, зменшується, щоб вміститися. GIF зберігає повний розмір.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Показувати папку записів у бібліотеці</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Зберігати записи в</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Папка записів</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Зашифрована бібліотека</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Звичайні відеофайли, які відкриє будь-який застосунок, показано в бібліотеці як колекцію.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Ваш перший запис збережено</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Куди зберігати записи надалі?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Папка записів</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Звичайні відеофайли в папці {0}, тут їх показано як колекцію. Їх відкриє будь-який застосунок.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Зашифрована бібліотека</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Зберігаються під замком разом із вашими знімками. Під час відтворення кліпу створюється тимчасова копія, яку потім видаляють. Дуже довгі кліпи залишаються в папці.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Це можна змінити будь-коли в Параметрах відео, у розділі Запис.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Відкрити кліп</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Продовжити</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Записи</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Збережено в зашифрованій бібліотеці.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Він завеликий для бібліотеки, тому залишився в папці {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Його не вдалося помістити в бібліотеку, тому він залишився в папці {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Бібліотеку заблоковано.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Не вдалося відтворити запис</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Перемістити до зашифрованої бібліотеки</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Бібліотека</sys:String>

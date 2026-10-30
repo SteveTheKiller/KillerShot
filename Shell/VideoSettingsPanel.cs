@@ -71,6 +71,10 @@ namespace KillerShot.Shell
             VideoCountdownToggle.IsChecked = VideoSettings.Countdown;
             VideoCopyToggle.IsChecked = VideoSettings.CopyFile;
             VideoNotifyToggle.IsChecked = VideoSettings.Notify;
+            VideoShowRecordingsToggle.IsChecked = FolderCaptures.RecordingsEnabled;
+            Fill(VideoStorageCombo, [Item(Loc("Str_VS_KeepFolder"), RecordingStorage.Folder), Item(Loc("Str_VS_KeepLibrary"), RecordingStorage.Library)],
+                RecordingStorage.Choice ?? RecordingStorage.Folder);
+            VideoStorageNote.Text = Loc(RecordingStorage.Choice == RecordingStorage.Library ? "Str_Rec_LibraryDetail" : "Str_VS_KeepFolderNote");
             VideoFolderBox.Text = VideoSettings.OutputFolder;
             VideoFileNameBox.Text = VideoSettings.FileNamePattern;
             _syncingVideo = false;
@@ -99,6 +103,11 @@ namespace KillerShot.Shell
             else if (sender == GifFpsCombo && tag is int g) VideoSettings.GifFps = g;
             else if (sender == GifColorsCombo && tag is int c) VideoSettings.GifColors = c;
             else if (sender == GifSizeCombo && tag is int z) VideoSettings.GifSize = z;
+            else if (sender == VideoStorageCombo && tag is string storage)
+            {
+                RecordingStorage.Choice = storage;
+                VideoStorageNote.Text = Loc(storage == RecordingStorage.Library ? "Str_Rec_LibraryDetail" : "Str_VS_KeepFolderNote");
+            }
             RefreshVideoFormatUi();
         }
 
@@ -111,6 +120,7 @@ namespace KillerShot.Shell
             else if (box == VideoCountdownToggle) VideoSettings.Countdown = on;
             else if (box == VideoCopyToggle) VideoSettings.CopyFile = on;
             else if (box == VideoNotifyToggle) VideoSettings.Notify = on;
+            else if (box == VideoShowRecordingsToggle) FolderCaptures.RecordingsEnabled = on;
         }
 
         private void VideoFileNameBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -145,6 +155,7 @@ namespace KillerShot.Shell
         private void VideoDefaultFolder_Click(object sender, RoutedEventArgs e)
         {
             Settings.Set("VideoFolder", "");
+            FolderCaptures.RecordingsFolderChanged();
             VideoFolderBox.Text = VideoSettings.OutputFolder;
         }
     }

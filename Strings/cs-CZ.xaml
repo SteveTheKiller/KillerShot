@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kb/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF nemá zvuk.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Kodér H.264 ve Windows přijímá video do 4096 x 2304 pixelů, takže větší oblast, například několik monitorů, se zmenší, aby se vešla. GIF zachová plnou velikost.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Zobrazit složku nahrávek v knihovně</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Ukládat nahrávky do</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Složka nahrávek</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Šifrovaná knihovna</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Běžné video soubory, které otevře jakákoli aplikace, zobrazené v knihovně jako kolekce.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Vaše první nahrávka je uložená</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Kam se mají nahrávky od teď ukládat?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Složka nahrávek</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Běžné video soubory ve složce {0}, zde zobrazené jako kolekce. Otevře je jakákoli aplikace.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Šifrovaná knihovna</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Uzamčené spolu s vašimi snímky obrazovky. Přehrání klipu vytvoří dočasnou kopii, která se potom smaže. Velmi dlouhé klipy zůstanou ve složce.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Můžete to kdykoli změnit v Nastavení videa v části Nahrávání.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Otevřít klip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Pokračovat</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Nahrávky</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Uloženo do šifrované knihovny.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Je příliš velké pro knihovnu, proto zůstalo ve složce {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Nepodařilo se ho vložit do knihovny, proto zůstalo ve složce {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Knihovna je zamčená.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Nahrávku se nepodařilo přehrát</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Přesunout do šifrované knihovny</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Knihovna</sys:String>

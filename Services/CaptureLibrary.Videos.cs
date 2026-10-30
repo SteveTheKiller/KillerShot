@@ -1,0 +1,195 @@
+using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Microsoft.Data.Sqlite;
+
+namespace KillerShot.Services;
+
+/// <summary>A recording too large for one SQLite value. It stays in its folder.</summary>
+internal sealed class VideoTooLargeException(long size, long limit)
+    : IOException($"The recording is {size} bytes and the library takes at most {limit}.")
+{
+    public long Size { get; } = size;
+    public long Limit { get; } = limit;
+}
+
+/// <summary>
+/// Recordings kept in the encrypted library. The captures row holds a poster frame as its image
+/// and thumbnail, so every view draws it like a screenshot; the clip itself is in
+/// capture_videos, written and read through SQLite's incremental blob I/O so a long recording is
+/// never held in memory whole. One value is capped by SQLITE_MAX_LENGTH, which MaxVideoBytes
+/// reads from the open connection rather than assuming the stock default.
+/// </summary>
+internal static partial class CaptureLibrary
+{
+    private const string VideosSchema = """
+        CREATE TABLE IF NOT EXISTS capture_videos(
+            capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
+            ext TEXT NOT NULL,
+            duration_ticks INTEGER NOT NULL,
+            data BLOB NOT NULL);
+        """;
+
+    private const int PosterLongSide = 1920;
+
+    /// <summary>For the self-test: a smaller cap, so the over-limit path runs without a 1 GB file.</summary>
+    internal static long? MaxVideoBytesOverride { get; set; }
+
+    /// <summary>The largest clip one row can hold: SQLITE_LIMIT_LENGTH on the open library.</summary>
+    public static long MaxVideoBytes
+    {
+        get
+        {
+            if (MaxVideoBytesOverride is long limit) return limit;
+            lock (_gate) return SQLitePCL.raw.sqlite3_limit(Db.Handle, 0, -1);
+        }
+    }
+
+    /// <summary>Copies a recording into the library and gives its id. The file is left alone; the
+    /// caller decides whether to remove it. Throws VideoTooLargeException over MaxVideoBytes.</summary>
+    public static long AddVideo(string path, DateTime taken, string? title, long? collectionId = null)
+    {
+        long size = new FileInfo(path).Length;
+        long limit = MaxVideoBytes;
+        if (size > limit) throw new VideoTooLargeException(size, limit);
+        var (width, height, duration) = VideoCaptures.Probe(path);
+        var poster = VideoCaptures.Poster(path, PosterLongSide) ?? BlankPoster(width, height);
+        if (width <= 0 || height <= 0) (width, height) = (poster.PixelWidth, poster.PixelHeight);
+        byte[] image = ImageOutput.EncodePng(poster);
+        byte[] thumb = EncodeThumb(poster);
+        long id;
+        lock (PendingWriter)
+        lock (_gate)
+        {
+            var album = Db;
+            using var transaction = album.BeginTransaction();
+            id = AllocateCaptureId(album, transaction);
+            using (var cmd = album.CreateCommand())
+            {
+                cmd.Transaction = transaction;
+                cmd.CommandText = """
+                    INSERT INTO captures(id, taken_utc, width, height, mode, window_title, collection_id, thumb, image)
+                    VALUES ($id, $t, $w, $h, $m, $win, $c, $thumb, $image);
+                    INSERT INTO capture_videos(capture_id, ext, duration_ticks, data) VALUES ($id, $ext, $d, zeroblob($n));
+                    """;
+                cmd.Parameters.AddWithValue("$id", id);
+                cmd.Parameters.AddWithValue("$t", taken.ToUniversalTime().Ticks);
+                cmd.Parameters.AddWithValue("$w", width);
+                cmd.Parameters.AddWithValue("$h", height);
+                cmd.Parameters.AddWithValue("$m", VideoCaptures.Mode);
+                cmd.Parameters.AddWithValue("$win", (object?)Trimmed(title) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$c", (object?)collectionId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$thumb", thumb);
+                cmd.Parameters.AddWithValue("$image", image);
+                cmd.Parameters.AddWithValue("$ext", Path.GetExtension(path).ToLowerInvariant());
+                cmd.Parameters.AddWithValue("$d", duration.Ticks);
+                cmd.Parameters.AddWithValue("$n", size);
+                cmd.ExecuteNonQuery();
+            }
+            using (var source = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var blob = new SqliteBlob(album, "capture_videos", "data", id))
+                source.CopyTo(blob, 1 << 20);
+            IndexText(id, transaction);
+            transaction.Commit();
+        }
+        RaiseChanged();
+        return id;
+    }
+
+    /// <summary>Writes a stored clip out to a file, byte for byte, through a temporary name so a
+    /// failed copy never leaves half a video at the destination.</summary>
+    public static void ExportVideo(long id, string destination)
+    {
+        string temp = destination + ".partial";
+        try
+        {
+            lock (_gate)
+            {
+                using var blob = new SqliteBlob(Db, "capture_videos", "data", id, readOnly: true);
+                using var target = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None);
+                blob.CopyTo(target, 1 << 20);
+                target.Flush(true);
+            }
+            File.Move(temp, destination, true);
+        }
+        catch (SqliteException) { TryDeleteFile(temp); throw new InvalidOperationException(Loc("Str_Lib_Missing")); }
+        catch { TryDeleteFile(temp); throw; }
+    }
+
+    /// <summary>The stored clip's file extension with its dot, such as ".mp4".</summary>
+    public static string VideoExtension(long id)
+    {
+        lock (_gate)
+        {
+            using var cmd = Db.CreateCommand();
+            cmd.CommandText = "SELECT ext FROM capture_videos WHERE capture_id = $id";
+            cmd.Parameters.AddWithValue("$id", id);
+            return cmd.ExecuteScalar() as string ?? throw new InvalidOperationException(Loc("Str_Lib_Missing"));
+        }
+    }
+
+    /// <summary>A stored clip's length, or zero when Windows could not read it at import.</summary>
+    public static TimeSpan VideoDuration(long id)
+    {
+        lock (_gate)
+        {
+            using var cmd = Db.CreateCommand();
+            cmd.CommandText = "SELECT duration_ticks FROM capture_videos WHERE capture_id = $id";
+            cmd.Parameters.AddWithValue("$id", id);
+            return cmd.ExecuteScalar() is long ticks ? TimeSpan.FromTicks(ticks) : TimeSpan.Zero;
+        }
+    }
+
+    /// <summary>The album's Recordings collection, made the first time a recording is stored and
+    /// made again if the user deleted it. Its id lives in the album, so each album has its own.</summary>
+    public static long RecordingsCollection()
+    {
+        lock (_gate)
+        {
+            using var read = Db.CreateCommand();
+            read.CommandText = """
+                SELECT c.id FROM meta m JOIN collections c ON c.id = CAST(m.value AS INTEGER)
+                WHERE m.key = 'recordings_collection'
+                """;
+            if (read.ExecuteScalar() is long existing) return existing;
+        }
+        long id = CreateCollection(Loc("Str_Rec_CollectionName"));
+        lock (_gate)
+        {
+            using var write = Db.CreateCommand();
+            write.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('recordings_collection', $id)";
+            write.Parameters.AddWithValue("$id", id);
+            write.ExecuteNonQuery();
+        }
+        return id;
+    }
+
+    private static long AllocateCaptureId(SqliteConnection album, SqliteTransaction transaction)
+    {
+        // Keep a persistent high-water mark. SQLite's implicit row IDs can reuse a
+        // deleted capture while OCR or QR recognition still holds its old identity.
+        using var allocate = album.CreateCommand();
+        allocate.Transaction = transaction;
+        allocate.CommandText = """
+            UPDATE meta SET value = CAST(value AS INTEGER) + 1
+            WHERE key = 'capture_id' AND CAST(value AS INTEGER) < 9223372036854775807
+            RETURNING CAST(value AS INTEGER);
+            """;
+        return Convert.ToInt64(allocate.ExecuteScalar()
+            ?? throw new InvalidOperationException("The album cannot allocate another capture ID."));
+    }
+
+    /// <summary>A dark frame at the clip's shape, for a recording Windows makes no thumbnail for.</summary>
+    private static BitmapSource BlankPoster(int width, int height)
+    {
+        double scale = width > 0 && height > 0 ? Math.Min(1.0, 640.0 / Math.Max(width, height)) : 1;
+        int w = width > 0 && height > 0 ? Math.Max(1, (int)(width * scale)) : 640;
+        int h = width > 0 && height > 0 ? Math.Max(1, (int)(height * scale)) : 360;
+        var pixels = new byte[w * h * 4];
+        for (int i = 0; i < pixels.Length; i += 4) { pixels[i] = pixels[i + 1] = pixels[i + 2] = 0x20; pixels[i + 3] = 0xFF; }
+        var blank = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, pixels, w * 4);
+        blank.Freeze();
+        return blank;
+    }
+}

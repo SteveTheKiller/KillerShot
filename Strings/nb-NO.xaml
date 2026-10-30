@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-er har ikke lyd.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">H.264-koderen i Windows tar video opptil 4096 x 2304 piksler, så et større område, for eksempel flere skjermer, skaleres ned så det passer. GIF beholder full størrelse.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Vis opptaksmappen i biblioteket</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Behold opptak i</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Opptaksmappen</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Det krypterte biblioteket</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Vanlige videofiler som alle apper kan åpne, vist som en samling i biblioteket.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Det første opptaket ditt er lagret</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Hvor skal opptak havne fra nå av?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Opptaksmappe</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Vanlige videofiler i {0}, vist her som en samling. Alle apper kan åpne dem.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Kryptert bibliotek</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Låst inne sammen med skjermbildene dine. Når du spiller av et klipp, lages det en midlertidig kopi som slettes etterpå. Veldig lange klipp blir liggende i mappen.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Du kan endre dette når som helst i Videoinnstillinger, under Opptak.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Åpne klippet</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Fortsett</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Opptak</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Lagret i det krypterte biblioteket.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Det er for stort for biblioteket, så det ble liggende i {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Det kunne ikke legges i biblioteket, så det ble liggende i {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteket er låst.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Kunne ikke spille av opptaket</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Flytt til det krypterte biblioteket</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Bibliotek</sys:String>

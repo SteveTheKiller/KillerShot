@@ -198,9 +198,10 @@ internal sealed class VideoController
         try { _tick?.Stop(); } catch { }
         try { _chrome?.SetSaving(); } catch { }
         bool retainFinalizedStage = false;
+        string? saved = null;
+        Exception? captureWarning = null;
         try
         {
-            Exception? captureWarning = null;
             try { await recorder.StopAsync(); }
             catch (Exception ex) when (recorder.IsFinalized) { captureWarning = ex; }
             if (_discard) return;
@@ -215,11 +216,7 @@ internal sealed class VideoController
             }
             LastVideoPath = published;
             _stopSucceeded = true;
-            if (VideoSettings.CopyFile) CopyFileToClipboard(published);
-            if (captureWarning != null)
-                _showWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
-            else if (VideoSettings.Notify)
-                _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published), () => ShowInFolder(published));
+            saved = published;
         }
         catch (Exception ex)
         {
@@ -234,11 +231,71 @@ internal sealed class VideoController
             _idle.TrySetResult();
             StateChanged?.Invoke();
         }
+        // After the recorder is idle again, so the first-recording question never sits on top of
+        // a recording that is still being torn down.
+        if (saved != null) await PlaceAsync(saved, captureWarning);
     }
+
+    /// <summary>Test seam: answers the first-recording question instead of showing it.</summary>
+    internal Func<string, (string? Choice, bool OpenClip)>? AskStorage { get; set; }
+
+    /// <summary>Test seam: opens a finished clip instead of the default player.</summary>
+    internal Action<string>? OpenClip { get; set; }
+
+    /// <summary>Puts a finished recording where the user wants recordings: asks once, then
+    /// leaves it in the folder or moves it into the encrypted library, and says where it went.</summary>
+    private async Task PlaceAsync(string published, Exception? captureWarning)
+    {
+        string? choice = RecordingStorage.Choice;
+        bool open = false;
+        if (choice == null && !_exiting)
+        {
+            (choice, open) = AskStorage?.Invoke(published) ?? Ask(published);
+            if (choice != null) RecordingStorage.Choice = choice;
+        }
+        long? stored = null;
+        string? kept = null;
+        if (choice == RecordingStorage.Library && !_exiting)
+        {
+            try { stored = await RecordingStorage.MoveToLibraryAsync(published, File.GetLastWriteTime(published)); }
+            catch (VideoTooLargeException) { kept = string.Format(Loc("Str_Rec_TooLarge"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!)); }
+            catch (Exception ex) { kept = string.Format(Loc("Str_Rec_KeptInFolder"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!), ex.Message); }
+        }
+        if (stored == null && VideoSettings.CopyFile) CopyFileToClipboard(published);
+        if (kept != null)
+            _showWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + kept);
+        else if (captureWarning != null)
+            _showWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + captureWarning.Message);
+        else if (VideoSettings.Notify && !open)
+            _tray.ShowInfo(Loc("Str_Tray_VideoSavedTitle"), stored != null ? Loc("Str_Rec_SavedToLibrary") : Path.GetFileName(published),
+                stored != null ? () => App.Instance.ShowEditor() : () => ShowInFolder(published));
+        if (!open) return;
+        try
+        {
+            string clip = stored is long id ? VideoCaptures.DecryptForPlayback(id) : published;
+            (OpenClip ?? VideoCaptures.OpenInPlayer)(clip);
+        }
+        catch (Exception ex) { _showWarning(Loc("Str_Tray_VideoSavedTitle"), ex.Message); }
+    }
+
+    private static (string?, bool) Ask(string published)
+    {
+        try
+        {
+            var dialog = new Controls.RecordingStorageDialog(published);
+            dialog.ShowDialog();
+            return (dialog.Choice, dialog.OpenClip);
+        }
+        catch { return (null, false); }
+    }
+
+    private bool _exiting;
 
     public async Task<bool> PrepareForExitAsync()
     {
         if (!IsRecording) return true;
+        // Quitting mid-recording saves the clip where it is, with no question and no library write.
+        _exiting = true;
         await StopAsync(discard: false);
         return _stopSucceeded;
     }

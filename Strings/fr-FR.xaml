@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbit/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Les GIF n'ont pas de son.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">L'encodeur H.264 de Windows accepte des vidéos jusqu'à 4096 x 2304 pixels. Une zone plus grande, comme plusieurs écrans, est donc réduite pour tenir. Le GIF garde la taille complète.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Afficher le dossier des enregistrements dans la bibliothèque</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Conserver les enregistrements dans</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Le dossier des enregistrements</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">La bibliothèque chiffrée</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Des fichiers vidéo ordinaires que n'importe quelle application peut ouvrir, affichés comme une collection dans la bibliothèque.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Votre premier enregistrement est sauvegardé</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Où placer les enregistrements désormais ?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Dossier des enregistrements</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Des fichiers vidéo ordinaires dans {0}, affichés ici comme une collection. N'importe quelle application peut les ouvrir.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Bibliothèque chiffrée</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Mis sous clé avec vos captures. Lire un clip crée une copie temporaire, effacée ensuite. Les clips très longs restent dans le dossier.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Vous pouvez le modifier à tout moment dans Réglages vidéo, sous Enregistrement.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Ouvrir le clip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Continuer</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Enregistrements</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Enregistré dans la bibliothèque chiffrée.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Il est trop volumineux pour la bibliothèque, il est donc resté dans {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Il n'a pas pu aller dans la bibliothèque, il est donc resté dans {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">La bibliothèque est verrouillée.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Impossible de lire l'enregistrement</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Déplacer vers la bibliothèque chiffrée</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Bibliothèque</sys:String>

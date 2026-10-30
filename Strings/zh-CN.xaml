@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF 没有声音。</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows 中的 H.264 编码器最多支持 4096 x 2304 像素的视频，因此较大的区域（例如多个显示器）会按比例缩小以适应。GIF 保持完整尺寸。</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">在截图库中显示录像文件夹</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">录像保存位置</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">录像文件夹</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">加密的截图库</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">任何应用都能打开的普通视频文件，在截图库中显示为一个合集。</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">你的第一段录像已保存</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">之后的录像要保存到哪里？</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">录像文件夹</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">{0} 中的普通视频文件，在这里显示为合集。任何应用都能打开。</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">加密的截图库</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">与你的截图一起锁起来。播放片段会生成一个临时副本，之后会被清除。特别长的片段会留在文件夹中。</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">你可以随时在“视频设置”的“录制”中更改。</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">打开片段</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">继续</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">录像</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">已保存到加密的截图库。</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">它太大，截图库放不下，所以留在了 {0}。</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">它无法放入截图库，所以留在了 {0}。{1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">截图库已锁定。</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">无法播放录像</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">移到加密的截图库</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">截图库</sys:String>

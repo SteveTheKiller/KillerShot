@@ -533,7 +533,7 @@ internal static partial class CaptureLibrary
             CREATE TABLE IF NOT EXISTS capture_revisions(
                 capture_id INTEGER PRIMARY KEY REFERENCES captures(id) ON DELETE CASCADE,
                 revision INTEGER NOT NULL);
-            """ + MarksSchema + """
+            """ + MarksSchema + VideosSchema + """
             CREATE VIRTUAL TABLE IF NOT EXISTS capture_search USING fts5(
                 title, process, note, ocr, collection, tokenize = 'unicode61 remove_diacritics 2');
             INSERT INTO capture_search(rowid, title, process, note, ocr, collection)
@@ -642,19 +642,7 @@ internal static partial class CaptureLibrary
         {
             album = Db;
             using var transaction = album.BeginTransaction();
-            // Keep a persistent high-water mark. SQLite's implicit row IDs can reuse a
-            // deleted capture while OCR or QR recognition still holds its old identity.
-            using (var allocate = album.CreateCommand())
-            {
-                allocate.Transaction = transaction;
-                allocate.CommandText = """
-                    UPDATE meta SET value = CAST(value AS INTEGER) + 1
-                    WHERE key = 'capture_id' AND CAST(value AS INTEGER) < 9223372036854775807
-                    RETURNING CAST(value AS INTEGER);
-                    """;
-                id = Convert.ToInt64(allocate.ExecuteScalar()
-                    ?? throw new InvalidOperationException("The album cannot allocate another capture ID."));
-            }
+            id = AllocateCaptureId(album, transaction);
             using var cmd = Db.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandText = """
@@ -934,6 +922,9 @@ internal static partial class CaptureLibrary
     /// <summary>A larger, bounded decode for the album's selected photo. The view owns its single cached result.</summary>
     public static BitmapSource LoadPreview(CaptureItem item)
     {
+        // A recording in a folder has no picture of its own to decode, only the poster Windows makes.
+        if (FolderCaptures.IsFolderId(item.Id) && VideoCaptures.IsVideo(item))
+            return FolderCaptures.LoadPoster(item.Id, 2048) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
         using Stream stream = FolderCaptures.IsFolderId(item.Id)
             ? new FileStream(FolderCaptures.PathOf(item.Id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")),
                 FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)

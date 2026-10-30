@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbit/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs haben keinen Ton.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Der H.264-Encoder von Windows verarbeitet Videos bis 4096 x 2304 Pixel. Größere Bereiche, etwa mehrere Monitore, werden passend verkleinert. GIF behält die volle Größe.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Ordner mit Aufnahmen in der Bibliothek anzeigen</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Aufnahmen speichern in</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Der Aufnahmenordner</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Die verschlüsselte Bibliothek</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Normale Videodateien, die jede App öffnen kann, als Sammlung in der Bibliothek angezeigt.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Ihre erste Aufnahme ist gespeichert</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Wo sollen Aufnahmen künftig gespeichert werden?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Aufnahmenordner</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Normale Videodateien in {0}, hier als Sammlung angezeigt. Jede App kann sie öffnen.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Verschlüsselte Bibliothek</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Sicher verwahrt zusammen mit Ihren Screenshots. Beim Abspielen eines Clips entsteht eine temporäre Kopie, die danach gelöscht wird. Sehr lange Clips bleiben im Ordner.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Sie können das jederzeit unter Videoeinstellungen im Bereich Aufnahme ändern.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Clip öffnen</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Weiter</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Aufnahmen</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">In der verschlüsselten Bibliothek gespeichert.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Die Aufnahme ist zu groß für die Bibliothek und blieb deshalb in {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Sie konnte nicht in die Bibliothek verschoben werden und blieb deshalb in {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Die Bibliothek ist gesperrt.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Die Aufnahme konnte nicht abgespielt werden</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">In die verschlüsselte Bibliothek verschieben</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Bibliothek</sys:String>

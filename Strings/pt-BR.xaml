@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs não têm som.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">O codificador H.264 do Windows aceita vídeo de até 4096 x 2304 pixels, então uma área maior, como vários monitores, é reduzida para caber. O GIF mantém o tamanho completo.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Mostrar a pasta de gravações na biblioteca</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Manter as gravações em</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">A pasta de gravações</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">A biblioteca criptografada</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Arquivos de vídeo comuns que qualquer app pode abrir, mostrados como uma coleção na biblioteca.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Sua primeira gravação foi salva</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Para onde as gravações devem ir daqui em diante?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Pasta de gravações</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Arquivos de vídeo comuns em {0}, mostrados aqui como uma coleção. Qualquer app pode abri-los.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Biblioteca criptografada</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Ficam protegidas junto com suas capturas. Reproduzir um clipe cria uma cópia temporária que é apagada depois. Clipes muito longos ficam na pasta.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Você pode mudar isso quando quiser em Configurações de vídeo, em Gravação.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Abrir o clipe</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Continuar</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Gravações</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Salva na biblioteca criptografada.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Ela é grande demais para a biblioteca, então ficou em {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Não foi possível colocá-la na biblioteca, então ficou em {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">A biblioteca está bloqueada.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Não foi possível reproduzir a gravação</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Mover para a biblioteca criptografada</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Biblioteca</sys:String>

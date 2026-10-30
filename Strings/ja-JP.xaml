@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF には音声がありません。</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows の H.264 エンコーダーが扱える動画は最大 4096 x 2304 ピクセルです。複数のモニターなど、それより大きい範囲は収まるように縮小されます。GIF は元のサイズのままです。</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">録画フォルダをライブラリに表示する</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">録画の保存先</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">録画フォルダ</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">暗号化されたライブラリ</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">どのアプリでも開ける通常の動画ファイルで、ライブラリにコレクションとして表示されます。</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">最初の録画を保存しました</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">今後、録画はどこに保存しますか？</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">録画フォルダ</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">{0} にある通常の動画ファイルで、ここにコレクションとして表示されます。どのアプリでも開けます。</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">暗号化されたライブラリ</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">スクリーンショットと一緒に保護されます。クリップを再生すると一時コピーが作られ、あとで削除されます。とても長いクリップはフォルダに残ります。</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">いつでも「動画の設定」の「録画」で変更できます。</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">クリップを開く</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">続ける</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">録画</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">暗号化されたライブラリに保存しました。</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">ライブラリには大きすぎるため、{0} に残りました。</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">ライブラリに入れられなかったため、{0} に残りました。{1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">ライブラリはロックされています。</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">録画を再生できませんでした</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">暗号化されたライブラリに移動</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">ライブラリ</sys:String>

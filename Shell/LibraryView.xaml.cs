@@ -561,7 +561,7 @@ namespace KillerShot.Shell
                 caption.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardTextBrush" : "TextBrush");
                 detail.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardMutedBrush" : "MutedTextBrush");
                 var content = new StackPanel();
-                content.Children.Add(QrMark.Wrap(image, item.HasQr));
+                content.Children.Add(VideoMark.Wrap(QrMark.Wrap(image, item.HasQr), VideoCaptures.IsVideo(item)));
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content, Tag = item };
@@ -862,6 +862,30 @@ namespace KillerShot.Shell
                 return mi;
             }
             Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
+            if (VideoCaptures.IsVideo(item))
+            {
+                // A recording: no picture to copy, print or recognize, only the clip itself.
+                if (FolderCaptures.IsFolderId(item.Id))
+                {
+                    Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item), "Ctrl+E");
+                    Add("Str_Rec_MoveToLibrary", () => MoveVideoToLibrary(item));
+                }
+                else
+                {
+                    Add("Str_Lib_SaveAs", () => SaveAs(item), "Ctrl+Shift+S");
+                    menu.Items.Add(new Separator());
+                    var moveVideo = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M" };
+                    FillMoveItems(moveVideo, item);
+                    menu.Items.Add(moveVideo);
+                    Add("Str_Lib_Note", () => EditNote(item), "F2");
+                }
+                menu.Items.Add(new Separator());
+                Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
+                MenuTidy.HideInactive(menu);
+                menu.IsOpen = true;
+                Anim.FadeIn(menu);
+                return;
+            }
             Add("Str_Lib_Copy", () => Copy(item));
             Add("Str_Btn_Print", () =>
             {
@@ -1062,12 +1086,14 @@ namespace KillerShot.Shell
         internal void PrintFocused()
         {
             if (FocusedCapture() is not { } item) { StatusMessage?.Invoke(Loc("Str_Lib_NoCaptureFocused")); return; }
+            if (VideoCaptures.IsVideo(item)) return;
             try { PrintOutput.Print(CaptureLibrary.LoadOutput(item), Title(item)); }
             catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
         }
 
         private void Copy(CaptureItem item)
         {
+            if (VideoCaptures.IsVideo(item)) return;
             try
             {
                 StatusMessage?.Invoke(ImageOutput.TryCopy(CaptureLibrary.LoadOutput(item), out var error)
@@ -1081,6 +1107,7 @@ namespace KillerShot.Shell
 
         internal void SaveAs(CaptureItem item)
         {
+            if (VideoCaptures.IsVideo(item)) { SaveVideoAs(item); return; }
             var mode = item.Mode switch { "window" => CaptureMode.Window, "monitor" => CaptureMode.Monitor, "all" => CaptureMode.AllMonitors, _ => CaptureMode.Region };
             var dlg = new FileDialog(FileDialogMode.Save)
             {
@@ -1126,6 +1153,44 @@ namespace KillerShot.Shell
                     : "\"" + FolderCaptures.PathForSource(source ?? (FolderCaptures.IsSource(_source) ? _source : "folder")) + "\"";
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
             }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        /// <summary>Writes a stored recording out as the video file it was, byte for byte.</summary>
+        private void SaveVideoAs(CaptureItem item)
+        {
+            string ext;
+            try { ext = CaptureLibrary.VideoExtension(item.Id); }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); return; }
+            bool gif = ext == ".gif";
+            var dlg = new FileDialog(FileDialogMode.Save)
+            {
+                Title = Loc("Str_Dlg_SaveTitle"),
+                Filter = Loc(gif ? "Str_VS_FormatGif" : "Str_VS_FormatMp4") + "|*" + ext,
+                DefaultExt = ext,
+                FileName = (string.IsNullOrWhiteSpace(item.Window) ? Loc("Str_Rec_CollectionName") : item.Window) + ext,
+                InitialDirectory = VideoSettings.OutputFolder,
+            };
+            if (PresentExportDialog(dlg, OwnerWindow) != true) return;
+            try
+            {
+                CaptureLibrary.ExportVideo(item.Id, dlg.FileName);
+                StatusMessage?.Invoke(dlg.FileName);
+            }
+            catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+        }
+
+        /// <summary>Moves a recording from the folder into the encrypted library. Unlike a picture's
+        /// Add to library, the plain file goes, since a copy left behind would undo the encryption.</summary>
+        private async void MoveVideoToLibrary(CaptureItem item)
+        {
+            if (FolderCaptures.PathOf(item.Id) is not { } path) { StatusMessage?.Invoke(Loc("Str_Lib_Missing")); return; }
+            try
+            {
+                await RecordingStorage.MoveToLibraryAsync(path, item.Taken);
+                StatusMessage?.Invoke(Loc("Str_Rec_SavedToLibrary"));
+            }
+            catch (VideoTooLargeException) { StatusMessage?.Invoke(string.Format(Loc("Str_Rec_TooLarge"), RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(path)!))); }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 

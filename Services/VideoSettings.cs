@@ -59,7 +59,7 @@ internal static class VideoSettings
     public static string OutputFolder
     {
         get => Settings.Get("VideoFolder") is { Length: > 0 } f ? f : DefaultFolder;
-        set => Settings.Set("VideoFolder", value);
+        set { Settings.Set("VideoFolder", value); FolderCaptures.RecordingsFolderChanged(); }
     }
 
     public static string FileNamePattern

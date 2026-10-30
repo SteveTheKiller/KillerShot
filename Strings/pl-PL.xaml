@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kb/s</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-y nie mają dźwięku.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Koder H.264 w systemie Windows obsługuje wideo do 4096 x 2304 pikseli, więc większy obszar, na przykład kilka monitorów, jest zmniejszany, aby się zmieścił. GIF zachowuje pełny rozmiar.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Pokaż folder nagrań w bibliotece</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Zapisuj nagrania w</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Folder nagrań</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Zaszyfrowana biblioteka</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Zwykłe pliki wideo, które otworzy każda aplikacja, widoczne w bibliotece jako kolekcja.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Twoje pierwsze nagranie zostało zapisane</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Gdzie mają trafiać nagrania od teraz?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Folder nagrań</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Zwykłe pliki wideo w folderze {0}, widoczne tutaj jako kolekcja. Otworzy je każda aplikacja.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Zaszyfrowana biblioteka</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Zamknięte razem z Twoimi zrzutami. Odtworzenie klipu tworzy tymczasową kopię, która potem jest usuwana. Bardzo długie klipy zostają w folderze.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Możesz to zmienić w dowolnej chwili w Ustawieniach wideo, w sekcji Nagrywanie.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Otwórz klip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Dalej</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Nagrania</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Zapisano w zaszyfrowanej bibliotece.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Jest za duże dla biblioteki, więc zostało w folderze {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Nie udało się dodać go do biblioteki, więc zostało w folderze {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteka jest zablokowana.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Nie udało się odtworzyć nagrania</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Przenieś do zaszyfrowanej biblioteki</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Biblioteka</sys:String>

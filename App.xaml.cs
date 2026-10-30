@@ -107,6 +107,7 @@ public partial class App : Application
         if (SelfTestAccessiblePickers.TryRun(e.Args)) return;
         if (SelfTestEditorSafety.TryRun(e.Args)) return;
         if (SelfTestRecordingSafety.TryRun(e.Args)) return;
+        if (SelfTestRecordings.TryRun(e.Args)) return;
         if (SelfTestLibrary.TryRun(e.Args)) return;
         if (SelfTestQr.TryRun(e.Args)) return;
         if (SelfTestQrUi.TryRun(e.Args)) return;
@@ -189,6 +190,8 @@ public partial class App : Application
         // library screen unlocks it.
         if (demo) DemoMode.BeginSeed();
         else CaptureLibrary.BeginOpen();
+        // Decrypted copies left by a session that did not close cleanly.
+        if (!demo) _ = Task.Run(VideoCaptures.WipePlayback);
 
         // The first Print Screen switch changed Windows' own setting; put it back once, before the
         // tray claims the shortcuts (Services/PrintScreenKey.cs). Best effort.
@@ -335,6 +338,12 @@ public partial class App : Application
     /// asks where to put it.</summary>
     internal void OpenLibraryCapture(CaptureItem item)
     {
+        // A recording plays in the viewer's own player; the editor has nothing to edit in it.
+        if (VideoCaptures.IsVideo(item))
+        {
+            VideoCaptures.Play(item, message => Tray?.ShowWarning(LocaleManager.Loc("Str_Rec_PlayFailed"), message));
+            return;
+        }
         // A picture from the Screenshots folder opens as the file it is, so Save writes it back.
         if (FolderCaptures.IsFolderId(item.Id) && FolderCaptures.PathOf(item.Id) is { } path)
         {
@@ -484,6 +493,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         ImageDrag.Cleanup();
+        VideoCaptures.WipePlayback();
         _wakeWait?.Unregister(null);
         _wake?.Dispose();
         Tray?.Dispose();

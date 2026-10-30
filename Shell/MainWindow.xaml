@@ -902,6 +902,17 @@
                                         <CheckBox x:Name="VideoCountdownToggle" Content="{DynamicResource Str_VS_Countdown}" Style="{StaticResource VsCheck}"/>
                                         <CheckBox x:Name="VideoCopyToggle" Content="{DynamicResource Str_VS_CopyFile}" Style="{StaticResource VsCheck}"/>
                                         <CheckBox x:Name="VideoNotifyToggle" Content="{DynamicResource Str_VS_Notify}" Style="{StaticResource VsCheck}"/>
+                                        <CheckBox x:Name="VideoShowRecordingsToggle" Content="{DynamicResource Str_VS_ShowRecordings}" Style="{StaticResource VsCheck}"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{DynamicResource Str_VS_KeepIn}" Style="{StaticResource VsLabel}"/>
+                                            <ComboBox x:Name="VideoStorageCombo" Grid.Column="1" Style="{StaticResource VsCombo}"
+                                                      AutomationProperties.Name="{DynamicResource Str_VS_KeepIn}"/>
+                                        </Grid>
+                                        <TextBlock x:Name="VideoStorageNote" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
 
                                         <TextBlock Text="{DynamicResource Str_VS_Shortcut}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
                                         <Grid x:Name="VideoShortcutRows">

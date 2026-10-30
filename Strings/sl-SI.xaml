@@ -383,6 +383,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Datoteke GIF nimajo zvoka.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Kodirnik H.264 v sistemu Windows sprejme video do 4096 x 2304 slikovnih pik, zato se večje območje, na primer več zaslonov, ustrezno pomanjša. GIF ohrani polno velikost.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Pokaži mapo z videoposnetki v knjižnici</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Videoposnetke hrani v</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Mapa z videoposnetki</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Šifrirana knjižnica</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Navadne video datoteke, ki jih odpre vsaka aplikacija, v knjižnici prikazane kot zbirka.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Tvoj prvi videoposnetek je shranjen</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Kam naj se videoposnetki shranjujejo odslej?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Mapa z videoposnetki</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Navadne video datoteke v {0}, tukaj prikazane kot zbirka. Odpre jih vsaka aplikacija.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Šifrirana knjižnica</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Zaklenjeni skupaj s tvojimi posnetki zaslona. Pri predvajanju klipa se naredi začasna kopija, ki se potem izbriše. Zelo dolgi klipi ostanejo v mapi.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">To lahko kadar koli spremeniš v Nastavitvah videa, pod Snemanje.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Odpri klip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Nadaljuj</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Videoposnetki</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Shranjeno v šifrirano knjižnico.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Je prevelik za knjižnico, zato je ostal v {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Ni ga bilo mogoče dati v knjižnico, zato je ostal v {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Knjižnica je zaklenjena.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Videoposnetka ni bilo mogoče predvajati</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Premakni v šifrirano knjižnico</sys:String>
     <sys:String x:Key="Str_Btn_Library">Knjižnica</sys:String>
     <sys:String x:Key="Str_KS_Library">Prikaži ali skrij knjižnico posnetkov</sys:String>
     <sys:String x:Key="Str_KS_LibrarySearch">Išči po knjižnici</sys:String>

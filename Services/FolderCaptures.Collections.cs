@@ -10,10 +10,12 @@ internal sealed record FolderCollection(string Source, string Path, bool Availab
 
 internal static partial class FolderCaptures
 {
-    private sealed class LinkedFolder(string source, string path)
+    private sealed class LinkedFolder(string source, string path, bool videos = false)
     {
         internal readonly string Source = source;
         internal readonly string Path = path;
+        /// <summary>The Recordings folder: its MP4 and GIF files, top level only, as videos.</summary>
+        internal readonly bool Videos = videos;
         internal readonly HashSet<string> ScanningPaths = new(StringComparer.OrdinalIgnoreCase);
         internal IReadOnlyList<CaptureItem> Items = [];
         internal bool Available;
@@ -42,6 +44,71 @@ internal static partial class FolderCaptures
 
     public static bool IsSource(string? source) => source == "folder" || source?.StartsWith("folder:", StringComparison.Ordinal) == true;
 
+    /// <summary>The built-in collection for the screen recording folder. It is never saved with
+    /// the folders the user linked; it follows the recording folder setting instead.</summary>
+    public const string RecordingsSource = "folder:recordings";
+
+    /// <summary>Shown as a collection unless turned off in Video settings.</summary>
+    public static bool RecordingsEnabled
+    {
+        get => Settings.GetBool("LibraryShowRecordings", true);
+        set { Settings.SetBool("LibraryShowRecordings", value); SyncRecordings(); Changed?.Invoke(); }
+    }
+
+    /// <summary>For the self-test: another recording folder in place of the user's. A test that
+    /// swapped in its own Screenshots folder (UseFolder) shows no Recordings collection until it
+    /// sets this, so the user's real recordings never leak into a test's library.</summary>
+    internal static string? RecordingsFolderOverride
+    {
+        get => _recordingsOverride;
+        set { _recordingsOverride = value; SyncRecordings(); }
+    }
+    private static string? _recordingsOverride;
+    private static bool _testFolders;
+
+    /// <summary>The recording folder setting changed: the Recordings collection moves with it.
+    /// Collection reads never consult settings themselves, so a settings write in progress cannot
+    /// hold up the library (folder-fixes self-test).</summary>
+    public static void RecordingsFolderChanged() => SyncRecordings();
+
+    private static string RecordingsFolder => RecordingsFolderOverride ?? VideoSettings.OutputFolder;
+
+    /// <summary>Keeps the Recordings collection on the folder recordings are saved to, and away
+    /// when it is turned off. Cheap when nothing changed.</summary>
+    private static void SyncRecordings()
+    {
+        string? path = null;
+        if (RecordingsEnabled && !(_testFolders && RecordingsFolderOverride == null))
+        {
+            try { path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(RecordingsFolder)); }
+            catch (Exception error) when (error is ArgumentException or NotSupportedException or IOException) { }
+        }
+        bool refresh = false;
+        lock (LinkedGate)
+        {
+            if (_linkedConfig == null) return;
+            Linked.TryGetValue(RecordingsSource, out var current);
+            if (path == null)
+            {
+                if (current == null) return;
+                Linked.Remove(RecordingsSource);
+                PruneLinkedMetadata();
+            }
+            else if (current == null || !string.Equals(current.Path, path, StringComparison.OrdinalIgnoreCase))
+            {
+                Linked[RecordingsSource] = new LinkedFolder(RecordingsSource, path, videos: true);
+                refresh = true;
+            }
+            else return;
+        }
+        if (refresh) _ = RefreshFolderAsync(RecordingsSource);
+        Changed?.Invoke();
+    }
+
+    /// <summary>The folders the user linked, without the built-in Recordings one, as saved JSON.</summary>
+    private static string SavedFolders(IEnumerable<KeyValuePair<string, LinkedFolder>> folders) =>
+        JsonSerializer.Serialize(folders.Where(pair => !pair.Value.Videos).ToDictionary(pair => pair.Key, pair => pair.Value.Path));
+
     public static IReadOnlyList<FolderCollection> LinkedCollections()
     {
         EnsureLinkedFolders();
@@ -63,7 +130,7 @@ internal static partial class FolderCaptures
                 if (Linked.Values.FirstOrDefault(folder => string.Equals(folder.Path, path, StringComparison.OrdinalIgnoreCase)) is { } existing)
                     return existing.Source;
                 source = "folder:" + Guid.NewGuid().ToString("N");
-                var paths = Linked.ToDictionary(pair => pair.Key, pair => pair.Value.Path);
+                var paths = Linked.Where(pair => !pair.Value.Videos).ToDictionary(pair => pair.Key, pair => pair.Value.Path);
                 paths[source] = path;
                 json = JsonSerializer.Serialize(paths);
             }
@@ -81,6 +148,8 @@ internal static partial class FolderCaptures
 
     public static void RemoveFolder(string source)
     {
+        // The Recordings collection is not a saved link: removing it turns it off.
+        if (source == RecordingsSource) { RecordingsEnabled = false; return; }
         lock (LinkedWriteGate)
         {
             EnsureLinkedFolders();
@@ -88,8 +157,7 @@ internal static partial class FolderCaptures
             lock (LinkedGate)
             {
                 if (!Linked.ContainsKey(source)) return;
-                var paths = Linked.Where(pair => pair.Key != source).ToDictionary(pair => pair.Key, pair => pair.Value.Path);
-                json = JsonSerializer.Serialize(paths);
+                json = SavedFolders(Linked.Where(pair => pair.Key != source));
             }
             Settings.SetRequired("LinkedFolderCollections", json);
             lock (LinkedGate)
@@ -142,13 +210,14 @@ internal static partial class FolderCaptures
             {
                 Linked.Clear();
                 foreach (var (source, path) in paths)
-                    if (source.StartsWith("folder:", StringComparison.Ordinal) && Path.IsPathFullyQualified(path))
+                    if (source.StartsWith("folder:", StringComparison.Ordinal) && source != RecordingsSource && Path.IsPathFullyQualified(path))
                         Linked[source] = new LinkedFolder(source, path);
                 _linkedConfig = config;
                 start = Linked.Keys.ToArray();
             }
         }
         foreach (string source in start) _ = RefreshFolderAsync(source);
+        SyncRecordings();
     }
 
     private static void ResetLinkedFolders()
@@ -204,7 +273,8 @@ internal static partial class FolderCaptures
             bool complete = true;
             foreach (var file in LinkedFiles(folder, _directoryReader, () => complete = false))
             {
-                if (!Extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase)) continue;
+                if (folder.Videos ? !VideoCaptures.IsVideoFile(file.FullName)
+                    : !Extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase)) continue;
                 lock (LinkedGate)
                 {
                     if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
@@ -218,7 +288,7 @@ internal static partial class FolderCaptures
                             _sizes.Remove(file.FullName);
                             if (_ids.TryGetValue(file.FullName, out long id)) RemoveThumb(id);
                         }
-                    var (width, height) = SizeOf(file);
+                    var (width, height) = folder.Videos ? VideoSizeOf(file) : SizeOf(file);
                     if (width == 0 || height == 0) continue;
                     lock (LinkedGate)
                     {
@@ -227,8 +297,10 @@ internal static partial class FolderCaptures
                             PruneLinkedMetadata();
                             return;
                         }
-                        items.Add(new CaptureItem(IdOf(file.FullName), file.LastWriteTime, width, height,
-                            "file", Path.GetFileNameWithoutExtension(file.Name), null, CollectionId, null));
+                        long id = IdOf(file.FullName);
+                        if (folder.Videos) lock (_gate) _videoIds.Add(id);
+                        items.Add(new CaptureItem(id, file.LastWriteTime, width, height,
+                            folder.Videos ? VideoCaptures.Mode : "file", Path.GetFileNameWithoutExtension(file.Name), null, CollectionId, null));
                     }
                     if (!folder.Initialized && published.Elapsed.TotalSeconds >= 2)
                     {
@@ -276,7 +348,10 @@ internal static partial class FolderCaptures
                 if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) yield break;
             var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = false,
                 AttributesToSkip = FileAttributes.ReparsePoint, ReturnSpecialDirectories = false };
-            foreach (var child in ReadDirectoryEntries(() => reader.EnumerateDirectories(directory, options), _ => incomplete())) pending.Push(child);
+            // Recordings are saved flat. Its subfolders include the hidden staging folder a
+            // recording is written in before it is finished, which must never show as a clip.
+            if (!folder.Videos)
+                foreach (var child in ReadDirectoryEntries(() => reader.EnumerateDirectories(directory, options), _ => incomplete())) pending.Push(child);
             foreach (var file in ReadDirectoryEntries(() => reader.EnumerateFiles(directory, options), _ => incomplete())) yield return file;
         }
     }
@@ -293,6 +368,7 @@ internal static partial class FolderCaptures
             {
                 if (retained.Contains(id) || scanning.Contains(path) || IsScreenshotsPath(path)) continue;
                 _paths.Remove(id);
+                _videoIds.Remove(id);
                 _ids.Remove(path);
                 _sizes.Remove(path);
                 RemoveThumb(id);

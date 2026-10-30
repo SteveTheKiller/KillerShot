@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-এ শব্দ থাকে না।</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows-এর H.264 এনকোডার সর্বোচ্চ 4096 x 2304 পিক্সেলের ভিডিও নেয়, তাই বড় এলাকা, যেমন একাধিক মনিটর, ছোট করে মানানসই করা হয়। GIF পুরো আকার রাখে।</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">লাইব্রেরিতে রেকর্ডিং ফোল্ডার দেখান</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">রেকর্ডিং রাখুন</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">রেকর্ডিং ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">এনক্রিপ্টেড লাইব্রেরি</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">সাধারণ ভিডিও ফাইল, যেকোনো অ্যাপ খুলতে পারে, লাইব্রেরিতে একটি সংগ্রহ হিসেবে দেখানো হয়।</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">আপনার প্রথম রেকর্ডিং সেভ হয়েছে</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">এখন থেকে রেকর্ডিং কোথায় যাবে?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">রেকর্ডিং ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">{0}-এ সাধারণ ভিডিও ফাইল, এখানে একটি সংগ্রহ হিসেবে দেখানো হয়। যেকোনো অ্যাপ এগুলো খুলতে পারে।</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">এনক্রিপ্টেড লাইব্রেরি</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">আপনার স্ক্রিনশটের সঙ্গে তালাবন্ধ থাকে। ক্লিপ চালালে একটি অস্থায়ী কপি তৈরি হয়, পরে তা মুছে ফেলা হয়। খুব লম্বা ক্লিপ ফোল্ডারেই থাকে।</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">আপনি যেকোনো সময় ভিডিও সেটিংসে, রেকর্ডিং-এর অধীনে এটি বদলাতে পারেন।</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">ক্লিপ খুলুন</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">চালিয়ে যান</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">রেকর্ডিং</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">এনক্রিপ্টেড লাইব্রেরিতে সেভ হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">লাইব্রেরির জন্য এটি খুব বড়, তাই এটি {0}-এ রয়ে গেছে।</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">এটি লাইব্রেরিতে যেতে পারেনি, তাই {0}-এ রয়ে গেছে। {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">লাইব্রেরি লক করা আছে।</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">রেকর্ডিং চালানো যায়নি</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">এনক্রিপ্টেড লাইব্রেরিতে সরান</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">লাইব্রেরি</sys:String>

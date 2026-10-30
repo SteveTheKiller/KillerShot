@@ -385,6 +385,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">A GIF-eknek nincs hangja.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">A Windows H.264-kódolója legfeljebb 4096 x 2304 képpontos videót fogad, ezért a nagyobb terület, például több monitor, kicsinyítve kerül a videóba. A GIF megtartja a teljes méretet.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">A felvételek mappájának megjelenítése a könyvtárban</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">A felvételek tárolási helye</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">A felvételek mappája</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">A titkosított könyvtár</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Egyszerű videófájlok, amelyeket bármelyik alkalmazás megnyithat, a könyvtárban gyűjteményként jelennek meg.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Az első felvétele elmentve</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Hová kerüljenek a felvételek ezentúl?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Felvételek mappája</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Egyszerű videófájlok itt: {0}, itt gyűjteményként látszanak. Bármelyik alkalmazás megnyithatja őket.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Titkosított könyvtár</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">A rögzítéseivel együtt zárolva van. Egy klip lejátszásakor ideiglenes másolat készül, amely utána törlődik. A nagyon hosszú klipek a mappában maradnak.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Ezt bármikor módosíthatja a Videóbeállítások Felvétel részében.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Klip megnyitása</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Tovább</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Felvételek</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Elmentve a titkosított könyvtárba.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Túl nagy a könyvtárhoz, ezért itt maradt: {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Nem került be a könyvtárba, ezért itt maradt: {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">A könyvtár zárolva van.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">A felvételt nem sikerült lejátszani</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Áthelyezés a titkosított könyvtárba</sys:String>
     <sys:String x:Key="Str_About_DescB" xml:space="preserve"> segédprogram.</sys:String>
 
     <!-- Capture library -->

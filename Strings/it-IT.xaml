@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">Le GIF non hanno audio.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Il codificatore H.264 di Windows accetta video fino a 4096 x 2304 pixel, quindi un'area più grande, come più monitor, viene ridotta per rientrarvi. Il GIF mantiene le dimensioni complete.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Mostra la cartella delle registrazioni nella libreria</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Conserva le registrazioni in</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">La cartella delle registrazioni</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">La libreria crittografata</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">File video normali che qualsiasi app può aprire, mostrati come raccolta nella libreria.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">La tua prima registrazione è stata salvata</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Dove devono andare le registrazioni d'ora in poi?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Cartella delle registrazioni</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">File video normali in {0}, mostrati qui come raccolta. Qualsiasi app può aprirli.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Libreria crittografata</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Protette insieme alle tue catture. Riprodurre una clip crea una copia temporanea che poi viene eliminata. Le clip molto lunghe restano nella cartella.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Puoi cambiarlo quando vuoi in Impostazioni video, sotto Registrazione.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Apri la clip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Continua</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Registrazioni</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Salvata nella libreria crittografata.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">È troppo grande per la libreria, quindi è rimasta in {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Non è potuta entrare nella libreria, quindi è rimasta in {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">La libreria è bloccata.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Impossibile riprodurre la registrazione</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Sposta nella libreria crittografata</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Libreria</sys:String>

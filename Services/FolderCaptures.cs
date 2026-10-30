@@ -32,6 +32,7 @@ internal static partial class FolderCaptures
     private static readonly Dictionary<string, long> _ids = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<long, string> _paths = [];
     private static readonly Dictionary<string, (DateTime Stamp, int W, int H)> _sizes = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<long> _videoIds = [];
     private static long _nextId = -2;
     private static FileSystemWatcher? _watcher;
     private static Timer? _debounce;
@@ -68,6 +69,7 @@ internal static partial class FolderCaptures
     /// <summary>For the self-test: another folder in place of the user's.</summary>
     internal static void UseFolder(string dir, IFolderDirectoryReader? directoryReader = null)
     {
+        _testFolders = true;
         ResetLinkedFolders();
         lock (_gate)
         {
@@ -81,7 +83,7 @@ internal static partial class FolderCaptures
             _screenshotsGeneration++;
             _watcher?.Dispose();
             _watcher = null;
-            _ids.Clear(); _paths.Clear(); _sizes.Clear();
+            _ids.Clear(); _paths.Clear(); _sizes.Clear(); _videoIds.Clear();
             ThumbnailCache.Clear(folders: true);
         }
     }
@@ -233,10 +235,35 @@ internal static partial class FolderCaptures
         return (w, h);
     }
 
+    /// <summary>A recording's frame size from Windows' properties, or its poster's shape when
+    /// Windows cannot say, cached until the file changes like a picture's size.</summary>
+    private static (int, int) VideoSizeOf(FileInfo f)
+    {
+        lock (_gate)
+            if (_sizes.TryGetValue(f.FullName, out var s) && s.Stamp == f.LastWriteTimeUtc) return (s.W, s.H);
+        var (w, h, _) = VideoCaptures.Probe(f.FullName);
+        if ((w <= 0 || h <= 0) && VideoCaptures.Poster(f.FullName, 256) is { } poster) (w, h) = (poster.PixelWidth, poster.PixelHeight);
+        if (w <= 0 || h <= 0) (w, h) = (16, 9);
+        lock (_gate) _sizes[f.FullName] = (f.LastWriteTimeUtc, w, h);
+        return (w, h);
+    }
+
+    private static bool IsVideoId(long id) { lock (_gate) return _videoIds.Contains(id); }
+
+    /// <summary>A folder recording's poster frame, or null when Windows has none for it.</summary>
+    public static BitmapSource? LoadPoster(long id, int longSide) =>
+        PathOf(id) is { } path ? VideoCaptures.Poster(path, longSide) : null;
+
     public static BitmapSource? LoadThumb(long id)
     {
         if (ThumbnailCache.Get(0, id) is { } cached) return cached;
         if (PathOf(id) is not { } path) return null;
+        if (IsVideoId(id))
+        {
+            var poster = VideoCaptures.Poster(path, 512);
+            if (poster != null) lock (_gate) if (_paths.ContainsKey(id)) ThumbnailCache.Put(0, id, poster);
+            return poster;
+        }
         try
         {
             var file = new FileInfo(path);
@@ -275,12 +302,14 @@ internal static partial class FolderCaptures
         ThumbnailCache.Remove(0, id);
     }
 
-    public static BitmapSource LoadImage(long id) =>
-        ImageOutput.Load(PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")));
+    public static BitmapSource LoadImage(long id) => IsVideoId(id)
+        ? LoadPoster(id, 1920) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"))
+        : ImageOutput.Load(PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")));
 
     public static byte[] LoadPng(long id)
     {
         string path = PathOf(id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
+        if (IsVideoId(id)) return ImageOutput.EncodePng(LoadImage(id));
         return Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase)
             ? File.ReadAllBytes(path)
             : ImageOutput.EncodePng(ImageOutput.Load(path));

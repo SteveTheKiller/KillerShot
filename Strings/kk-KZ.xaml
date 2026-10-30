@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} кбит/с</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF-те дыбыс жоқ.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows жүйесіндегі H.264 кодтаушысы 4096 x 2304 пиксельге дейінгі бейнені қабылдайды, сондықтан бірнеше монитор сияқты үлкенірек аймақ сыятындай кішірейтіледі. GIF толық өлшемді сақтайды.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Жазбалар қалтасын кітапханада көрсету</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Жазбаларды сақтау орны</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Жазбалар қалтасы</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Шифрланған кітапхана</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Кез келген қолданба аша алатын қарапайым бейне файлдары, кітапханада жинақ ретінде көрсетіледі.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Алғашқы жазбаңыз сақталды</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Жазбалар бұдан былай қайда сақталсын?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Жазбалар қалтасы</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">{0} ішіндегі қарапайым бейне файлдары, осында жинақ ретінде көрсетіледі. Оларды кез келген қолданба аша алады.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Шифрланған кітапхана</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Скриншоттарыңызбен бірге құлыпталып сақталады. Клипті ойнатқанда уақытша көшірме жасалады, ол кейін жойылады. Өте ұзын клиптер қалтада қалады.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Мұны кез келген уақытта Бейне параметрлері ішіндегі Жазу бөлімінде өзгерте аласыз.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Клипті ашу</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Жалғастыру</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Жазбалар</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Шифрланған кітапханаға сақталды.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Кітапхана үшін тым үлкен, сондықтан {0} ішінде қалды.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Кітапханаға түспеді, сондықтан {0} ішінде қалды. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Кітапхана құлыпталған.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Жазбаны ойнату мүмкін болмады</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Шифрланған кітапханаға жылжыту</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Кітапхана</sys:String>

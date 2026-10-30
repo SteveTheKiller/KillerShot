@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF'lerde ses yoktur.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Windows'taki H.264 kodlayıcısı en fazla 4096 x 2304 piksel video kabul eder, bu yüzden birden çok monitör gibi daha büyük bir alan sığacak şekilde küçültülür. GIF tam boyutu korur.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Kayıtlar klasörünü kitaplıkta göster</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Kayıtların saklanacağı yer</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Kayıtlar klasörü</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Şifrelenmiş kitaplık</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Herhangi bir uygulamanın açabileceği düz video dosyaları, kitaplıkta koleksiyon olarak gösterilir.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">İlk kaydınız kaydedildi</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Kayıtlar bundan sonra nereye gitsin?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Kayıtlar klasörü</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">{0} içindeki düz video dosyaları, burada koleksiyon olarak gösterilir. Herhangi bir uygulama bunları açabilir.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Şifrelenmiş kitaplık</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Ekran görüntülerinizle birlikte kilit altında tutulur. Bir klibi oynatmak, sonra silinen geçici bir kopya oluşturur. Çok uzun klipler klasörde kalır.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Bunu istediğiniz zaman Video ayarları içinde, Kayıt bölümünden değiştirebilirsiniz.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Klibi aç</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Devam</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Kayıtlar</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Şifrelenmiş kitaplığa kaydedildi.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Kitaplık için çok büyük, bu yüzden {0} içinde kaldı.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Kitaplığa konamadı, bu yüzden {0} içinde kaldı. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Kitaplık kilitli.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Kayıt oynatılamadı</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Şifrelenmiş kitaplığa taşı</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Kitaplık</sys:String>

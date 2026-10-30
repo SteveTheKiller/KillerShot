@@ -386,6 +386,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIF không có âm thanh.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">Bộ mã hóa H.264 trong Windows nhận video tối đa 4096 x 2304 pixel, nên vùng lớn hơn, như nhiều màn hình, sẽ được thu nhỏ cho vừa. GIF giữ nguyên kích thước đầy đủ.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Hiển thị thư mục bản quay trong thư viện</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Lưu bản quay trong</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">Thư mục bản quay</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">Thư viện được mã hóa</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Các tệp video thông thường mà ứng dụng nào cũng mở được, hiển thị như một bộ sưu tập trong thư viện.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Bản quay đầu tiên của bạn đã được lưu</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Từ giờ các bản quay nên được lưu ở đâu?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Thư mục bản quay</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Các tệp video thông thường trong {0}, hiển thị ở đây như một bộ sưu tập. Ứng dụng nào cũng mở được.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Thư viện được mã hóa</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Được khóa cùng với ảnh chụp màn hình của bạn. Phát một clip sẽ tạo bản sao tạm thời và xóa đi sau đó. Clip rất dài vẫn nằm trong thư mục.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">Bạn có thể đổi bất cứ lúc nào trong Cài đặt video, mục Quay.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Mở clip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Tiếp tục</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Bản quay</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Đã lưu vào thư viện được mã hóa.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">Nó quá lớn so với thư viện, nên vẫn nằm trong {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">Không đưa vào thư viện được, nên nó vẫn nằm trong {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">Thư viện đang bị khóa.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Không phát được bản quay</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Chuyển vào thư viện được mã hóa</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Thư viện</sys:String>

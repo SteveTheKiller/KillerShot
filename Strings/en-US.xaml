@@ -390,6 +390,29 @@
     <sys:String x:Key="Str_VS_KbpsValue">{0} kbps</sys:String>
     <sys:String x:Key="Str_VS_GifNoSound">GIFs have no sound.</sys:String>
     <sys:String x:Key="Str_VS_Mp4WidthLimit">The H.264 encoder in Windows takes video up to 4096 x 2304 pixels, so a larger area, such as several monitors, is scaled down to fit. GIF keeps the full size.</sys:String>
+    <sys:String x:Key="Str_VS_ShowRecordings">Show the recordings folder in the library</sys:String>
+    <sys:String x:Key="Str_VS_KeepIn">Keep recordings in</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolder">The recordings folder</sys:String>
+    <sys:String x:Key="Str_VS_KeepLibrary">The encrypted library</sys:String>
+    <sys:String x:Key="Str_VS_KeepFolderNote">Plain video files any app can open, shown as a collection in the library.</sys:String>
+
+    <!-- Where recordings go: the question after the first one, and what happens to each after. -->
+    <sys:String x:Key="Str_Rec_FirstTitle">Your first recording is saved</sys:String>
+    <sys:String x:Key="Str_Rec_FirstQuestion">Where should recordings go from now on?</sys:String>
+    <sys:String x:Key="Str_Rec_FolderTitle">Recordings folder</sys:String>
+    <sys:String x:Key="Str_Rec_FolderDetail">Plain video files in {0}, shown as a collection here. Any app can open them.</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryTitle">Encrypted library</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryDetail">Locked away with your screenshots. Playing a clip makes a temporary copy that's wiped afterward. Very long clips stay in the folder.</sys:String>
+    <sys:String x:Key="Str_Rec_Footnote">You can change this anytime in Video settings, under Recording.</sys:String>
+    <sys:String x:Key="Str_Rec_OpenClip">Open the clip</sys:String>
+    <sys:String x:Key="Str_Rec_Continue">Continue</sys:String>
+    <sys:String x:Key="Str_Rec_CollectionName">Recordings</sys:String>
+    <sys:String x:Key="Str_Rec_SavedToLibrary">Saved to the encrypted library.</sys:String>
+    <sys:String x:Key="Str_Rec_TooLarge">It's too large for the library, so it stayed in {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_KeptInFolder">It couldn't go into the library, so it stayed in {0}. {1}</sys:String>
+    <sys:String x:Key="Str_Rec_LibraryLocked">The library is locked.</sys:String>
+    <sys:String x:Key="Str_Rec_PlayFailed">Couldn't play the recording</sys:String>
+    <sys:String x:Key="Str_Rec_MoveToLibrary">Move to the encrypted library</sys:String>
 
     <!-- Capture library -->
     <sys:String x:Key="Str_Btn_Library">Library</sys:String>
