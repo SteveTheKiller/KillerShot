@@ -154,13 +154,8 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         _motion = new CarouselMotion(this, Rebuild, false,
             () => ActualWidth * SideStep / Math.Max(.1, _visibleWidth),
             () => Math.Max(0, _items.Count - 1), index => SetCurrentValue(SelectedIndexProperty, index));
-        ImageDrag.Attach(this, point =>
-        {
-            if (IndexAt(point) is not int index || index >= _items.Count) return null;
-            var item = _items[index];
-            // The flattened result, as from every other album view, so a redaction is never bypassed.
-            return () => CaptureLibrary.LoadOutput(item);
-        }, verticalNavigation: false);
+        ImageDrag.AttachCapture(this, point =>
+            IndexAt(point) is int index && index < _items.Count ? _items[index] : null, verticalNavigation: false);
         Focusable = true;
         FocusVisualStyle = KillerFamily.Accessibility.AccessibleControls.FocusStyleFor(this);
         ClipToBounds = true;
@@ -415,7 +410,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         Brush faceBrush = thumb != null
             ? new ImageBrush(thumb) { Stretch = Stretch.Fill }
             : new SolidColorBrush(Color.FromRgb(60, 60, 60));
-        var cardDrawing = QrMark.Drawing(faceBrush, w, h, item.HasQr);
+        var cardDrawing = VideoMark.Draw(QrMark.Drawing(faceBrush, w, h, item.HasQr), w, h, VideoCaptures.IsVideo(item));
         if (ShowInfoCards)
         {
             const double inset = .035, captionBand = .22;

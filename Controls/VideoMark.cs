@@ -27,4 +27,20 @@ internal static class VideoMark
         grid.Children.Add(mark);
         return grid;
     }
+
+    /// <summary>The same mark painted into a card face that is width by height in its own units,
+    /// for the carousel, which draws its cards rather than laying out elements.</summary>
+    internal static DrawingGroup Draw(DrawingGroup face, double width, double height, bool isVideo)
+    {
+        if (!isVideo) return face;
+        using var dc = face.Append();
+        double radius = Math.Min(width, height) * .14;
+        var center = new Point(width / 2, height / 2);
+        dc.DrawEllipse(new SolidColorBrush(Color.FromArgb(0xB0, 0, 0, 0)),
+            new Pen(new SolidColorBrush(Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF)), radius * .06), center, radius, radius);
+        var glyph = new FormattedText("", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+            new Typeface("Segoe Fluent Icons"), radius * .82, Brushes.White, 1);
+        dc.DrawText(glyph, new Point(center.X - glyph.Width / 2 + radius * .06, center.Y - glyph.Height / 2));
+        return face;
+    }
 }

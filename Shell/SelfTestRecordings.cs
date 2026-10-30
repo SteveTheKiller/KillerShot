@@ -126,6 +126,24 @@ internal static class SelfTestRecordings
             if (Directory.EnumerateFiles(VideoCaptures.PlaybackFolder).Any()) throw new InvalidOperationException("Playback copies survived the wipe.");
             report.Add("playback_copy_decrypts_and_wipes=PASS");
 
+            // 5b. Dragging a recording hands over the video file, not its poster frame; a picture
+            // still drags as a picture.
+            await FolderCaptures.RefreshFolderAsync(FolderCaptures.RecordingsSource);
+            var current = FolderCaptures.LinkedItems(FolderCaptures.RecordingsSource).Single(i => i.Window == "clip");
+            if (!string.Equals(ImageDrag.DragFile(current), mp4, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Dragging a folder recording must hand over its own file.");
+            string dragged = ImageDrag.DragFile(stored) ?? throw new InvalidOperationException("Dragging a stored recording handed over no file.");
+            if (!dragged.StartsWith(VideoCaptures.PlaybackFolder, StringComparison.OrdinalIgnoreCase)
+                || Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(dragged))) != hash)
+                throw new InvalidOperationException("Dragging a stored recording must hand over a decrypted copy that's wiped like a playback copy.");
+            var still = BitmapSource.Create(2, 2, 96, 96, PixelFormats.Bgra32, null, new byte[16], 8);
+            long pictureId = CaptureLibrary.AddNow(still, DateTime.Now, "region", "Picture", null);
+            if (ImageDrag.DragFile(CaptureLibrary.Items().Single(i => i.Id == pictureId)) != null)
+                throw new InvalidOperationException("A picture must still drag as a picture.");
+            CaptureLibrary.Delete([pictureId]);
+            VideoCaptures.WipePlayback();
+            report.Add("recording_drag_hands_over_video_file=PASS");
+
             // 6. Over the cap, the recording stays where it is.
             string big = Path.Combine(recordings, "big.mp4");
             File.Copy(mp4, big);
@@ -163,6 +181,12 @@ internal static class SelfTestRecordings
             var flow = (CoverFlow)library.FindName("BigFlow");
             if (navigation.Source != FolderCaptures.RecordingsSource || flow.Items.Count != 3 || !flow.Items.All(VideoCaptures.IsVideo))
                 throw new InvalidOperationException($"The Recordings collection showed {flow.Items.Count} items.");
+            await Task.Delay(800);
+            window.UpdateLayout();
+            var flowContent = (FrameworkElement)window.Content;
+            var flowShot = new RenderTargetBitmap((int)flowContent.ActualWidth, (int)flowContent.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+            flowShot.Render(flowContent);
+            ImageOutput.SavePng(flowShot, Path.Combine(folder, "library-flow.png"));
             library.SetView("grid");
             await Task.Delay(800);
             window.UpdateLayout();

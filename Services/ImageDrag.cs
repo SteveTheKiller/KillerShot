@@ -165,13 +165,55 @@ internal static class ImageDrag
         }
     }
 
-    internal static void Attach(FrameworkElement owner, Func<Point, Func<BitmapSource?>?> picture, bool? verticalNavigation = null, bool capturePointer = false)
+    /// <summary>The file a drag of this capture hands over, or null for a picture. A recording
+    /// drags as its video: a folder clip as the file itself, a stored clip as a decrypted copy in
+    /// the playback folder, which is wiped with the playback copies.</summary>
+    internal static string? DragFile(CaptureItem item) => VideoCaptures.IsVideo(item) ? VideoCaptures.PlayablePath(item) : null;
+
+    /// <summary>Drags a library capture: a recording as its video file, anything else as the
+    /// flattened picture every album view drags, so a redaction is never bypassed.</summary>
+    internal static void AttachCapture(FrameworkElement owner, Func<Point, CaptureItem?> capture, bool? verticalNavigation = null, bool capturePointer = false) =>
+        AttachCore(owner, point => capture(point) is { } item ? () => StartCapture(item) : null, verticalNavigation, capturePointer);
+
+    private static void StartCapture(CaptureItem item)
+    {
+        if (DragFile(item) is { } file) StartFile(file, CaptureLibrary.LoadThumb(item));
+        else if (CaptureLibrary.LoadOutput(item) is { } image) Start(image);
+    }
+
+    /// <summary>Drags an existing file, with its preview under the pointer.</summary>
+    internal static void StartFile(string path, BitmapSource? preview)
+    {
+        if (Active) return;
+        var data = ShellDataObject.Create([path]) ?? throw new IOException("Windows could not prepare the file for dragging.");
+        var helper = preview != null ? DragImage.Attach(data, preview, 112, .8) : null;
+        var cursor = Mouse.OverrideCursor;
+        try
+        {
+            Active = true;
+            Mouse.Capture(null);
+            Mouse.OverrideCursor = DragCursors.Closed;
+            NativeDoDragDrop(data, new ImageDropSource(), (int)DragDropEffects.Copy, out _);
+        }
+        finally
+        {
+            Mouse.OverrideCursor = cursor;
+            Active = false;
+            helper?.Dispose();
+            Marshal.FinalReleaseComObject(data);
+        }
+    }
+
+    internal static void Attach(FrameworkElement owner, Func<Point, Func<BitmapSource?>?> picture, bool? verticalNavigation = null, bool capturePointer = false) =>
+        AttachCore(owner, point => picture(point) is { } load ? () => { if (load() is { } image) Start(image); } : null, verticalNavigation, capturePointer);
+
+    private static void AttachCore(FrameworkElement owner, Func<Point, Action?> drag, bool? verticalNavigation, bool capturePointer)
     {
         Point press = default;
-        Func<BitmapSource?>? pending = null;
+        Action? pending = null;
         owner.PreviewMouseLeftButtonDown += (_, e) =>
         {
-            pending = e.ClickCount == 1 ? picture(e.GetPosition(owner)) : null;
+            pending = e.ClickCount == 1 ? drag(e.GetPosition(owner)) : null;
             press = e.GetPosition(owner);
             if (capturePointer && pending != null) owner.CaptureMouse();
         };
@@ -189,10 +231,10 @@ internal static class ImageDrag
                 _ => x >= SystemParameters.MinimumHorizontalDragDistance || y >= SystemParameters.MinimumVerticalDragDistance,
             };
             if (!ready) return;
-            var load = pending;
+            var start = pending;
             pending = null;
             e.Handled = true;
-            try { if (load() is { } image) Start(image); }
+            try { start(); }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         };
     }

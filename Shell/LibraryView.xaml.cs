@@ -573,7 +573,7 @@ namespace KillerShot.Shell
                 AutomationProperties.SetName(tile, Describe(item));
                 tile.ToolTip = Describe(item);
                 tile.Cursor = DragCursors.Open;
-                ImageDrag.Attach(tile, _ => () => CaptureLibrary.LoadOutput(item));
+                ImageDrag.AttachCapture(tile, _ => item);
                 tile.Click += (_, _) => OpenRequested?.Invoke(item);
                 tile.MouseRightButtonUp += (_, e) => { e.Handled = true; ShowItemMenu(item, tile); };
                 tile.KeyDown += (_, e) =>
