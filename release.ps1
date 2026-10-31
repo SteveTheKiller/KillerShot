@@ -24,8 +24,8 @@
 
     It also builds and signs KillerShot-Store.exe, the same app with the .NET runtime inside, and
     attaches it to the release for the Microsoft Store's package URL
-    (killershot.net/store/<version>/KillerShot-Store.exe). Submitting it in Partner Center stays
-    manual. WinGet and Chocolatey publish from their GitHub workflows when the release appears.
+    (killershot.net/store/<version>/KillerShot-Store.exe), then submits it to Microsoft Store.
+    WinGet and Chocolatey publish from their GitHub workflows when the release appears.
 
     The self-tests need an interactive desktop and are not run here. Run the full suite on the
     release candidate first.
@@ -204,6 +204,9 @@ if ($releaseDate -ne $Matches[1]) {
 }
 Write-Host "    Release date: $releaseDate"
 
+$storeScript = Join-Path $PSScriptRoot 'store\Submit-StoreRelease.ps1'
+$storeArgs = @{ ProductId = 'XP8K4LFXRB8PHX'; PackageUrl = "https://killershot.net/store/$Version/KillerShot-Store.exe" }
+
 # --- 2. Git preflight ---
 Write-Host "`n==> Git preflight..." -ForegroundColor Cyan
 Push-Location $PSScriptRoot
@@ -216,6 +219,7 @@ try {
 } finally { Pop-Location }
 
 # --- 3. SimplySign preflight ---
+if (-not $SkipSign) { & $storeScript @storeArgs -PreflightOnly }
 if (-not $SkipSign -and -not (Get-Process -Name "SimplySignDesktop" -ErrorAction SilentlyContinue)) {
     Write-Warning "SimplySign Desktop does not appear to be running."
     Write-Host    "    Start it and wait for 'Connected', then press Enter. Ctrl+C aborts."
@@ -414,6 +418,12 @@ try {
     gh release create $Tag @($assets + $sumsPath) --title "KillerShot $Tag" --notes-file $notesFile --verify-tag
     if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
     gh release view $Tag --json url --jq '.url'
+
+    Write-Host "`n==> Submitting $Tag to Microsoft Store..." -ForegroundColor Cyan
+    try { & $storeScript @storeArgs }
+    catch {
+        throw "GitHub release is published, but Microsoft Store submission failed: $($_.Exception.Message). Retry with: & '$storeScript' -ProductId $($storeArgs.ProductId) -PackageUrl $($storeArgs.PackageUrl)"
+    }
 
     # --- 13. Landing page release facts ---
     # After the release exists, so the site never announces a version whose download is not up
