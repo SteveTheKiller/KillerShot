@@ -8,7 +8,7 @@ using KillerShot.Services;
 namespace KillerShot.Shell;
 
 /// <summary>
-/// Right-click menus that belong to where the click lands (Steve, 2026-10-27): the sidebar's menu
+/// Right-click menus that belong to where the click lands: the sidebar's menu
 /// holds sidebar options, the carousel's holds carousel options, and the content area's holds the
 /// views. Each attaches to its own area only, never to a dock host, because the hosts wrap the
 /// content and their menu would answer clicks there too.

@@ -14,7 +14,7 @@ namespace KillerShot.Native;
 ///
 /// Windows' own setting is never touched. The first version of this switch turned it off in the
 /// registry instead, and Windows did not reliably pick that up until a sign-out, and Print Screen
-/// went dead whenever KillerShot was not running (Steve, 2026-10-27). With a hook, closing
+/// went dead whenever KillerShot was not running. With a hook, closing
 /// KillerShot gives Print Screen straight back to Snipping Tool.
 ///
 /// A press with no matching KillerShot shortcut passes through untouched. The callback only reads

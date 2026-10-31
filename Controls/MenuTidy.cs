@@ -6,7 +6,7 @@ namespace KillerShot.Controls;
 /// <summary>
 /// A menu shows only what can be done right now: an item that would be greyed out is left out,
 /// a submenu with nothing left in it goes too, and the separators those leave at either end or
-/// side by side are dropped (Steve, 2026-10-27).
+/// side by side are dropped.
 /// </summary>
 internal static class MenuTidy
 {

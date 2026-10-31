@@ -265,7 +265,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
 
     /// <summary>How many pictures are kept on each side of the front one: enough to reach both
     /// ends of the carousel at the depth the side pictures stand, so a wide carousel is filled
-    /// edge to edge instead of leaving a column in the middle (Steve, 2026-10-27).</summary>
+    /// edge to edge instead of leaving a column in the middle.</summary>
     private int Window
     {
         get
@@ -598,8 +598,8 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
             return true;
         }
         _motion.Interrupt();
-        // Wheel up steps forward and wheel down steps back (Steve, 2026-10-27: the other way
-        // round read as backwards).
+        // Wheel up steps forward and wheel down steps back: the other way
+        // round read as backwards.
         SelectedIndex += delta > 0 ? 1 : -1;
         return true;
     }

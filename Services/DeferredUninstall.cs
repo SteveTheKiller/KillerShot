@@ -156,6 +156,7 @@ namespace KillerShot.Services
         /// by then) are left for Windows to remove at the next restart.</summary>
         internal static void ScheduleMachineCleanup(string operationDirectory, string targetDirectory, Func<string, bool> schedule)
         {
+            RemoveFailedAttempts(operationDirectory);
             try
             {
                 foreach (string name in new[] { WorkerName, WorkerName + ".config", ReceiptName })
@@ -167,6 +168,34 @@ namespace KillerShot.Services
                 schedule(Path.GetFullPath(targetDirectory));
             }
             catch { /* Best effort: the uninstall itself already succeeded. */ }
+        }
+
+        /// <summary>A failed uninstall keeps its worker and receipt so the reason can be read, and on a
+        /// machine install those sit in the install folder, which then could not go at the restart.
+        /// Once an uninstall succeeds they have no further use. Only a folder holding nothing but a
+        /// failed attempt is removed.</summary>
+        private static void RemoveFailedAttempts(string operationDirectory)
+        {
+            const string prefix = "Uninstall-";
+            string[] folders;
+            try { folders = Directory.GetDirectories(Path.GetDirectoryName(operationDirectory)!, prefix + "*"); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { return; }
+            var attempt = new[] { WorkerName, WorkerName + ".config", ReceiptName };
+            foreach (string folder in folders)
+            {
+                try
+                {
+                    if (string.Equals(Path.GetFullPath(folder), Path.GetFullPath(operationDirectory), StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!Guid.TryParseExact(Path.GetFileName(folder).Substring(prefix.Length), "N", out _)) continue;
+                    if ((File.GetAttributes(folder) & FileAttributes.ReparsePoint) != 0) continue;
+                    string[] entries = Directory.GetFileSystemEntries(folder);
+                    if (entries.Any(entry => !attempt.Contains(Path.GetFileName(entry), StringComparer.OrdinalIgnoreCase))) continue;
+                    if (UninstallWorkflow.ReadReceipt(Path.Combine(folder, ReceiptName)).State != "Failed") continue;
+                    foreach (string entry in entries) File.Delete(entry);
+                    Directory.Delete(folder, recursive: false);
+                }
+                catch { /* Best effort: a folder that cannot go stays, and the uninstall already succeeded. */ }
+            }
         }
 
         private const int MoveFileDelayUntilReboot = 0x4;

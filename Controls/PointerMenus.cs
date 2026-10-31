@@ -13,7 +13,7 @@ namespace KillerShot.Controls;
 /// WPF's own MousePoint placement flips a tall menu above the pointer when it does not fit below,
 /// and the ContextMenu style's halo correction (HorizontalOffset -17, VerticalOffset -13) is only
 /// right for the downward case, so a flipped menu's visible bottom sat about 30px above the click
-/// with the card running far up the screen (Steve, 2026-10-27). This takes over every menu that
+/// with the card running far up the screen. This takes over every menu that
 /// opens at the pointer and places its card by its real halo in each direction.
 ///
 /// Rail and toolbar flyouts are not touched: they set their own Custom placement through

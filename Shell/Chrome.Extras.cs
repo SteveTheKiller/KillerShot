@@ -91,7 +91,7 @@ namespace KillerShot.Shell
             // Close to system tray means the window stays alive and only goes out of sight: the open
             // picture, a running recording, the album and its carousels all stay as they are, and
             // Open from the tray shows this same window at once instead of building a new one
-            // (Steve, 2026-10-27). Exit and shutdown still close it for real.
+            // Exit and shutdown still close it for real.
             if (!App.Instance.IsExiting && ReferenceEquals(App.Instance.EditorWindow, this))
             {
                 e.Cancel = true;

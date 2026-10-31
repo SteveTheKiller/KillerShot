@@ -503,7 +503,7 @@
                     <TextBlock x:Name="CollectionCountText" DockPanel.Dock="Left" Foreground="{DynamicResource TextFooter}"
                                FontSize="11" VerticalAlignment="Center" Margin="8,0,12,0"/>
                     <!-- A plain status line, as in KillerNotes, Killendar and KillerPDF: empty until there is
-                         something to say, with no traffic light and no standing "Ready" (Steve, 2026-10-27). -->
+                         something to say, with no traffic light and no standing "Ready". -->
                     <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"
                                Foreground="{DynamicResource TextFooter}"
                                FontFamily="{DynamicResource BrandSansFont}"
@@ -1260,11 +1260,10 @@
                                     </CheckBox>
                                 </StackPanel>
                                 <!-- Two columns of even length, each ending with its option that carries an
-                                     explanation: Print Screen on the left, Close to system tray on the right
-                                     (Steve, 2026-10-27). -->
+                                     explanation: Print Screen on the left, Close to system tray on the right. -->
                                 <StackPanel Grid.Column="2">
                                 <!-- Rendering is a dropdown: three radio rows took more room than the choice is
-                                     worth (Steve, 2026-10-27). The Remote Desktop explanation lives in the tooltip. -->
+                                     worth. The Remote Desktop explanation lives in the tooltip. -->
                                 <DockPanel ToolTip="{DynamicResource Str_About_RenderHint}">
                                     <TextBlock Text="{DynamicResource Str_About_Rendering}" Foreground="{DynamicResource DimTextBrush}"
                                                FontFamily="{DynamicResource UiFont}" FontSize="10" Margin="0,0,10,0" VerticalAlignment="Center"/>

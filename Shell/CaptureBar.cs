@@ -43,7 +43,7 @@ internal sealed class CaptureBar : Window
         Left = -20000; Top = -20000;
         SetResourceReference(ForegroundProperty, "TextBrush");
         // The bar is title-bar height, like the mode dropdown in it: every control is the same
-        // height, two pixels inside the card and its 1px border (Steve, 2026-10-27).
+        // height, two pixels inside the card and its 1px border.
         _controlHeight = Math.Max(16, (TryFindResource("TitleBarHeight") is double bar ? bar : 32) - 6);
         _modes.Height = _controlHeight;
         var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(6, 2, 6, 2), VerticalAlignment = VerticalAlignment.Center };
