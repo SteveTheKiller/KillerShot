@@ -97,6 +97,10 @@
     </UserControl.Resources>
     <local:PickerBorder Margin="{DynamicResource PaneOuterMargin}" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource PaneEdgeBrush}" BorderThickness="{DynamicResource PaneEdgeSideThickness}" CornerRadius="{DynamicResource PanelCornerRadius}" Effect="{DynamicResource PaneShadowEffect}">
         <DockPanel PreviewKeyDown="Files_KeyDown">
+            <DockPanel DockPanel.Dock="Bottom" LastChildFill="True">
+                <Button x:Name="CancelOperationButton" DockPanel.Dock="Right" Visibility="Collapsed" Content="{DynamicResource Str_Btn_Cancel}" Style="{StaticResource SurfaceButton}" Click="CancelOperation_Click" />
+                <TextBlock x:Name="CommandStatus" FontFamily="{DynamicResource UiFont}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="8,2" />
+            </DockPanel>
             <DockPanel DockPanel.Dock="Top">
                 <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="{DynamicResource MenuBackgroundBrush}">
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0">
@@ -228,6 +232,10 @@
                         </Style>
                     </ListBox.ItemContainerStyle>
                 </ListBox>
+                <Canvas x:Name="InteractionLayer" ClipToBounds="True">
+                    <Rectangle x:Name="MarqueeRect" Visibility="Collapsed" IsHitTestVisible="False" Stroke="{DynamicResource PrimaryBrush}" Fill="{DynamicResource SelectionBg}" Opacity="0.6" StrokeThickness="1" />
+                    <TextBox x:Name="RenameBox" Visibility="Collapsed" AutomationProperties.Name="{DynamicResource Str_Fo_RenameTitle}" Background="{DynamicResource SearchFieldBrush}" Foreground="{DynamicResource TextBrush}" CaretBrush="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource UiFont}" BorderThickness="1" Padding="2,0" KeyDown="RenameBox_KeyDown" LostKeyboardFocus="RenameBox_LostKeyboardFocus" />
+                </Canvas>
             </Grid>
         </DockPanel>
     </local:PickerBorder>

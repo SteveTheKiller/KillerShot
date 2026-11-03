@@ -16,6 +16,8 @@ public partial class FilesView : UserControl, IDisposable
         ViewState.PropertyChanged += (_, _) => FitColumns();
         RestoreOptions();
         InitAddress();
+        InitInteraction();
+        InitFilesMenu();
         Loaded += (_, _) =>
         {
             Services.ThemeManager.ThemeChanged -= RefreshArt;
@@ -59,6 +61,10 @@ public partial class FilesView : UserControl, IDisposable
     }
     public void Dispose()
     {
+        CancelFileOperation();
+        EndPointer();
+        ReleaseDropImage();
+        CancelRename();
         Services.ThemeManager.ThemeChanged -= RefreshArt;
         Browser.Dispose();
     }

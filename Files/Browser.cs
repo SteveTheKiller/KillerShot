@@ -186,7 +186,9 @@ public sealed partial class Browser : IDisposable
             string label = drive.Name.TrimEnd('\\');
             try
             {
-                if (drive.IsReady && !string.IsNullOrWhiteSpace(drive.VolumeLabel)) label = drive.VolumeLabel + " (" + label + ")";
+                // A ready network mapping can still block on its optional volume label.
+                if (drive.DriveType != DriveType.Network && drive.IsReady && !string.IsNullOrWhiteSpace(drive.VolumeLabel))
+                    label = drive.VolumeLabel + " (" + label + ")";
             }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
             var entry = new FileEntry { FilePath = drive.Name, FileName = label, IsDirectory = true, Seq = entries.Count };

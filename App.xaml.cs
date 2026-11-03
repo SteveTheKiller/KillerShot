@@ -96,6 +96,7 @@ public partial class App : Application
         if (SelfTestVideoOutput.TryRun(e.Args)) return;
         if (SelfTestFilesCore.TryRun(e.Args)) return;
         if (SelfTestFilesView.TryRun(e.Args)) return;
+        if (SelfTestFilesInteraction.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
