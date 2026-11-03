@@ -297,16 +297,20 @@ internal static class SelfTestFilesInteraction
                     Check(warmup is { CommandCount: > 0 }, "same-target native context query warm-up succeeds");
                 await DrainNativeIdle();
                 uint idleBefore = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
+                uint idleGdiBefore = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
                 var idleDuration = System.Diagnostics.Stopwatch.StartNew();
                 await DrainNativeIdle();
                 uint idleAfter = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
-                report.AppendLine($"Native idle control: before={idleBefore}, after={idleAfter}, durationMs={idleDuration.ElapsedMilliseconds}");
+                uint idleGdiAfter = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
+                report.AppendLine($"Native idle control: USER before={idleBefore}, after={idleAfter}, GDI before={idleGdiBefore}, after={idleGdiAfter}, durationMs={idleDuration.ElapsedMilliseconds}");
                 uint previousObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
-                bool stableMenus = true, acquiredAll = true;
+                uint previousGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
+                bool stableMenus = true, stableGdi = true, acquiredAll = true;
                 for (int batch = 0; batch < 3; batch++)
                 {
                     int acquiredCount = 0;
                     uint beforeObjects = previousObjects;
+                    uint beforeGdiObjects = previousGdiObjects;
                     var batchDuration = System.Diagnostics.Stopwatch.StartNew();
                     for (int i = 0; i < 10; i++)
                     {
@@ -314,13 +318,17 @@ internal static class SelfTestFilesInteraction
                         if (lease is { CommandCount: > 0 }) acquiredCount++;
                     }
                     uint immediateObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
+                    uint immediateGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
                     await DrainNativeIdle();
                     previousObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
+                    previousGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
                     acquiredAll &= acquiredCount == 10;
                     stableMenus &= previousObjects <= beforeObjects;
-                    report.AppendLine($"Native lease batch {batch}: acquired={acquiredCount}/10, USER before={beforeObjects}, immediate={immediateObjects}, settled={previousObjects}, durationMs={batchDuration.ElapsedMilliseconds}");
+                    stableGdi &= previousGdiObjects <= beforeGdiObjects;
+                    report.AppendLine($"Native lease batch {batch}: acquired={acquiredCount}/10, USER before={beforeObjects}, immediate={immediateObjects}, settled={previousObjects}, GDI before={beforeGdiObjects}, immediate={immediateGdiObjects}, settled={previousGdiObjects}, durationMs={batchDuration.ElapsedMilliseconds}");
                 }
                 Check(acquiredAll && stableMenus, "repeated same-target native menu acquire/dispose retains no additional USER objects");
+                Check(acquiredAll && stableGdi, "repeated same-target native menu acquire/dispose retains no additional GDI objects");
             }
             view.ResultsList.SelectedItem = view.Navigation.Results.Single();
             int hostCalls = 0;

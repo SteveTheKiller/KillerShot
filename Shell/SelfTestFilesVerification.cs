@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Windows;
 using System.Windows.Automation;
@@ -19,14 +20,174 @@ internal static class SelfTestFilesVerification
 {
     internal static bool TryRun(string[] args)
     {
-        if (args.Length is < 2 or > 3 || args[0] != "--selftest-files-verification") return false;
-        _ = Run(Path.GetFullPath(args[1]), args.Length == 3 ? args[2] : "network");
+        if (args.Length == 0 || args[0] != "--selftest-files-verification") return false;
+        string rejected = Path.Combine(Path.GetTempPath(), "KillerShot-FilesVerification-Rejected-" + Environment.ProcessId + "-" + Guid.NewGuid().ToString("N"));
+        Settings.UseFolder(Path.Combine(rejected, "settings"));
+        VideoCaptures.UsePlaybackFolder(Path.Combine(rejected, "playback"));
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(rejected, "native"));
+        string scenario = args.Length == 3 ? args[2] : "network";
+        string folder = args.Length is >= 2 and <= 3 ? args[1] : "";
+        _ = scenario == "native-ui" ? RunNativeUi(folder) : Run(folder, scenario, rejected);
         return true;
     }
 
-    private static async Task Run(string folder, string scenario)
+    private static async Task RunNativeUi(string folder)
+    {
+        var report = new StringBuilder("Manual resident fixture setup. Native UI acceptance remains pending external testing.\n");
+        int checks = 0;
+        bool created = false, normalized = false;
+        string rejected = Path.Combine(Path.GetTempPath(), "KillerShot-NativeUi-Rejected-" + Guid.NewGuid().ToString("N"));
+        Settings.UseFolder(Path.Combine(rejected, "settings"));
+        VideoCaptures.UsePlaybackFolder(Path.Combine(rejected, "playback"));
+        Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        void Check(bool passed, string description)
+        {
+            checks++;
+            report.AppendLine((passed ? "SETUP PASS: " : "SETUP FAIL: ") + description);
+            if (!passed) throw new InvalidOperationException(description);
+        }
+        try
+        {
+            folder = Path.GetFullPath(folder);
+            normalized = true;
+            if (Directory.Exists(folder) || File.Exists(folder)) throw new IOException("Use a fresh native UI fixture folder. Existing files are preserved.");
+            string lab = Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AgentLab"));
+            bool owned = folder.StartsWith(lab + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            bool admitted = string.Equals(Environment.MachineName, "SN02", StringComparison.OrdinalIgnoreCase)
+                && Environment.GetEnvironmentVariable("KILLERSHOT_NATIVE_UI_VM") == "1" && owned;
+            if (admitted)
+            {
+                for (var parent = new DirectoryInfo(folder).Parent; parent != null; parent = parent.Parent)
+                    if (parent.Exists && (parent.Attributes & FileAttributes.ReparsePoint) != 0) admitted = false;
+            }
+            report.AppendLine("Windows before admission: " + Application.Current.Windows.Count);
+            Check(admitted, $"SN02 and process-local opt-in and owned AgentLab path required before any window (machine={Environment.MachineName}, owned={owned})");
+            Directory.CreateDirectory(folder);
+            created = true;
+            Settings.UseFolder(Path.Combine(folder, "settings"));
+            VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
+            SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+            CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+            CaptureLibrary.BackgroundWork = false;
+            string filesPath = Directory.CreateDirectory(Path.Combine(folder, "files")).FullName;
+            string targetPath = Directory.CreateDirectory(Path.Combine(folder, "drop-target")).FullName;
+            Directory.CreateDirectory(Path.Combine(filesPath, "Photos"));
+            File.WriteAllText(Path.Combine(filesPath, "Notes.txt"), "Owned native UI fixture.\n");
+            File.WriteAllText(Path.Combine(filesPath, "Copy me.txt"), "Owned clipboard and drag fixture.\n");
+            string imagePath = Path.Combine(filesPath, "Sample.png");
+            byte[] pixels = new byte[64 * 48 * 4];
+            for (int index = 0; index < pixels.Length; index += 4)
+            {
+                pixels[index] = 180;
+                pixels[index + 1] = 120;
+                pixels[index + 2] = 35;
+                pixels[index + 3] = 255;
+            }
+            var image = BitmapSource.Create(64, 48, 96, 96, PixelFormats.Bgra32, null, pixels, 64 * 4);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            using (var stream = new FileStream(imagePath, FileMode.CreateNew)) encoder.Save(stream);
+            FolderCaptures.UseFolder(Directory.CreateDirectory(Path.Combine(folder, "screenshots")).FullName);
+            FolderCaptures.Enabled = false;
+            CaptureSettings.OutputFolder = filesPath;
+            VideoSettings.OutputFolder = Directory.CreateDirectory(Path.Combine(folder, "recordings")).FullName;
+            FolderCaptures.RecordingsFolderOverride = VideoSettings.OutputFolder;
+            Settings.Set("Files.Places", filesPath + "|" + targetPath);
+            var workArea = SystemParameters.WorkArea;
+            double width = Math.Max(1, Math.Min(1280, workArea.Width - 80));
+            double height = Math.Max(1, Math.Min(820, workArea.Height - 80));
+            Settings.Set("WindowPlacement", FormattableString.Invariant($"{workArea.Left + 40},{workArea.Top + 40},{width},{height},0"));
+            Settings.Set("CheckForUpdatesOnStartup", "0");
+            App.CloseToTray = false;
+            App.InitializeKit();
+            LocaleManager.Apply(Locale.EnUS);
+            ThemeManager.Apply(Theme.Dark);
+            ThemeManager.ApplyAccent(Theme.Dark, Accent.Teal);
+            ImageDrag.Initialize(Path.Combine(folder, "drag-exports"));
+            Check(CaptureLibrary.OpenAuto(), "owned empty capture album opens");
+            App.Instance.ShowEditor();
+            var window = App.Instance.EditorWindow ?? throw new InvalidOperationException("Production editor was not created.");
+            window.WindowState = WindowState.Normal;
+            window.Left = workArea.Left + 40;
+            window.Top = workArea.Top + 40;
+            window.Width = Math.Max(window.MinWidth, width);
+            window.Height = Math.Max(window.MinHeight, height);
+            await Idle();
+            var library = (LibraryView)window.FindName("Library");
+            library.SetView("files");
+            await library.FilesNavigation;
+            Check(await library.Files.NavigateTo(filesPath), "actual integrated Files navigates owned files");
+            library.Files.SetView(2);
+            library.Files.SetDensity(1);
+            await Idle();
+            window.UpdateLayout();
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+            Check(ReferenceEquals(window, App.Instance.EditorWindow) && window.IsVisible && hwnd != IntPtr.Zero && library.FilesActive && library.Files.IsVisible
+                && library.Files.Navigation.CurrentFolder == filesPath && library.Files.ResultsList.Items.Count == 4,
+                "actual production editor and Files are ready for manual native testing");
+            var artifact = CurrentArtifact();
+            string assembly = artifact.Path;
+            using var assemblyStream = File.OpenRead(assembly);
+            string assemblyHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(assemblyStream));
+            var ready = new
+            {
+                pid = Environment.ProcessId, hwnd = hwnd.ToInt64(), assemblySHA256 = assemblyHash, assemblyPath = assembly, artifactKind = artifact.Kind,
+                fixturePath = folder, filesPath, targetPath, imagePath,
+                settingsPath = Path.Combine(folder, "settings"), libraryPath = Path.Combine(folder, "library"),
+                playbackPath = Path.Combine(folder, "playback"), windowVisible = window.IsVisible,
+                windowBounds = new { window.Left, window.Top, window.ActualWidth, window.ActualHeight },
+                workArea = new { workArea.Left, workArea.Top, workArea.Width, workArea.Height },
+                filesActive = library.FilesActive, filesVisible = library.Files.IsVisible,
+                currentFolder = library.Files.Navigation.CurrentFolder, itemCount = library.Files.ResultsList.Items.Count,
+                setupChecks = checks, nativeAcceptancePending = true
+            };
+            report.AppendLine("RESIDENT: setup only; closing the production editor exits normally. Native acceptance pending.");
+            File.WriteAllText(Path.Combine(folder, "files-verification-report.txt"), report.ToString());
+            using var readyStream = new FileStream(Path.Combine(folder, "ready.json"), FileMode.CreateNew);
+            System.Text.Json.JsonSerializer.Serialize(readyStream, ready, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (Exception error)
+        {
+            report.AppendLine(error.ToString());
+            report.AppendLine("Windows on failure: " + Application.Current.Windows.Count);
+            report.AppendLine($"Assertions: {checks}; Exit: 1");
+            if (normalized && (created || (!Directory.Exists(folder) && !File.Exists(folder))))
+            {
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder, "files-verification-report.txt"), report.ToString());
+            }
+            Application.Current.Shutdown(1);
+        }
+    }
+
+    private static (string Path, string Kind) CurrentArtifact()
+    {
+        var executing = typeof(SelfTestFilesVerification).Assembly;
+        string entryPath = Path.GetFullPath(Environment.GetCommandLineArgs()[0]);
+        string processPath = Environment.ProcessPath ?? throw new InvalidOperationException("Current executable path is unavailable.");
+        using var process = Process.GetCurrentProcess();
+        string modulePath = process.MainModule?.FileName ?? throw new InvalidOperationException("Current executable module is unavailable.");
+        if (!string.Equals(Path.GetFullPath(processPath), Path.GetFullPath(modulePath), StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetExtension(processPath), ".exe", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Candidate host is not the current executable module.");
+        if (string.Equals(entryPath, Path.GetFullPath(processPath), StringComparison.OrdinalIgnoreCase))
+            return (processPath, "single-file-executable");
+        if (string.Equals(Path.GetExtension(entryPath), ".dll", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPath))
+        {
+            using var stream = File.OpenRead(entryPath);
+            using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+            var metadata = pe.GetMetadataReader();
+            if (metadata.GetGuid(metadata.GetModuleDefinition().Mvid) != executing.ManifestModule.ModuleVersionId)
+                throw new InvalidOperationException("Candidate DLL does not match the executing module.");
+            return (entryPath, "managed-dll");
+        }
+        throw new InvalidOperationException("Executing artifact loading mode is not recognized.");
+    }
+
+    private static async Task Run(string folder, string scenario, string rejected)
     {
         int checks = 0, exit = 1;
+        bool created = false;
         var report = new StringBuilder();
         void Check(bool passed, string description)
         {
@@ -36,8 +197,10 @@ internal static class SelfTestFilesVerification
         }
         try
         {
-            if (Directory.Exists(folder)) throw new IOException("Use a fresh verification folder.");
+            folder = Path.GetFullPath(folder);
+            if (Directory.Exists(folder) || File.Exists(folder)) throw new IOException("Use a fresh verification folder.");
             Directory.CreateDirectory(folder);
+            created = true;
             Settings.UseFolder(Path.Combine(folder, "settings"));
             FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"));
             FolderCaptures.Enabled = false;
@@ -45,6 +208,20 @@ internal static class SelfTestFilesVerification
             Settings.Set("Files.Places", "");
             App.InitializeKit();
             App.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            if (scenario == "artifact")
+            {
+                checks++;
+                report.AppendLine($"Runtime loader: argv0={Environment.GetCommandLineArgs()[0]}, processPath={Environment.ProcessPath}");
+                var artifact = CurrentArtifact();
+                using var stream = File.OpenRead(artifact.Path);
+                string hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream));
+                report.AppendLine($"Artifact: kind={artifact.Kind}, path={artifact.Path}, SHA256={hash}");
+                if (!string.Equals(hash, Environment.GetEnvironmentVariable("KILLERSHOT_TEST_ARTIFACT_SHA256"), StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("Runtime artifact identity differs from independently supplied candidate SHA256.");
+                report.AppendLine("PASS: runtime artifact identity matches independently supplied candidate SHA256");
+                exit = 0;
+                return;
+            }
             if (scenario.StartsWith("render", StringComparison.Ordinal))
             {
                 await RenderSuite(folder, scenario, Check, report);
@@ -119,12 +296,22 @@ internal static class SelfTestFilesVerification
                 "late network probe completion after disposal cannot activate host or replace folder");
             exit = 0;
         }
-        catch (Exception error) { report.AppendLine(error.ToString()); }
+        catch (Exception error)
+        {
+            if (!created)
+            {
+                checks++;
+                report.AppendLine("Fixture admission failed; windows=" + Application.Current.Windows.Count);
+                report.AppendLine("Protected playback=" + VideoCaptures.PlaybackFolder);
+            }
+            report.AppendLine(error.ToString());
+        }
         finally
         {
             report.AppendLine($"Assertions: {checks}; Exit: {exit}");
-            Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, "files-verification-report.txt"), report.ToString());
+            string reportFolder = created ? folder : rejected;
+            Directory.CreateDirectory(reportFolder);
+            File.WriteAllText(Path.Combine(reportFolder, "files-verification-report.txt"), report.ToString());
             Application.Current.Shutdown(exit);
         }
     }
@@ -356,10 +543,10 @@ internal static class SelfTestFilesVerification
                     check(actual.SequenceEqual(expected), label + " all six column UIA names match readable labels");
                     foreach (var button in headings)
                     {
-                        var heading = Children<TextBlock>(button).First();
                         report.AppendLine(label + " column name=" + UIElementAutomationPeer.CreatePeerForElement(button)!.GetName());
-                        if (button.ActualWidth > 1)
+                        if (button.IsVisible && button.ActualWidth > 1)
                         {
+                            var heading = Children<TextBlock>(button).First();
                             int headingInk = Ink(Render(heading));
                             string headingText = heading.Text;
                             heading.SetCurrentValue(TextBlock.TextProperty, "");
