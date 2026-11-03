@@ -33,7 +33,7 @@ namespace KillerShot.Files
 
             try
             {
-                int rotate, srcW, srcH;
+                int orientation, srcW, srcH;
 
                 // Header-only pass. DelayCreation means the pixels are never decoded here; all that
                 // is wanted is the stored size and the orientation tag. Both are needed BEFORE the
@@ -45,7 +45,7 @@ namespace KillerShot.Files
                                                    BitmapCacheOption.None);
                     srcW = frame.PixelWidth;
                     srcH = frame.PixelHeight;
-                    rotate = RotationFor(frame);
+                    orientation = OrientationFor(frame);
                 }
 
                 if (srcW <= 0 || srcH <= 0) return null;
@@ -53,7 +53,7 @@ namespace KillerShot.Files
                 // The longest side is decided on what the viewer will SEE, then mapped back to the
                 // axis the decoder understands, which is still the stored one. Capping the wrong
                 // one leaves a portrait photo several times taller than the cell it has to sit in.
-                bool swapped = rotate == 90 || rotate == 270;
+                bool swapped = orientation is >= 5 and <= 8;
                 int shownW = swapped ? srcH : srcW;
                 int shownH = swapped ? srcW : srcH;
 
@@ -81,39 +81,50 @@ namespace KillerShot.Files
 
                 bmp.Freeze();
 
-                if (rotate == 0) return bmp;
+                Transform? transform = TransformFor(orientation);
+                if (transform == null) return bmp;
 
-                var turned = new TransformedBitmap(bmp, new RotateTransform(rotate));
+                var turned = new TransformedBitmap(bmp, transform);
                 turned.Freeze();
                 return turned;
             }
             catch { return null; }   // corrupt, gone, or a format with no codec installed
         }
 
-        /// <summary>
-        /// The clockwise rotation an image's EXIF orientation tag asks for, in degrees, or 0 when
-        /// there is no tag to read. The four MIRRORED orientations answer 0: they come from flatbed
-        /// scanners and almost nothing else, and an unflipped photo is far less wrong on screen
-        /// than a sideways one.
-        /// </summary>
-        internal static int RotationFor(BitmapFrame frame)
+        private static int OrientationFor(BitmapFrame frame)
         {
-            // A PNG has no app1 block at all and answers the query by throwing rather than by
-            // saying no, which is why this is a catch and not a format test.
-            try
+            if (frame.Metadata is BitmapMetadata metadata)
+                foreach (string query in new[] { "/app1/ifd/{ushort=274}", "/ifd/{ushort=274}" })
+                    try
+                    {
+                        if (metadata.ContainsQuery(query) && metadata.GetQuery(query) is { } value)
+                            return Convert.ToInt32(value);
+                    }
+                    catch { }
+            return 1;
+        }
+
+        private static Transform? TransformFor(int orientation)
+        {
+            static Transform Turn(double angle, double sx = 1, double sy = 1)
             {
-                const string Query = "/app1/ifd/{ushort=274}";
-
-                if (frame.Metadata is not BitmapMetadata md) return 0;
-                if (!md.ContainsQuery(Query)) return 0;
-
-                object? raw = md.GetQuery(Query);
-                if (raw == null) return 0;
-
-                ushort tag = raw is ushort u ? u : Convert.ToUInt16(raw);
-                return tag switch { 3 => 180, 6 => 90, 8 => 270, _ => 0 };
+                var group = new TransformGroup();
+                group.Children.Add(new RotateTransform(angle));
+                if (sx != 1 || sy != 1) group.Children.Add(new ScaleTransform(sx, sy));
+                group.Freeze();
+                return group;
             }
-            catch { return 0; }
+            return orientation switch
+            {
+                2 => Turn(0, -1),
+                3 => Turn(180),
+                4 => Turn(0, 1, -1),
+                5 => Turn(90, -1),
+                6 => Turn(90),
+                7 => Turn(90, 1, -1),
+                8 => Turn(270),
+                _ => null
+            };
         }
     }
 }

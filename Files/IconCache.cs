@@ -28,6 +28,11 @@ namespace KillerShot.Files
     public static class IconCache
     {
         private static readonly Dictionary<string, ImageSource?> Cache = new(StringComparer.OrdinalIgnoreCase);
+        // Match the picker's 256-entry thumbnail budget. Shell and brand icons remain shared.
+        private const int ThumbnailLimit = 256;
+        private sealed record Thumbnail(string Key, string Path, long Timestamp, ImageSource? Image);
+        private static readonly Dictionary<string, LinkedListNode<Thumbnail>> Thumbnails = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly LinkedList<Thumbnail> ThumbnailLru = new();
 
         // Formats WIC can decode directly, so these get a real thumbnail of the image itself
         // rather than the generic per-extension icon every other file type shares.
@@ -294,24 +299,43 @@ namespace KillerShot.Files
         private static ImageSource? ImageThumbnail(string filePath, int px, int shil)
         {
             string key;
+            long timestamp;
             try
             {
+                filePath = Path.GetFullPath(filePath);
                 if (!File.Exists(filePath)) return null;
-                key = filePath + "|" + shil + "|thumb|" + File.GetLastWriteTimeUtc(filePath).Ticks;
+                timestamp = File.GetLastWriteTimeUtc(filePath).Ticks;
+                key = filePath + "|" + shil + "|" + px + "|thumb|" + timestamp;
             }
             catch { return null; }
 
-            lock (Cache)
-                if (Cache.TryGetValue(key, out var hit)) return hit;
-
-            // Downsampled during the decode and turned the right way up: a portrait phone photo is
-            // stored as a landscape frame plus an EXIF tag, and nothing in WPF reads that tag, so
-            // every one of them used to tile on its side. Null on a corrupt file, an unsupported
-            // variant of the format, or a file that went away (Services\ImageOrientation.cs).
-            ImageSource? img = ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
-
-            lock (Cache) Cache[key] = img;
-            return img;
+            lock (Thumbnails)
+            {
+                if (Thumbnails.TryGetValue(key, out var hit))
+                {
+                    ThumbnailLru.Remove(hit);
+                    ThumbnailLru.AddLast(hit);
+                    return hit.Value.Image;
+                }
+                for (var node = ThumbnailLru.First; node != null;)
+                {
+                    var next = node.Next;
+                    if (node.Value.Timestamp != timestamp && string.Equals(node.Value.Path, filePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Thumbnails.Remove(node.Value.Key);
+                        ThumbnailLru.Remove(node);
+                    }
+                    node = next;
+                }
+                ImageSource? image = ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
+                Thumbnails[key] = ThumbnailLru.AddLast(new Thumbnail(key, filePath, timestamp, image));
+                while (Thumbnails.Count > ThumbnailLimit && ThumbnailLru.First is { } oldest)
+                {
+                    Thumbnails.Remove(oldest.Value.Key);
+                    ThumbnailLru.RemoveFirst();
+                }
+                return image;
+            }
         }
 
         private static int ShilFor(int px)

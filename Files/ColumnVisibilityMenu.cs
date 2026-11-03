@@ -7,9 +7,11 @@ namespace KillerShot.Files;
 
 public partial class FilesView
 {
-    private void DetailsHeader_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    private void DetailsHeader_ContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
-        var menu = new ContextMenu { PlacementTarget = DetailsHeader, Placement = PlacementMode.Bottom };
+        var menu = DetailsHeader.ContextMenu;
+        menu.PlacementTarget = e.OriginalSource as FrameworkElement ?? DetailsHeader;
+        menu.Items.Clear();
         foreach (var (key, get, set) in new (string, Func<bool>, Action<bool>)[]
         {
             ("Str_Col_Size", () => ViewState.SizeVisible, value => ViewState.SizeVisible = value),
@@ -20,11 +22,10 @@ public partial class FilesView
         {
             var item = new MenuItem { IsCheckable = true, IsChecked = get() };
             item.SetResourceReference(HeaderedItemsControl.HeaderProperty, key);
-            item.Click += (_, _) => set(item.IsChecked);
+            item.Checked += (_, _) => set(true);
+            item.Unchecked += (_, _) => set(false);
             menu.Items.Add(item);
         }
-        menu.IsOpen = true;
-        e.Handled = true;
     }
     private int _resizeColumn;
     private double _resizeStartX, _resizeStartWidth;

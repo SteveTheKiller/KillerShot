@@ -99,6 +99,7 @@ public partial class App : Application
         if (SelfTestFilesInteraction.TryRun(e.Args)) return;
         if (SelfTestFilesIntegration.TryRun(e.Args)) return;
         if (SelfTestFilesVerification.TryRun(e.Args)) return;
+        if (SelfTestFilesSafety.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;

@@ -221,6 +221,16 @@ namespace KillerShot.Files
             // copying. Worth catching before the per-file loop, because moving a 40 GB folder
             // across the same disk should be instant rather than a progress bar.
             sources = new List<string>(sources);
+            string destination = Path.GetFullPath(targetDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            foreach (string source in sources)
+            {
+                if (!Directory.Exists(source)) continue;
+                string full = Path.GetFullPath(source).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                if (destination.Equals(full, StringComparison.OrdinalIgnoreCase)
+                    || destination.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    result.Failed.Add((source, Services.LocaleManager.Loc("Str_Status_DropIntoSelf")));
+            }
+            if (result.Failed.Count > 0) return result;
             if (move && allowFastMove && TryFastMoveDirectories(sources, targetDir, onConflict, onProgress, result, ct, replace, moveDirectory, renameFile))
                 return result;
 
