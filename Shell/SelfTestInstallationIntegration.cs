@@ -19,6 +19,7 @@ internal static class SelfTestInstallationIntegration
         {
             if (Directory.Exists(folder)) throw new InvalidOperationException("Use a new integration test folder.");
             Directory.CreateDirectory(folder);
+            KillerShot.Services.VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
             created = true;
             FailureMatrix(folder, report);
             UnrelatedChangesSurvive(folder, report);

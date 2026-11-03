@@ -78,7 +78,7 @@ public partial class App : Application
         // The command line runs in its own process without the tray, the shortcuts or the
         // single-instance claim, so scripts and KillerMCP can use it beside a running KillerShot.
         string[]? cli = PendingCli ?? KillerFamily.CommandLine.CommandLineEntry.GetArguments(e.Args,
-            ["capture", "qr", "record", "recent", "open", "monitors", "windows", "settings", "version", "--version"]);
+            Cli.Program.Commands);
         if (cli != null)
         {
             Cli.Program.Start(cli, attachConsole: PendingCli == null, Shutdown);
@@ -86,6 +86,14 @@ public partial class App : Application
         }
 
         if (SelfTestThemeDump.TryRun(e.Args)) return;
+        if (SelfTestNovemberInstall.TryRun(e.Args)) return;
+        if (SelfTestNovemberCapture.TryRun(e.Args)) return;
+        if (SelfTestNovemberStorage.TryRun(e.Args)) return;
+        if (SelfTestNovemberUi.TryRun(e.Args)) return;
+        if (SelfTestNovemberLibrary.TryRun(e.Args)) return;
+        if (SelfTestNovemberEditor.TryRun(e.Args)) return;
+        if (SelfTestNovemberVisuals.TryRun(e.Args)) return;
+        if (SelfTestVideoOutput.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;

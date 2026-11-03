@@ -2,9 +2,22 @@
 
 ## [1.1.2] - Unreleased
 
-Updates are harder to tamper with, no longer report a false failure and recover from more failures, and the file picker copes with failed folder listings.
+KillerShot 1.1.2 makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
+
+### Security
+- Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
+- Recording exports stay tied to their album, and failed cleanup identifies the original unencrypted file that remains.
 
 ### Fixed
+- Stored recordings import, export, play and prepare for dragging in the background, album mutations pause during recording work, and playback copies are reused.
+- Library searches, collection strips, color lookups and thumbnail arrivals do less work on the UI thread, and shelf scrolling works normally.
+- Album switching, unlocking, capture references and edited previews preserve capture identity and release unused files. Image decoding and failed recognition jobs no longer stall other library work.
+- Settings keep unsaved changes across later saves and preserve a backup of damaged settings.
+- Linked folders refresh from file changes, recover from missed events, and back off checks on unavailable network paths.
+- Install, update and uninstall share the same lock. Failed conflict removal keeps its registration, helper updates and cleanup follow the install scope, and publication leftovers are removed.
+- Capture commands reach the command line, QR scanning has a work limit, unavailable scrolling-capture keys show a warning, and recordings stop cleanly if monitor resolution changes.
+- Error warnings use the right color, scrollbar controls have localized names, and promoted touch presses no longer crash dialogs. Recent loads when opened, hidden windows stop polling, and resize presets commit pending text.
+- The file picker loads icons and picture previews in the background, refreshes overwritten previews, and restores its position on any monitor.
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
 - An all-users update reopens KillerShot for the signed-in user at normal rights, whether it finishes or stops early. Windows was refusing that relaunch, so the app stayed closed. Files left behind by earlier failed updates are cleared when the next update is staged.
 - A finished all-users uninstall clears the files earlier failed attempts kept, so they no longer hold the install folder open after the restart.
@@ -24,6 +37,7 @@ Updates are harder to tamper with, no longer report a false failure and recover 
 
 ### Added
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
+- Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 
 ## [1.1.1] - 2026-10-28
 

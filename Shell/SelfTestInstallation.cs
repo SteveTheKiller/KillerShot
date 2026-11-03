@@ -18,6 +18,7 @@ internal static class SelfTestInstallation
         {
             if (Directory.Exists(folder)) throw new InvalidOperationException("Use a new installation test folder.");
             Directory.CreateDirectory(folder);
+            KillerShot.Services.VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
             ReplacementSurvivesUninstall(Path.Combine(folder, "replacement"), report, false);
             ReplacementSurvivesUninstall(Path.Combine(folder, "same-image"), report, true);
             PublicationBlocksUninstall(Path.Combine(folder, "publication-lock"), report);
