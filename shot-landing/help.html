@@ -325,7 +325,7 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 // The Print Screen keys are the default global shortcuts, which Capture settings can change.
 var KBL = {
 base: { Esc:['help','Close a card, go back from the library, or cancel'], F1:['help','Keyboard shortcuts'], F12:['help','About KillerShot'],
-  F5:['view','Shelves'], F6:['view','Carousel'], F7:['view','Grid'], F8:['view','Timeline'],
+  F5:['view','Shelves'], F6:['view','Carousel'], F7:['view','Grid'], F8:['view','Timeline'], F9:['view','Files'],
   V:['nav','Select and move'], P:['nav','Pen'], H:['nav','Highlighter'], A:['nav','Arrow'], R:['nav','Rectangle'],
   E:['nav','Ellipse'], T:['nav','Text'], X:['nav','Redact'], C:['nav','Crop'],
   Del:['appt','Delete the selected mark'], Back:['appt','Delete the selected mark'], Enter:['appt','Finish the text you are typing'],
@@ -404,6 +404,11 @@ function sync(e){
 window.addEventListener('keydown', sync);
 window.addEventListener('keyup', sync);
 window.addEventListener('blur', function(){ layer = 'base'; paint(); });
+document.addEventListener('kshot-languagechange', function(){
+  var label = document.querySelector('[data-i18n="hk_files"]');
+  if (label) KBL.base.F9[1] = label.textContent;
+  paint();
+});
 paint();
 // Scale the board down to the column width instead of scrolling, like the app's Viewbox.
 function fit(){
