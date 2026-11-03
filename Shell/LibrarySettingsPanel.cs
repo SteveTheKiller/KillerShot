@@ -307,7 +307,7 @@ namespace KillerShot.Shell
             bool open = CaptureLibrary.IsOpen, pw = CaptureLibrary.HasPassword;
             LibraryKeepCombo.IsEnabled = open;
             if (!open) LibraryKeepSaveBtn.IsEnabled = false;
-            LibraryStatusText.SetResourceReference(TextBlock.ForegroundProperty, error != null ? "DangerBrush" : "DimTextBrush");
+            LibraryStatusText.SetResourceReference(TextBlock.ForegroundProperty, error != null ? "DangerRed" : "DimTextBrush");
             LibraryStatusText.Text = error
                 ?? (!open && CaptureLibrary.NeedsPassword ? Loc("Str_CS_LibraryLocked")
                 : !open ? Loc("Str_Lib_NotOpen")

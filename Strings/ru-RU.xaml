@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Продолжить</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Записи</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Сохранено в зашифрованной библиотеке.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Сохранено в зашифрованной библиотеке, но исходный незашифрованный файл не удалось удалить: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Файл слишком велик для библиотеки, поэтому он остался в папке {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Не удалось поместить его в библиотеку, поэтому он остался в папке {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Библиотека заблокирована.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Восстановить оригинал...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Оригинал может содержать данные, скрытые правками или закрашиванием. Он откроется как отдельная копия. Сохранённые правки останутся в альбоме. Продолжить?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Захват экрана перестал предоставлять кадры.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Разрешение монитора изменилось. Начните новую запись.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter или Esc используется другим приложением. Нажмите Готово или Отмена либо переведите фокус на эту панель для использования клавиш.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Прокрутить вверх</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Прокрутить вниз</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Прокрутить влево</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Прокрутить вправо</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">На страницу вверх</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">На страницу вниз</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">На страницу влево</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">На страницу вправо</sys:String>
 </ResourceDictionary>

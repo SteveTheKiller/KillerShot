@@ -404,6 +404,7 @@
     <sys:String x:Key="Str_Rec_Continue">Tovább</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Felvételek</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Elmentve a titkosított könyvtárba.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Mentve a titkosított könyvtárba, de az eredeti, titkosítatlan fájlt nem sikerült eltávolítani: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Túl nagy a könyvtárhoz, ezért itt maradt: {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nem került be a könyvtárba, ezért itt maradt: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">A könyvtár zárolva van.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Eredeti helyreállítása...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Az eredeti a módosításokkal vagy kitakarással elrejtett tartalmat is tartalmazhat. Külön másolatként nyílik meg. A mentett módosítások megmaradnak az albumban. Folytatja?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">A képernyőrögzítés már nem biztosít képkockákat.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Megváltozott a monitor felbontása. Indítson új felvételt.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Az Enter vagy Esc billentyűt más alkalmazás használja. Kattintson a Kész vagy Mégse gombra, vagy helyezze a fókuszt erre a sávra a billentyűk használatához.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Görgetés felfelé</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Görgetés lefelé</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Görgetés balra</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Görgetés jobbra</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Egy oldallal feljebb</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Egy oldallal lejjebb</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Egy oldallal balra</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Egy oldallal jobbra</sys:String>
 </ResourceDictionary>

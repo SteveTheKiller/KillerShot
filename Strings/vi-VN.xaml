@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Tiếp tục</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Bản quay</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Đã lưu vào thư viện được mã hóa.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Đã lưu vào thư viện được mã hóa, nhưng không thể xóa tệp gốc chưa được mã hóa: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Nó quá lớn so với thư viện, nên vẫn nằm trong {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Không đưa vào thư viện được, nên nó vẫn nằm trong {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Thư viện đang bị khóa.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Khôi phục bản gốc...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Bản gốc có thể chứa nội dung đã bị ẩn do chỉnh sửa hoặc che đen. Ảnh sẽ mở dưới dạng bản sao riêng. Các chỉnh sửa đã lưu vẫn sẽ được giữ trong album. Tiếp tục?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Quá trình ghi màn hình đã ngừng cung cấp khung hình.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Độ phân giải màn hình đã thay đổi. Hãy bắt đầu bản ghi mới.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Ứng dụng khác đang dùng Enter hoặc Esc. Nhấp Xong hoặc Hủy, hoặc đặt tiêu điểm vào thanh này để dùng các phím.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Cuộn lên</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Cuộn xuống</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Cuộn sang trái</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Cuộn sang phải</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Lên một trang</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Xuống một trang</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Sang trái một trang</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Sang phải một trang</sys:String>
 </ResourceDictionary>

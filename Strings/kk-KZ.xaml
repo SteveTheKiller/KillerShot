@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Жалғастыру</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Жазбалар</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Шифрланған кітапханаға сақталды.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Шифрланған кітапханаға сақталды, бірақ шифрланбаған бастапқы файлды жою мүмкін болмады: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Кітапхана үшін тым үлкен, сондықтан {0} ішінде қалды.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Кітапханаға түспеді, сондықтан {0} ішінде қалды. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Кітапхана құлыпталған.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Түпнұсқаны қалпына келтіру...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Түпнұсқада түзетулермен немесе бояп жасыру арқылы жасырылған мазмұн болуы мүмкін. Ол бөлек көшірме ретінде ашылады. Сақталған түзетулер альбомда қалады. Жалғастыру керек пе?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Экранды түсіру кадрларды беруді тоқтатты.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Монитор ажыратымдылығы өзгерді. Жаңа жазбаны бастаңыз.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter немесе Esc пернесін басқа қолданба пайдаланып жатыр. Дайын не Болдырмау түймесін басыңыз немесе пернелерді пайдалану үшін осы жолаққа фокус беріңіз.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Жоғары айналдыру</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Төмен айналдыру</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Солға айналдыру</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Оңға айналдыру</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Бір бет жоғары</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Бір бет төмен</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Бір бет солға</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Бір бет оңға</sys:String>
 </ResourceDictionary>

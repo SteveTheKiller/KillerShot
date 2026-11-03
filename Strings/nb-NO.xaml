@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Fortsett</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Opptak</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Lagret i det krypterte biblioteket.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Lagret i det krypterte biblioteket, men den opprinnelige ukrypterte filen kunne ikke fjernes: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Det er for stort for biblioteket, så det ble liggende i {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Det kunne ikke legges i biblioteket, så det ble liggende i {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteket er låst.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Gjenopprett original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Originalen kan inneholde innhold som er skjult av endringer eller sladding. Den åpnes som en egen kopi. De lagrede endringene blir værende i albumet. Fortsette?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Skjermopptaket sluttet å levere bilder.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Skjermoppløsningen ble endret. Start et nytt opptak.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">En annen app bruker Enter eller Esc. Klikk Ferdig eller Avbryt, eller fokuser denne linjen for å bruke tastene.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Rull opp</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Rull ned</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Rull til venstre</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Rull til høyre</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Side opp</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Side ned</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Side til venstre</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Side til høyre</sys:String>
 </ResourceDictionary>

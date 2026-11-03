@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Continuar</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Gravações</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Salva na biblioteca criptografada.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Salvo na biblioteca criptografada, mas não foi possível remover o arquivo original não criptografado: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Ela é grande demais para a biblioteca, então ficou em {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Não foi possível colocá-la na biblioteca, então ficou em {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">A biblioteca está bloqueada.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Recuperar original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">O original pode conter conteúdo oculto por edições ou tarjas. Ele será aberto como uma cópia separada. As edições salvas permanecerão no álbum. Continuar?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">A captura da tela parou de fornecer quadros.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">A resolução do monitor mudou. Inicie uma nova gravação.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Outro aplicativo usa Enter ou Esc. Clique em Concluído ou Cancelar, ou coloque o foco nesta barra para usar as teclas.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Rolar para cima</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Rolar para baixo</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Rolar para a esquerda</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Rolar para a direita</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Uma página acima</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Uma página abaixo</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Uma página à esquerda</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Uma página à direita</sys:String>
 </ResourceDictionary>

@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Продовжити</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Записи</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Збережено в зашифрованій бібліотеці.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Збережено в зашифрованій бібліотеці, але вихідний незашифрований файл не вдалося видалити: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Він завеликий для бібліотеки, тому залишився в папці {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Його не вдалося помістити в бібліотеку, тому він залишився в папці {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Бібліотеку заблоковано.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Відновити оригінал...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Оригінал може містити дані, приховані правками або зафарбовуванням. Він відкриється як окрема копія. Збережені правки залишаться в альбомі. Продовжити?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Захоплення екрана перестало надавати кадри.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Роздільність монітора змінилася. Почніть новий запис.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter або Esc використовує інша програма. Натисніть Готово чи Скасувати або переведіть фокус на цю панель, щоб використовувати клавіші.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Прокрутити вгору</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Прокрутити вниз</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Прокрутити ліворуч</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Прокрутити праворуч</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">На сторінку вгору</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">На сторінку вниз</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">На сторінку ліворуч</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">На сторінку праворуч</sys:String>
 </ResourceDictionary>

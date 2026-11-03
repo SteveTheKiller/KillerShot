@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Dalej</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Nagrania</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Zapisano w zaszyfrowanej bibliotece.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Zapisano w zaszyfrowanej bibliotece, ale nie można usunąć oryginalnego niezaszyfrowanego pliku: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Jest za duże dla biblioteki, więc zostało w folderze {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nie udało się dodać go do biblioteki, więc zostało w folderze {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteka jest zablokowana.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Odzyskaj oryginał...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Oryginał może zawierać treści ukryte przez zmiany lub maskowanie. Zostanie otwarty jako osobna kopia. Zapisane zmiany pozostaną w albumie. Kontynuować?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Przechwytywanie ekranu przestało dostarczać klatki.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Rozdzielczość monitora uległa zmianie. Rozpocznij nowe nagranie.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Inna aplikacja używa Enter lub Esc. Kliknij Gotowe lub Anuluj albo ustaw fokus na tym pasku, aby użyć jego klawiszy.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Przewiń w górę</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Przewiń w dół</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Przewiń w lewo</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Przewiń w prawo</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Strona w górę</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Strona w dół</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Strona w lewo</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Strona w prawo</sys:String>
 </ResourceDictionary>

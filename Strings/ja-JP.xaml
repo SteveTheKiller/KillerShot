@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">続ける</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">録画</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">暗号化されたライブラリに保存しました。</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">暗号化されたライブラリに保存しましたが、暗号化されていない元のファイルを削除できませんでした: {0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">ライブラリには大きすぎるため、{0} に残りました。</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">ライブラリに入れられなかったため、{0} に残りました。{1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">ライブラリはロックされています。</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">元の画像を復元...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">元の画像には、編集や黒塗りで隠された内容が含まれている可能性があります。別のコピーとして開きます。保存された編集内容はアルバムに残ります。続行しますか？</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">画面キャプチャからフレームを取得できなくなりました。</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">モニターの解像度が変更されました。新しい録画を開始してください。</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">別のアプリが Enter または Esc を使用しています。完了またはキャンセルをクリックするか、このバーにフォーカスしてキーを使用してください。</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">上へスクロール</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">下へスクロール</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">左へスクロール</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">右へスクロール</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">1 ページ上へ</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">1 ページ下へ</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">1 ページ左へ</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">1 ページ右へ</sys:String>
 </ResourceDictionary>

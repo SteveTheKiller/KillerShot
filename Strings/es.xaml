@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Continuar</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Grabaciones</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Guardada en la biblioteca cifrada.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Se guardó en la biblioteca cifrada, pero no se pudo eliminar el archivo original sin cifrar: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Es demasiado grande para la biblioteca, así que se quedó en {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">No pudo entrar en la biblioteca, así que se quedó en {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">La biblioteca está bloqueada.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Recuperar original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">El original puede contener contenido oculto por ediciones o tachados. Se abrirá como una copia independiente. Las ediciones guardadas permanecerán en el álbum. ¿Continuar?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">La captura de pantalla dejó de proporcionar fotogramas.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">La resolución del monitor cambió. Inicia una nueva grabación.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Otra aplicación usa Enter o Esc. Haz clic en Listo o Cancelar, o enfoca esta barra para usar sus teclas.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Desplazar hacia arriba</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Desplazar hacia abajo</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Desplazar hacia la izquierda</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Desplazar hacia la derecha</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Una página hacia arriba</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Una página hacia abajo</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Una página hacia la izquierda</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Una página hacia la derecha</sys:String>
 </ResourceDictionary>

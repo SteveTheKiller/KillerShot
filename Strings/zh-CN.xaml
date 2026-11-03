@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">继续</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">录像</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">已保存到加密的截图库。</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">已保存到加密库，但无法删除未加密的原始文件：{0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">它太大，截图库放不下，所以留在了 {0}。</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">它无法放入截图库，所以留在了 {0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">截图库已锁定。</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">恢复原图...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">原图可能包含通过编辑或涂黑隐藏的内容。它将作为单独的副本打开。已保存的编辑内容仍会保留在相册中。是否继续？</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">屏幕捕获已停止提供画面帧。</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">显示器分辨率已更改。请开始新的录制。</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">其他应用正在使用 Enter 或 Esc。请单击完成或取消，或将焦点移至此工具栏以使用这些按键。</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">向上滚动</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">向下滚动</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">向左滚动</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">向右滚动</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">向上翻页</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">向下翻页</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">向左翻页</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">向右翻页</sys:String>
 </ResourceDictionary>

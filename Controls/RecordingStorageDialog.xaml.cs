@@ -67,6 +67,6 @@ namespace KillerShot.Controls
             base.OnKeyDown(e);
         }
 
-        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DialogChrome.Drag(this, e);
     }
 }

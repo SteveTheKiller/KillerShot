@@ -310,7 +310,7 @@ namespace KillerShot.Shell
             if (failed)
             {
                 content.Text = shown + "  " + Loc("Str_CS_InUse");
-                content.SetResourceReference(TextBlock.ForegroundProperty, "DangerBrush");
+                content.SetResourceReference(TextBlock.ForegroundProperty, "DangerRed");
             }
             b.Content = content;
             b.ToolTip = Loc("Str_CS_RecordTip");

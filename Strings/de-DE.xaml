@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Weiter</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Aufnahmen</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">In der verschlüsselten Bibliothek gespeichert.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">In der verschlüsselten Bibliothek gespeichert, aber die unverschlüsselte Originaldatei konnte nicht entfernt werden: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Die Aufnahme ist zu groß für die Bibliothek und blieb deshalb in {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Sie konnte nicht in die Bibliothek verschoben werden und blieb deshalb in {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Die Bibliothek ist gesperrt.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Original wiederherstellen...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Das Original kann Inhalte enthalten, die durch Änderungen oder Schwärzungen verborgen sind. Es wird als separate Kopie geöffnet. Die gespeicherten Änderungen bleiben im Album. Fortfahren?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Die Bildschirmaufnahme liefert keine Bilder mehr.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Die Monitorauflösung hat sich geändert. Starten Sie eine neue Aufnahme.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter oder Esc wird von einer anderen App verwendet. Klicken Sie auf Fertig oder Abbrechen, oder fokussieren Sie diese Leiste, um ihre Tasten zu verwenden.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Nach oben scrollen</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Nach unten scrollen</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Nach links scrollen</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Nach rechts scrollen</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Seite nach oben</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Seite nach unten</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Seite nach links</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Seite nach rechts</sys:String>
 </ResourceDictionary>

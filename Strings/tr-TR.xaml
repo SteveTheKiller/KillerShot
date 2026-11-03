@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Devam</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Kayıtlar</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Şifrelenmiş kitaplığa kaydedildi.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Şifreli kitaplığa kaydedildi, ancak şifrelenmemiş özgün dosya kaldırılamadı: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Kitaplık için çok büyük, bu yüzden {0} içinde kaldı.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Kitaplığa konamadı, bu yüzden {0} içinde kaldı. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Kitaplık kilitli.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Asıl görüntüyü kurtar...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Asıl görüntü, düzenlemeler veya karartma ile gizlenmiş içerik barındırabilir. Ayrı bir kopya olarak açılacaktır. Kaydedilen düzenlemeler albümde kalacaktır. Devam edilsin mi?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Ekran yakalama işlemi kare sağlamayı durdurdu.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Monitör çözünürlüğü değişti. Yeni bir kayıt başlatın.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Başka bir uygulama Enter veya Esc kullanıyor. Bitti ya da İptal'e tıklayın veya tuşları kullanmak için bu çubuğa odaklanın.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Yukarı kaydır</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Aşağı kaydır</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Sola kaydır</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Sağa kaydır</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Bir sayfa yukarı</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Bir sayfa aşağı</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Bir sayfa sola</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Bir sayfa sağa</sys:String>
 </ResourceDictionary>

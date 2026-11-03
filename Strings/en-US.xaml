@@ -409,6 +409,7 @@
     <sys:String x:Key="Str_Rec_Continue">Continue</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Recordings</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Saved to the encrypted library.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Saved to the encrypted library, but the original unencrypted file could not be removed: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">It's too large for the library, so it stayed in {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">It couldn't go into the library, so it stayed in {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">The library is locked.</sys:String>
@@ -642,4 +643,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Recover original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">The original may contain content hidden by edits or redaction. It will open as a separate copy. Saved edits will stay in the album. Continue?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">The screen capture stopped providing frames.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">The monitor resolution changed. Start a new recording.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter or Esc is in use by another app. Click Done or Cancel, or focus this bar to use its keys.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Scroll up</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Scroll down</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Scroll left</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Scroll right</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Page up</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Page down</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Page left</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Page right</sys:String>
 </ResourceDictionary>

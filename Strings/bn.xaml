@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">চালিয়ে যান</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">রেকর্ডিং</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">এনক্রিপ্টেড লাইব্রেরিতে সেভ হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">এনক্রিপ্ট করা লাইব্রেরিতে সংরক্ষিত হয়েছে, কিন্তু মূল এনক্রিপ্ট না করা ফাইলটি মুছে ফেলা যায়নি: {0}। {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">লাইব্রেরির জন্য এটি খুব বড়, তাই এটি {0}-এ রয়ে গেছে।</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">এটি লাইব্রেরিতে যেতে পারেনি, তাই {0}-এ রয়ে গেছে। {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">লাইব্রেরি লক করা আছে।</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">মূল ছবি পুনরুদ্ধার করুন...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">মূল ছবিতে সম্পাদনা বা কালো করে ঢাকার মাধ্যমে লুকানো বিষয়বস্তু থাকতে পারে। এটি আলাদা একটি কপি হিসেবে খুলবে। সংরক্ষিত সম্পাদনাগুলো অ্যালবামে থাকবে। চালিয়ে যাবেন?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">স্ক্রিন ক্যাপচার থেকে আর ফ্রেম পাওয়া যাচ্ছে না।</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">মনিটরের রেজোলিউশন পরিবর্তিত হয়েছে। নতুন রেকর্ডিং শুরু করুন।</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">অন্য অ্যাপ Enter বা Esc ব্যবহার করছে। সম্পন্ন বা বাতিল ক্লিক করুন, অথবা কী ব্যবহার করতে এই বারে ফোকাস করুন।</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">উপরে স্ক্রল করুন</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">নিচে স্ক্রল করুন</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">বাঁয়ে স্ক্রল করুন</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">ডানে স্ক্রল করুন</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">এক পৃষ্ঠা উপরে</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">এক পৃষ্ঠা নিচে</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">এক পৃষ্ঠা বাঁয়ে</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">এক পৃষ্ঠা ডানে</sys:String>
 </ResourceDictionary>

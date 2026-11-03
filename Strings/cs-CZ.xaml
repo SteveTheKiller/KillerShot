@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Pokračovat</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Nahrávky</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Uloženo do šifrované knihovny.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Uloženo do šifrované knihovny, ale původní nešifrovaný soubor se nepodařilo odstranit: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Je příliš velké pro knihovnu, proto zůstalo ve složce {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nepodařilo se ho vložit do knihovny, proto zůstalo ve složce {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Knihovna je zamčená.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Obnovit originál...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">Originál může obsahovat obsah skrytý úpravami nebo začerněním. Otevře se jako samostatná kopie. Uložené úpravy zůstanou v albu. Pokračovat?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">Snímání obrazovky přestalo poskytovat snímky.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">Rozlišení monitoru se změnilo. Spusťte nové nahrávání.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Enter nebo Esc používá jiná aplikace. Klikněte na Hotovo nebo Zrušit, nebo zaměřte tento panel a použijte jeho klávesy.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Posunout nahoru</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Posunout dolů</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Posunout doleva</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Posunout doprava</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">O stránku nahoru</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">O stránku dolů</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">O stránku doleva</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">O stránku doprava</sys:String>
 </ResourceDictionary>

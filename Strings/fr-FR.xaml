@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Continuer</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Enregistrements</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Enregistré dans la bibliothèque chiffrée.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Enregistré dans la bibliothèque chiffrée, mais le fichier original non chiffré n’a pas pu être supprimé : {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Il est trop volumineux pour la bibliothèque, il est donc resté dans {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Il n'a pas pu aller dans la bibliothèque, il est donc resté dans {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">La bibliothèque est verrouillée.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Récupérer l'original...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">L'original peut contenir du contenu masqué par des modifications ou des zones de masquage. Il s'ouvrira dans une copie séparée. Les modifications enregistrées resteront dans l'album. Continuer ?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">La capture d'écran ne fournit plus d'images.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">La résolution du moniteur a changé. Lancez un nouvel enregistrement.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Une autre application utilise Entrée ou Échap. Cliquez sur Terminé ou Annuler, ou placez le focus sur cette barre pour utiliser ses touches.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Défiler vers le haut</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Défiler vers le bas</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Défiler vers la gauche</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Défiler vers la droite</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Page vers le haut</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Page vers le bas</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Page vers la gauche</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Page vers la droite</sys:String>
 </ResourceDictionary>

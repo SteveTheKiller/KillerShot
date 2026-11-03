@@ -405,6 +405,7 @@
     <sys:String x:Key="Str_Rec_Continue">Continua</sys:String>
     <sys:String x:Key="Str_Rec_CollectionName">Registrazioni</sys:String>
     <sys:String x:Key="Str_Rec_SavedToLibrary">Salvata nella libreria crittografata.</sys:String>
+    <sys:String x:Key="Str_Rec_PlaintextRetained">Salvato nella libreria crittografata, ma non è stato possibile rimuovere il file originale non crittografato: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">È troppo grande per la libreria, quindi è rimasta in {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Non è potuta entrare nella libreria, quindi è rimasta in {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">La libreria è bloccata.</sys:String>
@@ -639,4 +640,14 @@
     <sys:String x:Key="Str_Marks_OpenOriginal">Recupera originale...</sys:String>
     <sys:String x:Key="Str_Marks_OriginalWarning">L'originale potrebbe contenere contenuti nascosti da modifiche o oscuramenti. Verrà aperto come copia separata. Le modifiche salvate rimarranno nell'album. Continuare?</sys:String>
     <sys:String x:Key="Str_Record_NoFrames">L'acquisizione dello schermo ha smesso di fornire fotogrammi.</sys:String>
+    <sys:String x:Key="Str_Video_MonitorChanged">La risoluzione del monitor è cambiata. Avvia una nuova registrazione.</sys:String>
+    <sys:String x:Key="Str_Scroll_KeysUnavailable">Un'altra app usa Invio o Esc. Fai clic su Fine o Annulla, oppure attiva questa barra per usare i suoi tasti.</sys:String>
+    <sys:String x:Key="Str_Scroll_Up">Scorri verso l'alto</sys:String>
+    <sys:String x:Key="Str_Scroll_Down">Scorri verso il basso</sys:String>
+    <sys:String x:Key="Str_Scroll_Left">Scorri a sinistra</sys:String>
+    <sys:String x:Key="Str_Scroll_Right">Scorri a destra</sys:String>
+    <sys:String x:Key="Str_Scroll_PageUp">Pagina su</sys:String>
+    <sys:String x:Key="Str_Scroll_PageDown">Pagina giù</sys:String>
+    <sys:String x:Key="Str_Scroll_PageLeft">Pagina a sinistra</sys:String>
+    <sys:String x:Key="Str_Scroll_PageRight">Pagina a destra</sys:String>
 </ResourceDictionary>
