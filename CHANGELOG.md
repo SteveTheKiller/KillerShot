@@ -18,7 +18,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Capture commands reach the command line, QR scanning has a work limit, unavailable scrolling-capture keys show a warning, and recordings stop cleanly if monitor resolution changes.
 - Error warnings use the right color, scrollbar controls have localized names, and promoted touch presses no longer crash dialogs. Recent loads when opened, hidden windows stop polling, and resize presets commit pending text.
 - The file picker loads icons and picture previews in the background, refreshes overwritten previews, and restores its position on any monitor.
-- Files address lookups stay responsive on unavailable network paths. Thumbnails use bounded memory and honor image orientation, paste rejects recursive folder copies, and detail columns support keyboard and accessibility tools.
+- Files address lookups stay responsive on unavailable network paths. Thumbnails use bounded memory and honor image orientation, paste rejects recursive folder copies, and detail columns support keyboard and accessibility tools. Windows shell menus initialize submenus and handle keyboard selection correctly.
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
 - An all-users update reopens KillerShot for the signed-in user at normal rights, whether it finishes or stops early. Windows was refusing that relaunch, so the app stayed closed. Files left behind by earlier failed updates are cleared when the next update is staged.
 - A finished all-users uninstall clears the files earlier failed attempts kept, so they no longer hold the install folder open after the restart.

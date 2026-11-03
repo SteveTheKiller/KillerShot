@@ -24,6 +24,9 @@ namespace KillerShot.Files
         private const uint CmdFirst = 1;
         private const uint CmdLast  = 0x7FFF;
 
+        internal static Func<Window, string[], ShellMenuSession?>? AcquireNativeMenu { get; set; }
+        internal static Func<IntPtr, IntPtr, int>? TrackNativeMenu { get; set; }
+
         /// <summary>
         /// Pops the shell menu for these paths at the cursor position. Returns false if the menu
         /// could not be built or shown, so the caller can say so instead of appearing to ignore
@@ -41,6 +44,7 @@ namespace KillerShot.Files
             if (paths.Length == 0) return null;
             IntPtr hwnd = new WindowInteropHelper(owner).Handle;
             if (hwnd == IntPtr.Zero) return null;
+            if (AcquireNativeMenu is { } acquire) return acquire(owner, paths);
             string? dir = Path.GetDirectoryName(paths[0]);
             if (string.IsNullOrEmpty(dir)) return null;
             var same = paths.Where(path => string.Equals(Path.GetDirectoryName(path), dir, StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -108,10 +112,42 @@ namespace KillerShot.Files
             public bool Show()
             {
                 if (_release == null || _menu == null) return false;
-                SetForegroundWindow(_hwnd);
-                GetCursorPos(out POINT point);
-                int chosen = TrackPopupMenuEx(_handle, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
-                    point.X, point.Y, _hwnd, IntPtr.Zero);
+                var menu3 = _menu as IContextMenu3;
+                var menu2 = menu3 == null ? _menu as IContextMenu2 : null;
+                var source = HwndSource.FromHwnd(_hwnd);
+                if ((menu3 != null || menu2 != null) && source == null) return false;
+                IntPtr Forward(IntPtr hwnd, int message, IntPtr wparam, IntPtr lparam, ref bool handled)
+                {
+                    if (handled || message is not (WM_INITMENUPOPUP or WM_MENUCHAR or WM_MEASUREITEM or WM_DRAWITEM)
+                        || message == WM_MENUCHAR && menu3 == null) return IntPtr.Zero;
+                    try
+                    {
+                        // Owner-drawn controls can also have ID zero; CtlType distinguishes menus.
+                        if ((message is WM_MEASUREITEM or WM_DRAWITEM) && (wparam != IntPtr.Zero || lparam == IntPtr.Zero
+                            || Marshal.ReadInt32(lparam) != ODT_MENU)) return IntPtr.Zero;
+                        if (menu3 != null)
+                        {
+                            if (menu3.HandleMenuMsg2((uint)message, wparam, lparam, out IntPtr result) == 0)
+                            { handled = true; return result; }
+                        }
+                        else if (menu2?.HandleMenuMsg((uint)message, wparam, lparam) == 0)
+                        { handled = true; return message is WM_MEASUREITEM or WM_DRAWITEM ? new IntPtr(1) : IntPtr.Zero; }
+                    }
+                    catch (Exception) { }
+                    return IntPtr.Zero;
+                }
+                // Invoked verbs can run their own message loops after this tracking scope ends.
+                HwndSourceHook hook = Forward;
+                int chosen;
+                source?.AddHook(hook);
+                try { chosen = (TrackNativeMenu ?? TrackPopup)(_hwnd, _handle); }
+                finally
+                {
+                    if (source != null && !source.IsDisposed) source.RemoveHook(hook);
+                    menu3 = null;
+                    menu2 = null;
+                }
+                if (_release == null || _menu == null) return false;
                 if (chosen <= 0) return true;
                 var info = new CMINVOKECOMMANDINFO
                 {
@@ -126,6 +162,14 @@ namespace KillerShot.Files
                 _menu = null;
                 Interlocked.Exchange(ref _release, null)?.Invoke();
             }
+        }
+
+        private static int TrackPopup(IntPtr hwnd, IntPtr menu)
+        {
+            SetForegroundWindow(hwnd);
+            GetCursorPos(out POINT point);
+            return TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+                point.X, point.Y, hwnd, IntPtr.Zero);
         }
 
         /// <summary>
@@ -155,6 +199,11 @@ namespace KillerShot.Files
 
         // ── Interop ──────────────────────────────────────────────
         private const uint CMF_EXPLORE     = 0x00000004;
+        private const int WM_INITMENUPOPUP = 0x117;
+        private const int WM_MENUCHAR = 0x120;
+        private const int WM_MEASUREITEM = 0x2c;
+        private const int WM_DRAWITEM = 0x2b;
+        private const int ODT_MENU = 1;
         private const uint TPM_RETURNCMD   = 0x0100;
         private const uint TPM_LEFTALIGN   = 0x0000;
         private const uint TPM_RIGHTBUTTON = 0x0002;
@@ -170,7 +219,7 @@ namespace KillerShot.Files
         private struct POINT { public int X; public int Y; }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct CMINVOKECOMMANDINFO
+        internal struct CMINVOKECOMMANDINFO
         {
             public int    cbSize;
             public uint   fMask;
@@ -230,13 +279,34 @@ namespace KillerShot.Files
 
         [ComImport, Guid("000214E4-0000-0000-C000-000000000046"),
          InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        private interface IContextMenu
+        internal interface IContextMenu
         {
             [PreserveSig] int QueryContextMenu(IntPtr hMenu, uint indexMenu,
                 uint idCmdFirst, uint idCmdLast, uint uFlags);
             [PreserveSig] int InvokeCommand(ref CMINVOKECOMMANDINFO pici);
             [PreserveSig] int GetCommandString(IntPtr idCmd, uint uType, IntPtr pwReserved,
                 IntPtr pszName, uint cchMax);
+        }
+
+        [ComImport, Guid("000214F4-0000-0000-C000-000000000046"),
+         InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IContextMenu2
+        {
+            [PreserveSig] int QueryContextMenu(IntPtr menu, uint index, uint first, uint last, uint flags);
+            [PreserveSig] int InvokeCommand(ref CMINVOKECOMMANDINFO command);
+            [PreserveSig] int GetCommandString(IntPtr id, uint type, IntPtr reserved, IntPtr name, uint maximum);
+            [PreserveSig] int HandleMenuMsg(uint message, IntPtr wparam, IntPtr lparam);
+        }
+
+        [ComImport, Guid("BCFCE0A0-EC17-11D0-8D10-00A0C90F2719"),
+         InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IContextMenu3
+        {
+            [PreserveSig] int QueryContextMenu(IntPtr menu, uint index, uint first, uint last, uint flags);
+            [PreserveSig] int InvokeCommand(ref CMINVOKECOMMANDINFO command);
+            [PreserveSig] int GetCommandString(IntPtr id, uint type, IntPtr reserved, IntPtr name, uint maximum);
+            [PreserveSig] int HandleMenuMsg(uint message, IntPtr wparam, IntPtr lparam);
+            [PreserveSig] int HandleMenuMsg2(uint message, IntPtr wparam, IntPtr lparam, out IntPtr result);
         }
 
         [DllImport("shell32.dll")]

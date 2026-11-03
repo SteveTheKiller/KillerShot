@@ -293,17 +293,21 @@ internal static class SelfTestFilesSafety
             }), true);
             var keyboard = new TestKeyboard();
             keyboard.Focus(name);
-            var key = new KeyEventArgs(keyboard, PresentationSource.FromVisual(window)!, 0, Key.Apps)
+            var presentation = PresentationSource.FromVisual(window) ?? throw new InvalidOperationException("Fixture has no presentation source.");
+            var key = new KeyEventArgs(keyboard, presentation, 0, Key.Apps)
                 { RoutedEvent = Keyboard.KeyUpEvent };
             bool handled = InputManager.Current.ProcessInput(key);
             report.AppendLine($"Context keyboard opening={keyboardOpening}; input handled={handled}; menu items={offered?.Items.Count}");
             check(keyboardOpening && offered?.Items.Count == 4,
                 "context-menu key on actual header routes to the four localized column choices");
-            var created = offered!.Items.OfType<MenuItem>().Last();
+            var menu = offered ?? throw new InvalidOperationException("Column menu was not offered.");
+            var created = menu.Items.OfType<MenuItem>().Last();
             check(!files.ViewState.CreatedVisible && !created.IsChecked && Convert.ToString(created.Header) == "created",
                 "keyboard column menu exposes the existing localized unchecked Created action");
             var peer = new MenuItemAutomationPeer(created);
-            ((IToggleProvider)peer.GetPattern(PatternInterface.Toggle)!).Toggle();
+            var toggle = peer.GetPattern(PatternInterface.Toggle) as IToggleProvider
+                ?? throw new InvalidOperationException("Column item has no toggle provider.");
+            toggle.Toggle();
             await Dispatcher.CurrentDispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
             check(files.ViewState.CreatedVisible && created.IsChecked,
                 "actual column menu automation toggle makes Created visible");
@@ -333,7 +337,8 @@ internal static class SelfTestFilesSafety
             var focused = FocusManager.GetFocusedElement(header) as Button;
             report.AppendLine($"Forward after Name: moved={moved}, column={(focused == null ? -1 : Grid.GetColumn(focused))}");
             check(moved && focused == headings[2], "forward Tab skips hidden Folder and reaches Size");
-            focused!.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+            (focused ?? throw new InvalidOperationException("Column focus was not assigned."))
+                .MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
             check(FocusManager.GetFocusedElement(header) == headings[0], "backward Tab skips hidden Folder and returns to Name");
             headings[4].MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             check(FocusManager.GetFocusedElement(header) == headings[0], "forward Tab skips default hidden Created");
