@@ -65,6 +65,7 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
     private readonly List<Part> _parts = new();
     private GraphicsCapture.Device? _device;
     private IntPtr _d3dDevice, _context;
+    private Func<IntPtr, GraphicsCapture.SizeInt32> _contentSize = GraphicsCapture.FrameContentSize;
 
     public int Width { get; }
     public int Height { get; }
@@ -76,10 +77,12 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
     /// <param name="enumerateMonitors">Optional display-enumeration boundary.</param>
     public static MonitorGrabber? TryCreate(Win32.RECT rect, bool includeCursor,
         Func<(IntPtr Device, IntPtr Context)>? createNativeDevice = null,
-        Func<IEnumerable<MonitorBounds>>? enumerateMonitors = null)
+        Func<IEnumerable<MonitorBounds>>? enumerateMonitors = null,
+        Func<IntPtr, GraphicsCapture.SizeInt32>? contentSize = null)
     {
         if (!WindowCapture.IsSupported) return null;
         var grabber = new MonitorGrabber(rect);
+        if (contentSize != null) grabber._contentSize = contentSize;
         try
         {
             grabber.Initialize(rect, includeCursor, createNativeDevice, enumerateMonitors);
@@ -189,15 +192,12 @@ internal sealed unsafe class MonitorGrabber : IFrameGrabber
             GraphicsCapture.SizeInt32 size;
             try
             {
-                size = GraphicsCapture.FrameContentSize(latest);
+                size = _contentSize(latest);
+                if (size.Width != part.PoolSize.Width || size.Height != part.PoolSize.Height)
+                    throw new InvalidOperationException(Services.LocaleManager.Loc("Str_Video_MonitorChanged"));
                 CopyPart(part, latest, size.Width, size.Height);
             }
             finally { GraphicsCapture.Close(ref latest); }
-            if (size.Width != part.PoolSize.Width || size.Height != part.PoolSize.Height)
-            {
-                part.PoolSize = size;
-                GraphicsCapture.RecreatePool(part.Pool, _device!.WinRT, 2, size);
-            }
         }
     }
 

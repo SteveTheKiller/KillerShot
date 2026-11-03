@@ -47,7 +47,7 @@ internal sealed partial class CaptureController
     }
 
     /// <summary>Starts a capture from the editor or the tray menu.</summary>
-    public Task Start(CaptureMode mode) => RunAsync(null, mode, IntPtr.Zero);
+    public Task Start(CaptureMode? mode = null) => RunAsync(null, mode, IntPtr.Zero);
 
     public Task StartFromShortcut(ShortcutAction action, IntPtr foreground) => RunAsync(action, null, foreground);
 
@@ -58,7 +58,7 @@ internal sealed partial class CaptureController
         ShortcutAction.Window => CaptureMode.Window,
         ShortcutAction.Monitor => CaptureMode.Monitor,
         ShortcutAction.AllMonitors => CaptureMode.AllMonitors,
-        _ => CaptureMode.Region,
+        _ => CaptureSettings.LastMode is CaptureMode.Qr ? CaptureMode.Region : CaptureSettings.LastMode,
     };
 
     private async Task RunAsync(ShortcutAction? action, CaptureMode? requested, IntPtr foreground, bool video = false,
@@ -89,7 +89,7 @@ internal sealed partial class CaptureController
                 result = frozen.Crop(clipped);
                 source = frozen.WindowAt(Center(clipped))?.Handle ?? IntPtr.Zero;
             }
-            else if (video || action == ShortcutAction.LastMode || mode is CaptureMode.Region or CaptureMode.Qr
+            else if (video || action == ShortcutAction.LastMode || action == null && requested == null || mode is CaptureMode.Region or CaptureMode.Qr
                 || mode == CaptureMode.Window && (CaptureSettings.PickWindow || foreground == IntPtr.Zero))
             {
                 var picker = new RegionSelector(frozen, showBar: true, mode: mode, video: video);
@@ -169,7 +169,7 @@ internal sealed partial class CaptureController
     private void Deliver(BitmapSource result, CaptureMode mode, IntPtr source, bool interval)
     {
         if (CaptureSettings.PlaySound) ShutterSound.Play();
-        CaptureSettings.LastMode = mode;
+        if (mode != CaptureMode.Qr) CaptureSettings.LastMode = mode;
         var taken = DateTime.Now;
         // A locked or failing album holds only so much; past that the capture still goes to
         // the clipboard, folder and editor, but the album keeps what it already holds.

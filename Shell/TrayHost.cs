@@ -312,7 +312,7 @@ internal sealed class TrayHost : IDisposable
         printScreen.IsCheckable = true;
         printScreen.IsChecked = PrintScreenKey.Enabled;
         menu.Items.Add(new Separator());
-        Item(Loc("Str_Mode_Region"), "", () => DeferCapture(null, CaptureMode.Region));
+        Item(Loc("Str_Btn_Capture"), "", () => DeferCapture(null, null));
         Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
         Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
         Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));

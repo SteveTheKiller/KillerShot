@@ -30,6 +30,7 @@ internal sealed class ScrollCaptureSession
     private Window? _frame, _bar;
     private TextBlock? _status;
     private HwndSource? _keys;
+    private bool _doneRegistered, _cancelRegistered, _keysUnavailable;
     // Stitching runs on a worker, one frame at a time, so a large region never stalls the
     // interface; a finish asked for meanwhile waits for that frame.
     private Task? _adding;
@@ -101,6 +102,7 @@ internal sealed class ScrollCaptureSession
 
     private void SetStatus(string text)
     {
+        if (_keysUnavailable) text += "\n" + Loc("Str_Scroll_KeysUnavailable");
         if (_status == null || _status.Text == text) return;
         _status.Text = text;
     }
@@ -137,9 +139,26 @@ internal sealed class ScrollCaptureSession
             }
             return IntPtr.Zero;
         });
-        Win32.RegisterHotKey(_keys.Handle, HotkeyDone, Win32.MOD_NOREPEAT, 0x0D);
-        Win32.RegisterHotKey(_keys.Handle, HotkeyCancel, Win32.MOD_NOREPEAT, 0x1B);
+        _doneRegistered = Win32.RegisterHotKey(_keys.Handle, HotkeyDone, Win32.MOD_NOREPEAT, 0x0D);
+        _cancelRegistered = Win32.RegisterHotKey(_keys.Handle, HotkeyCancel, Win32.MOD_NOREPEAT, 0x1B);
+        if (_doneRegistered && _cancelRegistered) return;
+        _keysUnavailable = true;
+        SetStatus(Loc("Str_Scroll_Start"));
+        if (_bar == null) return;
+        var handle = new WindowInteropHelper(_bar).Handle;
+        SetWindowLong(handle, -20, GetWindowLong(handle, -20) & ~0x08000000);
+        _bar.Focusable = true;
+        _bar.PreviewMouseDown += (_, _) => { _bar?.Activate(); _bar?.Focus(); };
+        _bar.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key is not (System.Windows.Input.Key.Enter or System.Windows.Input.Key.Escape)) return;
+            e.Handled = true;
+            Finish(keep: e.Key == System.Windows.Input.Key.Enter);
+        };
     }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern int GetWindowLong(IntPtr handle, int index);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern int SetWindowLong(IntPtr handle, int index, int value);
 
     /// <summary>For the self-test: Done or Cancel without the keyboard.</summary>
     internal void TestFinish(bool keep) => Finish(keep);
@@ -169,8 +188,8 @@ internal sealed class ScrollCaptureSession
         }
         if (_keys != null)
         {
-            Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyDone));
-            Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyCancel));
+            if (_doneRegistered) Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyDone));
+            if (_cancelRegistered) Release(() => Win32.UnregisterHotKey(_keys.Handle, HotkeyCancel));
             Release(_keys.Dispose);
             _keys = null;
         }

@@ -145,8 +145,8 @@ internal static class SelfTestCaptureMenus
             Directory.CreateDirectory(folder);
             Settings.UseFolder(Path.Combine(folder, "settings"));
             CaptureSettings.LastMode = CaptureMode.Window;
-            if (CaptureController.Resolve(ShortcutAction.LastMode, null) != CaptureMode.Region)
-                throw new InvalidOperationException("Print Screen must start in Region even after a Window capture.");
+            if (CaptureController.Resolve(ShortcutAction.LastMode, null) != CaptureMode.Window)
+                throw new InvalidOperationException("Print Screen must remember Window mode.");
             var desktopBounds = new Win32.RECT(0, 0, 200, 200);
             var windowBounds = new Win32.RECT(10, 10, 150, 150);
             var desktop = new FrozenDesktop(desktopBounds, new byte[200 * 200 * 4],

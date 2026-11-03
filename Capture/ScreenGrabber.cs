@@ -48,9 +48,10 @@ internal sealed class ScreenGrabber : IFrameGrabber
     public bool Grab(byte[] bgra)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
-        if (!Win32.BitBlt(_mem, 0, 0, Width, Height, _screen, _rect.Left, _rect.Top, Win32.SRCCOPY | Win32.CAPTUREBLT))
+        if (!_gdi.CopyScreen(_mem, _screen, _rect))
             throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
         if (_cursor) FrozenDesktop.DrawCursor(_mem, _rect.Left, _rect.Top);
+        _gdi.Flush();
         Marshal.Copy(_bits, bgra, 0, Width * Height * 4);
         return true;
     }
@@ -66,6 +67,10 @@ internal sealed class ScreenGrabber : IFrameGrabber
 
     internal class GdiResources
     {
+        internal virtual bool CopyScreen(IntPtr memory, IntPtr screen, Win32.RECT rect)
+            => Win32.BitBlt(memory, 0, 0, rect.Width, rect.Height, screen, rect.Left, rect.Top, Win32.SRCCOPY | Win32.CAPTUREBLT);
+        internal virtual void Flush() => GdiFlush();
+        [DllImport("gdi32.dll")] private static extern bool GdiFlush();
         internal virtual IntPtr GetScreen() => Win32.GetDC(IntPtr.Zero);
         internal virtual IntPtr CreateMemory(IntPtr screen) => Win32.CreateCompatibleDC(screen);
         internal virtual IntPtr CreateBitmap(IntPtr screen, ref Win32.BITMAPINFOHEADER info, out IntPtr bits)

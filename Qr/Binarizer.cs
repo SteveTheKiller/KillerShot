@@ -4,7 +4,7 @@ namespace KillerTools.Qr;
 internal static class Binarizer
 {
     /// <summary>Uses nearby blocks to separate ink from paper under uneven lighting.</summary>
-    public static BitImage Local(byte[] luma, int width, int height)
+    public static BitImage Local(byte[] luma, int width, int height, CancellationToken cancellationToken = default)
     {
         const int block = 8;
         int columns = (width + block - 1) / block, rows = (height + block - 1) / block;
@@ -13,6 +13,7 @@ internal static class Binarizer
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < columns; col++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 byte lo = 255, hi = 0;
                 for (int y = row * block; y < Math.Min(height, (row + 1) * block); y++)
                     for (int x = col * block; x < Math.Min(width, (col + 1) * block); x++)
@@ -26,6 +27,7 @@ internal static class Binarizer
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < columns; col++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 int lo = 255, hi = 0;
                 for (int r = Math.Max(0, row - 2); r <= Math.Min(rows - 1, row + 2); r++)
                     for (int c = Math.Max(0, col - 2); c <= Math.Min(columns - 1, col + 2); c++)
@@ -41,10 +43,14 @@ internal static class Binarizer
     }
 
     /// <summary>One threshold for the whole image, chosen by Otsu's method.</summary>
-    public static BitImage Global(byte[] luma, int width, int height)
+    public static BitImage Global(byte[] luma, int width, int height, CancellationToken cancellationToken = default)
     {
         var histogram = new int[256];
-        foreach (byte v in luma) histogram[v]++;
+        for (int i = 0; i < luma.Length; i++)
+        {
+            if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
+            histogram[luma[i]]++;
+        }
         long total = luma.Length, sumAll = 0;
         for (int i = 0; i < 256; i++) sumAll += (long)i * histogram[i];
         long sumBack = 0, weightBack = 0;
@@ -62,7 +68,11 @@ internal static class Binarizer
             if (between > best) { best = between; threshold = t; }
         }
         var bits = new BitImage(width, height);
-        for (int i = 0; i < luma.Length; i++) bits.Dark[i] = luma[i] <= threshold;
+        for (int i = 0; i < luma.Length; i++)
+        {
+            if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
+            bits.Dark[i] = luma[i] <= threshold;
+        }
         return bits;
     }
 }

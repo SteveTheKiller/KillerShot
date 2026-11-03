@@ -23,6 +23,7 @@ namespace KillerShot.Shell
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (Services.CaptureLibrary.VideoBusy) { e.Handled = true; return; }
             // A shortcut recorder owns every key while it is listening.
             if (_recording != null) { RecorderKey(e); return; }
             // An album switch is replacing the picture: no shortcut may change it meanwhile.
@@ -137,7 +138,7 @@ namespace KillerShot.Shell
                 switch (e.Key)
                 {
                     case Key.N when shift: NewCollectionButton_Click(NewCollectionButton, new RoutedEventArgs()); break;
-                    case Key.N: StartCapture(Capture.CaptureMode.Region); break;
+                    case Key.N: StartCapture(); break;
                     case Key.E when Library.IsVisible && !TypingInField(): Library.ShowFocusedInExplorer(); break;
                     case Key.M when Library.IsVisible && !shift && !TypingInField(): Library.MoveFocused(); break;
                     case Key.P when shift: if (!e.IsRepeat && App.Instance.Capture is { } scroller) _ = scroller.ScrollingCapture(); break;

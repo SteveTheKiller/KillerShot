@@ -169,6 +169,7 @@ internal sealed class RegionSelector
     public void SetMode(CaptureMode mode)
     {
         Mode = IsVideo && mode == CaptureMode.Qr ? CaptureMode.Region : mode;
+        if (!IsVideo && Mode != CaptureMode.Qr) Services.CaptureSettings.LastMode = Mode;
         _keyboardTarget = false;
         TargetDescription = null;
         _keyboardPoint = null;

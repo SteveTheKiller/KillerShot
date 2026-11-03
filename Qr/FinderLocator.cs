@@ -6,12 +6,13 @@ internal sealed record Finder(double X, double Y, double ModuleSize, int Hits);
 /// <summary>Finds finder patterns by their 1:1:3:1:1 dark-light-dark-light-dark runs, checked across and down.</summary>
 internal static class FinderLocator
 {
-    public static List<Finder> Find(BitImage image)
+    public static List<Finder> Find(BitImage image, CancellationToken cancellationToken = default)
     {
         var found = new List<(double X, double Y, double Module, int Hits)>();
         var runs = new int[5];
         for (int y = 0; y < image.Height; y++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Array.Clear(runs);
             int state = 0;   // runs[0..4]: dark, light, dark, light, dark
             for (int x = 0; x <= image.Width; x++)

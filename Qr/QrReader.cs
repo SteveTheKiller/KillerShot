@@ -9,7 +9,7 @@ public static class QrReader
     /// <exception cref="ArgumentNullException">The pixel buffer is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A dimension is not positive.</exception>
     /// <exception cref="ArgumentException">The buffer length is not exactly the pixel count.</exception>
-    public static IReadOnlyList<QrResult> Read(byte[] gray, int width, int height)
+    public static IReadOnlyList<QrResult> Read(byte[] gray, int width, int height, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(gray);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
@@ -17,22 +17,30 @@ public static class QrReader
         if (gray.LongLength != (long)width * height)
             throw new ArgumentException("The pixel buffer length must equal width times height.", nameof(gray));
         var results = new List<QrResult>();
-        var image = Binarizer.Global(gray, width, height);
-        ReadAll(image, results);
-        // Light-on-dark codes (dark themes, terminals) read on the inverted image.
-        ReadAll(image.Inverted(), results);
-        var local = Binarizer.Local(gray, width, height);
-        ReadAll(local, results);
-        ReadAll(local.Inverted(), results);
+        cancellationToken.ThrowIfCancellationRequested();
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        budget.CancelAfter(TimeSpan.FromSeconds(2));
+        try
+        {
+            var image = Binarizer.Global(gray, width, height, budget.Token);
+            ReadAll(image, results, budget.Token);
+            // Light-on-dark codes (dark themes, terminals) read on the inverted image.
+            ReadAll(image.Inverted(), results, budget.Token);
+            var local = Binarizer.Local(gray, width, height, budget.Token);
+            ReadAll(local, results, budget.Token);
+            ReadAll(local.Inverted(), results, budget.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
         return results;
     }
 
-    private static void ReadAll(BitImage image, List<QrResult> results)
+    private static void ReadAll(BitImage image, List<QrResult> results, CancellationToken cancellationToken)
     {
-        var finders = FinderLocator.Find(image);
+        var finders = FinderLocator.Find(image, cancellationToken);
         var used = new HashSet<Finder>();
         foreach (var (a, b, c) in Triples(finders))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (used.Contains(a) || used.Contains(b) || used.Contains(c)) continue;
             if (results.Any(r => Inside(r.Corners, a) || Inside(r.Corners, b) || Inside(r.Corners, c))) continue;
             var (tl, tr, bl) = Detector.Order(a, b, c);
@@ -46,7 +54,7 @@ public static class QrReader
                 if (size < 21 || size > 177) continue;
                 result = Decode(image, Detector.Place(tl, tr, bl, size));
                 if (result is not null) break;
-                foreach (var alignment in Detector.Alignments(image, tl, tr, bl, size))
+                foreach (var alignment in Detector.Alignments(image, tl, tr, bl, size, cancellationToken))
                 {
                     result = Decode(image, Detector.Place(tl, tr, bl, size, alignment));
                     result ??= Decode(image, Detector.Place(tl, tr, bl, size, alignment, bilinear: true));

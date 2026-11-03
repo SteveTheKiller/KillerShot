@@ -77,7 +77,7 @@ internal static class Detector
     }
 
     /// <summary>Finds the bottom-right alignment square near its estimated position.</summary>
-    public static IEnumerable<QrPoint> Alignments(BitImage image, Finder tl, Finder tr, Finder bl, int dimension)
+    public static IEnumerable<QrPoint> Alignments(BitImage image, Finder tl, Finder tr, Finder bl, int dimension, CancellationToken cancellationToken = default)
     {
         if (dimension == 21) yield break;
         double span = dimension - 7;
@@ -90,6 +90,7 @@ internal static class Detector
         for (double y = Math.Max(0, ey - radius); y < Math.Min(image.Height, ey + radius); y += 0.5)
             for (double x = Math.Max(0, ex - radius); x < Math.Min(image.Width, ex + radius); x += 0.5)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!image.At(x, y)) continue;
                 int score = 0;
                 for (int row = -2; row <= 2; row++)
@@ -98,9 +99,18 @@ internal static class Detector
                         bool expected = Math.Max(Math.Abs(row), Math.Abs(col)) != 1;
                         if (image.At(x + col * ux + row * vx, y + col * uy + row * vy) == expected) score++;
                     }
-                if (score >= 24) candidates.Add((x, y, score, (x - ex) * (x - ex) + (y - ey) * (y - ey)));
+                if (score >= 24)
+                {
+                    candidates.Add((x, y, score, (x - ex) * (x - ex) + (y - ey) * (y - ey)));
+                    if (candidates.Count > 256)
+                    {
+                        candidates.Sort((a, b) => a.Score != b.Score ? b.Score.CompareTo(a.Score) : a.Distance.CompareTo(b.Distance));
+                        candidates.RemoveAt(candidates.Count - 1);
+                    }
+                }
             }
-        while (candidates.Count > 0)
+        int remaining = 8;
+        while (candidates.Count > 0 && remaining-- > 0)
         {
             var best = candidates.OrderByDescending(c => c.Score).ThenBy(c => c.Distance).First();
             var cluster = candidates.Where(c => Math.Abs(c.X - best.X) < module && Math.Abs(c.Y - best.Y) < module).ToArray();
