@@ -1,0 +1,836 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+namespace KillerShot.Files
+{
+    // ═══════════════════════════════════════════════════════════
+    //  FILE OPERATIONS  -  copy, move, delete, rename, new folder
+    // ═══════════════════════════════════════════════════════════
+    // Hand-rolled rather than handed to the shell's IFileOperation, so the progress and conflict
+    // UI can be KillerShot's rather than Windows'. That trade is the whole reason this file
+    // exists, and it means everything the shell would have done for free is done here instead:
+    // recursive enumeration, per-byte progress, conflict resolution, cancellation.
+    //
+    // File bytes and metadata use CopyFileEx, with our progress and cancellation callbacks.
+    // The Recycle Bin has no managed route and no documented file
+    // format to write - a "deleted" file is a rename plus an entry in a per-volume index that
+    // only the shell maintains. Recycling therefore calls SHFileOperation with FOF_ALLOWUNDO,
+    // which is also what gives you Ctrl+Z in Explorer afterwards.
+    //
+    // All of this runs OFF the UI thread. Copying a folder is an unbounded amount of work and
+    // the callbacks below are the only things that touch the caller, so the caller is
+    // responsible for marshalling them back to the dispatcher.
+
+    public enum FileOpKind { Copy, Move, Delete, Recycle }
+
+    /// <summary>What to do about a target that already exists.</summary>
+    public enum ConflictChoice { Replace, Skip, KeepBoth, Cancel }
+
+    /// <summary>Both sides of a collision, so the dialog can show what is being overwritten.</summary>
+    public sealed class ConflictInfo
+    {
+        public string SourcePath = string.Empty;
+        public string TargetPath = string.Empty;
+        public long   SourceSize;
+        public long   TargetSize;
+        public DateTime SourceModified;
+        public DateTime TargetModified;
+        public bool   IsDirectory;
+    }
+
+    public sealed class FileOpProgress
+    {
+        public string CurrentFile = string.Empty;
+        public int    ItemsDone;
+        public int    ItemsTotal;
+        public long   BytesDone;
+        public long   BytesTotal;
+    }
+
+    public sealed class FileOpResult
+    {
+        public int Succeeded;
+        public int Skipped;
+        public int SkippedDirectoryLinks;
+        public bool Canceled;
+
+        /// <summary>
+        /// The shell refused the operation on permissions. Its own Access Denied box is
+        /// suppressed (FOF_NOERRORUI), so the caller owns the answer - see DeleteSelection.
+        /// </summary>
+        public bool AccessDenied;
+
+        public readonly List<(string Path, string Error)> Failed = [];
+
+        /// <summary>
+        /// Final destination path of each successful copy/move, in case a conflict resolved to a
+        /// different name (KeepBoth's UniqueName) than the source's own filename - a caller that
+        /// wants to select/scroll to what actually landed needs the real name, not a guess.
+        /// </summary>
+        public readonly List<string> SucceededTargets = [];
+    }
+
+    public static class FileOps
+    {
+        private const int CopyProgressInterval = 4 << 20;
+
+        /// <summary>
+        /// One unit of work: a single FILE to copy or move. Directories are not units - they are
+        /// walked, created at the target, and their files become units. That is what lets the
+        /// progress count mean something on a folder drop.
+        /// </summary>
+        private sealed class WorkItem
+        {
+            public string Source = string.Empty;
+            public string Target = string.Empty;
+            public long   Size;
+
+            /// <summary>
+            /// A junction or directory symlink met during a MOVE. It moves as the link itself and
+            /// is never walked: walking it would move the files out of the folder it points at,
+            /// which lives somewhere else entirely and is not part of what was selected.
+            /// </summary>
+            public bool   IsLink;
+        }
+
+        // ── Planning ─────────────────────────────────────────────
+
+        /// <summary>
+        /// Flattens the sources into per-file work under <paramref name="targetDir"/>, creating
+        /// no directories yet. Runs before anything is written so the total is known up front -
+        /// a progress bar that discovers its own length as it goes is not a progress bar.
+        /// </summary>
+        private static List<WorkItem> Plan(IEnumerable<string> sources, string targetDir, bool move,
+                                           List<string> dirsToCreate, FileOpResult result, CancellationToken ct,
+                                           string? directoryTarget = null)
+        {
+            var work = new List<WorkItem>();
+
+            foreach (string src in sources)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                if (File.Exists(src))
+                {
+                    long size;
+                    try { size = new FileInfo(src).Length; } catch { size = 0; }
+                    work.Add(new WorkItem
+                    {
+                        Source = src,
+                        Target = Path.Combine(targetDir, Path.GetFileName(src)),
+                        Size   = size,
+                    });
+                }
+                else if (Directory.Exists(src))
+                {
+                    string root = directoryTarget ?? Path.Combine(targetDir, Path.GetFileName(src.TrimEnd(Path.DirectorySeparatorChar)));
+                    if (IsLink(src))
+                    {
+                        if (move) work.Add(new WorkItem { Source = src, Target = root, IsLink = true });
+                        else { result.Skipped++; result.SkippedDirectoryLinks++; }
+                        continue;
+                    }
+                    dirsToCreate.Add(root);
+                    WalkDirectory(src, root, move, work, dirsToCreate, result, ct);
+                }
+                // Vanished between selection and the drop: nothing to do, and not an error worth
+                // stopping a batch of fifty for.
+            }
+
+            return work;
+        }
+
+        private static void WalkDirectory(string srcDir, string dstDir, bool move, List<WorkItem> work,
+                                          List<string> dirsToCreate, FileOpResult result, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                foreach (var d in Directory.EnumerateDirectories(srcDir))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    string sub = Path.Combine(dstDir, Path.GetFileName(d));
+                    if (IsLink(d))
+                    {
+                        if (move) work.Add(new WorkItem { Source = d, Target = sub, IsLink = true });
+                        else { result.Skipped++; result.SkippedDirectoryLinks++; }
+                        continue;
+                    }
+                    dirsToCreate.Add(sub);
+                    WalkDirectory(d, sub, move, work, dirsToCreate, result, ct);
+                }
+
+                foreach (var f in Directory.EnumerateFiles(srcDir))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    long size;
+                    try { size = new FileInfo(f).Length; } catch { size = 0; }
+                    work.Add(new WorkItem
+                    {
+                        Source = f,
+                        Target = Path.Combine(dstDir, Path.GetFileName(f)),
+                        Size   = size,
+                    });
+                }
+            }
+            catch (UnauthorizedAccessException ex) { result.Failed.Add((srcDir, ex.Message)); }
+            catch (IOException ex) { result.Failed.Add((srcDir, ex.Message)); }
+        }
+
+        // ── Copy / move ──────────────────────────────────────────
+
+        /// <summary>
+        /// Copies or moves <paramref name="sources"/> into <paramref name="targetDir"/>.
+        /// </summary>
+        /// <param name="onConflict">
+        /// Asked once per collision. The caller marshals to the UI thread and may return the same
+        /// answer for the rest of the batch by never asking again - "apply to all" is the
+        /// caller's state, not ours, because only the caller knows whether it showed a checkbox.
+        /// </param>
+        public static FileOpResult CopyOrMove(IEnumerable<string> sources, string targetDir, bool move,
+                                              Func<ConflictInfo, ConflictChoice> onConflict,
+                                              Action<FileOpProgress> onProgress,
+                                              CancellationToken ct)
+            => CopyOrMoveCore(sources, targetDir, move, onConflict, onProgress, ct, true);
+
+        internal static FileOpResult CopyOrMove(IEnumerable<string> sources, string targetDir, bool move,
+            Func<ConflictInfo, ConflictChoice> onConflict, Action<FileOpProgress> onProgress,
+            CancellationToken ct, Action<string, string, string?> replace,
+            Action<string, string>? moveDirectory = null, Action<string, string, uint>? renameFile = null)
+            => CopyOrMoveCore(sources, targetDir, move, onConflict, onProgress, ct, true, replace, moveDirectory, renameFile);
+
+        private static FileOpResult CopyOrMoveCore(IEnumerable<string> sources, string targetDir, bool move,
+                                                   Func<ConflictInfo, ConflictChoice> onConflict,
+                                                   Action<FileOpProgress> onProgress,
+                                                   CancellationToken ct, bool allowFastMove,
+                                                   Action<string, string, string?>? replace = null,
+                                                   Action<string, string>? moveDirectory = null,
+                                                   Action<string, string, uint>? renameFile = null,
+                                                   string? directoryTarget = null)
+        {
+            var result = new FileOpResult();
+            var dirsToCreate = new List<string>();
+            List<WorkItem> work;
+
+            // A same-volume MOVE of a whole directory is a rename: one call, no walk, no byte
+            // copying. Worth catching before the per-file loop, because moving a 40 GB folder
+            // across the same disk should be instant rather than a progress bar.
+            sources = new List<string>(sources);
+            if (move && allowFastMove && TryFastMoveDirectories(sources, targetDir, onConflict, onProgress, result, ct, replace, moveDirectory, renameFile))
+                return result;
+
+            try { work = Plan(sources, targetDir, move, dirsToCreate, result, ct, directoryTarget); }
+            catch (OperationCanceledException) { result.Canceled = true; return result; }
+
+            foreach (string d in dirsToCreate)
+            {
+                try { Directory.CreateDirectory(d); }
+                catch (Exception ex) { result.Failed.Add((d, ex.Message)); }
+            }
+
+            long bytesTotal = 0;
+            foreach (var w in work) bytesTotal += w.Size;
+
+            var progress = new FileOpProgress { ItemsTotal = work.Count, BytesTotal = bytesTotal };
+
+            foreach (var item in work)
+            {
+                if (ct.IsCancellationRequested) { result.Canceled = true; return result; }
+
+                string target = item.Target;
+
+                if (File.Exists(target) || Directory.Exists(target))
+                {
+                    var choice = onConflict(BuildConflictInfo(item.Source, target));
+                    if (choice == ConflictChoice.Cancel) { result.Canceled = true; return result; }
+                    if (choice == ConflictChoice.Skip)   { result.Skipped++; progress.ItemsDone++; continue; }
+                    if (choice == ConflictChoice.KeepBoth) target = UniqueName(target);
+                    // Replace falls through - the copy below overwrites.
+                }
+
+                progress.CurrentFile = item.Source;
+                onProgress(progress);
+
+                try
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (item.IsLink) MoveLink(item.Source, target);
+                    else if (move) MoveFile(item.Source, target, ref progress, onProgress, ct, replace, renameFile);
+                    else      CopyFile(item.Source, target, ref progress, onProgress, ct, replace, renameFile);
+                    result.Succeeded++;
+                    result.SucceededTargets.Add(target);
+                }
+                catch (OperationCanceledException) { result.Canceled = true; return result; }
+                catch (Exception ex) { result.Failed.Add((item.Source, ex.Message)); }
+
+                progress.ItemsDone++;
+                onProgress(progress);
+            }
+
+            // A move leaves the source directory tree standing once its files are gone.
+            if (move) RemoveEmptySourceDirs(sources);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Same-volume directory moves, done as renames when possible. A Replace choice merges
+        /// only that directory through the general path after all choices have been collected.
+        /// </summary>
+        private static bool TryFastMoveDirectories(IEnumerable<string> sources, string targetDir,
+                                                   Func<ConflictInfo, ConflictChoice> onConflict,
+                                                   Action<FileOpProgress> onProgress,
+                                                   FileOpResult result, CancellationToken ct,
+                                                   Action<string, string, string?>? replace = null,
+                                                   Action<string, string>? moveDirectory = null,
+                                                   Action<string, string, uint>? renameFile = null)
+        {
+            var list = new List<string>(sources);
+            foreach (string s in list)
+                if (!Directory.Exists(s) || !SameVolume(s, targetDir)) return false;
+
+            var moves = new List<(string Source, string Target, ConflictChoice Choice)>();
+            var plannedTargets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string s in list)
+            {
+                if (ct.IsCancellationRequested) { result.Canceled = true; return true; }
+
+                string target = Path.Combine(targetDir, Path.GetFileName(s.TrimEnd(Path.DirectorySeparatorChar)));
+
+                bool exists = Directory.Exists(target) || File.Exists(target);
+                if (exists || plannedTargets.TryGetValue(target, out _))
+                {
+                    ConflictInfo info = BuildConflictInfo(s, exists ? target : plannedTargets[target]);
+                    info.TargetPath = target;
+                    var choice = onConflict(info);
+                    if (choice == ConflictChoice.Cancel) { result.Canceled = true; return true; }
+                    if (choice == ConflictChoice.KeepBoth) target = UniqueName(target, plannedTargets);
+                    moves.Add((s, target, choice));
+                    if (choice != ConflictChoice.Skip && choice != ConflictChoice.Replace)
+                        plannedTargets[target] = s;
+                }
+                else
+                {
+                    moves.Add((s, target, ConflictChoice.KeepBoth));
+                    plannedTargets[target] = s;
+                }
+            }
+
+            foreach (var item in moves)
+            {
+                if (ct.IsCancellationRequested) { result.Canceled = true; return true; }
+                if (item.Choice == ConflictChoice.Skip) { result.Skipped++; continue; }
+                if (item.Choice == ConflictChoice.Replace)
+                {
+                    FileOpResult merged = CopyOrMoveCore([item.Source], targetDir, true,
+                                                         onConflict, onProgress, ct, false, replace, moveDirectory, renameFile);
+                    result.Succeeded += merged.Succeeded;
+                    result.Skipped += merged.Skipped;
+                    result.Failed.AddRange(merged.Failed);
+                    result.SucceededTargets.AddRange(merged.SucceededTargets);
+                    if (merged.Canceled) { result.Canceled = true; return true; }
+                    continue;
+                }
+                try { (moveDirectory ?? Directory.Move)(item.Source, item.Target); result.Succeeded++; result.SucceededTargets.Add(item.Target); }
+                catch (IOException ex) when (ex.HResult == unchecked((int)0x80070011) && !IsLink(item.Source))
+                {
+                    FileOpResult copied = CopyOrMoveCore([item.Source], targetDir, true,
+                        onConflict, onProgress, ct, false, replace, moveDirectory, renameFile, item.Target);
+                    result.Succeeded += copied.Succeeded;
+                    result.Skipped += copied.Skipped;
+                    result.Failed.AddRange(copied.Failed);
+                    result.SucceededTargets.AddRange(copied.SucceededTargets);
+                    if (copied.Canceled) { result.Canceled = true; return true; }
+                }
+                catch (Exception ex) { result.Failed.Add((item.Source, ex.Message)); }
+            }
+
+            return true;
+        }
+
+        private static void CopyFile(string src, string dst, ref FileOpProgress progress,
+                                     Action<FileOpProgress> onProgress, CancellationToken ct,
+                                     Action<string, string, string?>? replace = null,
+                                     Action<string, string, uint>? renameFile = null)
+        {
+            string temp = Path.Combine(Path.GetDirectoryName(dst) ?? string.Empty,
+                                       ".KillerShot-copy-" + Guid.NewGuid().ToString("N") + ".tmp");
+            bool keepRecovery = false;
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+                long size = SafeSize(src);
+                long initialBytes = progress.BytesDone;
+                long reportedBytes = 0;
+                FileOpProgress current = progress;
+                Exception? callbackError = null;
+                CopyProgressRoutine callback = (total, transferred, streamSize, streamTransferred,
+                    streamNumber, reason, sourceHandle, targetHandle, data) =>
+                {
+                    if (ct.IsCancellationRequested) return 1;
+                    try
+                    {
+                        // The manifest counts the main stream. CopyFileEx also copies named
+                        // streams, including Windows download provenance, without inflating it.
+                        long copied = Math.Min(size, transferred);
+                        current.BytesDone = initialBytes + copied;
+                        if (copied - reportedBytes >= CopyProgressInterval || transferred == total)
+                        {
+                            reportedBytes = copied;
+                            onProgress(current);
+                        }
+                    }
+                    catch (Exception ex) { callbackError = ex; return 1; }
+                    return ct.IsCancellationRequested ? 1u : 0u;
+                };
+
+                // COPY_FILE_FAIL_IF_EXISTS | COPY_FILE_ALLOW_DECRYPTED_DESTINATION. Without the
+                // second flag an EFS-encrypted file cannot be copied to FAT32, exFAT or most
+                // network shares (ERROR_ENCRYPTION_FAILED); the stream copy this replaced wrote
+                // the plaintext there, as Explorer does after asking.
+                bool copiedFile = CopyFileEx(src, temp, callback, IntPtr.Zero, IntPtr.Zero, CopyFileFailIfExists | CopyFileAllowDecryptedDestination);
+                int error = Marshal.GetLastWin32Error();
+                if (callbackError != null) throw callbackError;
+                ct.ThrowIfCancellationRequested();
+                if (!copiedFile) throw new IOException(new Win32Exception(error).Message);
+                progress.BytesDone = initialBytes + size;
+
+                ct.ThrowIfCancellationRequested();
+                // Copies were writable before native stream preservation. Keep that behavior:
+                // File.Replace needs write access to staging even when the source is read-only.
+                File.SetAttributes(temp, File.GetAttributes(temp) & ~FileAttributes.ReadOnly);
+                if (File.Exists(dst))
+                {
+                    keepRecovery = true;
+                    ReplaceFileWithRecovery(temp, dst, replace);
+                    keepRecovery = false;
+                }
+                else (renameFile ?? RenameFile)(temp, dst, 0);
+            }
+            finally
+            {
+                if (!keepRecovery && File.Exists(temp))
+                {
+                    File.SetAttributes(temp, File.GetAttributes(temp) & ~FileAttributes.ReadOnly);
+                    File.Delete(temp);
+                }
+            }
+        }
+
+        private static void ReplaceFileWithRecovery(string incoming, string destination,
+                                                      Action<string, string, string?>? replace)
+        {
+            string backup = destination + ".KillerShot-backup-" + Guid.NewGuid().ToString("N");
+            try { (replace ?? File.Replace)(incoming, destination, backup); }
+            catch (Exception ex)
+            {
+                Exception? restoration = null;
+                if (!File.Exists(destination) && File.Exists(backup))
+                    try { File.Move(backup, destination); } catch (Exception restoreError) { restoration = restoreError; }
+                throw new IOException($"Replacement failed. Destination: {destination}. Incoming: {incoming}. Backup: {backup}. "
+                    + ex.Message + (restoration == null ? "" : " Recovery failed: " + restoration.Message), ex);
+            }
+            // Publication succeeded. Backup cleanup must not turn a completed move into failure.
+            try { File.Delete(backup); } catch { }
+        }
+
+        private delegate uint CopyProgressRoutine(long total, long transferred, long streamSize,
+            long streamTransferred, uint streamNumber, uint reason, IntPtr source, IntPtr target, IntPtr data);
+
+        internal const uint CopyFileFailIfExists = 0x1;
+        internal const uint CopyFileAllowDecryptedDestination = 0x8;
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CopyFileEx(string source, string destination, CopyProgressRoutine progress,
+            IntPtr data, IntPtr cancel, uint flags);
+
+        private static void RenameFile(string source, string destination, uint flags)
+        {
+            // Without MOVEFILE_COPY_ALLOWED, Windows cannot silently copy and delete across
+            // volumes. The caller handles ERROR_NOT_SAME_DEVICE through cancellable staging.
+            if (MoveFileEx(source, destination, flags)) return;
+            int error = Marshal.GetLastWin32Error();
+            throw new IOException(new Win32Exception(error).Message, unchecked((int)0x80070000) | error);
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool MoveFileEx(string source, string destination, uint flags);
+
+        private static void MoveFile(string src, string dst, ref FileOpProgress progress,
+                                     Action<FileOpProgress> onProgress, CancellationToken ct,
+                                     Action<string, string, string?>? replace = null,
+                                     Action<string, string, uint>? renameFile = null)
+        {
+            // Same volume: a rename, instantaneous whatever the size. Different volume: there is
+            // no such thing as a cross-volume move, so it is a copy followed by a delete, and the
+            // delete only happens once the copy has actually landed.
+            if (SameVolume(src, dst))
+            {
+                long size = SafeSize(src);
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    if (File.Exists(dst))
+                    {
+                        FileAttributes incomingAttributes = File.GetAttributes(src);
+                        bool readOnly = (incomingAttributes & FileAttributes.ReadOnly) != 0;
+                        bool published = false;
+                        try
+                        {
+                            if (readOnly) File.SetAttributes(src, incomingAttributes & ~FileAttributes.ReadOnly);
+                            ReplaceFileWithRecovery(src, dst, replace);
+                            published = true;
+                        }
+                        finally
+                        {
+                            // Replacement needs writable staging; a move still carries the
+                            // incoming file's attributes, including after a refused publication.
+                            if (published) File.SetAttributes(dst, incomingAttributes);
+                            else if (readOnly && File.Exists(src)) File.SetAttributes(src, incomingAttributes);
+                        }
+                    }
+                    else (renameFile ?? RenameFile)(src, dst, 0);
+                    progress.BytesDone += size;
+                    return;
+                }
+                catch (IOException ex) when (ex.HResult == unchecked((int)0x80070011)
+                                             || ex.InnerException is IOException native
+                                             && native.HResult == unchecked((int)0x80070011))
+                {
+                    // A rename or replacement can cross a mounted-volume boundary even when
+                    // both paths share a drive root. Only ERROR_NOT_SAME_DEVICE selects copying.
+                }
+            }
+
+            CopyFile(src, dst, ref progress, onProgress, ct, replace, renameFile);
+            ct.ThrowIfCancellationRequested();
+            try { File.Delete(src); }
+            catch (Exception ex)
+            {
+                throw new IOException("Copied to '" + dst + "' but could not remove source '" + src + "': " + ex.Message, ex);
+            }
+        }
+
+        /// <summary>
+        /// Moves a junction or directory symlink as the link. Same volume is a rename of the link
+        /// entry; across volumes there is no way to carry it, so it stays where it is and is
+        /// reported rather than being emptied of someone else's files.
+        /// </summary>
+        private static void MoveLink(string src, string dst)
+        {
+            if (!SameVolume(src, dst))
+                throw new IOException("'" + src + "' is a link to another folder and was not moved to a different drive.");
+            Directory.Move(src, dst);
+        }
+
+        // Junctions and symlinks only: a folder that just carries a reparse point (dedup,
+        // ProjFS, container layers) is copied and moved like any other (DirectoryLink.cs).
+        private static bool IsLink(string dir) => DirectoryLink.IsLink(dir);
+
+        private static void RemoveEmptySourceDirs(IEnumerable<string> sources)
+        {
+            foreach (string s in sources)
+            {
+                if (!Directory.Exists(s) || IsLink(s)) continue;
+                try
+                {
+                    // Only if genuinely empty. A directory still holding a file that failed to
+                    // move must survive, or the failure becomes data loss.
+                    if (Directory.GetFileSystemEntries(s).Length == 0) Directory.Delete(s);
+                    else PruneEmpty(s);
+                }
+                catch { }
+            }
+        }
+
+        private static void PruneEmpty(string dir)
+        {
+            try
+            {
+                // Never through a link: an empty folder on the far side of a junction is not ours.
+                if (IsLink(dir)) return;
+                foreach (var d in Directory.EnumerateDirectories(dir))
+                    if (!IsLink(d)) PruneEmpty(d);
+                if (Directory.GetFileSystemEntries(dir).Length == 0) Directory.Delete(dir);
+            }
+            catch { }
+        }
+
+        // ── Delete ───────────────────────────────────────────────
+
+        /// <summary>Permanent delete. Ours, recursive, cancelable.</summary>
+        public static FileOpResult Delete(IEnumerable<string> paths, Action<FileOpProgress> onProgress,
+                                          CancellationToken ct)
+            => Delete(paths, onProgress, ct, null);
+
+        /// <param name="removed">Test seam: called after each entry inside a folder is removed.</param>
+        internal static FileOpResult Delete(IEnumerable<string> paths, Action<FileOpProgress> onProgress,
+                                            CancellationToken ct, Action<string>? removed)
+        {
+            var list = new List<string>(paths);
+            var result = new FileOpResult();
+            var progress = new FileOpProgress { ItemsTotal = list.Count };
+
+            foreach (string p in list)
+            {
+                if (ct.IsCancellationRequested) { result.Canceled = true; return result; }
+
+                progress.CurrentFile = p;
+                onProgress(progress);
+
+                // The cancel can land inside that callback. Nothing is touched after it.
+                if (ct.IsCancellationRequested) { result.Canceled = true; return result; }
+
+                bool removedAny = false;
+                try
+                {
+                    if (Directory.Exists(p))
+                    {
+                        if (!DeleteTree(p, ct, removed, ref removedAny))
+                        {
+                            result.Canceled = true;
+                            if (removedAny) result.Failed.Add((p, "Canceled after part of this folder was deleted."));
+                            return result;
+                        }
+                    }
+                    else if (File.Exists(p)) File.Delete(p);
+                    result.Succeeded++;
+                }
+                catch (Exception ex) { result.Failed.Add((p, ex.Message)); }
+
+                progress.ItemsDone++;
+                onProgress(progress);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Recursive delete that checks the token before every removal, so a cancel stops at the
+        /// next entry instead of finishing the subtree. A junction or directory symlink is removed
+        /// as the link and never walked. Returns false when canceled.
+        /// </summary>
+        private static bool DeleteTree(string dir, CancellationToken ct, Action<string>? removed,
+                                       ref bool removedAny)
+        {
+            if (!IsLink(dir))
+            {
+                foreach (string entry in Directory.GetFileSystemEntries(dir))
+                {
+                    if (ct.IsCancellationRequested) return false;
+                    if ((File.GetAttributes(entry) & FileAttributes.Directory) != 0)
+                    {
+                        if (!DeleteTree(entry, ct, removed, ref removedAny)) return false;
+                    }
+                    else
+                    {
+                        File.Delete(entry);
+                        removedAny = true;
+                        removed?.Invoke(entry);
+                    }
+                }
+            }
+
+            if (ct.IsCancellationRequested) return false;
+            Directory.Delete(dir);
+            removedAny = true;
+            removed?.Invoke(dir);
+            return true;
+        }
+
+        /// <summary>
+        /// Recycle Bin. THE one shell call in this file - see the header. FOF_ALLOWUNDO is what
+        /// makes it a recycle rather than a delete, and it is also what puts the operation on
+        /// Explorer's undo stack, so Ctrl+Z there brings the files back.
+        /// </summary>
+        /// <param name="silent">
+        /// Suppress the shell's progress dialog too. Set by the elevated <c>--recycle</c> helper
+        /// (App.xaml.cs), which has no window and no message pump - asking the shell to draw
+        /// progress in a process with nothing to pump it is how that call hangs or quietly bails.
+        /// The interactive path leaves it false, because a long recycle has to show something.
+        /// </param>
+        public static FileOpResult Recycle(IEnumerable<string> paths, bool silent = false)
+        {
+            var list = new List<string>(paths);
+            var result = new FileOpResult();
+            if (list.Count == 0) return result;
+
+            // Double-null terminated, and the whole block terminated again - the API reads until
+            // it sees an empty string, so a single terminator would run off the end.
+            string joined = string.Join("\0", list) + "\0\0";
+
+            var op = new SHFILEOPSTRUCT
+            {
+                wFunc  = FO_DELETE,
+                pFrom  = joined,
+                // FOF_NOERRORUI: the shell no longer draws its own Access Denied box, which is
+                // the one piece of UI in this app that was not ours. The refusal comes back as a
+                // return code instead and the caller answers it in a themed dialog. FOF_SILENT is
+                // deliberately NOT set - the progress dialog is the shell's job here, and killing
+                // it would leave a long recycle with no feedback at all - except in the headless
+                // helper, which passes silent and has nothing to pump a dialog with.
+                fFlags = (ushort)(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING
+                                  | FOF_NOERRORUI | (silent ? FOF_SILENT : 0)),
+            };
+
+            int rc = SHFileOperation(ref op);
+
+            if (rc != 0 || op.fAnyOperationsAborted)
+            {
+                result.Canceled = op.fAnyOperationsAborted;
+                result.AccessDenied = rc == DE_ACCESSDENIEDSRC || rc == ERROR_ACCESS_DENIED;
+                if (rc != 0) result.Failed.Add((list[0], "SHFileOperation returned " + rc));
+            }
+            else result.Succeeded = list.Count;
+
+            return result;
+        }
+
+        // ── Rename / new folder ──────────────────────────────────
+
+        /// <summary>Renames in place. Returns null on success, or the error to show.</summary>
+        public static string? Rename(string path, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName)) return "empty name";
+            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return "invalid characters";
+
+            string dir = Path.GetDirectoryName(path) ?? string.Empty;
+            string target = Path.Combine(dir, newName);
+
+            if (string.Equals(target, path, StringComparison.Ordinal)) return null;   // genuinely unchanged
+
+            // A case-only rename ("readme" -> "README") is a real rename and must skip the
+            // exists check: on a case-insensitive volume that check would find the very file
+            // being renamed and refuse. Ordinal above already let the true no-op out.
+            bool caseOnly = string.Equals(target, path, StringComparison.OrdinalIgnoreCase);
+            if (!caseOnly && (File.Exists(target) || Directory.Exists(target))) return "already exists";
+
+            try
+            {
+                if (Directory.Exists(path)) Directory.Move(path, target);
+                else File.Move(path, target);
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        /// <summary>
+        /// Creates a new folder under <paramref name="parent"/>, numbering it the way Explorer
+        /// does when the plain name is taken. Returns the created path, or null on failure.
+        /// </summary>
+        public static string? NewFolder(string parent, string baseName)
+        {
+            string path = Path.Combine(parent, baseName);
+            int n = 2;
+            while (Directory.Exists(path) || File.Exists(path))
+                path = Path.Combine(parent, baseName + " (" + n++ + ")");
+
+            try { Directory.CreateDirectory(path); return path; }
+            catch { return null; }
+        }
+
+        // ── Helpers ──────────────────────────────────────────────
+
+        /// <summary>"report.txt" -> "report (2).txt", skipping any number already taken.</summary>
+        private static string UniqueName(string path, IReadOnlyDictionary<string, string>? reserved = null)
+        {
+            string dir  = Path.GetDirectoryName(path) ?? string.Empty;
+            string stem = Path.GetFileNameWithoutExtension(path);
+            string ext  = Path.GetExtension(path);
+
+            int n = 2;
+            string candidate;
+            do { candidate = Path.Combine(dir, stem + " (" + n++ + ")" + ext); }
+            while (File.Exists(candidate) || Directory.Exists(candidate)
+                   || (reserved != null && reserved.ContainsKey(candidate)));
+
+            return candidate;
+        }
+
+        private static ConflictInfo BuildConflictInfo(string src, string dst)
+        {
+            var info = new ConflictInfo { SourcePath = src, TargetPath = dst };
+            try
+            {
+                if (Directory.Exists(dst))
+                {
+                    info.IsDirectory     = true;
+                    info.TargetModified  = Directory.GetLastWriteTime(dst);
+                }
+                else
+                {
+                    var f = new FileInfo(dst);
+                    info.TargetSize     = f.Length;
+                    info.TargetModified = f.LastWriteTime;
+                }
+
+                if (Directory.Exists(src)) info.SourceModified = Directory.GetLastWriteTime(src);
+                else
+                {
+                    var f = new FileInfo(src);
+                    info.SourceSize     = f.Length;
+                    info.SourceModified = f.LastWriteTime;
+                }
+            }
+            catch { /* a partial card beats no card */ }
+            return info;
+        }
+
+        private static long SafeSize(string p)
+        {
+            try { return new FileInfo(p).Length; } catch { return 0; }
+        }
+
+        /// <summary>
+        /// A drive-root hint for the rename fast path. A mounted volume can share the root;
+        /// native ERROR_NOT_SAME_DEVICE then selects the staged copy-and-delete route.
+        /// </summary>
+        private static bool SameVolume(string a, string b)
+        {
+            try
+            {
+                return string.Equals(Path.GetPathRoot(Path.GetFullPath(a)),
+                                     Path.GetPathRoot(Path.GetFullPath(b)),
+                                     StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        // ── SHFileOperation (Recycle Bin only) ───────────────────
+
+        private const uint FO_DELETE            = 0x0003;
+        private const ushort FOF_ALLOWUNDO      = 0x0040;
+        private const ushort FOF_NOCONFIRMATION = 0x0010;
+        private const ushort FOF_WANTNUKEWARNING= 0x4000;   // still warn if it CANNOT be recycled
+        private const ushort FOF_NOERRORUI       = 0x0400;   // we draw the failure, not the shell
+        private const ushort FOF_SILENT          = 0x0004;   // no progress dialog either
+
+        // SHFileOperation's own code for a permissions refusal, plus the Win32 one it sometimes
+        // returns instead. Neither is documented as exclusive, so both are treated the same.
+        private const int DE_ACCESSDENIEDSRC  = 0x78;
+        private const int ERROR_ACCESS_DENIED = 5;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct SHFILEOPSTRUCT
+        {
+            public IntPtr hwnd;
+            public uint   wFunc;
+            [MarshalAs(UnmanagedType.LPWStr)] public string pFrom;
+            [MarshalAs(UnmanagedType.LPWStr)] public string pTo;
+            public ushort fFlags;
+            [MarshalAs(UnmanagedType.Bool)] public bool fAnyOperationsAborted;
+            public IntPtr hNameMappings;
+            [MarshalAs(UnmanagedType.LPWStr)] public string lpszProgressTitle;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHFileOperation(ref SHFILEOPSTRUCT lpFileOp);
+    }
+}

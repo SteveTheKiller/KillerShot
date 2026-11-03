@@ -94,6 +94,7 @@ public partial class App : Application
         if (SelfTestNovemberEditor.TryRun(e.Args)) return;
         if (SelfTestNovemberVisuals.TryRun(e.Args)) return;
         if (SelfTestVideoOutput.TryRun(e.Args)) return;
+        if (SelfTestFilesCore.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;

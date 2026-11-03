@@ -1,8 +1,8 @@
 # KillerShot Changelog
 
-## [1.1.2] - Unreleased
+## [1.2.0] - Unreleased
 
-KillerShot 1.1.2 makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
+KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
 
 ### Security
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
@@ -36,6 +36,7 @@ KillerShot 1.1.2 makes recordings and large libraries more responsive, remembers
 - Changing the file type in the save picker while the name box holds characters no file name can carry keeps the name as typed and shows the invalid-path message.
 
 ### Added
+- A file browser core supports folder navigation, sorting, filtering and live updates.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 
