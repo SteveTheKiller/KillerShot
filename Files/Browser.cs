@@ -63,7 +63,10 @@ public sealed partial class Browser : IDisposable
     public Task<bool> NavigateTo(string folder, CancellationToken cancellationToken = default)
         => NavigateCore(folder, true, null, cancellationToken);
 
-    private async Task<bool> NavigateCore(string folder, bool record, int? historyIndex, CancellationToken cancellationToken)
+    public Task<bool> NavigateAddress(string path, CancellationToken cancellationToken = default)
+        => NavigateCore(path, true, null, cancellationToken, activateFile: true);
+
+    private async Task<bool> NavigateCore(string folder, bool record, int? historyIndex, CancellationToken cancellationToken, bool activateFile = false)
     {
         _dispatcher.VerifyAccess();
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -77,16 +80,19 @@ public sealed partial class Browser : IDisposable
         State.Error = null;
         try
         {
-            string full = IsThisPc(folder) ? ThisPc : Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
+            string resolved = IsThisPc(folder) ? ThisPc : Path.GetFullPath(folder);
+            string full = IsThisPc(resolved) ? ThisPc : Path.TrimEndingDirectorySeparator(resolved);
             bool showHidden = State.ShowHidden;
             var listed = await Task.Run(() =>
             {
-                if (IsThisPc(full)) return (Entries: ListDrives(), Error: (Exception?)null);
+                if (IsThisPc(full)) return (Entries: ListDrives(), Error: (Exception?)null, IsFile: false);
+                if (activateFile && File.Exists(resolved)) return (Entries: new List<FileEntry>(), Error: (Exception?)null, IsFile: true);
                 var entries = ListFolder(full, showHidden, token, out var error);
-                return (Entries: entries, Error: error);
+                return (Entries: entries, Error: error, IsFile: false);
             }, token)
                 .WaitAsync(NavigationTimeout, token);
             if (token.IsCancellationRequested || revision != _revision || _disposed) return false;
+            if (listed.IsFile) return await ActivateEntry(new FileEntry { FilePath = full, FileName = Path.GetFileName(full) }, token);
             if (listed.Error != null && listed.Entries.Count == 0) { State.Error = listed.Error; return false; }
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(State.Results);
             using (view.DeferRefresh())

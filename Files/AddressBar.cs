@@ -33,8 +33,7 @@ public partial class FilesView
         string path = Environment.ExpandEnvironmentVariables(address.Trim().Trim('"'));
         EndEditAddress();
         if (path.Length == 0) return false;
-        if (File.Exists(path)) return await Browser.ActivateEntry(new FileEntry { FilePath = Path.GetFullPath(path), FileName = Path.GetFileName(path) });
-        return await NavigateTo(path);
+        return await Browser.NavigateAddress(path);
     }
     private void InitAddress()
     {
