@@ -75,7 +75,8 @@ namespace KillerShot.Services
         /// <summary>Runs a machine-wide uninstall elevated. The elevated copy shows its own
         /// confirmation, so it is waited for as long as that stays open.</summary>
         public static int? RequestElevation(bool machine, Func<bool> elevated,
-            Func<Process?> launch, Action<Exception> report, int waitMilliseconds = Timeout.Infinite)
+            Func<Process?> launch, Action<Exception> report, int waitMilliseconds = Timeout.Infinite,
+            Action? accepted = null)
         {
             if (!machine) return null;
             try
@@ -86,7 +87,9 @@ namespace KillerShot.Services
                 if (!child.WaitForExit(waitMilliseconds))
                     throw new System.ComponentModel.Win32Exception(KillerFamily.Deployment.InstallerExitCodes.Busy,
                         "The administrator uninstall process has not finished.");
-                return child.ExitCode;
+                int result = child.ExitCode;
+                if (result == Pending) accepted?.Invoke();
+                return result;
             }
             catch (System.ComponentModel.Win32Exception error) when (error.NativeErrorCode == 1223)
             { return KillerFamily.Deployment.InstallerExitCodes.Cancelled; }

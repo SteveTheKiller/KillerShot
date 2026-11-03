@@ -17,6 +17,11 @@ namespace KillerShot.Services
         /// <summary>Name shown in prompts.</summary>
         internal const string DisplayName = "KillerShot";
 
+        /// <summary>The signed Print Screen companion refreshed after self-update.</summary>
+        internal static string UpdateCompanionPath => PrintScreenHelper.InstalledPath;
+        internal static string UpdateCompanionArguments => "/install-printscreen-helper";
+        internal static string UpdateCompanionName => "Print Screen helper";
+
         /// <summary>Certificate subject fragment that unlocks the alias line on the About card. The
         /// subject is a legal name, so the card ties it back to the publicly known alias. A build
         /// signed by anyone else must not claim that alias, and an unsigned build has no subject.

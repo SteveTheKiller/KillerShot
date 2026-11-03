@@ -24,6 +24,10 @@ namespace KillerShot.Cli;
 /// </summary>
 public static class Program
 {
+    internal static readonly string[] Commands = ["capture", "qr", "edit", "text", "recording", "collections",
+        "print", "scroll", "exit", "paste", "regions", "record", "recent", "open", "monitors", "windows",
+        "settings", "version", "--version", "help", "--help", "-h", "/?"];
+
     internal const int ExitOk = 0;
     internal const int ExitFailed = 1;
     internal const int ExitUsage = 2;

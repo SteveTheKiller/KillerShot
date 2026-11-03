@@ -62,6 +62,11 @@ namespace KillerShot
                 exitCode = InstallPrintScreenHelper();
                 return true;
             }
+            if (string.Equals(first, "/remove-printscreen-helper", StringComparison.OrdinalIgnoreCase))
+            {
+                exitCode = RemovePrintScreenHelper();
+                return true;
+            }
             return false;
         }
 
@@ -86,6 +91,45 @@ namespace KillerShot
                 Console.Error.WriteLine("The Print Screen helper was not installed: " + error.Message);
                 return KillerFamily.Deployment.InstallerExitCodes.FromException(error);
             }
+        }
+
+        private static int RemovePrintScreenHelper()
+        {
+            try
+            {
+                if (!KillerFamily.Deployment.InstallerExitCodes.IsElevated())
+                    return KillerFamily.Deployment.InstallerExitCodes.AccessDenied;
+                if (!CodeSignature.GetSignerInfo().valid)
+                    return KillerFamily.Deployment.InstallerExitCodes.SecurityRejected;
+                using var lease = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, MachineInstallDir);
+                if (!Directory.Exists(MachineInstallDir)) return 0;
+                using var pinned = InstallationFiles.PinDirectory(MachineInstallDir, mustExist: true);
+                ExecutableDeployment.RemoveCompanionIfUnowned(MachineInstallExe, PrintScreenHelper.InstalledPath);
+                return 0;
+            }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine("The Print Screen helper could not be removed: " + error.Message);
+                return KillerFamily.Deployment.InstallerExitCodes.FromException(error);
+            }
+        }
+
+        private static void RemovePerUserPrintScreenHelper()
+        {
+            if (!File.Exists(PrintScreenHelper.InstalledPath) || File.Exists(MachineInstallExe)) return;
+            if (!CodeSignature.GetSignerInfo().valid)
+                throw new System.Security.SecurityException("The uninstall helper has no valid signature.");
+            using var child = Process.Start(new ProcessStartInfo(Process.GetCurrentProcess().MainModule!.FileName,
+                "/remove-printscreen-helper")
+            {
+                UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System)
+            }) ?? throw new IOException("The Print Screen helper cleanup did not start.");
+            if (!child.WaitForExit(30000))
+                throw new System.ComponentModel.Win32Exception(KillerFamily.Deployment.InstallerExitCodes.Busy,
+                    "The Print Screen helper cleanup has not finished.");
+            if (child.ExitCode != 0) throw new System.ComponentModel.Win32Exception(child.ExitCode,
+                "The Print Screen helper cleanup failed. Retry uninstall to finish removal.");
         }
 
         /// <summary>
@@ -187,7 +231,11 @@ namespace KillerShot
                 return;
             }
 
-            if (runningMachine) RemovePerUserInstall();
+            if (runningMachine)
+            {
+                int result = RemovePerUserInstall();
+                if (result != 0) ShowInstallDialog("The per-user installation could not be removed. Result: " + result);
+            }
             else
             {
                 try
@@ -195,8 +243,10 @@ namespace KillerShot
                     using var p = Process.Start(new ProcessStartInfo(current, "/remove-machine-conflict")
                     { UseShellExecute = true, Verb = "runas" });
                     p?.WaitForExit();
+                    if (p == null || p.ExitCode != 0)
+                        ShowInstallDialog("The all-users installation could not be removed. Result: " + (p?.ExitCode ?? 1));
                 }
-                catch { }
+                catch (Exception error) { ShowInstallDialog("The all-users installation could not be removed: " + error.Message); }
             }
         }
 
@@ -204,14 +254,16 @@ namespace KillerShot
         {
             try
             {
+                if (!KillerFamily.Deployment.InstallerExitCodes.IsElevated())
+                    return KillerFamily.Deployment.InstallerExitCodes.AccessDenied;
                 using var lifecycle = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, MachineInstallDir);
+                KillerFamily.Deployment.InstalledFileCleanup.Remove(MachineInstallDir, InstalledFiles);
                 string common = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName);
                 try { Registry.LocalMachine.DeleteSubKeyTree(RegKey, false); } catch { }
                 try { Registry.LocalMachine.DeleteSubKeyTree(UninstallKey, false); } catch { }
                 try { File.Delete(Path.Combine(common, AppName + ".lnk")); } catch { }
                 try { File.Delete(CommonDesktopLnk); } catch { }
                 try { if (Directory.Exists(common)) Directory.Delete(common, false); } catch { }
-                KillerFamily.Deployment.InstalledFileCleanup.Remove(MachineInstallDir, InstalledFiles);
                 Services.CommandLinePath.Unregister(MachineInstallDir, machine: true);
                 return KillerFamily.Deployment.InstallerExitCodes.Success;
             }
@@ -292,10 +344,10 @@ namespace KillerShot
             try
             {
                 using var lifecycle = KillerFamily.Deployment.InstallerExitCodes.Acquire(AppName, InstallDir);
+                KillerFamily.Deployment.InstalledFileCleanup.Remove(InstallDir, InstalledFiles);
                 try { if (File.Exists(StartMenuLnk)) File.Delete(StartMenuLnk); } catch { }
                 try { if (Directory.Exists(StartMenuDir)) Directory.Delete(StartMenuDir, false); } catch { }
                 try { if (File.Exists(DesktopLnk)) File.Delete(DesktopLnk); } catch { }
-                KillerFamily.Deployment.InstalledFileCleanup.Remove(InstallDir, InstalledFiles);
                 Services.CommandLinePath.Unregister(InstallDir, machine: false);
                 try
                 {
@@ -534,7 +586,7 @@ namespace KillerShot
                     string message = "Uninstall could not request administrator access:\n" + ex.Message;
                     if (silent) Console.Error.WriteLine(message);
                     else ShowInstallDialog(message);
-                });
+                }, accepted: RemoveUserUninstallIntegration);
         }
 
         private static string UninstallStagingRoot(bool machine) => machine ? MachineInstallDir
@@ -590,6 +642,8 @@ namespace KillerShot
 
             int result = new DeferredUninstall().Start(Process.GetCurrentProcess().MainModule!.FileName,
                 UninstallStagingRoot(machine), machine ? MachineInstallDir : InstallDir, InstalledFiles, machine, operationId);
+            if (result == UninstallWorkflow.Pending && machine && requestedOperationId == null)
+                RemoveUserUninstallIntegration();
             Console.Error.WriteLine("Uninstall result: " + result + ". Status and retained helper files: " + operationDirectory);
             if (result != UninstallWorkflow.Pending && !silent)
                 ShowInstallDialog("Uninstall could not start. Result: " + result + "\n\nRetained files and status, if created:\n" + operationDirectory);
@@ -615,6 +669,7 @@ namespace KillerShot
         /// place, so a failure here leaves an uninstall entry that still works.</summary>
         private static void RemoveUninstallIntegration(bool machine)
         {
+            if (!machine) RemovePerUserPrintScreenHelper();
             string startMenuDir = machine
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName)
                 : StartMenuDir;
@@ -636,6 +691,11 @@ namespace KillerShot
                 if (Services.CommandLinePath.WithoutEntry(value, targetDir) != value)
                     throw new IOException("The installed command path remains registered.");
             }
+            if (!machine) RemoveUserUninstallIntegration();
+        }
+
+        private static void RemoveUserUninstallIntegration()
+        {
             // Puts back Windows' Print Screen setting if the first version of the Print Screen switch
             // changed it (the switch now uses a keyboard hook and leaves the setting alone). Best
             // effort: the key is a preference, never a reason to leave a half-removed install.

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace KillerFamily.Deployment
 {
@@ -11,8 +10,14 @@ namespace KillerFamily.Deployment
         public static void Remove(string directory, params string[] files)
         {
             string[] paths = OwnedPaths(directory, files);
-            foreach (string path in paths)
-                try { File.Delete(path); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            if (paths.Length != files.Length)
+                throw new System.Security.SecurityException("An installed cleanup path could not be validated.");
+            // The primary image is listed first. Keep it available to retry cleanup if a companion is locked.
+            foreach (string path in paths.Reverse())
+            {
+                File.Delete(path);
+                if (File.Exists(path)) throw new IOException("An installed file remains after removal: " + path);
+            }
             foreach (string folder in Folders(directory, paths))
                 try
                 {
@@ -20,18 +25,6 @@ namespace KillerFamily.Deployment
                 }
                 catch (IOException) { }
                 catch (UnauthorizedAccessException) { }
-        }
-
-        public static string RemovalBatch(string directory, params string[] files)
-        {
-            string[] paths = OwnedPaths(directory, files);
-            var script = new StringBuilder("setlocal DisableDelayedExpansion\r\n");
-            foreach (string path in paths)
-                script.Append("del /q \"").Append(path.Replace("%", "%%")).Append("\" >nul 2>&1\r\n");
-            foreach (string folder in Folders(directory, paths))
-                if (!Linked(folder))
-                    script.Append("rmdir \"").Append(folder.Replace("%", "%%")).Append("\" >nul 2>&1\r\n");
-            return script.ToString();
         }
 
         public static string[] OwnedPaths(string directory, params string[] files)

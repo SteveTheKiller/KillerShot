@@ -55,6 +55,9 @@ namespace KillerShot.Services
             try
             {
                 using var lifecycle = InstallerExitCodes.Acquire("KillerShot", targetDirectory);
+                ownedFiles = ownedFiles.Concat(ExecutableDeployment.UninstallLeftovers(targetDirectory, AppInfo.ExeName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+                receipt.RemainingFiles = ownedFiles.Select(file => Path.Combine(Path.GetFullPath(targetDirectory), file)).ToArray();
                 ValidateOwned(targetDirectory, ownedFiles);
                 receipt.TargetFiles = TargetIdentities(targetDirectory, ownedFiles);
                 CreateOperationDirectory(directory, machine);
@@ -120,6 +123,8 @@ namespace KillerShot.Services
                 if (parent != null && !parent.WaitForExit(parentWaitMilliseconds))
                     throw new System.ComponentModel.Win32Exception(InstallerExitCodes.Busy, "The uninstall parent has not exited.");
                 using var lifecycle = InstallerExitCodes.Acquire("KillerShot", targetDirectory);
+                ownedFiles = ownedFiles.Concat(ExecutableDeployment.UninstallLeftovers(targetDirectory, AppInfo.ExeName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
                 ValidateOwned(targetDirectory, ownedFiles);
                 if (receipt.TargetFiles.Length != ownedFiles.Length)
                     throw new System.Security.SecurityException("The uninstall receipt has no target identity.");
