@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">使用できない文字があります</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">既に存在します</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">名前を変更できません - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">ファイル</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">この結果を絞り込む (Ctrl+F)</sys:String>
 </ResourceDictionary>

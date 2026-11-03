@@ -90,11 +90,22 @@ namespace KillerShot.Shell
         {
             if (_source == source) return;
             _source = source;
+            if (FilesActive) NavigateFilesSource();
             if (IsLoaded) Reload(); else _dirty = true;
         }
         public event Action<string, FrameworkElement>? LinkRequested;
 
         private string _view = "shelves";
+        private string _captureSearch = "";
+        private bool _syncingSearch;
+        public bool FilesActive => _view == "files";
+        public Files.FilesView Files => FileBrowser;
+        public Task<bool> FilesNavigation { get; private set; } = Task.FromResult(false);
+        private void NavigateFilesSource()
+        {
+            string path = FolderCaptures.IsSource(_source) ? FolderCaptures.PathForSource(_source) : "";
+            FilesNavigation = FileBrowser.NavigateTo(string.IsNullOrWhiteSpace(path) ? CaptureSettings.OutputFolder : path);
+        }
         private string _group = "date";
         private IReadOnlyList<CaptureItem> _items = [];
         private IReadOnlyList<CaptureCollection> _collections = [];
@@ -117,8 +128,9 @@ namespace KillerShot.Shell
         public LibraryView()
         {
             InitializeComponent();
-            _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" ? Settings.Get("LibraryView")! : "shelves";
+            _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" or "files" ? Settings.Get("LibraryView")! : "shelves";
             _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
+            FileBrowser.ResultsChanged += UpdateFilesCount;
 
             BigFlow.ThumbnailSource = CaptureLibrary.RequestThumb;
             BigFlow.DeferHiddenLoading = true;
@@ -153,6 +165,7 @@ namespace KillerShot.Shell
             {
                 if (_view is "grid" or "timeline" && TilesPerRow() != _tilesPerRow) BuildRows();
             };
+            SyncSearchPresentation();
         }
 
         /// <summary>Redraws with the current language. Called on load and after a language change.</summary>
@@ -181,6 +194,20 @@ namespace KillerShot.Shell
         /// <summary>Reads the library again and redraws the current view.</summary>
         public void Reload()
         {
+            SyncSearchPresentation();
+            if (FilesActive)
+            {
+                _listingWork.Cancel();
+                _dirty = false;
+                HideBusy();
+                RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = LockPanel.Visibility = PendingBar.Visibility = Visibility.Collapsed;
+                FileBrowser.Visibility = Visibility.Visible;
+                UpdateFilesCount();
+                if (FileBrowser.Navigation.CurrentFolder.Length == 0)
+                    NavigateFilesSource();
+                return;
+            }
+            FileBrowser.Visibility = Visibility.Collapsed;
             if (CaptureLibrary.VideoBusy) { _listingWork.Cancel(); _dirty = true; return; }
             long session = CaptureLibrary.Session;
             if (_albumSession != session)
@@ -226,7 +253,7 @@ namespace KillerShot.Shell
             var reader = ListingReader;
             ListingTask = _listingWork.RunAsync(_ => reader(source, search), (listing, token) =>
             {
-                if (CaptureLibrary.Session == session && source == _source && search == SearchBox.Text.Trim())
+                if (!FilesActive && CaptureLibrary.Session == session && source == _source && search == SearchBox.Text.Trim())
                     ApplyListing(listing, search);
                 return Task.CompletedTask;
             }, error => StatusMessage?.Invoke(error.Message));
@@ -658,7 +685,7 @@ namespace KillerShot.Shell
         // Header bar
         // ============================================================
 
-        /// <summary>The view: shelves, flow (the carousel), grid or timeline.</summary>
+        /// <summary>The view: shelves, flow (the carousel), grid, timeline or files.</summary>
         public string CurrentView => _view;
 
         /// <summary>The grouping: date or collection. The timeline is always by date.</summary>
@@ -667,12 +694,20 @@ namespace KillerShot.Shell
         /// <summary>The view or grouping changed, so the footer's radio buttons follow.</summary>
         public event Action? ViewChanged;
 
-        /// <summary>Picks a view from the footer or F5 to F8, and remembers it.</summary>
+        /// <summary>Picks a view from the footer or F5 to F9, and remembers it.</summary>
         public void SetView(string view)
         {
-            if (view is not ("shelves" or "flow" or "grid" or "timeline")) return;
+            if (view is not ("shelves" or "flow" or "grid" or "timeline" or "files")) return;
+            bool enteringFiles = view == "files" && !FilesActive;
+            if (!FilesActive) _captureSearch = SearchBox.Text;
             _view = view;
+            _searchDelay.Stop();
+            _syncingSearch = true;
+            try { SearchBox.Text = FilesActive ? FileBrowser.Navigation.FilterText : _captureSearch; }
+            finally { _syncingSearch = false; }
+            SyncSearchPresentation();
             Settings.Set("LibraryView", view);
+            if (enteringFiles) NavigateFilesSource();
             Reload();
             ViewChanged?.Invoke();
         }
@@ -691,8 +726,26 @@ namespace KillerShot.Shell
         {
             SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             if (SearchAnchor != null) SearchAnchor.Tag = SearchBox.Text.Length > 0 ? "on" : null;
+            if (_syncingSearch) return;
+            if (FilesActive) { FileBrowser.SetFilter(SearchBox.Text); return; }
             _searchDelay.Stop();
             _searchDelay.Start();
+        }
+
+        private void UpdateFilesCount()
+        {
+            if (!FilesActive) return;
+            var entries = CollectionViewSource.GetDefaultView(FileBrowser.Navigation.Results).Cast<Files.FileEntry>().ToArray();
+            CountText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Sum_Counts"), entries.Count(entry => entry.IsDirectory), entries.Count(entry => !entry.IsDirectory));
+            CountChanged?.Invoke(CountText.Text);
+        }
+
+        private void SyncSearchPresentation()
+        {
+            string key = FilesActive ? "Str_TT_FilterResults" : "Str_Lib_Search";
+            SearchHint.SetResourceReference(TextBlock.TextProperty, key);
+            SearchBox.SetResourceReference(AutomationProperties.NameProperty, key);
+            SearchAnchor?.SetResourceReference(ToolTipProperty, key);
         }
 
         private void SearchBox_KeyDown(object sender, KeyEventArgs e)

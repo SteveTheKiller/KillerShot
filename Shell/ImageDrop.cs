@@ -17,6 +17,7 @@ public partial class MainWindow
         AllowDrop = true;
         PreviewDragEnter += (_, e) =>
         {
+            if (Library.IsVisible && Library.FilesActive) { EndDropImage(); return; }
             UpdateDropEffect(e);
             EndDropImage();
             if ((object)e.Data is System.Runtime.InteropServices.ComTypes.IDataObject data)
@@ -27,12 +28,14 @@ public partial class MainWindow
         };
         PreviewDragOver += (_, e) =>
         {
+            if (Library.IsVisible && Library.FilesActive) return;
             UpdateDropEffect(e);
             _dropImage?.Over(PointToScreen(e.GetPosition(this)), (int)e.Effects);
         };
         PreviewDragLeave += (_, _) => EndDropImage();
         PreviewDrop += (_, e) =>
         {
+            if (Library.IsVisible && Library.FilesActive) { EndDropImage(); return; }
             UpdateDropEffect(e);
             if ((object)e.Data is System.Runtime.InteropServices.ComTypes.IDataObject data)
                 _dropImage?.Drop(data, PointToScreen(e.GetPosition(this)), (int)e.Effects);
@@ -67,6 +70,7 @@ public partial class MainWindow
 
     internal bool DropImages(IDataObject data)
     {
+        if (Library.IsVisible && Library.FilesActive) return false;
         if (ImageDrag.Active || !HasImages(data)) return false;
         if (data.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } paths)
         {

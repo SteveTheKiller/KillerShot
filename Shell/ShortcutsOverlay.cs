@@ -64,6 +64,7 @@ namespace KillerShot.Shell
             new("F6",       "Str_Lib_ViewFlow",     KsCat.View, false, "F6"),
             new("F7",       "Str_Lib_ViewGrid",     KsCat.View, false, "F7"),
             new("F8",       "Str_Lib_ViewTimeline", KsCat.View, false, "F8"),
+            new("F9",       "Str_Lib_ViewFiles", KsCat.View, false, "F9"),
 
             new("V",        "Str_Tool_Select",      KsCat.Nav, false, "V"),
             new("P",        "Str_Tool_Pen",         KsCat.Nav, false, "P"),

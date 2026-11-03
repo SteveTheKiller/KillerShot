@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">nieprawidłowe znaki</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">już istnieje</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Nie udało się zmienić nazwy - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Pliki</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filtruj te wyniki (Ctrl+F)</sys:String>
 </ResourceDictionary>

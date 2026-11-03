@@ -692,4 +692,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">neveljavni znaki</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">že obstaja</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Preimenovanje ni uspelo: {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Datoteke</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filtriraj te rezultate (Ctrl+F)</sys:String>
 </ResourceDictionary>

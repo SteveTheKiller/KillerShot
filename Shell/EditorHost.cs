@@ -439,7 +439,19 @@ namespace KillerShot.Shell
         private void InitLibrary()
         {
             InitLibraryVideoWork();
+            Closed += (_, _) => Library.Files.Dispose();
             Library.SearchAnchor = LibrarySearchButton;
+            Library.Files.CanOpenInHost = path => System.IO.Path.GetExtension(path).ToLowerInvariant()
+                is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".tif" or ".tiff";
+            Library.Files.Browser.OpenInEditor = path =>
+            {
+                if (Library.Files.CanOpenInHost(path))
+                {
+                    OpenPath(path);
+                    return Task.FromResult(true);
+                }
+                return Task.FromResult(false);
+            };
             // The library's file name, without its extension, as Killendar and KillerNotes name
             // their open database; the tooltip has the full path.
             TitleLibraryLabel.Text = System.IO.Path.GetFileNameWithoutExtension(CaptureLibrary.FilePath);

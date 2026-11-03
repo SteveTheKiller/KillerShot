@@ -87,11 +87,11 @@ public partial class MainWindow
     private void FillContentMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline") })
+        foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline"), ("files", "Str_Lib_ViewFiles") })
         {
             string target = view;
             AddItem(menu, key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,
-                view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", _ => "F8" });
+                view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", "timeline" => "F8", _ => "F9" });
         }
         if (Library.IsVisible && Library.CurrentView is "shelves" or "flow")
         {

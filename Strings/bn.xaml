@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">অবৈধ অক্ষর</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">আগে থেকেই আছে</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">নাম পরিবর্তন করা যায়নি - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">ফাইলগুলি</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">এই ফলাফলগুলি ফিল্টার করুন (Ctrl+F)</sys:String>
 </ResourceDictionary>

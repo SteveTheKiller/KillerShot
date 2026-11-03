@@ -702,4 +702,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">invalid characters</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">already exists</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Could not rename - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Files</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filter these results (Ctrl+F)</sys:String>
 </ResourceDictionary>

@@ -116,7 +116,7 @@ public partial class FilesView
     private async void Files_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Handled || e.OriginalSource is TextBox) return;
-        var modifiers = Keyboard.Modifiers;
+        var modifiers = e.KeyboardDevice.Modifiers;
         if (HandleFileKey(e.Key == Key.System ? e.SystemKey : e.Key, modifiers, e.OriginalSource as DependencyObject))
         { e.Handled = true; return; }
         if ((modifiers == ModifierKeys.Control && e.Key == Key.L) || (modifiers == ModifierKeys.Alt && e.SystemKey == Key.D)) { BeginEditAddress(); e.Handled = true; }

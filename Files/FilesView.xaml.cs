@@ -6,10 +6,20 @@ public partial class FilesView : UserControl, IDisposable
 {
     public Browser Browser { get; } = new();
     public ResultsViewState ViewState { get; } = new();
+    public event Action? ResultsChanged;
+    public int VisibleCount => System.Windows.Data.CollectionViewSource.GetDefaultView(Navigation.Results).Cast<object>().Count();
+    public void SetFilter(string text)
+    {
+        Navigation.FilterText = text;
+        Sorting.ApplyFilter(Navigation);
+        ResultsChanged?.Invoke();
+    }
     public FilesView()
     {
         InitializeComponent();
         ResultsList.ItemsSource = Browser.State.Results;
+        ((System.Collections.Specialized.INotifyCollectionChanged)System.Windows.Data.CollectionViewSource.GetDefaultView(Navigation.Results))
+            .CollectionChanged += (_, _) => ResultsChanged?.Invoke();
         ResultsList.Tag = ViewState;
         ViewState.LocationHidden = true;
         ResultsList.SizeChanged += (_, _) => FitColumns();

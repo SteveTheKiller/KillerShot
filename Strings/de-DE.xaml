@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">ungültige Zeichen</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">bereits vorhanden</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Umbenennen nicht möglich - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Dateien</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Diese Ergebnisse filtern (Strg+F)</sys:String>
 </ResourceDictionary>

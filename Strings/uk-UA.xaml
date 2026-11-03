@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">недійсні символи</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">уже існує</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Не вдалося перейменувати - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Файли</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Фільтрувати ці результати (Ctrl+F)</sys:String>
 </ResourceDictionary>

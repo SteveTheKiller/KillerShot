@@ -67,13 +67,29 @@ namespace KillerShot.Shell
                 return;
             }
 
-            // F5 to F8 pick the library's view, as they pick KillerPDF's view mode, and bring the
+            // F5 to F9 pick the library's view, as they pick KillerPDF's view mode, and bring the
             // library up over an open picture.
-            if (!ctrl && !alt && !shift && e.Key is >= Key.F5 and <= Key.F8)
+            if (!ctrl && !alt && !shift && e.Key is >= Key.F5 and <= Key.F9)
             {
-                ShowLibraryView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", _ => "timeline" });
+                ShowLibraryView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", Key.F8 => "timeline", _ => "files" });
                 e.Handled = true;
                 return;
+            }
+
+            bool captureView = Library.IsVisible && !Library.FilesActive;
+            if (Library.IsVisible && Library.FilesActive)
+            {
+                if (Library.Files.HandleFileKey(dockKey, mods, e.OriginalSource as DependencyObject))
+                { e.Handled = true; return; }
+                // Text fields keep their native edit commands; Files never falls into capture or editor actions.
+                if (TypingInField() && (e.Key is Key.Back or Key.Delete or Key.F2 or Key.Enter
+                    || ctrl && e.Key is Key.A or Key.C or Key.X or Key.V or Key.Z or Key.Y)) return;
+                if (ctrl && !alt && e.Key == Key.F) { Library.FocusSearch(); e.Handled = true; return; }
+                if (!alt && (!ctrl && e.Key is Key.Back or Key.Delete or Key.F2 or Key.Enter
+                    || ctrl && !shift && e.Key is Key.A or Key.C or Key.X or Key.V or Key.E or Key.M or Key.P or Key.S or Key.Z or Key.Y
+                        or Key.H or Key.G or Key.I or Key.T or Key.D or Key.OemCloseBrackets or Key.OemOpenBrackets
+                    || ctrl && shift && e.Key is Key.C or Key.V or Key.S or Key.Z or Key.H or Key.G or Key.T or Key.N))
+                { e.Handled = true; return; }
             }
 
             // Alt+Shift+G, the family Film Grain chord. A text field takes no Alt chords, so it is
@@ -125,7 +141,7 @@ namespace KillerShot.Shell
             }
 
             // F2 over the album edits the focused capture's note; in the editor it edits text.
-            if (!ctrl && !alt && !shift && e.Key == Key.F2 && Library.IsVisible && !TypingInField())
+            if (!ctrl && !alt && !shift && e.Key == Key.F2 && captureView && !TypingInField())
             {
                 Library.NoteFocused();
                 e.Handled = true;
@@ -139,8 +155,8 @@ namespace KillerShot.Shell
                 {
                     case Key.N when shift: NewCollectionButton_Click(NewCollectionButton, new RoutedEventArgs()); break;
                     case Key.N: StartCapture(); break;
-                    case Key.E when Library.IsVisible && !TypingInField(): Library.ShowFocusedInExplorer(); break;
-                    case Key.M when Library.IsVisible && !shift && !TypingInField(): Library.MoveFocused(); break;
+                    case Key.E when captureView && !TypingInField(): Library.ShowFocusedInExplorer(); break;
+                    case Key.M when captureView && !shift && !TypingInField(): Library.MoveFocused(); break;
                     case Key.P when shift: if (!e.IsRepeat && App.Instance.Capture is { } scroller) _ = scroller.ScrollingCapture(); break;
                     case Key.T when shift && !TypingInField() && _doc != null && !Library.IsVisible: BeginRegionTextRead(); break;
                     case Key.X when shift && !TypingInField(): App.Instance.RequestExit(); break;
@@ -165,12 +181,12 @@ namespace KillerShot.Shell
                     case Key.I when !shift && !TypingInField(): if (!RunImageCommand(PromptResize)) handled = false; break;
                     case Key.M when !shift && !TypingInField(): if (!RunImageCommand(PromptMargin)) handled = false; break;
                     case Key.T when !shift && !TypingInField(): if (!RunImageCommand(TrimBorder)) handled = false; break;
-                    case Key.S when shift: if (Library.IsVisible) Library.SaveAsFocused(); else SaveAs(); break;
+                    case Key.S when shift: if (captureView) Library.SaveAsFocused(); else if (!Library.IsVisible) SaveAs(); break;
                     case Key.S: Save(); break;
                     // Over the album these act on the capture in view, never the hidden editor image.
                     case Key.C when shift && !TypingInField() && _doc != null && !Library.IsVisible: _ = ReadPictureTextAsync(null, copy: true); break;
-                    case Key.C when !shift && !TypingInField(): if (Library.IsVisible) Library.CopyFocused(); else CopyResult(); break;
-                    case Key.P: if (Library.IsVisible) Library.PrintFocused(); else PrintResult(); break;
+                    case Key.C when !shift && !TypingInField(): if (captureView) Library.CopyFocused(); else if (!Library.IsVisible) CopyResult(); break;
+                    case Key.P: if (captureView) Library.PrintFocused(); else if (!Library.IsVisible) PrintResult(); break;
                     case Key.Z when !TypingInField() && shift: Redo(); break;
                     case Key.Z when !TypingInField(): Undo(); break;
                     case Key.Y when !TypingInField(): Redo(); break;

@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">caratteri non validi</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">esiste già</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Impossibile rinominare - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">File</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filtra questi risultati (Ctrl+F)</sys:String>
 </ResourceDictionary>

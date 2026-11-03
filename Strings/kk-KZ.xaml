@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">жарамсыз таңбалар</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">бұрыннан бар</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Атын өзгерту мүмкін болмады - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Файлдар</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Осы нәтижелерді сүзу (Ctrl+F)</sys:String>
 </ResourceDictionary>

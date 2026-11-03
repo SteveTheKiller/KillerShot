@@ -108,7 +108,7 @@ namespace KillerShot.Shell
         private void SyncStripPane()
         {
             // Visibility, not IsVisible: this also runs before the window is shown and while it is in the tray.
-            bool showPane = !(Library.Visibility == Visibility.Visible && Library.CurrentView is "flow" or "shelves");
+            bool showPane = !(Library.Visibility == Visibility.Visible && Library.CurrentView is "flow" or "shelves" or "files");
             bool railChanged = StripDock.RailSize != 24;
             bool paneChanged = StripDock.ShowPane != showPane;
             StripDock.RailSize = 24;
@@ -133,6 +133,7 @@ namespace KillerShot.Shell
         /// added and not saved are asked about first, since the library keeps the original.</summary>
         private void OpenFromStrip(CaptureItem item)
         {
+            if (Library.IsVisible && Library.FilesActive) return;
             try { App.Instance.OpenLibraryCapture(item); }
             catch (Exception ex) { StatusText.Text = ex.Message; }
             finally { _strip?.Follow(App.Instance.CurrentItem, _doc?.FilePath); }

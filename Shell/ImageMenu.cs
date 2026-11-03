@@ -24,7 +24,7 @@ public partial class MainWindow
     /// <summary>The menu's commands, built fresh so they follow the language and the picture.</summary>
     private IEnumerable<object> ImageMenuItems()
     {
-        bool has = _doc != null;
+        bool has = _doc != null && !Library.IsVisible;
         MenuItem Item(string key, Action action, string gesture = "")
         {
             var item = new MenuItem { Header = Loc(key), InputGestureText = gesture, IsEnabled = has };

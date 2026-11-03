@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">caractères non valides</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">existe déjà</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Renommage impossible - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Fichiers</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filtrer ces résultats (Ctrl+F)</sys:String>
 </ResourceDictionary>

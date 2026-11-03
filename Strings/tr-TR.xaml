@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">geçersiz karakterler</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">zaten var</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Yeniden adlandırılamadı - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Dosyalar</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Bu sonuçları filtrele (Ctrl+F)</sys:String>
 </ResourceDictionary>

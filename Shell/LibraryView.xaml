@@ -1,11 +1,12 @@
 <!-- The library: every capture KillerShot has kept, shown when no image is open and on Ctrl+L.
-     Four views (Shelves of cover flows, one big Cover Flow, Grid and Timeline), grouped by
+     Capture views (Shelves of cover flows, one big Cover Flow, Grid and Timeline), grouped by
      collection or by date, with search. Rows are built in LibraryView.xaml.cs and virtualized,
-     so a library of thousands of captures only ever draws the rows on screen. -->
+     so a library of thousands of captures only ever draws the rows on screen. Files browses folders. -->
 <UserControl x:Class="KillerShot.Shell.LibraryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:kc="clr-namespace:KillerShot.Controls"
+             xmlns:files="clr-namespace:KillerShot.Files"
              xmlns:a11y="clr-namespace:KillerFamily.Accessibility"
              xmlns:local="clr-namespace:KillerShot.Shell">
     <UserControl.Resources>
@@ -132,6 +133,7 @@
         </Popup>
 
         <Grid Grid.Row="1">
+            <files:FilesView x:Name="FileBrowser" Visibility="Collapsed"/>
             <!-- Shelves, Grid and Timeline: virtualized rows built in code. -->
             <ItemsControl x:Name="RowsList" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True"

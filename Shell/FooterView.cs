@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 using KillerFamily.Layout;
 
 // The footer's view cell, as KillerPDF has it: icon radio buttons with the accent underline on the
-// one in use. They pick the library's view (F5 to F8) and its grouping, and with a picture open
+// one in use. They pick the library's view (F5 to F9) and its grouping, and with a picture open
 // they bring the library up in that view. Strip positioning and side views live in the rail.
 namespace KillerShot.Shell
 {
@@ -33,6 +33,7 @@ namespace KillerShot.Shell
             {
                 ("shelves", "\uE8A9", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
                 ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
+                ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
             })
             {
                 string target = view;
@@ -163,7 +164,7 @@ namespace KillerShot.Shell
             return button;
         }
 
-        /// <summary>A view from the footer or F5 to F8, with the library brought up over a picture.</summary>
+        /// <summary>A view from the footer or F5 to F9, with the library brought up over a picture.</summary>
         private void ShowLibraryView(string view)
         {
             Library.SetView(view);
@@ -266,11 +267,11 @@ namespace KillerShot.Shell
                 // Over a picture none is underlined: the library is not what is showing.
                 foreach (var (button, view) in _footerViews) button.IsChecked = library && Library.CurrentView == view;
                 // The timeline is a line of days, so it is always by date.
-                bool grouped = Library.CurrentView != "timeline";
+                bool grouped = Library.CurrentView != "timeline" && !Library.FilesActive;
                 foreach (var (button, group) in _footerGroups)
                 {
                     button.IsEnabled = grouped;
-                    button.IsChecked = library && Library.CurrentGroup == group;
+                    button.IsChecked = library && !Library.FilesActive && Library.CurrentGroup == group;
                 }
             }
             finally { _footerSyncing = false; }

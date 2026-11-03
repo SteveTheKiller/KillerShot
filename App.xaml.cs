@@ -97,6 +97,7 @@ public partial class App : Application
         if (SelfTestFilesCore.TryRun(e.Args)) return;
         if (SelfTestFilesView.TryRun(e.Args)) return;
         if (SelfTestFilesInteraction.TryRun(e.Args)) return;
+        if (SelfTestFilesIntegration.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
@@ -429,6 +430,8 @@ public partial class App : Application
         return true;
     }
 
+    internal Func<Controls.ConfirmDialog, bool>? PresentDocumentReplacement { get; set; }
+
     internal bool ConfirmDocumentReplacement()
     {
         _editor?.CommitPendingText();
@@ -437,12 +440,14 @@ public partial class App : Application
         // An album capture keeps its marks in the album, so replacing it loses nothing.
         if (Document.FilePath == null && Marks.CaptureId != null) return true;
         var expectedDocument = Document;
-        ShowEditor();
+        if (PresentDocumentReplacement == null) ShowEditor();
         var dialog = new Controls.ConfirmDialog(LocaleManager.Loc("Str_Strip_DiscardTitle"),
             LocaleManager.Loc("Str_Strip_DiscardDetail"), LocaleManager.Loc("Str_Strip_Discard"),
             LocaleManager.Loc("Str_Btn_Cancel")) { Owner = _editor };
-        dialog.ShowDialog();
-        return dialog.Confirmed && ReferenceEquals(Document, expectedDocument);
+        bool confirmed;
+        if (PresentDocumentReplacement is { } present) confirmed = present(dialog);
+        else { dialog.ShowDialog(); confirmed = dialog.Confirmed; }
+        return confirmed && ReferenceEquals(Document, expectedDocument);
     }
 
     internal void CompleteAlbumSwitch()

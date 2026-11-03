@@ -699,4 +699,6 @@
 <sys:String x:Key="Str_Err_InvalidChars">neplatné znaky</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">již existuje</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Nelze přejmenovat - {0}</sys:String>
+<sys:String x:Key="Str_Lib_ViewFiles">Soubory</sys:String>
+<sys:String x:Key="Str_TT_FilterResults">Filtrovat tyto výsledky (Ctrl+F)</sys:String>
 </ResourceDictionary>

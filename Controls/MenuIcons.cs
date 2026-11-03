@@ -26,6 +26,7 @@ internal static class MenuIcons
         ("Str_Rail_Reverse", 0xE8CB),
         ("Str_Lib_ViewShelves", 0xE8A9), ("Str_Lib_ViewFlow", 0xE7C5),
         ("Str_Lib_ViewGrid", 0xE80A), ("Str_Lib_ViewTimeline", 0xE823),
+        ("Str_Lib_ViewFiles", 0xE8B7),
         ("Str_Lib_ByDate", 0xE787), ("Str_Lib_ByCollection", 0xE8B7),
         ("Str_Dock_Left", 0xE76B), ("Str_Dock_Right", 0xE76C), ("Str_Dock_Top", 0xE70E), ("Str_Dock_Bottom", 0xE70D),
         ("Str_Lib_RenameCollection", 0xE8AC), ("Str_Lib_CollectionColor", 0xE790),
