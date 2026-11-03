@@ -20,6 +20,7 @@ Updates are harder to tamper with, no longer report a false failure and recover 
 - Updating KillerShot no longer removes a relaunch another Killer app scheduled for its own update.
 - The file picker no longer stalls on a disconnected network folder when it opens, a relative or malformed path typed in the path box is refused instead of being looked up against the wrong folder, a pattern such as *.log typed in the name box filters the list, and a full path typed in the name box can be accepted even when the shown folder failed to list.
 - Uninstall no longer breaks when the install folder's path contains an apostrophe.
+- Changing the file type in the save picker while the name box holds characters no file name can carry keeps the name as typed and shows the invalid-path message.
 
 ### Added
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
