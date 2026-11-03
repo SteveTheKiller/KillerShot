@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Page vers le bas</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Page vers la gauche</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Page vers la droite</sys:String>
+<sys:String x:Key="Str_Lbl_In">dans :</sys:String>
+<sys:String x:Key="Str_TT_Scope">Cliquez pour changer de dossier de recherche  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Précédent  (Alt+Flèche gauche)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Suivant  (Alt+Flèche droite)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Garder les dossiers au-dessus des fichiers  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">emplacement</sys:String>
+<sys:String x:Key="Str_Col_Type">type</sys:String>
+<sys:String x:Key="Str_Col_Created">créé</sys:String>
+<sys:String x:Key="Str_TT_Density">Densité des résultats - clic pour changer, molette pour ajuster  (Ctrl+Maj+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Densité : spacieuse</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Densité : confortable</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Densité : compacte</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Densité : serrée</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Densité : minimale</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Glisser pour redimensionner  -  double-clic pour réinitialiser</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Ce PC</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Recharger</sys:String>
+<sys:String x:Key="Str_TT_Sort">Trier par  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Inverser l'ordre du tri  (Alt+Maj+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Croissant</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Décroissant</sys:String>
 </ResourceDictionary>

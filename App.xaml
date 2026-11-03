@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="Themes/Dark.xaml"/>
                 <!-- The family control styles from the KillerUI template, identical in every app. -->
                 <ResourceDictionary Source="Controls/Controls.xaml"/>
+                <ResourceDictionary Source="Controls/FilesStyles.xaml"/>
                 <!-- English string base, always present. LocaleManager layers the chosen locale
                      directly after it, so a partial translation falls back to English. -->
                 <ResourceDictionary Source="Strings/en-US.xaml"/>

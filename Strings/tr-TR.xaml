@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Bir sayfa aşağı</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Bir sayfa sola</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Bir sayfa sağa</sys:String>
+<sys:String x:Key="Str_Lbl_In">konum:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Arama klasörünü değiştirmek için tıklayın  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Geri  (Alt+Sol ok)</sys:String>
+<sys:String x:Key="Str_TT_Forward">İleri  (Alt+Sağ ok)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Klasörleri dosyaların üstünde tut  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">konum</sys:String>
+<sys:String x:Key="Str_Col_Type">tür</sys:String>
+<sys:String x:Key="Str_Col_Created">oluşturulma</sys:String>
+<sys:String x:Key="Str_TT_Density">Sonuç yoğunluğu - tıklayarak değiştirin, tekerlekle ayarlayın  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Yoğunluk: geniş</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Yoğunluk: rahat</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Yoğunluk: sıkışık</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Yoğunluk: dar</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Yoğunluk: en az</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Genişliği değiştirmek için sürükleyin  -  sıfırlamak için çift tıklayın</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Bu bilgisayar</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Yeniden yükle</sys:String>
+<sys:String x:Key="Str_TT_Sort">Sıralama ölçütü  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Sıralama yönünü tersine çevir  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Artan</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Azalan</sys:String>
 </ResourceDictionary>

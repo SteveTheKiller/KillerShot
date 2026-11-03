@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">На страницу вниз</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">На страницу влево</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">На страницу вправо</sys:String>
+<sys:String x:Key="Str_Lbl_In">в:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Нажмите, чтобы сменить папку поиска  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Назад  (Alt+Стрелка влево)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Вперёд  (Alt+Стрелка вправо)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Папки выше файлов  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">расположение</sys:String>
+<sys:String x:Key="Str_Col_Type">тип</sys:String>
+<sys:String x:Key="Str_Col_Created">создан</sys:String>
+<sys:String x:Key="Str_TT_Density">Плотность результатов - клик переключает по кругу, колесо шагает  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Плотность: просторная</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Плотность: обычная</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Плотность: компактная</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Плотность: плотная</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Плотность: минимальная</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Потяните, чтобы изменить ширину  -  двойной клик сбрасывает</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Этот компьютер</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Загрузить заново</sys:String>
+<sys:String x:Key="Str_TT_Sort">Сортировать по  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Обратить порядок сортировки  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">По возрастанию</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">По убыванию</sys:String>
 </ResourceDictionary>

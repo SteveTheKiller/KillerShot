@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">向下翻頁</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">向左翻頁</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">向右翻頁</sys:String>
+<sys:String x:Key="Str_Lbl_In">位置：</sys:String>
+<sys:String x:Key="Str_TT_Scope">按一下以變更搜尋資料夾  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">上一頁  (Alt+向左鍵)</sys:String>
+<sys:String x:Key="Str_TT_Forward">下一頁  (Alt+向右鍵)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">資料夾置於檔案之上  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">位置</sys:String>
+<sys:String x:Key="Str_Col_Type">類型</sys:String>
+<sys:String x:Key="Str_Col_Created">建立時間</sys:String>
+<sys:String x:Key="Str_TT_Density">結果密度 - 按一下切換，滾輪調整  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">密度：寬敞</sys:String>
+<sys:String x:Key="Str_St_DensityFull">密度：寬鬆</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">密度：緊湊</sys:String>
+<sys:String x:Key="Str_St_DensityTight">密度：緊密</sys:String>
+<sys:String x:Key="Str_St_DensityMin">密度：最小</sys:String>
+<sys:String x:Key="Str_TT_ColResize">拖曳調整欄寬  -  按兩下還原</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">本機</sys:String>
+<sys:String x:Key="Str_Btn_Reload">重新載入</sys:String>
+<sys:String x:Key="Str_TT_Sort">排序方式  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">反轉排序順序  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">遞增</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">遞減</sys:String>
 </ResourceDictionary>

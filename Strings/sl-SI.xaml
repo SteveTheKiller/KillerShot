@@ -643,4 +643,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Stran navzdol</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Stran v levo</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Stran v desno</sys:String>
+<sys:String x:Key="Str_Lbl_In">v:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Kliknite za spremembo iskalne mape  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Nazaj  (Alt+puščica levo)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Naprej  (Alt+puščica desno)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Ohrani mape nad datotekami  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">mesto</sys:String>
+<sys:String x:Key="Str_Col_Type">vrsta</sys:String>
+<sys:String x:Key="Str_Col_Created">ustvarjeno</sys:String>
+<sys:String x:Key="Str_TT_Density">Gostota rezultatov: kliknite za preklop, kolešček za korak  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Gostota: prostorna</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Gostota: udobna</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Gostota: strnjena</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Gostota: tesna</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Gostota: najmanjša</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Povlecite za spremembo velikosti, dvokliknite za ponastavitev</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Ta računalnik</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Znova naloži</sys:String>
+<sys:String x:Key="Str_TT_Sort">Razvrsti po  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Obrni vrstni red razvrščanja  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Naraščajoče</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Padajoče</sys:String>
 </ResourceDictionary>

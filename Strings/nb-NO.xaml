@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Side ned</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Side til venstre</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Side til høyre</sys:String>
+<sys:String x:Key="Str_Lbl_In">i:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Klikk for å endre søkemappe  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Tilbake  (Alt+Venstrepil)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Fremover  (Alt+Høyrepil)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Hold mapper over filer  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">plassering</sys:String>
+<sys:String x:Key="Str_Col_Type">type</sys:String>
+<sys:String x:Key="Str_Col_Created">opprettet</sys:String>
+<sys:String x:Key="Str_TT_Density">Resultattetthet - klikk for å bla gjennom, bruk hjulet for å justere trinnvis  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Tetthet: romslig</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Tetthet: komfortabel</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Tetthet: kompakt</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Tetthet: tett</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Tetthet: minimal</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Dra for å endre størrelse  -  dobbeltklikk for å tilbakestille</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Denne PC-en</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Last inn på nytt</sys:String>
+<sys:String x:Key="Str_TT_Sort">Sorter etter  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Snu sorteringsrekkefølgen  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Stigende</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Synkende</sys:String>
 </ResourceDictionary>

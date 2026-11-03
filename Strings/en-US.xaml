@@ -653,4 +653,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Page down</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Page left</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Page right</sys:String>
+<sys:String x:Key="Str_Lbl_In">in:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Click to change search folder  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Back  (Alt+Left arrow)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Forward  (Alt+Right arrow)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Keep folders above files  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">location</sys:String>
+<sys:String x:Key="Str_Col_Type">type</sys:String>
+<sys:String x:Key="Str_Col_Created">created</sys:String>
+<sys:String x:Key="Str_TT_Density">Results density - click to cycle, wheel to step  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Density: roomy</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Density: comfortable</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Density: compact</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Density: tight</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Density: minimal</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Drag to resize  -  double-click to reset</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">This PC</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Reload</sys:String>
+<sys:String x:Key="Str_TT_Sort">Sort by  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Reverse the sort order  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Ascending</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Descending</sys:String>
 </ResourceDictionary>

@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">На сторінку вниз</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">На сторінку ліворуч</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">На сторінку праворуч</sys:String>
+<sys:String x:Key="Str_Lbl_In">у:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Натисніть, щоб змінити папку пошуку  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Назад  (Alt+Стрілка вліво)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Вперед  (Alt+Стрілка вправо)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Тримати папки над файлами  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">розташування</sys:String>
+<sys:String x:Key="Str_Col_Type">тип</sys:String>
+<sys:String x:Key="Str_Col_Created">створено</sys:String>
+<sys:String x:Key="Str_TT_Density">Щільність результатів - клацніть для перемикання, коліщатко для кроку  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Щільність: просторо</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Щільність: комфортно</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Щільність: компактно</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Щільність: тісно</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Щільність: мінімально</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Перетягніть, щоб змінити розмір  -  подвійне клацання скидає</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Цей ПК</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Завантажити знову</sys:String>
+<sys:String x:Key="Str_TT_Sort">Сортувати за  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Обернути порядок сортування  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">За зростанням</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">За спаданням</sys:String>
 </ResourceDictionary>

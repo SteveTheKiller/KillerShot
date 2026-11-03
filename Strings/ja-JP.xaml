@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">1 ページ下へ</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">1 ページ左へ</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">1 ページ右へ</sys:String>
+<sys:String x:Key="Str_Lbl_In">場所:</sys:String>
+<sys:String x:Key="Str_TT_Scope">クリックして検索フォルダーを変更  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">戻る  (Alt+左矢印キー)</sys:String>
+<sys:String x:Key="Str_TT_Forward">進む  (Alt+右矢印キー)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">フォルダーをファイルより上に表示  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">場所</sys:String>
+<sys:String x:Key="Str_Col_Type">種類</sys:String>
+<sys:String x:Key="Str_Col_Created">作成日時</sys:String>
+<sys:String x:Key="Str_TT_Density">結果の表示密度 - クリックで切り替え、ホイールで調整  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">密度: 広め</sys:String>
+<sys:String x:Key="Str_St_DensityFull">密度: ゆったり</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">密度: コンパクト</sys:String>
+<sys:String x:Key="Str_St_DensityTight">密度: 詰めて</sys:String>
+<sys:String x:Key="Str_St_DensityMin">密度: 最小</sys:String>
+<sys:String x:Key="Str_TT_ColResize">ドラッグで幅を変更  -  ダブルクリックでリセット</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">PC</sys:String>
+<sys:String x:Key="Str_Btn_Reload">再読み込み</sys:String>
+<sys:String x:Key="Str_TT_Sort">並べ替え  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">並べ替えの順序を逆にする  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">昇順</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">降順</sys:String>
 </ResourceDictionary>

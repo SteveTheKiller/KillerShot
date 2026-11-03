@@ -89,13 +89,19 @@ public sealed partial class Browser : IDisposable
             if (token.IsCancellationRequested || revision != _revision || _disposed) return false;
             if (listed.Error != null && listed.Entries.Count == 0) { State.Error = listed.Error; return false; }
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(State.Results);
-            view.SortDescriptions.Clear();
-            view.GroupDescriptions.Clear();
-            view.Filter = null;
-            State.Results.Clear();
-            foreach (var entry in listed.Entries) State.Results.Add(entry);
-            Sorting.ApplySort(State);
-            Sorting.ApplyFilter(State);
+            using (view.DeferRefresh())
+            {
+                if (view is System.Windows.Data.ListCollectionView list) list.CustomSort = null;
+                view.SortDescriptions.Clear();
+                view.GroupDescriptions.Clear();
+                if (view.Filter != null) view.Filter = null;
+            }
+            State.ReplaceResults(listed.Entries);
+            using (view.DeferRefresh())
+            {
+                Sorting.ApplySort(State);
+                Sorting.ApplyFilter(State);
+            }
             State.CurrentFolder = full;
             if (historyIndex is int index) State.HistoryIndex = index;
             else if (record && (State.HistoryIndex < 0

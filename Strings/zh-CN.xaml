@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">向下翻页</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">向左翻页</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">向右翻页</sys:String>
+<sys:String x:Key="Str_Lbl_In">范围：</sys:String>
+<sys:String x:Key="Str_TT_Scope">点击以更改搜索文件夹  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">后退  (Alt+左箭头键)</sys:String>
+<sys:String x:Key="Str_TT_Forward">前进  (Alt+右箭头键)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">文件夹置于文件之上  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">位置</sys:String>
+<sys:String x:Key="Str_Col_Type">类型</sys:String>
+<sys:String x:Key="Str_Col_Created">创建时间</sys:String>
+<sys:String x:Key="Str_TT_Density">结果密度 - 单击切换，滚轮调节  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">密度：宽敞</sys:String>
+<sys:String x:Key="Str_St_DensityFull">密度：宽松</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">密度：紧凑</sys:String>
+<sys:String x:Key="Str_St_DensityTight">密度：紧密</sys:String>
+<sys:String x:Key="Str_St_DensityMin">密度：最小</sys:String>
+<sys:String x:Key="Str_TT_ColResize">拖动调整列宽  -  双击还原</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">此电脑</sys:String>
+<sys:String x:Key="Str_Btn_Reload">重新加载</sys:String>
+<sys:String x:Key="Str_TT_Sort">排序方式  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">反转排序顺序  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">升序</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">降序</sys:String>
 </ResourceDictionary>

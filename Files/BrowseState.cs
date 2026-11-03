@@ -6,7 +6,21 @@ namespace KillerShot.Files;
 
 public sealed class BrowseState : INotifyPropertyChanged
 {
-    public ObservableCollection<FileEntry> Results { get; } = [];
+    public ObservableCollection<FileEntry> Results { get; } = new ResultsCollection();
+    internal void ReplaceResults(IEnumerable<FileEntry> entries) => ((ResultsCollection)Results).Replace(entries);
+    private sealed class ResultsCollection : ObservableCollection<FileEntry>
+    {
+        internal void Replace(IEnumerable<FileEntry> entries)
+        {
+            CheckReentrancy();
+            Items.Clear();
+            foreach (var entry in entries) Items.Add(entry);
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+        }
+    }
     public List<string> History { get; } = [];
     public int HistoryIndex { get; internal set; } = -1;
     private string _currentFolder = string.Empty;

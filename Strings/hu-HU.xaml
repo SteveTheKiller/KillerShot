@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Egy oldallal lejjebb</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Egy oldallal balra</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Egy oldallal jobbra</sys:String>
+<sys:String x:Key="Str_Lbl_In">itt:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Kattintson a keresési mappa megváltoztatásához (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Vissza (Alt+Balra nyíl)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Előre (Alt+Jobbra nyíl)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Tartsa a mappákat a fájlok felett (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">helyen</sys:String>
+<sys:String x:Key="Str_Col_Type">típus</sys:String>
+<sys:String x:Key="Str_Col_Created">létrehozva</sys:String>
+<sys:String x:Key="Str_TT_Density">Eredménysűrűség - kattintás a ciklushoz, kerék a lépéshez (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Sűrűség: tágas</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Sűrűség: kényelmes</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Sűrűség: kompakt</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Sűrűség: szoros</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Sűrűség: minimális</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Húzza az átméretezéshez - kattintson duplán a visszaállításhoz</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">Ez a PC</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Újratöltés</sys:String>
+<sys:String x:Key="Str_TT_Sort">Rendezés (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">A rendezési irány megfordítása (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Növekvő</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Csökkenő</sys:String>
 </ResourceDictionary>

@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">এক পৃষ্ঠা নিচে</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">এক পৃষ্ঠা বাঁয়ে</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">এক পৃষ্ঠা ডানে</sys:String>
+<sys:String x:Key="Str_Lbl_In">যেখানে:</sys:String>
+<sys:String x:Key="Str_TT_Scope">অনুসন্ধানের ফোল্ডার পরিবর্তন করতে ক্লিক করুন  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">পেছনে  (Alt+বাম তীর)</sys:String>
+<sys:String x:Key="Str_TT_Forward">সামনে  (Alt+ডান তীর)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">ফোল্ডার ফাইলের উপরে রাখুন  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">অবস্থান</sys:String>
+<sys:String x:Key="Str_Col_Type">ধরন</sys:String>
+<sys:String x:Key="Str_Col_Created">তৈরি</sys:String>
+<sys:String x:Key="Str_TT_Density">ফলাফলের ঘনত্ব - ক্লিকে বদলান, হুইলে ধাপে ধাপে  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">ঘনত্ব: প্রশস্ত</sys:String>
+<sys:String x:Key="Str_St_DensityFull">ঘনত্ব: আরামদায়ক</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">ঘনত্ব: সংক্ষিপ্ত</sys:String>
+<sys:String x:Key="Str_St_DensityTight">ঘনত্ব: ঘন</sys:String>
+<sys:String x:Key="Str_St_DensityMin">ঘনত্ব: সর্বনিম্ন</sys:String>
+<sys:String x:Key="Str_TT_ColResize">টেনে প্রস্থ বদলান  -  ডাবল-ক্লিকে আগের অবস্থায়</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">এই পিসি</sys:String>
+<sys:String x:Key="Str_Btn_Reload">পুনরায় লোড</sys:String>
+<sys:String x:Key="Str_TT_Sort">সাজান  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">সাজানোর ক্রম উল্টে দিন  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">ঊর্ধ্বক্রম</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">অধঃক্রম</sys:String>
 </ResourceDictionary>

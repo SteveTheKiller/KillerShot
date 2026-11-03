@@ -650,4 +650,25 @@
     <sys:String x:Key="Str_Scroll_PageDown">Xuống một trang</sys:String>
     <sys:String x:Key="Str_Scroll_PageLeft">Sang trái một trang</sys:String>
     <sys:String x:Key="Str_Scroll_PageRight">Sang phải một trang</sys:String>
+<sys:String x:Key="Str_Lbl_In">trong:</sys:String>
+<sys:String x:Key="Str_TT_Scope">Bấm để đổi thư mục tìm kiếm  (Ctrl+L)</sys:String>
+<sys:String x:Key="Str_TT_Back">Quay lại  (Alt+Mũi tên trái)</sys:String>
+<sys:String x:Key="Str_TT_Forward">Tiến  (Alt+Mũi tên phải)</sys:String>
+<sys:String x:Key="Str_TT_FoldersTop">Luôn đặt thư mục phía trên tệp  (Alt+O)</sys:String>
+<sys:String x:Key="Str_Col_Folder">vị trí</sys:String>
+<sys:String x:Key="Str_Col_Type">Loại</sys:String>
+<sys:String x:Key="Str_Col_Created">Ngày tạo</sys:String>
+<sys:String x:Key="Str_TT_Density">Mật độ kết quả: bấm để chuyển đổi, cuộn để điều chỉnh từng mức  (Ctrl+Shift+4)</sys:String>
+<sys:String x:Key="Str_St_DensityRoomy">Mật độ: rộng rãi</sys:String>
+<sys:String x:Key="Str_St_DensityFull">Mật độ: thoải mái</sys:String>
+<sys:String x:Key="Str_St_DensityCompact">Mật độ: thu gọn</sys:String>
+<sys:String x:Key="Str_St_DensityTight">Mật độ: sít</sys:String>
+<sys:String x:Key="Str_St_DensityMin">Mật độ: tối thiểu</sys:String>
+<sys:String x:Key="Str_TT_ColResize">Kéo để đổi kích thước, bấm đúp để đặt lại</sys:String>
+<sys:String x:Key="Str_Nav_ThisPc">PC này</sys:String>
+<sys:String x:Key="Str_Btn_Reload">Tải lại</sys:String>
+<sys:String x:Key="Str_TT_Sort">Sắp xếp theo  (Alt+S)</sys:String>
+<sys:String x:Key="Str_TT_SortDir">Đảo ngược thứ tự sắp xếp  (Alt+Shift+S)</sys:String>
+<sys:String x:Key="Str_A11y_SortAsc">Tăng dần</sys:String>
+<sys:String x:Key="Str_A11y_SortDesc">Giảm dần</sys:String>
 </ResourceDictionary>
