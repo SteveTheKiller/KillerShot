@@ -1,0 +1,81 @@
+using System.Globalization;
+using System.Reflection;
+
+internal static class CultureWrites
+{
+    static int failures;
+
+    static void Check(string what, bool ok, string detail)
+    {
+        Console.WriteLine((ok ? "PASS: " : "FAIL: ") + what + " " + detail);
+        if (!ok) failures++;
+    }
+
+    static int Main(string[] args)
+    {
+        var asm = Assembly.LoadFrom(args[0]);
+        var outputFiles = asm.GetType("KillerShot.Services.OutputFiles", true)!;
+        var regionMemory = asm.GetType("KillerShot.Services.RegionMemory", true)!;
+        var mode = asm.GetType("KillerShot.Capture.CaptureMode", true)!;
+        var monitor = asm.GetType("KillerShot.Capture.MonitorBounds", true)!;
+        var rect = asm.GetType("KillerShot.Native.Win32+RECT", true)!;
+
+        var fileName = outputFiles.GetMethod("FileName", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
+        var layout = regionMemory.GetMethod("Layout", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        object Rect(int l, int t, int r, int b)
+        {
+            var o = Activator.CreateInstance(rect)!;
+            foreach (var (n, v) in new[] { ("Left", l), ("Top", t), ("Right", r), ("Bottom", b) })
+            {
+                var f = rect.GetField(n, BindingFlags.Public | BindingFlags.Instance);
+                if (f != null) f.SetValue(o, v); else rect.GetProperty(n)!.SetValue(o, v);
+            }
+            return o;
+        }
+
+        string Name(string culture)
+        {
+            var saved = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo(culture);
+                return (string)fileName.Invoke(null, new object?[]
+                {
+                    "{yyyy}-{MM}-{dd} {HH}{mm}{ss} {width}x{height}", new DateTime(2026, 11, 2, 13, 5, 9),
+                    Enum.Parse(mode, "Region"), 1920, 1080, "png"
+                })!;
+            }
+            finally { CultureInfo.CurrentCulture = saved; }
+        }
+
+        string Layout(string culture)
+        {
+            var saved = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo(culture);
+                var monitors = Array.CreateInstance(monitor, 2);
+                monitors.SetValue(Activator.CreateInstance(monitor, IntPtr.Zero, Rect(-1920, -200, 0, 880), false), 0);
+                monitors.SetValue(Activator.CreateInstance(monitor, IntPtr.Zero, Rect(0, 0, 2560, 1440), true), 1);
+                var list = typeof(List<>).MakeGenericType(monitor);
+                var l = Activator.CreateInstance(list)!;
+                foreach (var m in monitors) list.GetMethod("Add")!.Invoke(l, new[] { m });
+                return (string)layout.Invoke(null, new[] { l })!;
+            }
+            finally { CultureInfo.CurrentCulture = saved; }
+        }
+
+        string expected = "2026-11-02 130509 1920x1080.png";
+        foreach (var c in new[] { "en-US", "th-TH", "ar-SA", "fa-IR" })
+        {
+            string n = Name(c);
+            Check("FileName " + c, n == expected, n);
+        }
+        string inv = Layout("en-US");
+        string sv = Layout("sv-SE");
+        Check("Layout en-US negative origin", inv.Contains("-1920,-200,1920,1080"), inv);
+        Check("Layout sv-SE matches en-US", sv == inv && !sv.Contains('−'), sv);
+        return failures == 0 ? 0 : 1;
+    }
+}

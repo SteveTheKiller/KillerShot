@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -37,11 +38,12 @@ internal static class OutputFiles
     /// <summary>Expands the pattern and strips characters Windows does not allow in a file name.</summary>
     public static string FileName(string pattern, DateTime when, CaptureMode mode, int width, int height, string ext)
     {
+        var inv = CultureInfo.InvariantCulture;
         var name = pattern
-            .Replace("{yyyy}", when.ToString("yyyy")).Replace("{MM}", when.ToString("MM")).Replace("{dd}", when.ToString("dd"))
-            .Replace("{HH}", when.ToString("HH")).Replace("{mm}", when.ToString("mm")).Replace("{ss}", when.ToString("ss"))
+            .Replace("{yyyy}", when.ToString("yyyy", inv)).Replace("{MM}", when.ToString("MM", inv)).Replace("{dd}", when.ToString("dd", inv))
+            .Replace("{HH}", when.ToString("HH", inv)).Replace("{mm}", when.ToString("mm", inv)).Replace("{ss}", when.ToString("ss", inv))
             .Replace("{mode}", mode.ToString().ToLowerInvariant())
-            .Replace("{width}", width.ToString()).Replace("{height}", height.ToString());
+            .Replace("{width}", width.ToString(inv)).Replace("{height}", height.ToString(inv));
         var sb = new StringBuilder();
         var bad = Path.GetInvalidFileNameChars();
         foreach (char c in name) sb.Append(Array.IndexOf(bad, c) >= 0 ? '_' : c);

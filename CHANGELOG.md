@@ -8,6 +8,7 @@ Updates are harder to tamper with and no longer report a false failure.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 
 ### Fixed
+- Capture and recording file names use the Gregorian year on Thai, Arabic and Persian region settings instead of years like 2569.
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
 - An all-users update reopens KillerShot for the signed-in user at normal rights, whether it finishes or stops early. Windows was refusing that relaunch, so the app stayed closed. Files left behind by earlier failed updates are cleared when the next update is staged.
 - A finished all-users uninstall clears the files earlier failed attempts kept, so they no longer hold the install folder open after the restart.

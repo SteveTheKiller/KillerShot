@@ -20,7 +20,7 @@ internal static class RegionMemory
     /// <summary>The monitor layout as text: every monitor's bounds, primary marked.</summary>
     public static string Layout(IReadOnlyList<MonitorBounds> monitors) =>
         string.Join(";", monitors.OrderBy(m => m.Bounds.Left).ThenBy(m => m.Bounds.Top)
-            .Select(m => $"{m.Bounds.Left},{m.Bounds.Top},{m.Bounds.Width},{m.Bounds.Height}{(m.Primary ? "p" : "")}"));
+            .Select(m => string.Create(CultureInfo.InvariantCulture, $"{m.Bounds.Left},{m.Bounds.Top},{m.Bounds.Width},{m.Bounds.Height}{(m.Primary ? "p" : "")}")));
 
     public static void Remember(Win32.RECT region, IReadOnlyList<MonitorBounds> monitors)
     {

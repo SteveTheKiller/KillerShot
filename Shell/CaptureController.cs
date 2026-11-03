@@ -347,7 +347,7 @@ internal sealed partial class CaptureController
             Title = Loc("Str_Dlg_SaveTitle"),
             Filter = Loc("Str_Dlg_ImageFilter"),
             DefaultExt = ".png",
-            FileName = $"KillerShot {DateTime.Now:yyyy-MM-dd HHmmss}.png",
+            FileName = "KillerShot " + DateTime.Now.ToString("yyyy-MM-dd HHmmss", System.Globalization.CultureInfo.InvariantCulture) + ".png",
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
         };
         if (dlg.ShowDialog(null) != true) return;
