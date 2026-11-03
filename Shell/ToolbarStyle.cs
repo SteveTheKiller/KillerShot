@@ -110,7 +110,7 @@ namespace KillerShot.Shell
                 SizeToolbarButton(btn, _iconSize, _labelMode);
                 // The name always stays reachable, which is what makes an icon-only bar usable.
                 // The shortcut rides along in the tooltip, the family rule for every action surface.
-                btn.ToolTip = ShortcutFor(btn) is string sc ? label + "  (" + sc + ")" : label;
+                btn.ToolTip = KillerFamily.Layout.ShortcutHints.WithHint(label, ShortcutFor(btn));
             }
 
             SyncToolbarMenuChecks();

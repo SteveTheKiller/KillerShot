@@ -2,7 +2,7 @@
 
 ## [1.1.2] - Unreleased
 
-Updates are harder to tamper with and no longer report a false failure.
+Updates are harder to tamper with, no longer report a false failure and recover from more failures, and the file picker copes with failed folder listings.
 
 ### Fixed
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
@@ -14,6 +14,13 @@ Updates are harder to tamper with and no longer report a false failure.
 - The elevated part of an update compiles its helper code in a folder only administrators can open, so another program running as you cannot slip code into it, and an update that finished is no longer reported as failed when the app cannot be reopened afterward.
 - An all-users installation applies automatic updates again. The elevated update step opened a second copy of the app as administrator instead of installing, and the verified download was thrown away once that copy closed.
 - Capture and recording file names use the Gregorian year on Thai, Arabic and Persian region settings instead of years like 2569.
+- A per-user or portable update that fails now reopens KillerShot instead of leaving it closed, including when antivirus or a locked-down PowerShell stops the update helper from loading, and a published copy that fails its final check is swapped back for the previous version and never started.
+- An update started from an administrator's copy reopens KillerShot at normal rights. An update that is applied but cannot record its version in the registry now finishes and reopens instead of reporting failure, and putting the previous copy back after a failed update retries a busy file and survives a leftover from an earlier attempt.
+- Update downloads stream to disk with a size cap and an overall deadline, a download refused by its checksum or signature is reported apart from a network failure, and the update check reads only the release's own fields, so release notes that quote them cannot confuse it.
+- Updating KillerShot no longer removes a relaunch another Killer app scheduled for its own update.
+- The file picker no longer stalls on a disconnected network folder when it opens, a relative or malformed path typed in the path box is refused instead of being looked up against the wrong folder, a pattern such as *.log typed in the name box filters the list, and a full path typed in the name box can be accepted even when the shown folder failed to list.
+- The close button on tabs sits as far from the right edge as the icon does from the left.
+- Uninstall no longer breaks when the install folder's path contains an apostrophe.
 
 ### Added
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
