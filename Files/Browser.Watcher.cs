@@ -100,7 +100,7 @@ public sealed partial class Browser
         if (_disposed || _flushing || State.CurrentFolder.Length == 0 || IsThisPc(State.CurrentFolder)) return;
         _flushing = true;
         string folder = State.CurrentFolder;
-        long revision = _revision;
+        var watcher = _watcher;
         bool showHidden = State.ShowHidden;
         bool relist = _watchOverflow || _touched.Count > RelistThreshold;
         string[] touched = _touched.ToArray();
@@ -130,7 +130,12 @@ public sealed partial class Browser
                     }
                 return (survivor, entries);
             }, deadline.Token).WaitAsync(NavigationTimeout, deadline.Token);
-            if (_disposed || revision != _revision) return;
+            if (_disposed || !ReferenceEquals(watcher, _watcher) || State.CurrentFolder != folder) return;
+            if (State.IsLoading && (relist || observed.survivor != folder))
+            {
+                _watchOverflow = true;
+                return;
+            }
             if (observed.survivor != folder)
             {
                 if (observed.survivor != null) await NavigateTo(observed.survivor);
@@ -139,8 +144,8 @@ public sealed partial class Browser
             if (relist) { await NavigateCore(folder, false, null, default); return; }
             ApplyWatchChanges(observed.entries, renames);
         }
-        catch (OperationCanceledException error) { if (!_disposed && revision == _revision) State.Error = error; }
-        catch (Exception error) { if (!_disposed && revision == _revision) State.Error = error; }
+        catch (OperationCanceledException error) { if (!_disposed && ReferenceEquals(watcher, _watcher) && State.CurrentFolder == folder) State.Error = error; }
+        catch (Exception error) { if (!_disposed && ReferenceEquals(watcher, _watcher) && State.CurrentFolder == folder) State.Error = error; }
         finally
         {
             _flushing = false;

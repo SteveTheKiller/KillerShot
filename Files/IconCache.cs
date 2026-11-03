@@ -30,9 +30,12 @@ namespace KillerShot.Files
         private static readonly Dictionary<string, ImageSource?> Cache = new(StringComparer.OrdinalIgnoreCase);
         // Match the picker's 256-entry thumbnail budget. Shell and brand icons remain shared.
         private const int ThumbnailLimit = 256;
-        private sealed record Thumbnail(string Key, string Path, long Timestamp, ImageSource? Image);
+        private sealed record Thumbnail(string Key, string Path, long Timestamp, long Generation, ImageSource? Image);
+        private static long ThumbnailGeneration;
         private static readonly Dictionary<string, LinkedListNode<Thumbnail>> Thumbnails = new(StringComparer.OrdinalIgnoreCase);
         private static readonly LinkedList<Thumbnail> ThumbnailLru = new();
+        private static readonly Dictionary<string, Task<long?>> MetadataRequests = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, Task<ImageSource?>> ThumbnailRequests = new(StringComparer.OrdinalIgnoreCase);
 
         // Formats WIC can decode directly, so these get a real thumbnail of the image itself
         // rather than the generic per-extension icon every other file type shares.
@@ -212,10 +215,55 @@ namespace KillerShot.Files
             var documentArt = Art("text_document_icon", pixels);
             try
             {
+                string? full = null;
+                try { if (!isDirectory && ImageExtensions.Contains(Path.GetExtension(path))) full = Path.GetFullPath(path); }
+                catch { }
+                if (full != null)
+                {
+                    long started = System.Diagnostics.Stopwatch.GetTimestamp();
+                    Task<T> Within<T>(Func<Task<T>> start)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (System.Diagnostics.Stopwatch.GetElapsedTime(started) >= TimeSpan.FromSeconds(2)) throw new TimeoutException();
+                        var pending = start();
+                        var remaining = TimeSpan.FromSeconds(2) - System.Diagnostics.Stopwatch.GetElapsedTime(started);
+                        if (remaining <= TimeSpan.Zero) throw new TimeoutException();
+                        return pending.WaitAsync(remaining, token);
+                    }
+                    var timestamp = await Within(() => Shared(MetadataRequests, full, () =>
+                    {
+                        try { return File.Exists(full) ? (long?)File.GetLastWriteTimeUtc(full).Ticks : null; }
+                        catch { return null; }
+                    }));
+                    if (timestamp is long version)
+                    {
+                        int shil = ShilFor(pixels);
+                        string key = full + "|" + shil + "|" + pixels + "|thumb|" + version;
+                        var image = await Within(() => Shared(ThumbnailRequests, key, () => ImageThumbnail(full, pixels, shil)));
+                        if (image != null) return image;
+                    }
+                    return await Within(() => Task.Run(() => ForCore(path, pixels, false, null, documentArt, skipThumbnail: true), token));
+                }
                 return await Task.Run(() => ForCore(path, pixels, isDirectory, folderArt, documentArt), token)
                     .WaitAsync(TimeSpan.FromSeconds(2), token);
             }
             catch (TimeoutException) { return null; }
+        }
+
+        private static Task<T> Shared<T>(Dictionary<string, Task<T>> requests, string key, Func<T> read)
+        {
+            lock (requests)
+            {
+                if (requests.TryGetValue(key, out var pending)) return pending;
+                var work = Task.Run(read);
+                requests.Add(key, work);
+                _ = work.ContinueWith(completed =>
+                {
+                    lock (requests)
+                        if (requests.TryGetValue(key, out var current) && ReferenceEquals(current, completed)) requests.Remove(key);
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+                return work;
+            }
         }
 
         /// <summary>The icon at the smallest shell size that covers <paramref name="px"/>.</summary>
@@ -232,7 +280,7 @@ namespace KillerShot.Files
         }
 
         private static ImageSource? ForCore(string filePath, int px, bool isDirectory,
-            ImageSource? folderArt, ImageSource? documentArt)
+            ImageSource? folderArt, ImageSource? documentArt, bool skipThumbnail = false)
         {
             // Directories are drawn from the brand pack, never the shell: its own art for a
             // special folder, drive or This PC art for those, the generic folder for the rest.
@@ -260,7 +308,7 @@ namespace KillerShot.Files
             // the write time so an edited image's thumbnail refreshes instead of showing a stale
             // cached decode.
             //
-            if (!isDirectory && ImageExtensions.Contains(ext))
+            if (!skipThumbnail && !isDirectory && ImageExtensions.Contains(ext))
             {
                 var thumb = ImageThumbnail(filePath, px, shil);
                 if (thumb != null) return thumb;
@@ -298,14 +346,17 @@ namespace KillerShot.Files
 
         private static ImageSource? ImageThumbnail(string filePath, int px, int shil)
         {
+            long generation = Interlocked.Increment(ref ThumbnailGeneration);
             string key;
+            string prefix;
             long timestamp;
             try
             {
                 filePath = Path.GetFullPath(filePath);
                 if (!File.Exists(filePath)) return null;
                 timestamp = File.GetLastWriteTimeUtc(filePath).Ticks;
-                key = filePath + "|" + shil + "|" + px + "|thumb|" + timestamp;
+                prefix = filePath + "|" + shil + "|" + px + "|thumb|";
+                key = prefix + timestamp;
             }
             catch { return null; }
 
@@ -317,6 +368,26 @@ namespace KillerShot.Files
                     ThumbnailLru.AddLast(hit);
                     return hit.Value.Image;
                 }
+            }
+            ImageSource? image = ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
+            long currentTimestamp;
+            try { currentTimestamp = File.GetLastWriteTimeUtc(filePath).Ticks; }
+            catch { return null; }
+            lock (Thumbnails)
+            {
+                if (Thumbnails.TryGetValue(prefix + currentTimestamp, out var published))
+                {
+                    ThumbnailLru.Remove(published);
+                    ThumbnailLru.AddLast(published);
+                    return published.Value.Image;
+                }
+                if (currentTimestamp != timestamp) return null;
+                for (var node = ThumbnailLru.Last; node != null; node = node.Previous)
+                {
+                    if (node.Value.Timestamp != timestamp && node.Value.Generation > generation
+                        && string.Equals(node.Value.Path, filePath, StringComparison.OrdinalIgnoreCase))
+                        return node.Value.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? node.Value.Image : null;
+                }
                 for (var node = ThumbnailLru.First; node != null;)
                 {
                     var next = node.Next;
@@ -327,8 +398,7 @@ namespace KillerShot.Files
                     }
                     node = next;
                 }
-                ImageSource? image = ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
-                Thumbnails[key] = ThumbnailLru.AddLast(new Thumbnail(key, filePath, timestamp, image));
+                Thumbnails[key] = ThumbnailLru.AddLast(new Thumbnail(key, filePath, timestamp, generation, image));
                 while (Thumbnails.Count > ThumbnailLimit && ThumbnailLru.First is { } oldest)
                 {
                     Thumbnails.Remove(oldest.Value.Key);

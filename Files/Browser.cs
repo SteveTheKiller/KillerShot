@@ -6,12 +6,19 @@ namespace KillerShot.Files;
 public sealed partial class Browser : IDisposable
 {
     private readonly Dispatcher _dispatcher;
+    private readonly Func<string, bool> _fileExists;
     private CancellationTokenSource? _navigation;
     private long _revision;
     private bool _disposed;
     public BrowseState State { get; } = new();
     public TimeSpan NavigationTimeout { get; set; } = TimeSpan.FromSeconds(5);
-    public Browser(Dispatcher? dispatcher = null) => _dispatcher = dispatcher ?? Dispatcher.CurrentDispatcher;
+    public Browser() : this(null, File.Exists) { }
+    public Browser(Dispatcher? dispatcher = null) : this(dispatcher, File.Exists) { }
+    public Browser(Dispatcher? dispatcher, Func<string, bool> fileExists)
+    {
+        _dispatcher = dispatcher ?? Dispatcher.CurrentDispatcher;
+        _fileExists = fileExists ?? throw new ArgumentNullException(nameof(fileExists));
+    }
     public Func<string, Task<bool>>? OpenInEditor { get; set; }
     public async Task<bool> ActivateEntry(FileEntry entry, CancellationToken token = default)
     {
@@ -70,7 +77,7 @@ public sealed partial class Browser : IDisposable
     {
         _dispatcher.VerifyAccess();
         ObjectDisposedException.ThrowIf(_disposed, this);
-        StopWatching();
+        if (!activateFile) StopWatching();
         _navigation?.Cancel();
         _navigation?.Dispose();
         _navigation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -86,7 +93,7 @@ public sealed partial class Browser : IDisposable
             var listed = await Task.Run(() =>
             {
                 if (IsThisPc(full)) return (Entries: ListDrives(), Error: (Exception?)null, IsFile: false);
-                if (activateFile && File.Exists(resolved)) return (Entries: new List<FileEntry>(), Error: (Exception?)null, IsFile: true);
+                if (activateFile && _fileExists(resolved)) return (Entries: new List<FileEntry>(), Error: (Exception?)null, IsFile: true);
                 var entries = ListFolder(full, showHidden, token, out var error);
                 return (Entries: entries, Error: error, IsFile: false);
             }, token)
@@ -94,6 +101,7 @@ public sealed partial class Browser : IDisposable
             if (token.IsCancellationRequested || revision != _revision || _disposed) return false;
             if (listed.IsFile) return await ActivateEntry(new FileEntry { FilePath = full, FileName = Path.GetFileName(full) }, token);
             if (listed.Error != null && listed.Entries.Count == 0) { State.Error = listed.Error; return false; }
+            if (activateFile) StopWatching();
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(State.Results);
             using (view.DeferRefresh())
             {
@@ -130,7 +138,7 @@ public sealed partial class Browser : IDisposable
         {
             if (revision == _revision) State.Error = error;
             if (error is TimeoutException && revision == _revision) _navigation.Cancel();
-            if (revision == _revision && !_disposed && State.CurrentFolder.Length > 0 && !IsThisPc(State.CurrentFolder))
+            if (revision == _revision && !_disposed && _watcher == null && State.CurrentFolder.Length > 0 && !IsThisPc(State.CurrentFolder))
                 StartWatching(State.CurrentFolder);
             return false;
         }

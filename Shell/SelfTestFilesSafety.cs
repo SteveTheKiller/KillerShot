@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics.Tracing;
 using System.Text;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -17,14 +18,19 @@ internal static class SelfTestFilesSafety
 {
     internal static bool TryRun(string[] args)
     {
-        if (args.Length is < 2 or > 3 || args[0] != "--selftest-files-safety") return false;
-        _ = Run(Path.GetFullPath(args[1]), args.Length == 3 ? args[2] : "all");
+        if (args.Length == 0 || args[0] != "--selftest-files-safety") return false;
+        string rejected = Path.Combine(Path.GetTempPath(), "KillerShot-FilesSafety-Rejected-" + Environment.ProcessId + "-" + Guid.NewGuid().ToString("N"));
+        Settings.UseFolder(Path.Combine(rejected, "settings"));
+        VideoCaptures.UsePlaybackFolder(Path.Combine(rejected, "playback"));
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(rejected, "native"));
+        _ = Run(args.Length is >= 2 and <= 3 ? args[1] : "", args.Length == 3 ? args[2] : "all", rejected);
         return true;
     }
 
-    private static async Task Run(string folder, string scenario)
+    private static async Task Run(string folder, string scenario, string rejected)
     {
         int checks = 0, exit = 1;
+        bool created = false;
         var report = new StringBuilder();
         void Check(bool passed, string message)
         {
@@ -34,20 +40,38 @@ internal static class SelfTestFilesSafety
         }
         try
         {
-            if (Directory.Exists(folder)) throw new IOException("Use a fresh safety fixture.");
+            folder = Path.GetFullPath(folder);
+            if (Directory.Exists(folder) || File.Exists(folder)) throw new IOException("Use a fresh safety fixture.");
             Directory.CreateDirectory(folder);
+            created = true;
             Settings.UseFolder(Path.Combine(folder, "settings"));
             VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
             App.InitializeKit();
             Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             if (scenario == "all")
             {
-                await Containment(folder, Check);
-                await CacheRetention(folder, Check, report);
-                await RequestedSize(folder, Check);
-                await Orientations(folder, Check, report);
-                await ColumnFocus(Check, report);
-                await ColumnMenu(Check, report);
+                async Task Case(string name, Func<string, Task> run)
+                {
+                    report.AppendLine("SCENARIO START: " + name);
+                    string owned = Path.Combine(folder, name);
+                    if (Directory.Exists(owned) || File.Exists(owned)) throw new IOException("Use a fresh scenario fixture: " + name);
+                    Directory.CreateDirectory(owned);
+                    await run(owned);
+                    report.AppendLine("SCENARIO PASS: " + name);
+                }
+                await Case("containment", path => Containment(path, Check));
+                await Case("cache", path => CacheRetention(path, Check, report));
+                await Case("size", path => RequestedSize(path, Check));
+                await Case("orientation", path => Orientations(path, Check, report));
+                await Case("columns-focus", _ => ColumnFocus(Check, report));
+                await Case("columns-menu", _ => ColumnMenu(Check, report));
+                await Case("address-watcher", path => AddressWatcher(path, Check, report));
+                await Case("cache-concurrency", path => CacheConcurrency(path, Check, report));
+                await Case("address-overflow", path => AddressOverflow(path, Check, report));
+                await Case("cache-workload-minimal", path => CacheWorkloadMinimal(path, Check, report));
+                string[] expectedCases = ["containment", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
+                Check(checks >= 108 && expectedCases.All(name => report.ToString().Contains("SCENARIO PASS: " + name, StringComparison.Ordinal)),
+                    "all ten isolated safety scenarios complete with every repair regression selected");
             }
             else if (scenario == "containment") await Containment(folder, Check);
             else if (scenario == "cache") await CacheRetention(folder, Check, report);
@@ -55,17 +79,480 @@ internal static class SelfTestFilesSafety
             else if (scenario == "orientation") await Orientations(folder, Check, report);
             else if (scenario == "columns-menu") await ColumnMenu(Check, report);
             else if (scenario == "columns-focus") await ColumnFocus(Check, report);
+            else if (scenario == "address-watcher") await AddressWatcher(folder, Check, report);
+            else if (scenario == "cache-concurrency") await CacheConcurrency(folder, Check, report);
+            else if (scenario == "address-overflow") await AddressOverflow(folder, Check, report);
+            else if (scenario == "cache-workload") await CacheWorkload(folder, Check, report);
+            else if (scenario == "cache-workload-minimal") await CacheWorkloadMinimal(folder, Check, report);
             else throw new ArgumentException("Unknown safety scenario: " + scenario);
             exit = 0;
         }
-        catch (Exception error) { report.AppendLine(error.ToString()); }
+        catch (Exception error)
+        {
+            if (!created)
+            {
+                checks++;
+                report.AppendLine("Fixture admission failed; windows=" + Application.Current.Windows.Count);
+                report.AppendLine("Protected playback=" + VideoCaptures.PlaybackFolder);
+            }
+            report.AppendLine(error.ToString());
+        }
         finally
         {
             report.AppendLine($"Assertions: {checks}; Exit: {exit}");
-            Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, "files-safety-report.txt"), report.ToString());
+            string reportFolder = created ? folder : rejected;
+            Directory.CreateDirectory(reportFolder);
+            File.WriteAllText(Path.Combine(reportFolder, "files-safety-report.txt"), report.ToString());
             Application.Current.Shutdown(exit);
         }
+    }
+
+    private static async Task CacheWorkloadMinimal(string folder, Action<bool, string> check, StringBuilder report)
+    {
+        report.AppendLine("One wave of sixteen public requests. No TPL observer is instantiated.");
+        string warmPath = Path.Combine(folder, "warm.png"), heldPath = Path.Combine(folder, "held.png");
+        WriteImage(warmPath);
+        WriteImage(heldPath, 2048, 1024);
+        var warm = await IconCache.ForAsync(warmPath, 64);
+        check(warm is BitmapSource { PixelWidth: 64, PixelHeight: 32 }, "minimal workload warms a real unrelated thumbnail");
+        using var gate = new FileOplock(heldPath);
+        using var stop = new CancellationTokenSource();
+        var failsafe = new Thread(() => { if (!stop.Token.WaitHandle.WaitOne(7000)) gate.Dispose(); }) { IsBackground = true };
+        failsafe.Start();
+        Task<ImageSource?>[] pending = [];
+        try
+        {
+            pending = Enumerable.Range(0, 16).Select(_ => IconCache.ForAsync(heldPath, 256)).ToArray();
+            await Until(() => gate.Broken.WaitOne(0));
+            check(gate.Broken.WaitOne(0) && !gate.Released, "minimal workload reaches actual held image-open boundary");
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var unrelated = await IconCache.ForAsync(warmPath, 64);
+            double latency = clock.Elapsed.TotalMilliseconds;
+            bool held = !gate.Released;
+            var completed = await Task.WhenAll(pending);
+            report.AppendLine($"Unrelated latencyMs={latency:F1}, sameCachedObject={ReferenceEquals(warm, unrelated)}, heldAtCompletion={held}, publicTimeouts={completed.Count(image => image == null)}/16");
+            check(held && ReferenceEquals(warm, unrelated) && latency < 500,
+                "minimal observer-free unrelated cache request stays within 500ms while filesystem control remains held");
+        }
+        finally
+        {
+            gate.Dispose();
+            stop.Cancel();
+            failsafe.Join();
+            await Task.WhenAll(pending).WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        var after = await IconCache.ForAsync(heldPath, 256);
+        check(after is BitmapSource { PixelWidth: 256, PixelHeight: 128 }, "released held image becomes available through public API");
+    }
+
+    private static async Task CacheWorkload(string folder, Action<bool, string> check, StringBuilder report)
+    {
+        string cachedPath = Path.Combine(folder, "warm.png"), blockedPath = Path.Combine(folder, "held.png");
+        WriteImage(cachedPath);
+        WriteImage(blockedPath, 2048, 1024);
+        var cached = await IconCache.ForAsync(cachedPath, 64);
+        check(cached is BitmapSource { PixelWidth: 64, PixelHeight: 32 }, "workload warms an actual unrelated public thumbnail");
+        using var observer = new WorkerTaskObserver();
+        check(observer.Available, "runtime task diagnostics are available without private decoder instrumentation");
+        CollectImages();
+        using var process = System.Diagnostics.Process.GetCurrentProcess();
+        long initialPrivate = process.PrivateMemorySize64, initialWorking = process.WorkingSet64;
+        long peakPrivate = initialPrivate, peakWorking = initialWorking;
+        int peakThreads = process.Threads.Count, samples = 0;
+        using var stop = new CancellationTokenSource();
+        using var gate = new FileOplock(blockedPath);
+        var sampler = new Thread(() =>
+        {
+            using var sampled = System.Diagnostics.Process.GetCurrentProcess();
+            while (!stop.Token.WaitHandle.WaitOne(25))
+            {
+                sampled.Refresh();
+                peakPrivate = Math.Max(peakPrivate, sampled.PrivateMemorySize64);
+                peakWorking = Math.Max(peakWorking, sampled.WorkingSet64);
+                peakThreads = Math.Max(peakThreads, sampled.Threads.Count);
+                samples++;
+            }
+        }) { IsBackground = true };
+        var failsafe = new Thread(() => { if (!stop.Token.WaitHandle.WaitOne(6500)) gate.Dispose(); }) { IsBackground = true };
+        sampler.Start();
+        failsafe.Start();
+        long allocatedBefore = GC.GetTotalAllocatedBytes(true);
+        double cpuBefore = process.TotalProcessorTime.TotalMilliseconds;
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        var waits = new List<(double Ms, bool Null)>();
+        var unrelated = new List<(double Ms, bool Same)>();
+        var beforeRelease = observer.Snapshot;
+        double holdMs = 0, drainMs = 0;
+        bool releasedEarly = false;
+        try
+        {
+            for (int wave = 0; wave < 2; wave++)
+            {
+                async Task<(double Ms, bool Null)> Request()
+                {
+                    var clock = System.Diagnostics.Stopwatch.StartNew();
+                    var image = await observer.Capture(() => IconCache.ForAsync(blockedPath, 256));
+                    return (clock.Elapsed.TotalMilliseconds, image == null);
+                }
+                var pending = Enumerable.Range(0, 16).Select(_ => Request()).ToArray();
+                if (wave == 0)
+                {
+                    await Until(() => gate.Broken.WaitOne(0));
+                    check(gate.Broken.WaitOne(0) && !gate.Released, "sixteen-call workload reaches actual held filesystem-open boundary");
+                }
+                var cachedClock = System.Diagnostics.Stopwatch.StartNew();
+                var hit = await IconCache.ForAsync(cachedPath, 64);
+                unrelated.Add((cachedClock.Elapsed.TotalMilliseconds, ReferenceEquals(cached, hit)));
+                waits.AddRange(await Task.WhenAll(pending));
+                var snapshot = observer.Snapshot;
+                report.AppendLine($"Wave {wave}: publicRequests=16, nulls={waits.Skip(wave * 16).Count(item => item.Null)}, cachedMs={unrelated[^1].Ms:F1}, cachedSame={unrelated[^1].Same}, runtimeTasks={snapshot}");
+            }
+            holdMs = elapsed.Elapsed.TotalMilliseconds;
+            releasedEarly = gate.Released;
+            beforeRelease = observer.Snapshot;
+        }
+        finally
+        {
+            gate.Dispose();
+            var drain = System.Diagnostics.Stopwatch.StartNew();
+            while (observer.Snapshot.Completed < observer.Snapshot.Scheduled && drain.Elapsed < TimeSpan.FromSeconds(4)) await Task.Delay(20);
+            drainMs = drain.Elapsed.TotalMilliseconds;
+            stop.Cancel();
+            sampler.Join();
+            failsafe.Join();
+            process.Refresh();
+            var completed = observer.Snapshot;
+            report.AppendLine($"Workload holdMs={holdMs:F1}, totalMs={elapsed.Elapsed.TotalMilliseconds:F1}, releasedEarly={releasedEarly}, drainAfterReleaseMs={drainMs:F1}");
+            report.AppendLine($"Runtime worker tasks beforeRelease={beforeRelease}, afterRelease={completed}. These are observed scheduled worker tasks, not decoder-entry counts.");
+            report.AppendLine($"CPUms={process.TotalProcessorTime.TotalMilliseconds - cpuBefore:F1}, processors={Environment.ProcessorCount}, managedAllocatedBytes={GC.GetTotalAllocatedBytes(true) - allocatedBefore}, privateBaseline={initialPrivate}, privatePeak={peakPrivate}, workingBaseline={initialWorking}, workingPeak={peakWorking}, peakProcessThreads={peakThreads}, samples={samples}");
+            report.AppendLine("Public request latenciesMs=" + string.Join(",", waits.Select(item => item.Ms.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))));
+        }
+        var final = observer.Snapshot;
+        check(!releasedEarly && holdMs > 2000 && waits.Count == 32 && waits.Count(item => item.Null) >= 16,
+            "two waves of sixteen real public requests include timeouts while the owned file remains held beyond two seconds");
+        check(final.Scheduled > 0 && final.Started == final.Scheduled && final.Completed == final.Scheduled,
+            "all observed worker tasks finish after controlled filesystem release");
+        check(unrelated.All(item => item.Same && item.Ms < 500), "warmed unrelated cached requests remain within the existing 500ms responsiveness budget");
+    }
+
+    private sealed class WorkerTaskObserver : EventListener
+    {
+        private readonly object _gate = new();
+        private readonly HashSet<int> _scheduled = [], _started = [], _completed = [];
+        private int _captureThread;
+        public bool Available { get; }
+        public WorkerTaskObserver()
+        {
+            var provider = EventSource.GetSources().SingleOrDefault(source => source.Name == "System.Threading.Tasks.TplEventSource");
+            Available = provider != null;
+            if (provider != null) EnableEvents(provider, EventLevel.Informational, (EventKeywords)0x43);
+        }
+        public Task<ImageSource?> Capture(Func<Task<ImageSource?>> request)
+        {
+            Volatile.Write(ref _captureThread, Environment.CurrentManagedThreadId);
+            try { return request(); }
+            finally { Volatile.Write(ref _captureThread, 0); }
+        }
+        protected override void OnEventWritten(EventWrittenEventArgs data)
+        {
+            if (data.EventSource.Name != "System.Threading.Tasks.TplEventSource" || data.Payload is not { Count: >= 3 } payload || payload[2] is not int id) return;
+            lock (_gate)
+            {
+                if (data.EventId == 7 && Volatile.Read(ref _captureThread) == Environment.CurrentManagedThreadId) _scheduled.Add(id);
+                if (!_scheduled.Contains(id)) return;
+                if (data.EventId == 8) _started.Add(id);
+                if (data.EventId == 9) _completed.Add(id);
+            }
+        }
+        public (int Scheduled, int Started, int Completed) Snapshot
+        {
+            get { lock (_gate) return (_scheduled.Count, _started.Count, _completed.Count); }
+        }
+    }
+
+    private static async Task AddressOverflow(string folder, Action<bool, string> check, StringBuilder report)
+    {
+        string current = Directory.CreateDirectory(Path.Combine(folder, "retained")).FullName;
+        string next = Directory.CreateDirectory(Path.Combine(folder, "next")).FullName;
+        File.WriteAllText(Path.Combine(current, "activate.txt"), "owned");
+        var probes = Enumerable.Range(0, 3).Select(index => new FileExistsGate(Path.Combine(folder, $"sentinel-{index}.txt"))).ToArray();
+        foreach (var probe in probes) File.WriteAllText(probe.Path, "owned File.Exists boundary");
+        using var browser = new Browser(null, path => probes.FirstOrDefault(probe => probe.Path == path) is { } probe ? probe.Read() : File.Exists(path));
+        int hostCalls = 0;
+        browser.OpenInEditor = _ => { hostCalls++; return Task.FromResult(true); };
+        check(await browser.NavigateTo(current), "overflow fixture opens actual retained folder");
+        async Task Enter(FileExistsGate probe, Task<bool> pending)
+        {
+            await Task.WhenAny(probe.Entered.Task, Task.Delay(2000));
+            check(probe.Entered.Task.IsCompleted && !pending.IsCompleted, "actual File.Exists boundary entered and user address remains pending: " + Path.GetFileName(probe.Path));
+        }
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var pending = browser.NavigateAddress(probes[0].Path);
+        try
+        {
+            await Enter(probes[0], pending);
+            bool baseline = await pending;
+            report.AppendLine($"Controlled File.Exists deadline: result={baseline}, elapsedMs={clock.ElapsedMilliseconds}");
+            check(!baseline && clock.Elapsed >= TimeSpan.FromMilliseconds(4500) && clock.Elapsed < TimeSpan.FromSeconds(6),
+                "controlled filesystem boundary reaches original five-second address deadline");
+        }
+        finally { await probes[0].ReleaseAndDrain(); }
+        clock.Restart();
+        pending = browser.NavigateAddress(probes[1].Path);
+        try
+        {
+            await Enter(probes[1], pending);
+            await Task.Run(() =>
+            {
+                for (int index = 0; index < 250; index++) File.WriteAllText(Path.Combine(current, $"burst-{index}.txt"), "actual event");
+            });
+            bool result = await pending;
+            report.AppendLine($"250-file watcher maintenance: result={result}, elapsedMs={clock.ElapsedMilliseconds}");
+            check(!result && clock.Elapsed >= TimeSpan.FromMilliseconds(4500) && clock.Elapsed < TimeSpan.FromSeconds(6),
+                "250 actual watcher events do not cancel user address resolution before its deadline");
+        }
+        finally { await probes[1].ReleaseAndDrain(); }
+        await Until(() => browser.State.Results.Count == 251 && !browser.State.IsLoading);
+        check(browser.State.Results.Count == 251, "deferred watcher relist eventually reconciles all 250 actual creations");
+        check(hostCalls == 0, "late timed-out filesystem probes do not activate the host");
+        pending = browser.NavigateAddress(probes[2].Path);
+        try
+        {
+            await Enter(probes[2], pending);
+            await Task.Run(() =>
+            {
+                for (int index = 0; index < 250; index++) File.WriteAllText(Path.Combine(current, $"later-{index}.txt"), "later event");
+            });
+            check(await browser.NavigateTo(next), "later explicit navigation reaches independent folder during address resolution");
+            bool superseded = await pending;
+            await probes[2].ReleaseAndDrain();
+            await Task.Delay(700);
+            check(!superseded && browser.State.CurrentFolder == next && browser.State.Results.Count == 0 && hostCalls == 0,
+                "later user navigation stays authoritative over old-folder watcher maintenance and late file activation");
+        }
+        finally { await probes[2].ReleaseAndDrain(); }
+    }
+
+    private sealed class FileExistsGate(string path)
+    {
+        public string Path { get; } = path;
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Exited { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Read()
+        {
+            Entered.TrySetResult();
+            try
+            {
+                if (!Release.Task.Wait(TimeSpan.FromSeconds(8))) throw new TimeoutException("Owned File.Exists boundary failsafe elapsed.");
+                return File.Exists(Path);
+            }
+            finally { Exited.TrySetResult(); }
+        }
+        public async Task ReleaseAndDrain()
+        {
+            Release.TrySetResult();
+            if (Entered.Task.IsCompleted) await Exited.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+    }
+
+    private static async Task CacheConcurrency(string folder, Action<bool, string> check, StringBuilder report)
+    {
+        string cachedPath = Path.Combine(folder, "cached.png");
+        string blockedPath = Path.Combine(folder, "blocked.png");
+        WriteImage(cachedPath);
+        WriteImage(blockedPath);
+        var cached = await IconCache.ForAsync(cachedPath, 64);
+        check(cached is BitmapSource { PixelWidth: 64, PixelHeight: 32 }, "unrelated actual image is cached through public ForAsync");
+        using var gate = new FileOplock(blockedPath);
+        Task<ImageSource?> pending = Task.FromResult<ImageSource?>(null);
+        try
+        {
+            var metadata = Task.Run(() => File.GetLastWriteTimeUtc(blockedPath));
+            check(await Task.WhenAny(metadata, Task.Delay(500)) == metadata, "controlled oplock leaves real timestamp metadata readable before decode");
+            pending = IconCache.ForAsync(blockedPath, 64);
+            bool broken = await Task.Run(() => gate.Broken.WaitOne(1500));
+            check(broken && !pending.IsCompleted && !gate.Released, "actual decoder file open reaches and waits at owned oplock boundary");
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var unrelated = await IconCache.ForAsync(cachedPath, 64);
+            report.AppendLine($"Unrelated cached ForAsync durationMs={clock.ElapsedMilliseconds}, null={unrelated == null}, blockedReleased={gate.Released}");
+            check(ReferenceEquals(cached, unrelated) && clock.Elapsed < TimeSpan.FromMilliseconds(500) && !gate.Released,
+                "unrelated cached image remains promptly available while actual decoder open is blocked");
+        }
+        finally
+        {
+            gate.Dispose();
+            await pending.WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        check(gate.Released, "owned oplock releases deterministically after blocked decoder case");
+        string duplicates = Path.Combine(folder, "duplicates.png");
+        WriteImage(duplicates);
+        var concurrent = await Task.WhenAll(Enumerable.Range(0, 16).Select(_ => IconCache.ForAsync(duplicates, 96)));
+        check(concurrent.All(image => image is BitmapSource { PixelWidth: 96, PixelHeight: 48 })
+            && concurrent.All(image => ReferenceEquals(image, concurrent[0])), "concurrent duplicate public requests share one published cached thumbnail");
+        File.SetLastWriteTimeUtc(duplicates, DateTime.UtcNow.AddMinutes(2));
+        WriteImage(duplicates, 100, 300);
+        File.SetLastWriteTimeUtc(duplicates, DateTime.UtcNow.AddMinutes(3));
+        var edited = await Task.WhenAll(Enumerable.Range(0, 16).Select(_ => IconCache.ForAsync(duplicates, 96)));
+        check(edited.All(image => image is BitmapSource { PixelWidth: 32, PixelHeight: 96 })
+            && edited.All(image => ReferenceEquals(image, edited[0])) && !ReferenceEquals(edited[0], concurrent[0]),
+            "edited-version duplicate public requests consistently publish the new aspect ratio");
+        string cancellationPath = Path.Combine(folder, "cancellation.png");
+        WriteImage(cancellationPath);
+        using var cancellation = new CancellationTokenSource();
+        using var held = new FileOplock(cancellationPath);
+        var first = IconCache.ForAsync(cancellationPath, 96, token: cancellation.Token);
+        Task<ImageSource?> survivor = Task.FromResult<ImageSource?>(null);
+        try
+        {
+            await Until(() => held.Broken.WaitOne(0));
+            check(held.Broken.WaitOne(0) && !held.Released && !first.IsCompleted,
+                "cancellation control reaches actual held image-open boundary");
+            survivor = IconCache.ForAsync(cancellationPath, 96);
+            await Task.Delay(50);
+            cancellation.Cancel();
+            bool canceled = false;
+            try { await first; }
+            catch (OperationCanceledException error) when (error.CancellationToken == cancellation.Token) { canceled = true; }
+            check(canceled, "one public waiter observes its own cancellation token");
+            check(!survivor.IsCompleted && !held.Released, "canceling one waiter leaves another pending at the controlled filesystem boundary");
+        }
+        finally
+        {
+            held.Dispose();
+            await survivor.WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        var survivingImage = await survivor;
+        check(survivingImage is BitmapSource { PixelWidth: 96, PixelHeight: 48 }
+            && ReferenceEquals(survivingImage, await IconCache.ForAsync(cancellationPath, 96)),
+            "surviving waiter receives and caches the actual image after release despite canceled peer");
+    }
+
+    private sealed class FileOplock : IDisposable
+    {
+        private readonly object _gate = new();
+        private readonly EventWaitHandle _broken = new(false, EventResetMode.ManualReset);
+        private Microsoft.Win32.SafeHandles.SafeFileHandle? _file;
+        private IntPtr _overlapped;
+        private Timer? _timeout;
+        public WaitHandle Broken => _broken;
+        public bool Released { get; private set; }
+
+        public FileOplock(string path)
+        {
+            try
+            {
+                _file = CreateFile(path, 0x80000000, 7, IntPtr.Zero, 3, 0x40000000, IntPtr.Zero);
+                if (_file.IsInvalid) throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+                _overlapped = System.Runtime.InteropServices.Marshal.AllocHGlobal(IntPtr.Size * 3 + 8);
+                for (int offset = 0; offset < IntPtr.Size * 3 + 8; offset++) System.Runtime.InteropServices.Marshal.WriteByte(_overlapped, offset, 0);
+                System.Runtime.InteropServices.Marshal.WriteIntPtr(_overlapped, IntPtr.Size * 2 + 8, _broken.SafeWaitHandle.DangerousGetHandle());
+                bool complete = DeviceIoControl(_file, 0x00090000, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, _overlapped);
+                if (complete || System.Runtime.InteropServices.Marshal.GetLastWin32Error() != 997)
+                    throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error(), "Owned oplock was not granted pending.");
+                _timeout = new Timer(_ => Dispose(), null, 8000, Timeout.Infinite);
+            }
+            catch { Dispose(); throw; }
+        }
+
+        public void Dispose()
+        {
+            lock (_gate)
+            {
+                if (Released) return;
+                Released = true;
+                _timeout?.Dispose();
+                if (_file is { IsInvalid: false })
+                {
+                    if (_overlapped != IntPtr.Zero)
+                    {
+                        CancelIoEx(_file, _overlapped);
+                        GetOverlappedResult(_file, _overlapped, out _, true);
+                    }
+                    _file.Dispose();
+                }
+                if (_overlapped != IntPtr.Zero) System.Runtime.InteropServices.Marshal.FreeHGlobal(_overlapped);
+                _overlapped = IntPtr.Zero;
+                _broken.Dispose();
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", EntryPoint = "CreateFileW", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+        private static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(string path, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool DeviceIoControl(Microsoft.Win32.SafeHandles.SafeFileHandle file, uint code, IntPtr input, uint inputSize, IntPtr output, uint outputSize, out uint returned, IntPtr overlapped);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool CancelIoEx(Microsoft.Win32.SafeHandles.SafeFileHandle file, IntPtr overlapped);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetOverlappedResult(Microsoft.Win32.SafeHandles.SafeFileHandle file, IntPtr overlapped, out uint transferred, [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)] bool wait);
+    }
+
+    private static async Task AddressWatcher(string folder, Action<bool, string> check, StringBuilder report)
+    {
+        using var browser = new Browser();
+        string current = Directory.CreateDirectory(Path.Combine(folder, "watched")).FullName;
+        string typed = Path.Combine(current, "activate.txt");
+        File.WriteAllText(typed, "handled host boundary");
+        File.WriteAllText(Path.Combine(current, "delete.txt"), "delete");
+        File.WriteAllText(Path.Combine(current, "rename.txt"), "rename");
+        check(await browser.NavigateTo(current), "public watcher fixture opens owned folder");
+        File.WriteAllText(Path.Combine(current, "control.txt"), "control");
+        await Until(() => browser.State.Results.Any(entry => entry.FileName == "control.txt"));
+        check(browser.State.Results.Any(entry => entry.FileName == "control.txt"), "independent control event reconciles without address activation");
+        using var observed = new FileSystemWatcher(current) { NotifyFilter = NotifyFilters.FileName, EnableRaisingEvents = true };
+        int events = 0;
+        var delivered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void Event() { if (Interlocked.Increment(ref events) >= 3) delivered.TrySetResult(); }
+        observed.Created += (_, _) => Event();
+        observed.Deleted += (_, _) => Event();
+        observed.Renamed += (_, _) => Event();
+        File.WriteAllText(Path.Combine(current, "created.txt"), "created");
+        File.Delete(Path.Combine(current, "delete.txt"));
+        File.Move(Path.Combine(current, "rename.txt"), Path.Combine(current, "renamed.txt"));
+        await delivered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await Task.Delay(50);
+        await Dispatcher.CurrentDispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        check(!browser.State.Results.Any(entry => entry.FileName == "created.txt")
+            && browser.State.Results.Any(entry => entry.FileName == "delete.txt")
+            && browser.State.Results.Any(entry => entry.FileName == "rename.txt"), "actual create/delete/rename events are pending before debounce publication");
+        int hostCalls = 0;
+        browser.OpenInEditor = path => { if (path == typed) hostCalls++; return Task.FromResult(true); };
+        check(await browser.NavigateAddress(typed) && hostCalls == 1 && browser.State.CurrentFolder == current,
+            "public typed nonimage uses handled host boundary and retains folder");
+        await Until(() => browser.State.Results.Any(entry => entry.FileName == "created.txt")
+            && browser.State.Results.All(entry => entry.FileName != "delete.txt" && entry.FileName != "rename.txt")
+            && browser.State.Results.Any(entry => entry.FileName == "renamed.txt"));
+        check(browser.State.Results.Any(entry => entry.FileName == "created.txt"), "queued creation survives typed file activation");
+        check(browser.State.Results.All(entry => entry.FileName != "delete.txt"), "queued deletion survives typed file activation");
+        check(browser.State.Results.Any(entry => entry.FileName == "renamed.txt") && browser.State.Results.All(entry => entry.FileName != "rename.txt"),
+            "queued rename survives typed file activation");
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        browser.OpenInEditor = _ => { entered.TrySetResult(); return release.Task; };
+        var activation = browser.NavigateAddress(typed);
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        File.WriteAllText(Path.Combine(current, "during-activation.txt"), "during");
+        await Until(() => browser.State.Results.Any(entry => entry.FileName == "during-activation.txt"));
+        release.TrySetResult(true);
+        check(await activation && browser.State.Results.Any(entry => entry.FileName == "during-activation.txt"),
+            "watcher continues reconciling while handled typed file activation is pending");
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var resolution = browser.NavigateAddress(@"\\192.0.2.1\ks-address-watch-" + Guid.NewGuid().ToString("N") + @"\missing.txt");
+        File.WriteAllText(Path.Combine(current, "during-resolution.txt"), "during resolution");
+        await Until(() => browser.State.Results.Any(entry => entry.FileName == "during-resolution.txt"));
+        bool result = await resolution;
+        report.AppendLine($"Address resolution durationMs={clock.ElapsedMilliseconds}, result={result}");
+        check(!result && clock.Elapsed < TimeSpan.FromSeconds(6) && browser.State.Results.Any(entry => entry.FileName == "during-resolution.txt")
+            && browser.State.CurrentFolder == current, "events during bounded unreachable address resolution reconcile without restarting retained watcher");
+    }
+
+    private static async Task Until(Func<bool> condition)
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (!condition() && clock.Elapsed < TimeSpan.FromSeconds(2)) await Task.Delay(20);
     }
 
     private static async Task Containment(string folder, Action<bool, string> check)
