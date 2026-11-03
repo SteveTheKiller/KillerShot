@@ -10,7 +10,7 @@ internal sealed record FolderCollection(string Source, string Path, bool Availab
 
 internal static partial class FolderCaptures
 {
-    private sealed class LinkedFolder(string source, string path, bool videos = false)
+    private sealed class LinkedFolder(string source, string path, bool videos = false) : IDisposable
     {
         internal readonly string Source = source;
         internal readonly string Path = path;
@@ -23,6 +23,12 @@ internal static partial class FolderCaptures
         internal bool Network;
         internal Task? Scan;
         internal DateTime NextScan;
+        internal FileSystemWatcher? Watcher;
+        internal Timer? Debounce;
+        internal long ChangedAt;
+        internal bool Dirty;
+        internal int PollSeconds = 30;
+        public void Dispose() { Watcher?.Dispose(); Debounce?.Dispose(); }
     }
 
     private static readonly object LinkedGate = new();
@@ -31,6 +37,7 @@ internal static partial class FolderCaptures
     private static string? _linkedConfig;
     private static readonly SemaphoreSlim ScanSlots = new(2);
     private static readonly SemaphoreSlim NetworkScanSlots = new(2);
+    internal static Func<string, DriveType> DriveTypeReader { get; set; } = root => new DriveInfo(root).DriveType;
     private static readonly Timer LinkedPoll = new(_ => PollLinkedFolders(), null, 10000, 10000);
 
     public static bool IsNetworkItem(long id)
@@ -91,11 +98,13 @@ internal static partial class FolderCaptures
             if (path == null)
             {
                 if (current == null) return;
+                current.Dispose();
                 Linked.Remove(RecordingsSource);
                 PruneLinkedMetadata();
             }
             else if (current == null || !string.Equals(current.Path, path, StringComparison.OrdinalIgnoreCase))
             {
+                current?.Dispose();
                 Linked[RecordingsSource] = new LinkedFolder(RecordingsSource, path, videos: true);
                 refresh = true;
             }
@@ -163,7 +172,7 @@ internal static partial class FolderCaptures
             lock (LinkedGate)
             {
                 _linkedConfig = json;
-                Linked.Remove(source);
+                if (Linked.Remove(source, out var removed)) removed.Dispose();
                 PruneLinkedMetadata();
             }
         }
@@ -208,6 +217,7 @@ internal static partial class FolderCaptures
             catch (JsonException) { paths = []; }
             lock (LinkedGate)
             {
+                foreach (var folder in Linked.Values) folder.Dispose();
                 Linked.Clear();
                 foreach (var (source, path) in paths)
                     if (source.StartsWith("folder:", StringComparison.Ordinal) && source != RecordingsSource && Path.IsPathFullyQualified(path))
@@ -225,6 +235,7 @@ internal static partial class FolderCaptures
         lock (LinkedWriteGate)
         lock (LinkedGate)
         {
+            foreach (var folder in Linked.Values) folder.Dispose();
             Linked.Clear();
             _linkedConfig = null;
         }
@@ -246,19 +257,108 @@ internal static partial class FolderCaptures
         {
             if (!Linked.TryGetValue(source, out var folder)) return Task.CompletedTask;
             if (folder.Scan is { IsCompleted: false }) return folder.Scan;
-            folder.NextScan = DateTime.UtcNow.AddSeconds(10);
+            folder.NextScan = DateTime.UtcNow.AddSeconds(folder.PollSeconds);
+            folder.Dirty = false;
             return folder.Scan = Task.Run(async () =>
             {
-                // A stalled share must not occupy the local-directory scan slots.
-                bool network = folder.Path.StartsWith(@"\\", StringComparison.Ordinal)
-                    || new DriveInfo(Path.GetPathRoot(folder.Path)!).DriveType == DriveType.Network;
-                folder.Network = network;
-                var slots = network ? NetworkScanSlots : ScanSlots;
-                await slots.WaitAsync();
-                try { ScanLinkedFolder(folder); }
-                finally { slots.Release(); }
+                SemaphoreSlim? slots = null;
+                try
+                {
+                    // A stalled share must not occupy the local-directory scan slots.
+                    bool network = folder.Path.StartsWith(@"\\", StringComparison.Ordinal)
+                        || DriveTypeReader(Path.GetPathRoot(folder.Path)!) == DriveType.Network;
+                    folder.Network = network;
+                    slots = network ? NetworkScanSlots : ScanSlots;
+                    await slots.WaitAsync();
+                    ConfigureLinkedWatch(folder, beforeScan: true);
+                    ScanLinkedFolder(folder);
+                    ConfigureLinkedWatch(folder);
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+                {
+                    lock (LinkedGate)
+                    {
+                        folder.Available = false;
+                        folder.Initialized = true;
+                        folder.PollSeconds = Math.Min(300, folder.PollSeconds * 2);
+                        folder.NextScan = DateTime.UtcNow.AddSeconds(folder.PollSeconds);
+                    }
+                    Changed?.Invoke();
+                }
+                finally { slots?.Release(); }
             });
         }
+    }
+
+    private static void ConfigureLinkedWatch(LinkedFolder folder, bool beforeScan = false)
+    {
+        lock (LinkedGate)
+        {
+            if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
+            if (!beforeScan)
+            {
+                folder.PollSeconds = folder.Available ? (folder.Network ? 60 : 30) : Math.Min(300, folder.PollSeconds * 2);
+                folder.NextScan = DateTime.UtcNow.AddSeconds(folder.PollSeconds);
+            }
+            if (folder.Network || !beforeScan && !folder.Available) { folder.Watcher?.Dispose(); folder.Watcher = null; return; }
+            if (folder.Watcher != null) { folder.NextScan = DateTime.MaxValue; return; }
+            FileSystemWatcher? watcher = null;
+            try
+            {
+                watcher = WatcherFactory(folder.Path);
+                watcher.IncludeSubdirectories = !folder.Videos;
+                watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite | NotifyFilters.Size;
+                FileSystemEventHandler changed = (_, _) => LinkedTouched(folder);
+                watcher.Created += changed; watcher.Deleted += changed; watcher.Changed += changed;
+                watcher.Renamed += (_, _) => LinkedTouched(folder);
+                watcher.Error += (_, _) =>
+                {
+                    lock (LinkedGate)
+                    {
+                        folder.Watcher?.Dispose();
+                        folder.Watcher = null;
+                        folder.NextScan = DateTime.MinValue;
+                    }
+                    LinkedTouched(folder);
+                };
+                watcher.EnableRaisingEvents = true;
+                folder.Watcher = watcher;
+                folder.NextScan = DateTime.MaxValue;
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+            { watcher?.Dispose(); }
+        }
+    }
+
+    private static void LinkedTouched(LinkedFolder folder)
+    {
+        lock (LinkedGate)
+        {
+            if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
+            folder.Dirty = true;
+            long now = Environment.TickCount64;
+            if (folder.ChangedAt == 0) folder.ChangedAt = now;
+            int delay = (int)Math.Min(400, Math.Max(0, 2000 - (now - folder.ChangedAt)));
+            folder.Debounce ??= new Timer(_ => _ = RefreshLinkedChangesAsync(folder), null, Timeout.Infinite, Timeout.Infinite);
+            folder.Debounce.Change(delay, Timeout.Infinite);
+        }
+    }
+
+    private static async Task RefreshLinkedChangesAsync(LinkedFolder folder)
+    {
+        try
+        {
+            do
+            {
+                await RefreshFolderAsync(folder.Source).ConfigureAwait(false);
+                lock (LinkedGate)
+                {
+                    if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder) || !folder.Dirty)
+                    { folder.ChangedAt = 0; return; }
+                }
+            } while (true);
+        }
+        catch (Exception error) { System.Diagnostics.Trace.TraceWarning("Linked folder refresh failed: {0}", error.Message); }
     }
 
     private static void ScanLinkedFolder(LinkedFolder folder)

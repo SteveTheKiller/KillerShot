@@ -42,8 +42,10 @@ internal static partial class CaptureLibrary
         ArgumentNullException.ThrowIfNull(replaceFile);
         ArgumentNullException.ThrowIfNull(deleteRestorationCopy);
         if (string.IsNullOrEmpty(newPassword)) newPassword = null;
+        RequireVideoIdle();
         lock (_gate)
         {
+            RequireVideoIdle();
             if (_db == null) throw new InvalidOperationException(Loc("Str_Lib_NotOpen"));
             using var transitionLock = AcquireTransitionLock();
 

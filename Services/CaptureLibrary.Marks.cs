@@ -100,7 +100,8 @@ internal static partial class CaptureLibrary
             IndexText(id, transaction);
             transaction.Commit();
             lock (_ocrFailed) _ocrFailed.Remove(id);
-            ClearThumbCache();
+            Interlocked.Increment(ref _thumbnailGeneration);
+            ThumbnailCache.Remove(_session, id);
         }
         RaiseChanged();
         if (BackgroundWork)
@@ -123,26 +124,33 @@ internal static partial class CaptureLibrary
 
     internal enum MarksStatus { Absent, Editable, Unreadable }
     internal sealed record MarksRead(MarksStatus Status, EditorState? State);
+    private sealed record MarksData(int Version, byte[]? BaseImage, string Marks);
 
     /// <summary>Loads one album identity atomically. Unreadable edits expose only flattened pixels
     /// and never attach the recovery document to the preserved edit metadata.</summary>
     public static EditorDocument LoadDocument(CaptureItem item)
     {
+        byte[] png;
+        byte[]? output;
+        MarksData? data;
         lock (_gate)
         {
             if (!IsCurrent(item)) throw new InvalidOperationException(Loc("Str_Album_Changed"));
-            var original = LoadImage(item);
-            var marks = ReadMarks(item.Id, original);
-            if (marks.Status == MarksStatus.Unreadable)
-            {
-                var output = EditedPng(item.Id) ?? throw new System.IO.InvalidDataException(Loc("Str_Marks_Unreadable"));
-                try { return new EditorDocument(Decode(output, exactPixels: true), null, item.Taken) { Recovery = AlbumRecovery.Flattened }; }
-                catch (Exception error) when (IsMarksReadError(error))
-                { throw new System.IO.InvalidDataException(Loc("Str_Marks_Unreadable"), error); }
-            }
-            return marks.State is { } restored ? EditorDocument.Restore(original, restored, item.Taken)
-                : new EditorDocument(original, null, item.Taken);
+            png = LoadPng(item.Id);
+            data = ReadMarksData(item.Id);
+            output = data == null ? null : EditedPng(item.Id);
         }
+        var original = Decode(png, exactPixels: true);
+        var marks = DecodeMarks(data, original, null);
+        if (marks.Status == MarksStatus.Unreadable)
+        {
+            if (output == null) throw new System.IO.InvalidDataException(Loc("Str_Marks_Unreadable"));
+            try { return new EditorDocument(Decode(output, exactPixels: true), null, item.Taken) { Recovery = AlbumRecovery.Flattened }; }
+            catch (Exception error) when (IsMarksReadError(error))
+            { throw new System.IO.InvalidDataException(Loc("Str_Marks_Unreadable"), error); }
+        }
+        return marks.State is { } restored ? EditorDocument.Restore(original, restored, item.Taken)
+            : new EditorDocument(original, null, item.Taken);
     }
 
     /// <summary>The complete editable state, null only when edits are absent. Unsafe metadata
@@ -156,10 +164,19 @@ internal static partial class CaptureLibrary
 
     public static MarksRead ReadMarks(long id, BitmapSource? original = null)
     {
-        if (FolderCaptures.IsFolderId(id)) return new(MarksStatus.Absent, null);
-        byte[]? baseImage;
-        string marks;
-        int version;
+        MarksData? data;
+        byte[]? png;
+        lock (_gate)
+        {
+            data = ReadMarksData(id);
+            png = data is { BaseImage: null } && original == null ? LoadPng(id) : null;
+        }
+        return DecodeMarks(data, original, png);
+    }
+
+    private static MarksData? ReadMarksData(long id)
+    {
+        if (FolderCaptures.IsFolderId(id)) return null;
         lock (_gate)
         {
             if (_db == null) throw new InvalidOperationException(Loc("Str_Lib_LockedTitle"));
@@ -167,17 +184,21 @@ internal static partial class CaptureLibrary
             cmd.CommandText = "SELECT version, base_image, marks FROM capture_marks WHERE capture_id = $id";
             cmd.Parameters.AddWithValue("$id", id);
             using var r = cmd.ExecuteReader();
-            if (!r.Read()) return new(MarksStatus.Absent, null);
-            version = r.GetInt32(0);
-            baseImage = r.IsDBNull(1) ? null : (byte[])r[1];
-            marks = r.GetString(2);
+            if (!r.Read()) return null;
+            return new(r.GetInt32(0), r.IsDBNull(1) ? null : (byte[])r[1], r.GetString(2));
         }
-        if (version != MarksFormat.Version || MarksFormat.Read(marks) is not { } items) return new(MarksStatus.Unreadable, null);
+    }
+
+    private static MarksRead DecodeMarks(MarksData? data, BitmapSource? original, byte[]? originalPng)
+    {
+        if (data == null) return new(MarksStatus.Absent, null);
+        if (data.Version != MarksFormat.Version || MarksFormat.Read(data.Marks) is not { } items) return new(MarksStatus.Unreadable, null);
         // Without a base picture the marks sit on the original itself; the caller's copy is reused so a
         // later save recognises it and stores no second copy.
         try
         {
-            var image = baseImage != null ? Decode(baseImage, exactPixels: true) : original ?? LoadImage(id);
+            var image = data.BaseImage != null ? Decode(data.BaseImage, exactPixels: true)
+                : original ?? Decode(originalPng ?? throw new System.IO.InvalidDataException(Loc("Str_Marks_Unreadable")), exactPixels: true);
             return new(MarksStatus.Editable, new EditorState(image, items));
         }
         catch (Exception error) when (IsMarksReadError(error)) { return new(MarksStatus.Unreadable, null); }
@@ -188,14 +209,7 @@ internal static partial class CaptureLibrary
 
     /// <summary>What copying, printing, saving or dragging a capture gives: the flattened result
     /// of its marks, so a redaction made in the editor is never bypassed from the album.</summary>
-    public static BitmapSource LoadOutput(CaptureItem item)
-    {
-        lock (_gate)
-        {
-            if (!IsCurrent(item)) throw new InvalidOperationException(Loc("Str_Album_Changed"));
-            return LoadOutput(item.Id);
-        }
-    }
+    public static BitmapSource LoadOutput(CaptureItem item) => Decode(LoadOutputPng(item), exactPixels: true);
 
     public static BitmapSource LoadOutput(long id) =>
         EditedPng(id) is { } png ? Decode(png, exactPixels: true) : LoadImage(id);

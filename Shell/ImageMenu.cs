@@ -44,7 +44,11 @@ public partial class MainWindow
         {
             int p = percent;
             var item = new MenuItem { Header = p.ToString(CultureInfo.CurrentCulture) + "%" };
-            item.Click += (_, _) => ResizeTo(Math.Max(1, (int)Math.Round(_doc!.PixelWidth * p / 100.0)), Math.Max(1, (int)Math.Round(_doc.PixelHeight * p / 100.0)));
+            item.Click += (_, _) => RunImageCommand(() =>
+            {
+                if (_doc is not { } document) return;
+                ResizeTo(Math.Max(1, (int)Math.Round(document.PixelWidth * p / 100.0)), Math.Max(1, (int)Math.Round(document.PixelHeight * p / 100.0)));
+            });
             resize.Items.Add(item);
         }
         resize.Items.Add(new Separator());

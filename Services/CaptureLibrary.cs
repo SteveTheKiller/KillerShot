@@ -52,7 +52,7 @@ internal static partial class CaptureLibrary
     private static string _folder = DefaultFolder;
     private static string? _activeFileName;
     private static long _session = 1;
-    public static long Session { get { lock (_gate) return _session; } }
+    public static long Session => Volatile.Read(ref _session);
     public static bool IsCurrent(CaptureItem item) => FolderCaptures.IsFolderId(item.Id) || item.Session == Session;
     private static bool _keyedByPassword;
 
@@ -348,9 +348,22 @@ internal static partial class CaptureLibrary
         lock (_gate)
         {
             if (_db != null) return true;
-            using var transitionLock = AcquireTransitionLock();
-            try { OpenWith(password, byPassword: true); }
-            catch (SqliteException ex) when (IsKeyFailure(ex)) { return false; }
+            LoadError = null;
+            try
+            {
+                Directory.CreateDirectory(_folder);
+                using var catalogLock = AcquireCatalogLock();
+                RecoverAlbumRenames();
+                using var transitionLock = AcquireTransitionLock();
+                OpenWith(password, byPassword: true);
+            }
+            catch (SqliteException ex) when (IsKeyFailure(ex)) { NeedsPassword = true; return false; }
+            catch (Exception ex)
+            {
+                Close();
+                LoadError = ex.Message;
+                return false;
+            }
             NeedsPassword = false;
         }
         AfterOpen();
@@ -856,6 +869,28 @@ internal static partial class CaptureLibrary
         }
     }
 
+    public static int CountItems(string source)
+    {
+        lock (_gate)
+        {
+            if (_db == null) return 0;
+            using var command = _db.CreateCommand();
+            command.CommandText = source switch
+            {
+                "all" => "SELECT COUNT(*) FROM captures",
+                "c0" => "SELECT COUNT(*) FROM captures c WHERE c.collection_id IS NULL OR NOT EXISTS(SELECT 1 FROM collections k WHERE k.id=c.collection_id)",
+                _ => "SELECT COUNT(*) FROM captures WHERE collection_id=$id"
+            };
+            if (source is not ("all" or "c0"))
+            {
+                if (!source.StartsWith('c') || !long.TryParse(source.AsSpan(1), System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture, out long id) || id <= 0) return 0;
+                command.Parameters.AddWithValue("$id", id);
+            }
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+    }
+
     public static IReadOnlyList<CaptureCollection> Collections()
     {
         lock (_gate)
@@ -874,14 +909,7 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>The full capture at its exact pixel size.</summary>
-    public static BitmapSource LoadImage(CaptureItem item)
-    {
-        lock (_gate)
-        {
-            if (!IsCurrent(item)) throw new InvalidOperationException(Loc("Str_Album_Changed"));
-            return LoadImage(item.Id);
-        }
-    }
+    public static BitmapSource LoadImage(CaptureItem item) => Decode(LoadPng(item), exactPixels: true);
 
     public static BitmapSource LoadImage(long id)
     {
@@ -928,7 +956,7 @@ internal static partial class CaptureLibrary
         using Stream stream = FolderCaptures.IsFolderId(item.Id)
             ? new FileStream(FolderCaptures.PathOf(item.Id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing")),
                 FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)
-            : new MemoryStream(EditedPng(item.Id) ?? LoadPng(item));
+            : new MemoryStream(LoadOutputPng(item));
         var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.DelayCreation | BitmapCreateOptions.IgnoreColorProfile,
             BitmapCacheOption.None);
         var frame = decoder.Frames[0];

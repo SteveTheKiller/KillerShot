@@ -104,7 +104,9 @@ internal static class SelfTestRecordings
             string hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(mp4)));
             string moving = Path.Combine(recordings, "moving.mp4");
             File.Copy(mp4, moving);
-            long id = await RecordingStorage.MoveToLibraryAsync(moving, DateTime.Now);
+            var moved = await RecordingStorage.MoveToLibraryAsync(moving, DateTime.Now);
+            long id = moved.Id;
+            if (moved.CleanupError != null) throw new InvalidOperationException("A successful move reported a source cleanup failure.");
             if (File.Exists(moving)) throw new InvalidOperationException("The plain recording stayed after it moved into the library.");
             var stored = CaptureLibrary.Items().SingleOrDefault(i => i.Id == id) ?? throw new InvalidOperationException("The stored recording is not listed.");
             long collection = CaptureLibrary.RecordingsCollection();
@@ -177,6 +179,7 @@ internal static class SelfTestRecordings
             select.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
             var library = (LibraryView)window.FindName("Library");
             library.SetView("flow");
+            await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(5));
             window.UpdateLayout();
             var flow = (CoverFlow)library.FindName("BigFlow");
             if (navigation.Source != FolderCaptures.RecordingsSource || flow.Items.Count != 3 || !flow.Items.All(VideoCaptures.IsVideo))
@@ -188,6 +191,7 @@ internal static class SelfTestRecordings
             flowShot.Render(flowContent);
             ImageOutput.SavePng(flowShot, Path.Combine(folder, "library-flow.png"));
             library.SetView("grid");
+            await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(5));
             await Task.Delay(800);
             window.UpdateLayout();
             var content = (FrameworkElement)window.Content;

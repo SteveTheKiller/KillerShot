@@ -2,6 +2,13 @@ using System.IO;
 
 namespace KillerShot.Services;
 
+internal sealed record RecordingStorageResult(long Id, long Session, Exception? CleanupError)
+{
+    public string? Warning(string sourcePath) => CleanupError == null ? null
+        : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            LocaleManager.Loc("Str_Rec_PlaintextRetained"), sourcePath, CleanupError.Message);
+}
+
 /// <summary>
 /// Where finished recordings go. Nothing is chosen until the first recording, which asks once
 /// (Controls/RecordingStorageDialog); the answer can be changed later in Video settings.
@@ -25,13 +32,20 @@ internal static class RecordingStorage
 
     /// <summary>Moves a finished recording into the encrypted library and deletes the plain file
     /// once the copy is committed. Throws, leaving the file where it was, when the library is
-    /// locked, the clip is over MaxVideoBytes, or the write fails.</summary>
-    public static Task<long> MoveToLibraryAsync(string path, DateTime taken) => Task.Run(() =>
+    /// locked, the clip is over MaxVideoBytes, or the write fails. A committed copy and any
+    /// failure to remove its original are returned together, so cleanup never retries the import.</summary>
+    public static Task<RecordingStorageResult> MoveToLibraryAsync(string path, DateTime taken)
     {
-        if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(LocaleManager.Loc("Str_Rec_LibraryLocked"));
-        long collection = CaptureLibrary.RecordingsCollection();
-        long id = CaptureLibrary.AddVideo(path, taken, Path.GetFileNameWithoutExtension(path), collection);
-        File.Delete(path);
-        return id;
-    });
+        long session = CaptureLibrary.Session;
+        return Task.Run(() =>
+        {
+            if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(LocaleManager.Loc("Str_Rec_LibraryLocked"));
+            long id = CaptureLibrary.AddVideo(path, taken, Path.GetFileNameWithoutExtension(path),
+                expectedSession: session, recordingsCollection: true);
+            Exception? cleanupError = null;
+            try { File.Delete(path); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { cleanupError = error; }
+            return new RecordingStorageResult(id, session, cleanupError);
+        });
+    }
 }

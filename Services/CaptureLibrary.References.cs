@@ -34,12 +34,33 @@ internal static partial class CaptureLibrary
             lock (_gate)
             {
                 if (_db == null || !string.Equals(path, Path.GetFullPath(FilePath), StringComparison.OrdinalIgnoreCase)) return null;
-                return Items().FirstOrDefault(item => item.Id == id);
+                return ItemById(id);
             }
         }
         catch (Exception error) when (error is ArgumentException or FormatException or NotSupportedException or IOException)
         {
             return null;
+        }
+    }
+
+    public static CaptureItem? ItemById(long id)
+    {
+        lock (_gate)
+        {
+            if (_db == null) return null;
+            using var command = _db.CreateCommand();
+            command.CommandText = """
+                SELECT id,taken_utc,width,height,mode,window_title,process_name,collection_id,note,
+                EXISTS(SELECT 1 FROM capture_qr q WHERE q.capture_id=captures.id AND q.results <> '[]')
+                FROM captures WHERE id=$id
+                """;
+            command.Parameters.AddWithValue("$id", id);
+            using var row = command.ExecuteReader();
+            if (!row.Read()) return null;
+            return new CaptureItem(row.GetInt64(0), new DateTime(row.GetInt64(1), DateTimeKind.Utc).ToLocalTime(),
+                row.GetInt32(2), row.GetInt32(3), row.GetString(4),
+                row.IsDBNull(5) ? null : row.GetString(5), row.IsDBNull(6) ? null : row.GetString(6),
+                row.IsDBNull(7) ? null : row.GetInt64(7), row.IsDBNull(8) ? null : row.GetString(8), row.GetBoolean(9), _session);
         }
     }
 }

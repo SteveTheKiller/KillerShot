@@ -253,15 +253,19 @@ internal sealed class VideoController
             (choice, open) = AskStorage?.Invoke(published) ?? Ask(published);
             if (choice != null) RecordingStorage.Choice = choice;
         }
-        long? stored = null;
+        RecordingStorageResult? stored = null;
         string? kept = null;
         if (choice == RecordingStorage.Library && !_exiting)
         {
-            try { stored = await RecordingStorage.MoveToLibraryAsync(published, File.GetLastWriteTime(published)); }
+            try
+            {
+                stored = await RecordingStorage.MoveToLibraryAsync(published, File.GetLastWriteTime(published));
+                kept = stored.Warning(published);
+            }
             catch (VideoTooLargeException) { kept = string.Format(Loc("Str_Rec_TooLarge"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!)); }
             catch (Exception ex) { kept = string.Format(Loc("Str_Rec_KeptInFolder"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!), ex.Message); }
         }
-        if (stored == null && VideoSettings.CopyFile) CopyFileToClipboard(published);
+        if (stored == null && VideoSettings.CopyFile) await CopyFileToClipboardAsync(published, _showWarning);
         if (kept != null)
             _showWarning(Loc("Str_Tray_VideoSavedTitle"), Path.GetFileName(published) + "\n" + kept);
         else if (captureWarning != null)
@@ -272,7 +276,7 @@ internal sealed class VideoController
         if (!open) return;
         try
         {
-            string clip = stored is long id ? VideoCaptures.DecryptForPlayback(id) : published;
+            string clip = stored is { } result ? await VideoCaptures.PreparePlaybackAsync(result.Id, result.Session) : published;
             (OpenClip ?? VideoCaptures.OpenInPlayer)(clip);
         }
         catch (Exception ex) { _showWarning(Loc("Str_Tray_VideoSavedTitle"), ex.Message); }
@@ -351,17 +355,23 @@ internal sealed class VideoController
         try { if (File.Exists(path)) File.Delete(path); } catch { }
     }
 
-    private static void CopyFileToClipboard(string path)
+    internal static async Task CopyFileToClipboardAsync(string path, Action<string, string> showWarning, Action<StringCollection>? setFiles = null)
     {
-        for (int i = 0; i < 10; i++)
+        string? error = null;
+        for (int i = 0; i < 3; i++)
         {
             try
             {
-                Clipboard.SetFileDropList(new StringCollection { path });
+                (setFiles ?? Clipboard.SetFileDropList)(new StringCollection { path });
                 return;
             }
-            catch { Thread.Sleep(50); }
+            catch (System.Runtime.InteropServices.ExternalException ex)
+            {
+                error = ex.Message;
+                if (i < 2) await Task.Delay(50);
+            }
         }
+        showWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
     }
 
     /// <summary>Opens Explorer with the file selected.</summary>

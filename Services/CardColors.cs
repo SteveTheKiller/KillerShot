@@ -15,6 +15,24 @@ namespace KillerShot.Services
     /// </summary>
     internal static class CardColors
     {
+        private static readonly object CollectionGate = new();
+        private static readonly Dictionary<long, Color?> CollectionCache = new();
+        private static long _colorSession = -1, _colorGeneration;
+
+        static CardColors()
+        {
+            Changed += ClearCollectionColors;
+            CaptureLibrary.Changed += ClearCollectionColors;
+        }
+
+        private static void ClearCollectionColors()
+        {
+            lock (CollectionGate)
+            {
+                CollectionCache.Clear();
+                _colorGeneration++;
+            }
+        }
         /// <summary>The fallback when no card color is picked. The library and the strip draw their
         /// cards in the theme's pane gray instead (StripCard), since both sit on the window's own
         /// background.</summary>
@@ -43,7 +61,27 @@ namespace KillerShot.Services
         }
 
         /// <summary>A collection's own color, or null when it has none.</summary>
-        public static Color? Collection(long? id) => id is long i && i > 0 ? Parse(CaptureLibrary.GetAlbumSetting("CollectionColor." + i.ToString(CultureInfo.InvariantCulture))) : null;
+        public static Color? Collection(long? id)
+        {
+            if (id is not long i || i <= 0) return null;
+            long session = CaptureLibrary.Session, generation;
+            lock (CollectionGate)
+            {
+                if (_colorSession != session)
+                {
+                    _colorSession = session;
+                    CollectionCache.Clear();
+                    _colorGeneration++;
+                }
+                if (CollectionCache.TryGetValue(i, out var cached)) return cached;
+                generation = _colorGeneration;
+            }
+            var color = Parse(CaptureLibrary.GetAlbumSetting("CollectionColor." + i.ToString(CultureInfo.InvariantCulture)));
+            lock (CollectionGate)
+                if (_colorSession == session && _colorGeneration == generation && CaptureLibrary.Session == session)
+                    CollectionCache[i] = color;
+            return color;
+        }
 
         public static void SetCollection(long id, Color? color, long? expectedSession = null)
         {

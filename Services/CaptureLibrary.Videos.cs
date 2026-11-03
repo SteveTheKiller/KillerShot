@@ -32,6 +32,18 @@ internal static partial class CaptureLibrary
         """;
 
     private const int PosterLongSide = 1920;
+    private static int _videoOperations;
+    public static bool VideoBusy => Volatile.Read(ref _videoOperations) != 0;
+    private static void RequireVideoIdle()
+    {
+        if (VideoBusy) throw new InvalidOperationException(Loc("Str_Rec_Saving"));
+    }
+
+    private sealed class VideoOperation : IDisposable
+    {
+        public VideoOperation() { Interlocked.Increment(ref _videoOperations); RaiseChanged(); }
+        public void Dispose() { Interlocked.Decrement(ref _videoOperations); RaiseChanged(); }
+    }
 
     /// <summary>For the self-test: a smaller cap, so the over-limit path runs without a 1 GB file.</summary>
     internal static long? MaxVideoBytesOverride { get; set; }
@@ -48,8 +60,11 @@ internal static partial class CaptureLibrary
 
     /// <summary>Copies a recording into the library and gives its id. The file is left alone; the
     /// caller decides whether to remove it. Throws VideoTooLargeException over MaxVideoBytes.</summary>
-    public static long AddVideo(string path, DateTime taken, string? title, long? collectionId = null)
+    public static long AddVideo(string path, DateTime taken, string? title, long? collectionId = null,
+        long? expectedSession = null, bool recordingsCollection = false)
     {
+        long session = expectedSession ?? Session;
+        using var operation = new VideoOperation();
         long size = new FileInfo(path).Length;
         long limit = MaxVideoBytes;
         if (size > limit) throw new VideoTooLargeException(size, limit);
@@ -62,6 +77,8 @@ internal static partial class CaptureLibrary
         lock (PendingWriter)
         lock (_gate)
         {
+            RequireSession(session);
+            if (recordingsCollection) collectionId = RecordingsCollectionCore(notify: false);
             var album = Db;
             using var transaction = album.BeginTransaction();
             id = AllocateCaptureId(album, transaction);
@@ -99,15 +116,25 @@ internal static partial class CaptureLibrary
 
     /// <summary>Writes a stored clip out to a file, byte for byte, through a temporary name so a
     /// failed copy never leaves half a video at the destination.</summary>
-    public static void ExportVideo(long id, string destination)
+    public static void ExportVideo(long id, string destination, long? expectedSession = null)
     {
-        string temp = destination + ".partial";
+        using var operation = new VideoOperation();
+        string temp = destination + "." + Guid.NewGuid().ToString("N") + ".partial";
         try
         {
-            lock (_gate)
+            lock (PendingWriter)
             {
-                using var blob = new SqliteBlob(Db, "capture_videos", "data", id, readOnly: true);
-                using var target = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None);
+                string connectionString;
+                lock (_gate)
+                {
+                    RequireSession(expectedSession);
+                    connectionString = new SqliteConnectionStringBuilder(Db.ConnectionString)
+                    { Pooling = false, Mode = SqliteOpenMode.ReadOnly }.ConnectionString;
+                }
+                using var album = new SqliteConnection(connectionString);
+                album.Open();
+                using var blob = new SqliteBlob(album, "capture_videos", "data", id, readOnly: true);
+                using var target = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None);
                 blob.CopyTo(target, 1 << 20);
                 target.Flush(true);
             }
@@ -118,15 +145,23 @@ internal static partial class CaptureLibrary
     }
 
     /// <summary>The stored clip's file extension with its dot, such as ".mp4".</summary>
-    public static string VideoExtension(long id)
+    public static string VideoExtension(long id) => VideoExtension(id, null);
+
+    public static string VideoExtension(long id, long? expectedSession)
     {
         lock (_gate)
         {
+            RequireSession(expectedSession);
             using var cmd = Db.CreateCommand();
             cmd.CommandText = "SELECT ext FROM capture_videos WHERE capture_id = $id";
             cmd.Parameters.AddWithValue("$id", id);
             return cmd.ExecuteScalar() as string ?? throw new InvalidOperationException(Loc("Str_Lib_Missing"));
         }
+    }
+
+    internal static (long Session, long Revision, string Extension) VideoPlaybackIdentity(long id)
+    {
+        lock (_gate) return (_session, MarksRevision(id), VideoExtension(id));
     }
 
     /// <summary>A stored clip's length, or zero when Windows could not read it at import.</summary>
@@ -143,25 +178,35 @@ internal static partial class CaptureLibrary
 
     /// <summary>The album's Recordings collection, made the first time a recording is stored and
     /// made again if the user deleted it. Its id lives in the album, so each album has its own.</summary>
-    public static long RecordingsCollection()
+    public static long RecordingsCollection() => RecordingsCollectionCore(notify: true);
+
+    private static long RecordingsCollectionCore(bool notify)
     {
+        long id;
         lock (_gate)
         {
+            using var transaction = Db.BeginTransaction();
             using var read = Db.CreateCommand();
+            read.Transaction = transaction;
             read.CommandText = """
                 SELECT c.id FROM meta m JOIN collections c ON c.id = CAST(m.value AS INTEGER)
                 WHERE m.key = 'recordings_collection'
                 """;
             if (read.ExecuteScalar() is long existing) return existing;
-        }
-        long id = CreateCollection(Loc("Str_Rec_CollectionName"));
-        lock (_gate)
-        {
+            using var create = Db.CreateCommand();
+            create.Transaction = transaction;
+            create.CommandText = "INSERT INTO collections(name,created_utc) VALUES($name,$taken); SELECT last_insert_rowid();";
+            create.Parameters.AddWithValue("$name", Loc("Str_Rec_CollectionName"));
+            create.Parameters.AddWithValue("$taken", DateTime.UtcNow.Ticks);
+            id = (long)create.ExecuteScalar()!;
             using var write = Db.CreateCommand();
+            write.Transaction = transaction;
             write.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('recordings_collection', $id)";
             write.Parameters.AddWithValue("$id", id);
             write.ExecuteNonQuery();
+            transaction.Commit();
         }
+        if (notify) RaiseChanged();
         return id;
     }
 

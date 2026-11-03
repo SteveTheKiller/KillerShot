@@ -15,7 +15,8 @@ internal static partial class CaptureLibrary
             return new DirectoryInfo(_folder).EnumerateFiles("*.kshot")
                 .Select(file => new AlbumInfo(file.FullName, Path.GetFileNameWithoutExtension(file.Name), file.Length,
                     file.LastWriteTime, string.Equals(file.FullName, FilePath, StringComparison.OrdinalIgnoreCase),
-                    !File.Exists(Path.ChangeExtension(file.FullName, ".key"))))
+                    !File.Exists(Path.ChangeExtension(file.FullName, ".key"))
+                    && !File.Exists(Path.ChangeExtension(file.FullName, ".key.next"))))
                 .OrderByDescending(album => album.Active).ThenBy(album => album.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
         }
     }
@@ -60,11 +61,13 @@ internal static partial class CaptureLibrary
 
     public static string RenameAlbum(string path, string name)
     {
+        RequireVideoIdle();
         lock (PendingWriter)
         {
             FlushPending();
             lock (_gate)
             {
+                RequireVideoIdle();
                 path = ManagedAlbumPath(path);
                 string destination = AlbumPath(name);
                 if (string.Equals(path, destination, StringComparison.OrdinalIgnoreCase)) return path;
@@ -248,14 +251,7 @@ internal static partial class CaptureLibrary
 
     private static void InitializeAlbumSettings(SqliteConnection database, string path)
     {
-        if (PendingQrChoices.TryGetValue(path, out bool pendingQr))
-        {
-            using var choice = database.CreateCommand();
-            choice.CommandText = "INSERT INTO meta(key,value) VALUES('setting.QrReading',$value) ON CONFLICT(key) DO UPDATE SET value=excluded.value";
-            choice.Parameters.AddWithValue("$value", pendingQr ? "1" : "0");
-            choice.ExecuteNonQuery();
-            PendingQrChoices.Remove(path);
-        }
+        ApplyPendingQrChoice(database, path);
         bool legacy = string.Equals(Path.GetFileName(path), "Library.kshot", StringComparison.OrdinalIgnoreCase);
         foreach (var (key, fallback) in new[] { ("LibraryKeep", "all"), ("QrReading", "0") })
         {
@@ -310,6 +306,19 @@ internal static partial class CaptureLibrary
         }
     }
 
+    private static void ApplyPendingQrChoice(SqliteConnection database, string path)
+    {
+        lock (_gate)
+        {
+            if (!PendingQrChoices.TryGetValue(path, out bool pendingQr)) return;
+            using var choice = database.CreateCommand();
+            choice.CommandText = "INSERT INTO meta(key,value) VALUES('setting.QrReading',$value) ON CONFLICT(key) DO UPDATE SET value=excluded.value";
+            choice.Parameters.AddWithValue("$value", pendingQr ? "1" : "0");
+            choice.ExecuteNonQuery();
+            PendingQrChoices.Remove(path);
+        }
+    }
+
     public static void SetAlbumSetting(string key, string value, long? expectedSession = null)
     {
         lock (_gate)
@@ -326,11 +335,13 @@ internal static partial class CaptureLibrary
     public static bool TrySwitchAlbum(string path, string? password, out bool needsPassword, Func<bool>? canActivate = null)
     {
         needsPassword = false;
+        RequireVideoIdle();
         lock (PendingWriter)
         {
             FlushPending();
             lock (_gate)
             {
+                RequireVideoIdle();
                 path = ManagedAlbumPath(path);
                 if (string.Equals(path, FilePath, StringComparison.OrdinalIgnoreCase) && _db != null) return true;
                 if (PendingCount > 0) throw new InvalidOperationException(Loc("Str_Album_Pending"));
@@ -353,6 +364,7 @@ internal static partial class CaptureLibrary
                 lock (_gate)
                 {
                     if (PendingCount > 0) throw new InvalidOperationException(Loc("Str_Album_Pending"));
+                    ApplyPendingQrChoice(destination, path);
                     Settings.SetRequired("ActiveAlbum", Path.GetFileName(path));
                     Close();
                     _session++;
@@ -366,7 +378,14 @@ internal static partial class CaptureLibrary
                 }
             }
         }
-        finally { destination?.Dispose(); }
+        finally
+        {
+            if (destination != null)
+            {
+                destination.Dispose();
+                SqliteConnection.ClearPool(destination);
+            }
+        }
         AfterOpen();
         return true;
     }

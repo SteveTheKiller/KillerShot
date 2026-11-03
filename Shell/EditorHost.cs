@@ -39,7 +39,6 @@ namespace KillerShot.Shell
 
         private EditorDocument? _doc;
         private bool _fitMode = true;
-        private DispatcherTimer? _pixelTimer;
 
         private void InitEditor()
         {
@@ -66,11 +65,9 @@ namespace KillerShot.Shell
                 if (_doc != null) _doc.Changed -= RefreshDocumentUi;
             };
 
-            // The pixel readout follows the mouse without a handler on every move.
-            _pixelTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(80) };
-            _pixelTimer.Tick += (_, _) => RefreshFooter();
-            _pixelTimer.Start();
-            Closed += (_, _) => _pixelTimer.Stop();
+            Editor.MouseMove += (_, _) => RefreshFooter();
+            Editor.MouseLeave += (_, _) => RefreshFooter();
+            EditorScroll.ScrollChanged += (_, _) => RefreshFooter();
 
             BuildCaptureMenu();
             if (App.Instance.Video is { } video)
@@ -382,6 +379,11 @@ namespace KillerShot.Shell
         private void BuildCaptureMenu()
         {
             CaptureMenu.Items.Clear();
+            var remembered = new MenuItem { Header = Loc("Str_Btn_Capture"), InputGestureText = "Ctrl+N" };
+            remembered.Click += (_, _) => StartCapture();
+            CaptureMenu.Items.Add(remembered);
+            CaptureMenu.Items.Add(new Separator());
+            var selected = CaptureController.Resolve(null, null);
             foreach (var (mode, key, action) in new (CaptureMode, string, ShortcutAction?)[]
             {
                 (CaptureMode.Region, "Str_Mode_Region", null),
@@ -393,9 +395,8 @@ namespace KillerShot.Shell
             {
                 var m = mode;
                 string gesture = action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) ? sc.Short : "";
-                if (mode == CaptureMode.Region) gesture = "Ctrl+N";
                 var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture,
-                    IsCheckable = true, IsChecked = mode == CaptureMode.Region };
+                    IsCheckable = true, IsChecked = mode == selected };
                 mi.Click += (_, _) => StartCapture(m);
                 CaptureMenu.Items.Add(mi);
             }
@@ -437,6 +438,7 @@ namespace KillerShot.Shell
 
         private void InitLibrary()
         {
+            InitLibraryVideoWork();
             Library.SearchAnchor = LibrarySearchButton;
             // The library's file name, without its extension, as Killendar and KillerNotes name
             // their open database; the tooltip has the full path.
@@ -450,7 +452,7 @@ namespace KillerShot.Shell
                 }
                 catch (Exception ex) { StatusText.Text = ex.Message; }
             };
-            Library.CaptureRequested += () => StartCapture(CaptureMode.Region);
+            Library.CaptureRequested += () => StartCapture();
             Library.ViewChanged += SyncContentPane;
             Library.ViewChanged += SyncStripPane;
             Library.StatusMessage += text => StatusText.Text = text;
@@ -527,7 +529,7 @@ namespace KillerShot.Shell
 
         /// <summary>Window mode from inside the editor captures the window that was in front before
         /// KillerShot, which is the one the user means.</summary>
-        private void StartCapture(CaptureMode mode)
+        private void StartCapture(CaptureMode? mode = null)
         {
             Editor.CommitText();
             _ = App.Instance.Capture?.Start(mode);
@@ -592,7 +594,11 @@ namespace KillerShot.Shell
             paste.Click += (_, _) => PasteAsNewPicture();
             menu.Items.Add(paste);
             var recent = new MenuItem { Header = Loc("Str_Btn_Recent"), Icon = ToolbarUnitIcon("recent") };
-            FillRecentMenu(recent);
+            recent.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
+            recent.SubmenuOpened += (_, args) =>
+            {
+                if (ReferenceEquals(args.OriginalSource, recent)) FillRecentMenu(recent);
+            };
             menu.Items.Add(recent);
             OpenFlyout(menu, _toolbarHidden ? ToolbarOverflowButton : OpenBtn.IsVisible ? OpenBtn : MoreBtn);
         }

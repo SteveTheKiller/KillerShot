@@ -55,6 +55,8 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     public bool AlignTop { get; set; }
     /// <summary>Enables Ctrl+wheel depth changes for album carousels.</summary>
     public bool PerspectiveZoomEnabled { get; set; }
+    /// <summary>Shelves leave the vertical wheel to their enclosing library scroller.</summary>
+    public bool ShelfMode { get; set; }
     /// <summary>Responsive framing for the album's primary photo, independent of compact strips.</summary>
     public bool MainView { get; set; }
     private double _visibleWidth = MinViewWidth;
@@ -73,6 +75,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     private readonly Dictionary<int, Card> _cards = [];
     private readonly Dictionary<GeometryModel3D, int> _hits = [];
     private IReadOnlyList<CaptureItem> _items = [];
+    private readonly HashSet<CaptureItem> _itemMembership = [];
     private readonly CarouselMotion _motion;
     private double _position => _motion.Position;
     private int _orderBucket = int.MinValue;
@@ -136,6 +139,8 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
         {
             long? keep = SelectedItem?.Id;
             _items = value ?? [];
+            _itemMembership.Clear();
+            _itemMembership.UnionWith(_items);
             RefreshPhotoShadow();
             ClearCards();
             MaximumIndex = Math.Max(0, _items.Count - 1);
@@ -198,7 +203,16 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
 
     private void OnThumbnailReady(CaptureItem item) => Dispatcher.BeginInvoke(new Action(() =>
     {
-        if (IsLoaded && IsVisible && _items.Contains(item)) RefreshCards();
+        if (!IsLoaded || !IsVisible || !_itemMembership.Contains(item)) return;
+        foreach (int index in _cards.Keys.Where(index => _items[index] == item).ToArray())
+        {
+            var card = _cards[index];
+            _scene.Children.Remove(card.Group);
+            _hits.Remove(card.Face);
+            _cards[index] = CreateCard(index);
+        }
+        _orderBucket = int.MinValue;
+        Place();
     }));
 
     private int IndexOf(long id)
@@ -590,6 +604,7 @@ internal sealed class CoverFlow : FrameworkElement, ICaptureCarousel
     public bool HandleWheel(int delta, ModifierKeys modifiers)
     {
         if (_items.Count == 0) return false;
+        if (ShelfMode && (modifiers & (ModifierKeys.Shift | ModifierKeys.Control)) == 0) return false;
         if (PerspectiveZoomEnabled && (modifiers & ModifierKeys.Control) != 0)
         {
             _perspectiveZoom = Math.Clamp(_perspectiveZoom + delta / 1200.0, -.5, 1.5);

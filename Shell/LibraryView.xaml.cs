@@ -105,6 +105,12 @@ namespace KillerShot.Shell
         private bool _dirty = true;
         private int _tilesPerRow;
         private long _albumSession = -1;
+        // Database and filesystem boundary, replaceable by a slow reader in the in-app regression.
+        internal Func<string, string, LibraryListing> ListingReader { get; set; } = LibraryListing.Read;
+        internal Func<(bool IsOpen, Task Opening)> StartupReader { get; set; } = () => (CaptureLibrary.IsOpen, CaptureLibrary.Opening);
+        public Task ListingTask { get; private set; } = Task.CompletedTask;
+        private readonly PickerListingWork _listingWork = new();
+        private bool _awaitingOpen;
 
         private static string Loc(string key) => LocaleManager.Loc(key);
 
@@ -136,6 +142,8 @@ namespace KillerShot.Shell
             };
             Unloaded += (_, _) =>
             {
+                _listingWork.Cancel();
+                _dirty = true;
                 CaptureLibrary.Changed -= OnLibraryChanged;
                 FolderCaptures.Changed -= OnLibraryChanged;
                 CardColors.Changed -= OnLibraryChanged;
@@ -173,6 +181,7 @@ namespace KillerShot.Shell
         /// <summary>Reads the library again and redraws the current view.</summary>
         public void Reload()
         {
+            if (CaptureLibrary.VideoBusy) { _listingWork.Cancel(); _dirty = true; return; }
             long session = CaptureLibrary.Session;
             if (_albumSession != session)
             {
@@ -187,42 +196,48 @@ namespace KillerShot.Shell
             int pending = CaptureLibrary.PendingCount;
             PendingBar.Visibility = pending > 0 ? Visibility.Visible : Visibility.Collapsed;
             PendingText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_Pending"), pending);
-            RetryPendingBtn.IsEnabled = CaptureLibrary.IsOpen;
-            if (!CaptureLibrary.IsOpen && !CaptureLibrary.Opening.IsCompleted)
+            var startup = StartupReader();
+            RetryPendingBtn.IsEnabled = startup.IsOpen;
+            if (!startup.IsOpen && !startup.Opening.IsCompleted)
             {
                 // Still opening at startup: the loading screen, then this again.
                 ShowBusy();
-                CaptureLibrary.Opening.ContinueWith(_ => Dispatcher.BeginInvoke(new Action(() => { HideBusy(); Reload(); })),
-                    TaskScheduler.Default);
+                if (!_awaitingOpen)
+                {
+                    _awaitingOpen = true;
+                    startup.Opening.ContinueWith(_ => Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        _awaitingOpen = false;
+                        HideBusy();
+                        if (IsLoaded && IsVisible) Reload(); else _dirty = true;
+                    })), TaskScheduler.Default);
+                }
                 return;
             }
-            if (!CaptureLibrary.IsOpen)
+            if (!startup.IsOpen)
             {
+                _listingWork.Cancel();
                 ShowLock();
                 return;
             }
             LockPanel.Visibility = Visibility.Collapsed;
             string search = SearchBox.Text.Trim();
-            _items = CaptureLibrary.Items(search.Length > 0 ? search : null);
-            _collections = CaptureLibrary.Collections();
-            _folderItems = FolderCaptures.Snapshot(search.Length > 0 ? search : null);
-            bool Matches(CaptureItem item) => _source == "all" || (_source == "c0"
-                ? item.CollectionId == null || !_collections.Any(c => c.Id == item.CollectionId)
-                : "c" + item.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source);
-            int total;
-            if (FolderCaptures.IsSource(_source))
+            string source = _source;
+            var reader = ListingReader;
+            ListingTask = _listingWork.RunAsync(_ => reader(source, search), (listing, token) =>
             {
-                _items = FolderCaptures.ItemsForSource(_source, search.Length > 0 ? search : null);
-                total = search.Length > 0 ? FolderCaptures.ItemsForSource(_source).Count : _items.Count;
-                _collections = [];
-            }
-            else
-            {
-                _items = _items.Where(Matches).ToList();
-                total = search.Length > 0 ? CaptureLibrary.Items().Count(Matches) : _items.Count;
-                if (_source != "all") _collections = _collections.Where(c => "c" + c.Id.ToString(CultureInfo.InvariantCulture) == _source).ToList();
-            }
-            if (_source != "all") _folderItems = [];
+                if (CaptureLibrary.Session == session && source == _source && search == SearchBox.Text.Trim())
+                    ApplyListing(listing, search);
+                return Task.CompletedTask;
+            }, error => StatusMessage?.Invoke(error.Message));
+        }
+
+        private void ApplyListing(LibraryListing listing, string search)
+        {
+            _items = listing.Items;
+            _collections = listing.Collections;
+            _folderItems = listing.FolderItems;
+            int total = listing.Total;
 
             SyncHeader();
             string? folderStatus = FolderReadStatus();
@@ -233,7 +248,7 @@ namespace KillerShot.Shell
             CountChanged?.Invoke(CountText.Text);
 
             // The Screenshots folder shows as a collection, so only where collections do.
-            bool linkedPhotos = FolderCaptures.LinkedCollections().Any(folder => FolderCaptures.LinkedItems(folder.Source, search).Count > 0);
+            bool linkedPhotos = listing.LinkedPhotos;
             bool folderShown = _group == "collection" && _view != "timeline" && (_folderItems.Count > 0 || _source == "all" && linkedPhotos);
             bool libraryEmpty = total == 0 && _collections.Count == 0 && _folderItems.Count == 0 && !linkedPhotos;
             if (_items.Count == 0 && !folderShown && (search.Length > 0 || _view != "shelves" || _group != "collection" || _collections.Count == 0))
@@ -508,6 +523,7 @@ namespace KillerShot.Shell
                 // out, so the shelves stack with no empty room above or below the pictures.
                 Height = 240,
                 ViewHeight = 1.52,
+                ShelfMode = true,
                 PerspectiveZoomEnabled = true,
                 ViewCenterY = 0.255,
                 ThumbnailSource = CaptureLibrary.RequestThumb,
@@ -1157,10 +1173,10 @@ namespace KillerShot.Shell
         }
 
         /// <summary>Writes a stored recording out as the video file it was, byte for byte.</summary>
-        private void SaveVideoAs(CaptureItem item)
+        private async void SaveVideoAs(CaptureItem item)
         {
             string ext;
-            try { ext = CaptureLibrary.VideoExtension(item.Id); }
+            try { ext = CaptureLibrary.VideoExtension(item.Id, item.Session); }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); return; }
             bool gif = ext == ".gif";
             var dlg = new FileDialog(FileDialogMode.Save)
@@ -1172,10 +1188,11 @@ namespace KillerShot.Shell
                 InitialDirectory = VideoSettings.OutputFolder,
             };
             if (PresentExportDialog(dlg, OwnerWindow) != true) return;
+            string destination = dlg.FileName;
             try
             {
-                CaptureLibrary.ExportVideo(item.Id, dlg.FileName);
-                StatusMessage?.Invoke(dlg.FileName);
+                await Task.Run(() => CaptureLibrary.ExportVideo(item.Id, destination, item.Session));
+                StatusMessage?.Invoke(destination);
             }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
@@ -1187,8 +1204,8 @@ namespace KillerShot.Shell
             if (FolderCaptures.PathOf(item.Id) is not { } path) { StatusMessage?.Invoke(Loc("Str_Lib_Missing")); return; }
             try
             {
-                await RecordingStorage.MoveToLibraryAsync(path, item.Taken);
-                StatusMessage?.Invoke(Loc("Str_Rec_SavedToLibrary"));
+                var result = await RecordingStorage.MoveToLibraryAsync(path, item.Taken);
+                StatusMessage?.Invoke(result.Warning(path) ?? Loc("Str_Rec_SavedToLibrary"));
             }
             catch (VideoTooLargeException) { StatusMessage?.Invoke(string.Format(Loc("Str_Rec_TooLarge"), RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(path)!))); }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }

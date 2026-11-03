@@ -169,16 +169,40 @@ internal static class ImageDrag
     /// drags as its video: a folder clip as the file itself, a stored clip as a decrypted copy in
     /// the playback folder, which is wiped with the playback copies.</summary>
     internal static string? DragFile(CaptureItem item) => VideoCaptures.IsVideo(item) ? VideoCaptures.PlayablePath(item) : null;
+    internal static Task<string?> PrepareFileAsync(CaptureItem item) => Task.Run(() => DragFile(item));
+    private static bool _preparingCapture;
 
     /// <summary>Drags a library capture: a recording as its video file, anything else as the
     /// flattened picture every album view drags, so a redaction is never bypassed.</summary>
     internal static void AttachCapture(FrameworkElement owner, Func<Point, CaptureItem?> capture, bool? verticalNavigation = null, bool capturePointer = false) =>
-        AttachCore(owner, point => capture(point) is { } item ? () => StartCapture(item) : null, verticalNavigation, capturePointer);
+        AttachCore(owner, point => capture(point) is { } item ? () => _ = StartCaptureAsync(item) : null, verticalNavigation, capturePointer);
 
-    private static void StartCapture(CaptureItem item)
+    internal static async Task StartCaptureAsync(CaptureItem item)
     {
-        if (DragFile(item) is { } file) StartFile(file, CaptureLibrary.LoadThumb(item));
-        else if (CaptureLibrary.LoadOutput(item) is { } image) Start(image);
+        Cursor? cursor = null;
+        bool preparing = false;
+        try
+        {
+            if (Active || _preparingCapture) return;
+            if (!VideoCaptures.IsVideo(item))
+            {
+                if (CaptureLibrary.LoadOutput(item) is { } image) Start(image);
+                return;
+            }
+            cursor = Mouse.OverrideCursor;
+            _preparingCapture = preparing = true;
+            Mouse.OverrideCursor = Cursors.Wait;
+            string? file = await PrepareFileAsync(item);
+            var preview = await Task.Run(() => CaptureLibrary.LoadThumb(item));
+            Mouse.OverrideCursor = cursor;
+            if (file != null && Mouse.LeftButton == MouseButtonState.Pressed && CaptureLibrary.IsCurrent(item))
+                StartFile(file, preview);
+        }
+        catch (Exception error) { System.Diagnostics.Debug.WriteLine(error); }
+        finally
+        {
+            if (preparing) { Mouse.OverrideCursor = cursor; _preparingCapture = false; }
+        }
     }
 
     /// <summary>Drags an existing file, with its preview under the pointer.</summary>

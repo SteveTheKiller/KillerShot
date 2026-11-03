@@ -40,13 +40,22 @@ internal static class SelfTestAlbumModalIdentity
             CaptureSettings.OutputFolder = folder;
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
             string albumA = CaptureLibrary.FilePath;
+            bool video = action == "video";
+            string VideoFile(string name, byte marker)
+            {
+                string path = Path.Combine(folder, name + ".gif");
+                File.WriteAllBytes(path, Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7").Concat(new[] { marker }).ToArray());
+                return path;
+            }
             var image = SelfTestRecognitionPrivacy.Fixture();
-            long idA = CaptureLibrary.AddNow(image, DateTime.Now, "region", "A capture", null);
+            long idA = video ? CaptureLibrary.AddVideo(VideoFile("A", 17), DateTime.Now, "A capture")
+                : CaptureLibrary.AddNow(image, DateTime.Now, "region", "A capture", null);
             CaptureLibrary.SetNote(idA, "A note");
             long collectionA = CaptureLibrary.CreateCollection("A collection");
             string albumB = CaptureLibrary.CreateAlbum("B");
             CaptureLibrary.TrySwitchAlbum(albumB, null, out _);
-            long idB = CaptureLibrary.AddNow(image, DateTime.Now, "region", "B capture", null);
+            long idB = video ? CaptureLibrary.AddVideo(VideoFile("B", 33), DateTime.Now, "B capture")
+                : CaptureLibrary.AddNow(image, DateTime.Now, "region", "B capture", null);
             CaptureLibrary.SetNote(idB, "B note");
             long collectionB = CaptureLibrary.CreateCollection("B collection");
             if (idA != idB || collectionA != collectionB) throw new InvalidOperationException("The fixture did not produce colliding local IDs.");
@@ -91,7 +100,12 @@ internal static class SelfTestAlbumModalIdentity
                 try { return show(); }
                 finally { deadline.Stop(); }
             }
-            string output = Path.Combine(folder, "A-export." + (action == "jpg" ? "jpg" : "png"));
+            string output = Path.Combine(folder, "A-export." + (video ? "gif" : action == "jpg" ? "jpg" : "png"));
+            var videoCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            view.StatusMessage += message =>
+            {
+                if (message == output || message == LocaleManager.Loc("Str_Album_Changed")) videoCompleted.TrySetResult();
+            };
             view.PresentExportDialog = (dialog, owner) => CompleteModal(dialog, () => dialog.ShowDialog(owner), () =>
             {
                 ((TextBox)dialog.FindName("FileNameBox")).Text = output;
@@ -109,7 +123,7 @@ internal static class SelfTestAlbumModalIdentity
             });
             switch (action)
             {
-                case "png": case "jpg": view.SaveAs(itemA); break;
+                case "png": case "jpg": case "video": view.SaveAs(itemA); break;
                 case "delete": view.Delete(itemA); break;
                 case "note": view.EditNote(itemA); break;
                 case "new-collection": view.NewCollection(itemA); break;
@@ -120,6 +134,7 @@ internal static class SelfTestAlbumModalIdentity
                     break;
                 default: throw new ArgumentException("Unsupported modal action.");
             }
+            if (video) await videoCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
             if (modalError != null) throw modalError;
             if (!sawSwitchInsideModal) throw new InvalidOperationException("B did not activate while A's real dialog remained visible.");
             if (File.Exists(output)) throw new InvalidOperationException("A's modal export published B's capture.");

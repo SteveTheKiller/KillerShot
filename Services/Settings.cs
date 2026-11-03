@@ -24,10 +24,12 @@ namespace KillerShot
             {
                 Dir = dir;
                 _cache = null;
+                Pending.Clear();
             }
         }
 
         private static Dictionary<string, string>? _cache;
+        private static readonly Dictionary<string, string> Pending = [];
 
         private static Dictionary<string, string> Load()
         {
@@ -37,7 +39,7 @@ namespace KillerShot
             return _cache;
         }
 
-        private static Dictionary<string, string> ReadCurrent()
+        private static Dictionary<string, string> ReadCurrent(bool preserveCorrupt = false)
         {
             try
             {
@@ -47,7 +49,11 @@ namespace KillerShot
             }
             catch (FileNotFoundException) { return []; }
             catch (DirectoryNotFoundException) { return []; }
-            catch (JsonException) { return []; }
+            catch (JsonException)
+            {
+                if (preserveCorrupt) File.Copy(FilePath, FilePath + ".corrupt-" + DateTime.UtcNow.Ticks);
+                return [];
+            }
         }
 
         private static FileStream AcquireWriteLock()
@@ -69,7 +75,14 @@ namespace KillerShot
         internal static void Set(string key, string value)
         {
             try { SetRequired(key, value); }
-            catch { lock (Gate) Load()[key] = value; }
+            catch
+            {
+                lock (Gate)
+                {
+                    Load()[key] = value;
+                    Pending[key] = value;
+                }
+            }
         }
 
         /// <summary>Persists a setting before changing the cache. Lifecycle changes must fail
@@ -82,10 +95,13 @@ namespace KillerShot
                 Directory.CreateDirectory(Dir);
                 using var writeLock = AcquireWriteLock();
                 // Re-read while locked so another process's settings survive this write.
-                var current = ReadCurrent();
-                if (value == null ? !current.ContainsKey(key) : current.TryGetValue(key, out var old) && old == value)
+                var current = ReadCurrent(preserveCorrupt: true);
+                bool hasPending = Pending.Count != 0;
+                foreach (var pending in Pending) current[pending.Key] = pending.Value;
+                if (!hasPending && (value == null ? !current.ContainsKey(key) : current.TryGetValue(key, out var old) && old == value))
                 {
                     _cache = current;
+                    Pending.Clear();
                     return;
                 }
                 if (value == null) current.Remove(key);
@@ -100,6 +116,7 @@ namespace KillerShot
                     }
                     File.Move(temp, FilePath, true);
                     _cache = current;
+                    Pending.Clear();
                 }
                 finally { try { File.Delete(temp); } catch { } }
             }

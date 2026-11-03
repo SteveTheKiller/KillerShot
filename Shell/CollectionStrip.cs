@@ -56,6 +56,8 @@ namespace KillerShot.Shell
         private long? _current;
         private string? _followFolderPath;
         private long _albumSession = -1;
+        private int _loadQueued;
+        private bool _dirty;
 
         public CollectionStrip(DockHost host, Style sliderStyle)
         {
@@ -122,19 +124,30 @@ namespace KillerShot.Shell
 
         private void OnLibraryChanged()
         {
-            if (_disposed || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(() => Load(keepCurrent: true)));
+            QueueLoad();
         }
 
         private void OnFolderChanged()
         {
             if (_disposed || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(() => { if (_albumMode || _followFolderPath != null || FolderCaptures.IsSource(_source)) Load(keepCurrent: true); }));
+            QueueLoad();
         }
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (IsVisible) Load(keepCurrent: true);
+            if (IsVisible && _dirty) QueueLoad();
+        }
+
+        private void QueueLoad()
+        {
+            if (_disposed || Dispatcher.HasShutdownStarted || Interlocked.Exchange(ref _loadQueued, 1) != 0) return;
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                Interlocked.Exchange(ref _loadQueued, 0);
+                if (_disposed) return;
+                if (!IsVisible || CaptureLibrary.VideoBusy) { _dirty = true; return; }
+                Load(keepCurrent: true);
+            }));
         }
 
         private void OpenDelayElapsed(object? sender, EventArgs e)
@@ -230,6 +243,8 @@ namespace KillerShot.Shell
         private void Load(bool keepCurrent)
         {
             if (_disposed) return;
+            if (CaptureLibrary.VideoBusy) { _dirty = true; return; }
+            _dirty = false;
             CancelPendingOpen();
             long session = CaptureLibrary.Session;
             if (_albumSession != session)

@@ -83,7 +83,13 @@ internal static partial class CaptureLibrary
                     image = (byte[])reader[1];
                     revision = reader.GetInt64(2);
                 }
-                var results = await Task.Run(() => QrRecognizer(QrImages.Load(image))).ConfigureAwait(false);
+                IReadOnlyList<QrResult> results;
+                try { results = await Task.Run(() => QrRecognizer(QrImages.Load(image))).ConfigureAwait(false); }
+                catch (Exception error)
+                {
+                    System.Diagnostics.Trace.TraceWarning("QR capture could not be read: {0}", error.Message);
+                    results = [];
+                }
                 StoreQr(id, results, database, revision);
             }
         }

@@ -22,6 +22,8 @@ internal static class VideoCaptures
     public const string Mode = "video";
     private static readonly string[] Extensions = [".mp4", ".gif"];
     private static string? _playbackOverride;
+    private static readonly object PlaybackGate = new();
+    private static readonly Dictionary<(long Session, long Id, long Revision), string> PlaybackCopies = [];
 
     public static bool IsVideo(CaptureItem item) => item.Mode == Mode;
 
@@ -110,9 +112,16 @@ internal static class VideoCaptures
 
     /// <summary>Plays a recording in the viewer's default player. A folder clip plays as the file
     /// it is; a stored clip is decrypted to the playback folder first.</summary>
-    public static void Play(CaptureItem item, Action<string>? status = null)
+    public static void Play(CaptureItem item, Action<string>? status = null) => _ = PlayAsync(item, status);
+
+    public static async Task PlayAsync(CaptureItem item, Action<string>? status = null, Action<string>? openPlayer = null)
     {
-        try { OpenInPlayer(PlayablePath(item)); }
+        try
+        {
+            string path = await Task.Run(() => PlayablePath(item));
+            if (!CaptureLibrary.IsCurrent(item)) throw new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed"));
+            (openPlayer ?? OpenInPlayer)(path);
+        }
         catch (Exception ex) { status?.Invoke(ex.Message); }
     }
 
@@ -122,16 +131,36 @@ internal static class VideoCaptures
         if (FolderCaptures.IsFolderId(item.Id))
             return FolderCaptures.PathOf(item.Id) ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
         if (!CaptureLibrary.IsCurrent(item)) throw new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed"));
-        return DecryptForPlayback(item.Id);
+        return DecryptForPlayback(item.Id, item.Session);
     }
 
     /// <summary>Decrypts a stored clip into the playback folder and gives the copy's path.</summary>
-    public static string DecryptForPlayback(long id)
+    public static string DecryptForPlayback(long id) => DecryptForPlayback(id, null);
+
+    /// <summary>Prepares a stored recording on a worker, keeping its original album identity.</summary>
+    public static async Task<string> PreparePlaybackAsync(long id, long expectedSession)
     {
-        Directory.CreateDirectory(PlaybackFolder);
-        string target = Path.Combine(PlaybackFolder, "KillerShot recording " + Guid.NewGuid().ToString("N")[..8] + CaptureLibrary.VideoExtension(id));
-        CaptureLibrary.ExportVideo(id, target);
-        return target;
+        string path = await Task.Run(() => DecryptForPlayback(id, expectedSession));
+        if (CaptureLibrary.Session != expectedSession)
+            throw new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed"));
+        return path;
+    }
+
+    private static string DecryptForPlayback(long id, long? expectedSession)
+    {
+        lock (PlaybackGate)
+        {
+            var identity = CaptureLibrary.VideoPlaybackIdentity(id);
+            if (expectedSession is long session && identity.Session != session)
+                throw new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed"));
+            var key = (identity.Session, id, identity.Revision);
+            if (PlaybackCopies.TryGetValue(key, out string? cached) && File.Exists(cached)) return cached;
+            Directory.CreateDirectory(PlaybackFolder);
+            string target = Path.Combine(PlaybackFolder, "KillerShot recording " + Guid.NewGuid().ToString("N") + identity.Extension);
+            CaptureLibrary.ExportVideo(id, target, identity.Session);
+            PlaybackCopies[key] = target;
+            return target;
+        }
     }
 
     /// <summary>Opens a file in the viewer's default player.</summary>
@@ -141,18 +170,22 @@ internal static class VideoCaptures
     /// until the next start.</summary>
     public static void WipePlayback()
     {
-        try
+        lock (PlaybackGate)
         {
-            if (!Directory.Exists(PlaybackFolder)) return;
-            foreach (string file in Directory.EnumerateFiles(PlaybackFolder))
-                try { File.Delete(file); } catch { }
+            PlaybackCopies.Clear();
+            try
+            {
+                if (!Directory.Exists(PlaybackFolder)) return;
+                foreach (string file in Directory.EnumerateFiles(PlaybackFolder))
+                    try { File.Delete(file); } catch { }
+            }
+            catch { }
         }
-        catch { }
     }
 
     /// <summary>Text for a clip's length, like 0:12 or 1:02:03.</summary>
     public static string FormatDuration(TimeSpan duration) =>
-        duration.TotalHours >= 1 ? duration.ToString(@"h\:mm\:ss") : duration.ToString(@"m\:ss");
+        duration.TotalHours >= 1 ? $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}" : duration.ToString(@"m\:ss");
 
     // ============================================================
     // Shell interop

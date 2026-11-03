@@ -35,7 +35,10 @@ internal static partial class FolderCaptures
     private static readonly HashSet<long> _videoIds = [];
     private static long _nextId = -2;
     private static FileSystemWatcher? _watcher;
+    internal static Func<string, FileSystemWatcher> WatcherFactory { get; set; } = path => new FileSystemWatcher(path);
     private static Timer? _debounce;
+    private static long _debounceStarted;
+    private static long _debounceGeneration;
     private static string? _folderOverride;
     private static IFolderDirectoryReader _directoryReader = new SystemFolderDirectoryReader();
     private static bool _folderAvailable = true;
@@ -83,6 +86,10 @@ internal static partial class FolderCaptures
             _screenshotsGeneration++;
             _watcher?.Dispose();
             _watcher = null;
+            _debounce?.Dispose();
+            _debounce = null;
+            _debounceStarted = 0;
+            _debounceGeneration++;
             _ids.Clear(); _paths.Clear(); _sizes.Clear(); _videoIds.Clear();
             ThumbnailCache.Clear(folders: true);
         }
@@ -411,10 +418,21 @@ internal static partial class FolderCaptures
             _watcher?.Dispose();
             try
             {
-                _watcher = new FileSystemWatcher(folder) { IncludeSubdirectories = false, NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite };
+                _watcher = WatcherFactory(folder);
+                _watcher.IncludeSubdirectories = false;
+                _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
                 FileSystemEventHandler on = (_, e) => Touched(e.FullPath);
                 _watcher.Created += on; _watcher.Deleted += on; _watcher.Changed += on;
                 _watcher.Renamed += (_, e) => { Touched(e.OldFullPath); Touched(e.FullPath); };
+                _watcher.Error += (_, _) =>
+                {
+                    lock (_gate)
+                    {
+                        _sizes.Clear();
+                        ThumbnailCache.Clear(folders: true);
+                    }
+                    Touched(folder);
+                };
                 _watcher.EnableRaisingEvents = true;
             }
             catch { _watcher = null; }
@@ -428,8 +446,21 @@ internal static partial class FolderCaptures
             _nextScreenshotsScan = DateTime.MinValue;
             if (_ids.TryGetValue(path, out long id)) RemoveThumb(id);
             _sizes.Remove(path);
+            long now = Environment.TickCount64;
+            if (_debounceStarted == 0) _debounceStarted = now;
+            int delay = (int)Math.Min(400, Math.Max(0, 2000 - (now - _debounceStarted)));
+            long generation = ++_debounceGeneration;
             _debounce?.Dispose();
-            _debounce = new Timer(_ => Changed?.Invoke(), null, 400, Timeout.Infinite);
+            _debounce = new Timer(_ =>
+            {
+                lock (_gate)
+                {
+                    if (generation != _debounceGeneration) return;
+                    _debounceStarted = 0;
+                    _debounce = null;
+                }
+                Changed?.Invoke();
+            }, null, delay, Timeout.Infinite);
         }
     }
 

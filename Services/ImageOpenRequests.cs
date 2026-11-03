@@ -24,6 +24,15 @@ internal sealed class ImageOpenRequests(string folder)
         _draining = true;
         try
         {
+            foreach (string acknowledgment in Directory.EnumerateFiles(folder, "*.ack"))
+            {
+                try
+                {
+                    if (File.GetLastWriteTimeUtc(acknowledgment) < DateTime.UtcNow.AddMinutes(-1))
+                        File.Delete(acknowledgment);
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+            }
             // Process every queued request in timestamp/ID order. Keep dirty-document prompts
             // serialized even when a modal prompt pumps another wake callback.
             for (int count = 0; count < 64; count++)
