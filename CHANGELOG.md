@@ -51,6 +51,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - `killershot print` prints only the picture it was given. When that picture could not open, or opening it was declined to keep unsaved edits, the picture already open was printed instead and the command reported success.
 - Canceling the discard prompt while a capture waits for review keeps the review bar, Ctrl+Enter and its destinations. Before, the picture stayed open with the review gone.
 - The Files filter matches file names only, so typing part of the current folder's path no longer matches every row.
+- Recorded sound stays with the picture after the microphone or system audio stalls for a moment. A short stall used to leave the sound behind by that much for the rest of the recording.
 - Scrolling capture keeps its place when the selected region includes the window's scroll bar. The moving thumb made most rows look different, so pages shorter than about ten screens stopped with lost tracking.
 - Importing a recording into an album no longer freezes the album view. The whole clip was copied while every listing waited for it, which took seconds for a large recording.
 - Deleting, noting or recognizing captures no longer waits up to 30 seconds and then fails with "database is locked" while a recording is exported. Albums now keep a write-ahead log, which KillerShot folds back into the album file whenever it closes, renames, copies or backs it up. An album folder on a network share is refused with a plain message, because the log does not work over a network.

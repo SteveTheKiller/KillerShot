@@ -11,6 +11,8 @@ internal interface IAudioCaptureSource : IDisposable
     void Start();
     void Stop();
     void Drain(int frames, float[]? mix);
+    /// <summary>Frames captured and not yet drained.</summary>
+    int Buffered => 0;
 }
 
 /// <summary>
@@ -50,6 +52,14 @@ internal sealed class AudioCapture : IDisposable
         => _sources.AddRange(sources);
 
     /// <summary>Clears sound captured while the devices were starting, before video time zero.</summary>
+    /// <summary>How far behind the recording clock the mix runs, so packets a device delivers a
+    /// little late are in place before their stretch is written instead of leaving silence and
+    /// queueing up behind it.</summary>
+    internal static readonly TimeSpan Latency = TimeSpan.FromMilliseconds(40);
+
+    /// <summary>One mixer pass at recording time <paramref name="now"/>, for a simulated clock.</summary>
+    internal void Pump(TimeSpan now) => Emit(now - Latency);
+
     internal void DiscardBuffered()
     {
         foreach (var source in _sources) source.Drain(int.MaxValue, null);
@@ -91,7 +101,7 @@ internal sealed class AudioCapture : IDisposable
                     foreach (var s in _sources) s.Drain(int.MaxValue, null);
                     continue;
                 }
-                Emit(_clock());
+                Emit(_clock() - Latency);
             }
         }
         catch (Exception ex) { _error = ex; _stop = true; }
@@ -102,8 +112,13 @@ internal sealed class AudioCapture : IDisposable
     {
         long target = (long)(until.TotalSeconds * Rate);
         int chunk = Rate * ChunkMs / 1000;
+        int keep = (int)(Latency.TotalSeconds * Rate) + chunk;
         while (target - _emittedFrames >= chunk)
         {
+            // A device that stalled and then delivered its backlog would otherwise keep the sound
+            // that far behind the picture for the rest of the recording: drop what is older.
+            foreach (var s in _sources)
+                if (s.Buffered - keep is int excess and > 0) s.Drain(excess, null);
             var mix = new float[chunk * Channels];
             foreach (var s in _sources) s.Drain(chunk, mix);
             var pcm = new byte[mix.Length * 2];
@@ -157,6 +172,8 @@ internal sealed class AudioCapture : IDisposable
         }
 
         public void Dispose() => Stop();
+
+        public int Buffered { get { lock (_lock) return _buffer.Count / Channels; } }
 
         /// <summary>Adds up to <paramref name="frames"/> frames into <paramref name="mix"/>,
         /// silence where the device delivered nothing. A null mix only discards.</summary>
