@@ -35,6 +35,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - The file picker no longer stalls on a disconnected network folder when it opens, a relative or malformed path typed in the path box is refused instead of being looked up against the wrong folder, a pattern such as *.log typed in the name box filters the list, and a full path typed in the name box can be accepted even when the shown folder failed to list.
 - Uninstall no longer breaks when the install folder's path contains an apostrophe.
 - Changing the file type in the save picker while the name box holds characters no file name can carry keeps the name as typed and shows the invalid-path message.
+- Update downloads verify again. The updater could not read the release checksum list and refused every release, and once that was fixed it would still have refused the release exe because a single-file build has no assembly header to read the version from. KillerShot 1.0.0 to 1.1.1 cannot update themselves, so those copies need 1.2.0 downloaded by hand once.
 
 ### Added
 - Files is a fifth library view (F9) with folder navigation, live updates, list, icons and details views, file commands, in-place rename, clipboard and drag and drop. Images open in the editor.

@@ -19,6 +19,9 @@ internal static class SelfTestNovemberInstall
             if (Directory.Exists(folder)) throw new IOException("Use a new installation test folder.");
             Directory.CreateDirectory(folder);
             VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
+            ChecksumLineOrders();
+            report.Add("release checksums are found in hash-first and name-first lines for the exact asset name PASS");
+            report.Add(ReleaseImageIdentity(folder));
             CompanionConfigurationRequired(folder);
             report.Add("configured companion requires complete launch arguments before publication is prepared PASS");
             ConfiguredCompanionLaunch(folder, fail: false);
@@ -70,6 +73,46 @@ internal static class SelfTestNovemberInstall
             App.Instance.Shutdown(code);
         }
         return true;
+    }
+
+    private static void ChecksumLineOrders()
+    {
+        const string exeHash = "5b130931047701a403a2533f8773863f3e72724f1ae863e6c04b786c691d5e16";
+        const string storeHash = "abcd0931047701a403a2533f8773863f3e72724f1ae863e6c04b786c691d5e16";
+        string? hashFirst = UpdateService.ChecksumFor($"{exeHash}  KillerShot.exe\n", "KillerShot.exe");
+        string? binaryMarker = UpdateService.ChecksumFor($"{exeHash} *KillerShot.exe\r\n", "KillerShot.exe");
+        string? otherAsset = UpdateService.ChecksumFor($"{storeHash}  KillerShot-Store.exe\n", "KillerShot.exe");
+        string? nameFirst = UpdateService.ChecksumFor($"KillerShot.exe  {exeHash}\n", "KillerShot.exe");
+        string? store = UpdateService.ChecksumFor($"{exeHash}  KillerShot.exe\n{storeHash}  KillerShot-Store.exe\n", "KillerShot-Store.exe");
+        if (hashFirst != exeHash || binaryMarker != exeHash || otherAsset != null || nameFirst != exeHash || store != storeHash)
+            throw new InvalidOperationException($"Checksum lookup failed: hashFirst={hashFirst}, binary={binaryMarker}, other={otherAsset}, nameFirst={nameFirst}, store={store}");
+    }
+
+    /// <summary>The release image is a single-file bundle and a development build's exe is an
+    /// apphost; neither carries a managed assembly header, so identity must come from the version resource.</summary>
+    private static string ReleaseImageIdentity(string folder)
+    {
+        string running = Environment.ProcessPath ?? throw new InvalidOperationException("No process path.");
+        string copy = Path.Combine(folder, "identity", "renamed-update.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
+        File.Copy(running, copy);
+        RequireReleaseIdentity(copy);
+        string bundle = Path.Combine(AppContext.BaseDirectory, "single-file", AppInfo.ExeName);
+        if (!File.Exists(bundle))
+            return "release image identity read from a renamed apphost; single-file bundle not staged beside the test, SKIPPED for bundle PASS";
+        RequireReleaseIdentity(bundle);
+        return "release image identity read from a renamed apphost and the published single-file bundle PASS";
+    }
+
+    private static void RequireReleaseIdentity(string exe)
+    {
+        System.Reflection.AssemblyName name;
+        try { name = ReleaseIdentity.ReadIdentity(exe); }
+        catch (System.Security.SecurityException error)
+        { throw new InvalidOperationException("Release identity refused " + exe + ": " + error.Message, error); }
+        var expected = typeof(App).Assembly.GetName().Version!;
+        if (name.Name != AppInfo.DisplayName || name.Version?.ToString(3) != expected.ToString(3))
+            throw new InvalidOperationException($"Release identity of {exe} was {name.Name} {name.Version}.");
     }
 
     private static void CompanionConfigurationRequired(string folder)
