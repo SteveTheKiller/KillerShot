@@ -61,6 +61,8 @@ internal static class SelfTestFilesSafety
                 }
                 await Case("containment", path => Containment(path, Check));
                 await Case("same-folder-paste", path => SameFolderPaste(path, Check));
+                await Case("folder-filter", path => FolderFilter(path, Check));
+                await Case("readonly-cross-volume", path => ReadOnlyCrossVolumeMove(path, Check));
                 await Case("cache", path => CacheRetention(path, Check, report));
                 await Case("size", path => RequestedSize(path, Check));
                 await Case("orientation", path => Orientations(path, Check, report));
@@ -70,12 +72,14 @@ internal static class SelfTestFilesSafety
                 await Case("cache-concurrency", path => CacheConcurrency(path, Check, report));
                 await Case("address-overflow", path => AddressOverflow(path, Check, report));
                 await Case("cache-workload-minimal", path => CacheWorkloadMinimal(path, Check, report));
-                string[] expectedCases = ["containment", "same-folder-paste", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
+                string[] expectedCases = ["containment", "same-folder-paste", "folder-filter", "readonly-cross-volume", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
                 Check(checks >= 108 && expectedCases.All(name => report.ToString().Contains("SCENARIO PASS: " + name, StringComparison.Ordinal)),
-                    "all eleven isolated safety scenarios complete with every repair regression selected");
+                    "all thirteen isolated safety scenarios complete with every repair regression selected");
             }
             else if (scenario == "containment") await Containment(folder, Check);
             else if (scenario == "same-folder-paste") await SameFolderPaste(folder, Check);
+            else if (scenario == "folder-filter") await FolderFilter(folder, Check);
+            else if (scenario == "readonly-cross-volume") await ReadOnlyCrossVolumeMove(folder, Check);
             else if (scenario == "cache") await CacheRetention(folder, Check, report);
             else if (scenario == "size") await RequestedSize(folder, Check);
             else if (scenario == "orientation") await Orientations(folder, Check, report);
@@ -639,6 +643,46 @@ internal static class SelfTestFilesSafety
         check(conflicts == 0 && (moved == null || moved.Succeeded == 0) && Directory.Exists(source)
             && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase) && !Directory.Exists(Path.Combine(folder, "A (3)")),
             $"same-folder cut and paste changes nothing (conflicts={conflicts}, succeeded={moved?.Succeeded})");
+    }
+
+    /// <summary>Every row of a single-folder listing lives in that folder, so the filter must match
+    /// names only; matching the folder made any part of the current path match every row.</summary>
+    private static async Task FolderFilter(string folder, Action<bool, string> check)
+    {
+        string pictures = Directory.CreateDirectory(Path.Combine(folder, "Pictures")).FullName;
+        File.WriteAllText(Path.Combine(pictures, "a.txt"), "a");
+        File.WriteAllText(Path.Combine(pictures, "b.png"), "b");
+        using var files = new FilesView();
+        check(await files.NavigateTo(pictures), "filter fixture opens through public navigation");
+        files.SetFilter("Pictures");
+        check(files.VisibleCount == 0, $"filtering by the current folder's name hides every row (visible={files.VisibleCount})");
+        files.SetFilter("a");
+        check(files.VisibleCount == 1, $"filtering by a name matches only that row (visible={files.VisibleCount})");
+        files.SetFilter("");
+    }
+
+    /// <summary>A move to another drive is a copy then a delete; camera cards hold read-only files.</summary>
+    private static Task ReadOnlyCrossVolumeMove(string folder, Action<bool, string> check)
+    {
+        string source = Path.Combine(folder, "card.jpg");
+        string target = Directory.CreateDirectory(Path.Combine(folder, "other-drive")).FullName;
+        File.WriteAllText(source, "photo");
+        File.SetAttributes(source, File.GetAttributes(source) | FileAttributes.ReadOnly);
+        bool first = true;
+        void Rename(string from, string to, uint flags)
+        {
+            if (first) { first = false; throw new IOException("Not the same device.", unchecked((int)0x80070011)); }
+            File.Move(from, to, overwrite: (flags & 1) != 0);
+        }
+        var result = FileOps.CopyOrMove([source], target, true, _ => ConflictChoice.Cancel, _ => { }, CancellationToken.None,
+            (_, _, _) => throw new InvalidOperationException("No replacement expected."), renameFile: Rename);
+        string moved = Path.Combine(target, "card.jpg");
+        check(result is { Succeeded: 1, Failed.Count: 0 } && !File.Exists(source) && File.Exists(moved)
+            && (File.GetAttributes(moved) & FileAttributes.ReadOnly) != 0,
+            $"a read-only file moved across drives ends only at its destination, still read-only (succeeded={result.Succeeded}, failed={string.Join("|", result.Failed.Select(f => f.Error))}, sourceLeft={File.Exists(source)})");
+        foreach (string file in new[] { source, moved })
+            if (File.Exists(file)) File.SetAttributes(file, FileAttributes.Normal);
+        return Task.CompletedTask;
     }
 
     private static void WriteImage(string path, int width = 320, int height = 160)

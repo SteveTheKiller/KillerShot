@@ -549,11 +549,22 @@ namespace KillerShot.Files
 
             CopyFile(src, dst, ref progress, onProgress, ct, replace, renameFile);
             ct.ThrowIfCancellationRequested();
-            try { File.Delete(src); }
+            // A read-only source (a camera card's photos) refuses deletion, so clear the flag for
+            // the delete the same way the same-volume branch does, and put it back if it fails.
+            FileAttributes sourceAttributes = File.GetAttributes(src);
+            try
+            {
+                if ((sourceAttributes & FileAttributes.ReadOnly) != 0)
+                    File.SetAttributes(src, sourceAttributes & ~FileAttributes.ReadOnly);
+                File.Delete(src);
+            }
             catch (Exception ex)
             {
+                try { if (File.Exists(src)) File.SetAttributes(src, sourceAttributes); } catch { }
                 throw new IOException("Copied to '" + dst + "' but could not remove source '" + src + "': " + ex.Message, ex);
             }
+            // A copy is left writable; a move carries the file as it was, as a same-volume rename does.
+            File.SetAttributes(dst, sourceAttributes);
         }
 
         /// <summary>

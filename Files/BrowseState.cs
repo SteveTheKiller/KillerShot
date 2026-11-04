@@ -28,6 +28,8 @@ public sealed class BrowseState : INotifyPropertyChanged
     public int SortIndex { get; set; } = 4;
     public bool SortAsc { get; set; }
     public string FilterText { get; set; } = string.Empty;
+    /// <summary>The listing spans several folders, so the filter also matches each row's folder.</summary>
+    public bool FilterLocations { get; set; }
     public bool ShowHidden { get; set; }
     public bool FoldersOnTop { get; set; } = true;
     public bool GroupDates { get; set; }

@@ -124,6 +124,7 @@ internal static class SelfTestFilesCore
         if (view.Cast<FileEntry>().Single().FileName != "alpha.txt" || state.Results.Count != 3)
             throw new InvalidOperationException("Name filter changed or failed to narrow the underlying listing.");
         state.FilterText = "Y";
+        state.FilterLocations = true;
         Sorting.ApplyFilter(state);
         if (view.Cast<FileEntry>().Single().FileName != "bravo.txt")
             throw new InvalidOperationException("Location filter did not match the containing folder.");

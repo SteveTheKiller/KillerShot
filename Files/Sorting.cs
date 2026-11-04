@@ -33,9 +33,12 @@ public static class Sorting
             if (view.Filter != null) view.Filter = null;
             return;
         }
+        // Every row of a one-folder listing carries that folder, so its location matches only in
+        // a listing that spans folders; otherwise any part of the current path matched every row.
+        bool locations = state.FilterLocations;
         view.Filter = value => value is FileEntry entry
             && (entry.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
-                || entry.Folder.Contains(query, StringComparison.OrdinalIgnoreCase));
+                || locations && entry.Folder.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
     private sealed class EntryComparer(int column, bool ascending, bool foldersFirst,
         System.Globalization.CultureInfo? culture) : System.Collections.IComparer

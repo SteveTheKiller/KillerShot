@@ -47,6 +47,9 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - An unexpected error no longer closes KillerShot silently. It is written to crash.log in the KillerShot folder under local app data, the tray shows a warning, and the app keeps running unless the failure is one no program can survive.
 - A command line call or a second launch no longer deletes the decrypted copy of a recording the running app is playing when it exits.
 - `killershot print` prints only the picture it was given. When that picture could not open, or opening it was declined to keep unsaved edits, the picture already open was printed instead and the command reported success.
+- Canceling the discard prompt while a capture waits for review keeps the review bar, Ctrl+Enter and its destinations. Before, the picture stayed open with the review gone.
+- The Files filter matches file names only, so typing part of the current folder's path no longer matches every row.
+- Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 
 ### Added
 - Files is a fifth library view (F9) with folder navigation, live updates, list, icons and details views, file commands, in-place rename, clipboard and drag and drop. Images open in the editor.
