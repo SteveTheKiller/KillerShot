@@ -261,13 +261,18 @@ public static class Program
             return ExitOk;
         }
         if (presets.Count == 0) { Out.WriteLine("No saved regions. Save one from the capture menu's Saved regions."); return ExitOk; }
-        for (int i = 0; i < presets.Count; i++)
-        {
-            var p = presets[i];
-            string where = p.Place is { } at ? $"{p.Width} x {p.Height} at {at.Left}, {at.Top}" : $"{p.Width} x {p.Height} around the pointer";
-            Out.WriteLine($"{(i < 9 ? $"Alt+{i + 1}" : "     ")}  {p.Name}  {where}");
-        }
+        for (int i = 0; i < presets.Count; i++) Out.WriteLine(RegionLine(i, presets[i]));
         return ExitOk;
+    }
+
+    /// <summary>One saved region in the regions listing. Invariant, so scripts read an ASCII minus
+    /// sign for regions left of or above the primary monitor in every region format.</summary>
+    internal static string RegionLine(int index, RegionPreset p)
+    {
+        var invariant = System.Globalization.CultureInfo.InvariantCulture;
+        string where = p.Place is { } at ? string.Create(invariant, $"{p.Width} x {p.Height} at {at.Left}, {at.Top}")
+            : string.Create(invariant, $"{p.Width} x {p.Height} around the pointer");
+        return string.Create(invariant, $"{(index < 9 ? $"Alt+{index + 1}" : "     ")}  {p.Name}  {where}");
     }
 
     private static async Task SendToApp(string command)
@@ -394,19 +399,26 @@ public static class Program
 
         var image = doc.Render();
         string saved;
+        string editedName = Path.GetFileNameWithoutExtension(source) + " edited"
+            + (Path.GetExtension(source).ToLowerInvariant() is ".jpg" or ".jpeg" ? ".jpg" : ".png");
         if (o.Value("out") is { } outArg)
         {
-            saved = Path.GetFullPath(outArg);
-            if (string.Equals(saved, source, StringComparison.OrdinalIgnoreCase) && !o.Has("overwrite"))
+            // The same --out rules as capture: a folder gets the usual name, and a file must be a
+            // PNG or JPEG, refused as a usage error before anything is written.
+            if (string.Equals(Path.GetFullPath(outArg), source, StringComparison.OrdinalIgnoreCase) && !o.Has("overwrite"))
                 throw new CliException("--out names the original; add --overwrite to replace it.");
-            if (File.Exists(saved) && !o.Has("overwrite")) throw new CliException("The --out file exists; add --overwrite to replace it.", ExitFailed);
-            ImageOutput.Save(image, saved, quality, o.Has("overwrite"));
+            var target = OutputTarget.ForImage(outArg, null, o.Has("overwrite"));
+            if (target.Folder is { } folder) saved = ImageOutput.SaveUnique(image, folder, editedName, quality);
+            else
+            {
+                saved = target.File!;
+                ImageOutput.Save(image, saved, quality, o.Has("overwrite"));
+            }
         }
         else
         {
             // The original is never replaced by default: the result goes beside it under a new name.
-            string ext = Path.GetExtension(source).ToLowerInvariant() is ".jpg" or ".jpeg" ? ".jpg" : ".png";
-            saved = ImageOutput.SaveUnique(image, Path.GetDirectoryName(source)!, Path.GetFileNameWithoutExtension(source) + " edited" + ext, quality);
+            saved = ImageOutput.SaveUnique(image, Path.GetDirectoryName(source)!, editedName, quality);
         }
 
         if (o.Has("json"))
@@ -1301,7 +1313,8 @@ public static class Program
             "recording.outputfolder" => () => VideoSettings.OutputFolder = Folder(raw),
             "recording.filenamepattern" => () => VideoSettings.FileNamePattern = raw.Length > 0 ? raw : throw new CliException("The pattern cannot be empty."),
             "text.language" => () => TextRecognition.LanguageTag = raw.Length == 0 || raw.Equals("windows", StringComparison.OrdinalIgnoreCase) ? null
-                : TextRecognition.Languages.Any(l => l.Tag.Equals(raw, StringComparison.OrdinalIgnoreCase)) ? raw
+                // Stored as the installed tag, so "EN-us" reads back as the chosen "en-US".
+                : TextRecognition.Languages.FirstOrDefault(l => l.Tag.Equals(raw, StringComparison.OrdinalIgnoreCase)).Tag is { } tag ? tag
                 : throw new CliException("That language is not installed; see killershot text --languages."),
             _ => throw new CliException($"Unknown setting {name}. The settings command lists the names; shortcuts are set in the app."),
         };

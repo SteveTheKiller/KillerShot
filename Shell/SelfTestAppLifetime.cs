@@ -34,6 +34,17 @@ internal static class SelfTestAppLifetime
             report.Add("a print request whose picture could not open prints nothing PASS");
             RecordingFrameFollowsDpiChange();
             report.Add("the recording frame returns around its rectangle after Windows rescales it PASS");
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("sv-SE");
+                string line = KillerShot.Cli.Program.RegionLine(0, new RegionPreset("Left screen",
+                    new KillerShot.Native.Win32.RECT(-1920, -40, 0, 1040), 1920, 1080));
+                if (!line.Contains("at -1920, -40", StringComparison.Ordinal))
+                    throw new InvalidOperationException("The regions listing printed a culture-specific minus sign: " + line);
+            }
+            finally { System.Globalization.CultureInfo.CurrentCulture = culture; }
+            report.Add("killershot regions prints ASCII coordinates in every region format PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

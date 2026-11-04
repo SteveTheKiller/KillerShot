@@ -49,6 +49,17 @@ Requires the .NET 10 SDK. `KillerShot.csproj` builds the app, which also runs th
 
 `brand/` holds the working artwork and is not tracked. Everything the app consumes is generated into `Resources/`, which is tracked, so a fresh clone builds without it.
 
+## Command line in scripts
+
+`KillerShot.exe` is a Windows app, so a PowerShell or Command Prompt line does not wait for it and `$LASTEXITCODE` does not hold its result. Start it and wait for the exit code instead:
+
+```powershell
+$run = Start-Process KillerShot.exe -ArgumentList '--cli', 'capture', '--monitor', '1', '--json' -Wait -PassThru -NoNewWindow
+$run.ExitCode
+```
+
+Exit code `0` means success, `1` a failed command and `2` a usage error. Add `-RedirectStandardOutput` to keep the JSON.
+
 ## Uninstalling from scripts
 
 Run `KillerShot.exe /uninstall-silent` from the installed folder. Exit code `997` means removal is pending and finishes after the app closes. It is an accepted handoff, not completed removal. The command prints the operation folder containing `status.json`; check that receipt for `Completed` and exit code `0`, or `Failed` and its error. Albums and captures are kept. Deployment manifests must include `997` in their accepted installer success codes when using this deferred uninstall command.
