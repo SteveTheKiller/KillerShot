@@ -160,11 +160,24 @@ internal static class SelfTestRecordings
             if (!File.Exists(big)) throw new InvalidOperationException("An over-limit recording was deleted.");
             report.Add("over_limit_recording_stays_in_folder=PASS");
 
-            // 7. Deleting the capture takes its clip with it.
+            // 7. Deleting the capture takes its clip with it, and its decrypted playback copy.
+            string played = VideoCaptures.DecryptForPlayback(id);
             CaptureLibrary.Delete([id]);
+            if (File.Exists(played)) throw new InvalidOperationException("A deleted recording's decrypted playback copy stayed on disk.");
             try { CaptureLibrary.ExportVideo(id, Path.Combine(folder, "gone.mp4")); throw new InvalidOperationException("A deleted recording could still be exported."); }
             catch (InvalidOperationException ex) when (ex.Message != "A deleted recording could still be exported.") { }
             report.Add("delete_removes_stored_clip=PASS");
+
+            // 7b. Closing the album (switch, password change, exit) removes its playback copies.
+            string another = Path.Combine(recordings, "another.mp4");
+            File.Copy(mp4, another);
+            long anotherId = (await RecordingStorage.MoveToLibraryAsync(another, DateTime.Now)).Id;
+            string anotherPlayed = VideoCaptures.DecryptForPlayback(anotherId);
+            CaptureLibrary.Close();
+            for (int wait = 0; wait < 50 && File.Exists(anotherPlayed); wait++) await Task.Delay(100);
+            if (File.Exists(anotherPlayed)) throw new InvalidOperationException("Closing the album left its decrypted playback copy on disk.");
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The library did not reopen after the playback check.");
+            report.Add("closing_album_removes_playback_copies=PASS");
 
             // 8. The library on the Recordings collection, rendered: three clips with play marks.
             await FolderCaptures.RefreshFolderAsync(FolderCaptures.RecordingsSource);

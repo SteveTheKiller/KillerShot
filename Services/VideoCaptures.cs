@@ -166,6 +166,24 @@ internal static class VideoCaptures
     /// <summary>Opens a file in the viewer's default player.</summary>
     public static void OpenInPlayer(string path) => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
 
+    /// <summary>Deletes the decrypted playback copies of one album session, or of one recording in
+    /// it. A copy a player still holds open stays until the next wipe.</summary>
+    public static void ForgetPlayback(long session, long? id = null)
+    {
+        lock (PlaybackGate)
+        {
+            foreach (var key in PlaybackCopies.Keys.Where(k => k.Session == session && (id == null || k.Id == id)).ToList())
+            {
+                try
+                {
+                    File.Delete(PlaybackCopies[key]);
+                    PlaybackCopies.Remove(key);
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+            }
+        }
+    }
+
     /// <summary>Deletes every decrypted playback copy. A copy a player still holds open stays
     /// until the next start.</summary>
     public static void WipePlayback()

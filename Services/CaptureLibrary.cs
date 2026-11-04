@@ -376,6 +376,14 @@ internal static partial class CaptureLibrary
         {
             _externalChanges?.Dispose();
             _externalChanges = null;
+            if (_db != null)
+            {
+                // Album switch, password change and close retire this session; its decrypted
+                // playback copies go too. Queued, since callers hold this gate and playback takes
+                // its own lock before this one.
+                long closing = _session;
+                _ = Task.Run(() => VideoCaptures.ForgetPlayback(closing));
+            }
             _db?.Dispose();
             _db = null;
             _keyedByPassword = false;
@@ -1032,9 +1040,12 @@ internal static partial class CaptureLibrary
 
     public static void Delete(IEnumerable<long> ids, long? expectedSession = null)
     {
+        var deleted = new List<long>();
+        long session;
         lock (_gate)
         {
             RequireSession(expectedSession);
+            session = _session;
             using var tx = Db.BeginTransaction();
             foreach (long id in ids)
             {
@@ -1044,9 +1055,13 @@ internal static partial class CaptureLibrary
                 cmd.Parameters.AddWithValue("$id", id);
                 cmd.ExecuteNonQuery();
                 ThumbnailCache.Remove(_session, id);
+                deleted.Add(id);
             }
             tx.Commit();
         }
+        // A deleted recording's decrypted playback copy goes with it. Outside the gate: playback
+        // takes its own lock before this one.
+        foreach (long id in deleted) VideoCaptures.ForgetPlayback(session, id);
         RaiseChanged();
     }
 
