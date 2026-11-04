@@ -17,6 +17,15 @@ namespace KillerShot.Features.About
         partial void OnShow()
         {
             if (_host is IAboutExtras extras) extras.SyncExtraRows();
+            if (!Services.UpdateService.IsStoreBuild) return;
+            _host.UpdateText    = _host.Loc(Services.UpdateService.StoreChannelMessageKey);
+            _host.UpdateVisible = true;
+            _host.UpdateEnabled = false;
         }
+
+        /// <summary>The Microsoft Store updates a Store copy, so it never offers the GitHub exe.</summary>
+        partial void SkipStartupCheck(ref bool skip) => skip |= Services.UpdateService.IsStoreBuild;
+
+        partial void HoldUpdate(ref bool hold) => hold |= Services.UpdateService.IsStoreBuild;
     }
 }

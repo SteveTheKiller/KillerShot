@@ -181,7 +181,7 @@ namespace KillerShot.Features.About
                 }));
             });
 
-            CheckForUpdate();
+            if (!UpdateService.Target().Unsupported) CheckForUpdate();
         }
 
         /// <summary>Opens the release page for the running version.</summary>

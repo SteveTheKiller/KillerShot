@@ -22,6 +22,8 @@ internal static class SelfTestNovemberInstall
             ChecksumLineOrders();
             report.Add("release checksums are found in hash-first and name-first lines for the exact asset name PASS");
             report.Add(ReleaseImageIdentity(folder));
+            StoreBuildDoesNotSelfUpdate();
+            report.Add("a Store build reports updates through the Microsoft Store and never downloads the framework-dependent exe PASS");
             CompanionConfigurationRequired(folder);
             report.Add("configured companion requires complete launch arguments before publication is prepared PASS");
             ConfiguredCompanionLaunch(folder, fail: false);
@@ -102,6 +104,51 @@ internal static class SelfTestNovemberInstall
             return "release image identity read from a renamed apphost; single-file bundle not staged beside the test, SKIPPED for bundle PASS";
         RequireReleaseIdentity(bundle);
         return "release image identity read from a renamed apphost and the published single-file bundle PASS";
+    }
+
+    private static void StoreBuildDoesNotSelfUpdate()
+    {
+        bool original = UpdateService.IsStoreBuild;
+        try
+        {
+            UpdateService.IsStoreBuild = false;
+            var regular = UpdateService.Target();
+            if (regular.Unsupported || regular.Asset != AppInfo.ExeName)
+                throw new InvalidOperationException($"A regular build stopped updating: unsupported={regular.Unsupported}, asset={regular.Asset}.");
+            UpdateService.IsStoreBuild = true;
+            var store = UpdateService.Target();
+            if (!store.Unsupported)
+                throw new InvalidOperationException("A Store build would download " + store.Asset + " over its self-contained copy.");
+            if (App.Current.TryFindResource(UpdateService.StoreChannelMessageKey) is not string message || message.Length == 0)
+                throw new InvalidOperationException("The Store update message is missing.");
+            var host = new StoreAboutHost();
+            new KillerShot.Features.About.AboutController(host).Show();
+            if (host.UpdateText != message || host.UpdateVisible != true || host.UpdateEnabled != false)
+                throw new InvalidOperationException($"The Store About card offered an update: text={host.UpdateText}, visible={host.UpdateVisible}, enabled={host.UpdateEnabled}.");
+        }
+        finally { UpdateService.IsStoreBuild = original; }
+    }
+
+    private sealed class StoreAboutHost : KillerShot.Features.About.IAboutHost
+    {
+        public System.Windows.Window Window { get; } = new();
+        public string Loc(string key) => App.Current.TryFindResource(key) as string ?? key;
+        public void SetStatus(string text) { }
+        public string Version { set { } }
+        public string ReleaseDate { set { } }
+        public string Publisher { set { } }
+        public string Alias { set { } }
+        public bool AliasVisible { set { } }
+        public string Thumbprint { set { } }
+        public string Sha256 { set { } }
+        public string? UpdateText { get; private set; }
+        string KillerShot.Features.About.IAboutHost.UpdateText { set => UpdateText = value; }
+        public bool? UpdateVisible { get; private set; }
+        bool KillerShot.Features.About.IAboutHost.UpdateVisible { set => UpdateVisible = value; }
+        public bool? UpdateEnabled { get; private set; }
+        bool KillerShot.Features.About.IAboutHost.UpdateEnabled { set => UpdateEnabled = value; }
+        public bool StartupUpdateCheck { set { } }
+        public void ShowCard() { }
     }
 
     private static void RequireReleaseIdentity(string exe)

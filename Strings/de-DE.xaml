@@ -11,6 +11,7 @@
     <sys:String x:Key="Str_About_StartupUpdateDetail">Möchten Sie diese Version jetzt herunterladen und installieren? Die App wird geschlossen und automatisch neu geöffnet.</sys:String>
     <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} ist verfügbar</sys:String>
     <sys:String x:Key="Str_About_UpdateAvailable">Update verfügbar: {0}</sys:String>
+    <sys:String x:Key="Str_Update_StoreChannel">Updates kommen über den Microsoft Store</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Die App wird geschlossen und automatisch neu gestartet.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} herunterladen und installieren?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Aktualisieren</sys:String>

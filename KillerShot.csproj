@@ -24,6 +24,12 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
+  <!-- release.ps1 publishes the Microsoft Store exe self-contained. That build is updated by the
+       Store, never by swapping in the framework-dependent GitHub exe (Services/UpdateService.Extras.cs). -->
+  <PropertyGroup Condition="'$(SelfContained)' == 'true'">
+    <DefineConstants>$(DefineConstants);STORE_BUILD</DefineConstants>
+  </PropertyGroup>
+
   <!-- Bake ReleaseDate into the assembly so About can show it. -->
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
