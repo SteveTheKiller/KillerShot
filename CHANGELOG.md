@@ -57,6 +57,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - `killershot print` prints only the picture it was given. When that picture could not open, or opening it was declined to keep unsaved edits, the picture already open was printed instead and the command reported success.
 - Canceling the discard prompt while a capture waits for review keeps the review bar, Ctrl+Enter and its destinations. Before, the picture stayed open with the review gone.
 - The Files filter matches file names only, so typing part of the current folder's path no longer matches every row.
+- A Window recording still records the area of the screen the window covers, so a window moved over it is recorded too. Window photos already capture the window itself; recording it the same way is planned for 1.3.
 - The recording frame and its control bar stay in place on a second monitor with a different display scale. Windows rescaled them as they appeared, which moved the frame off the recorded area.
 - Docking, minimizing, restoring or resizing the collection strips no longer reads the whole album again on the UI thread, and each strip refresh reads the album once instead of up to three times.
 - Recorded sound stays with the picture after the microphone or system audio stalls for a moment. A short stall used to leave the sound behind by that much for the rest of the recording.
