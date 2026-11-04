@@ -305,6 +305,14 @@ internal static partial class CaptureLibrary
                 catch (SqliteException ex) when (IsKeyFailure(ex)) { }
                 if (opened) File.Move(stagedKey, KeyPath, true);
             }
+            // A password change that stopped before its swap: the retired account key still opens it.
+            string retiredKey = KeyPath + ".retire";
+            if (!opened && !File.Exists(KeyPath) && File.Exists(retiredKey))
+            {
+                try { OpenWith(ReadSealedKey(retiredKey), byPassword: false); opened = true; }
+                catch (SqliteException ex) when (IsKeyFailure(ex)) { }
+                if (opened) File.Move(retiredKey, KeyPath, true);
+            }
             if (!opened && !File.Exists(KeyPath) && !File.Exists(stagedKey) && File.Exists(creatingKey))
             {
                 string key = ReadSealedKey(creatingKey);
@@ -422,6 +430,7 @@ internal static partial class CaptureLibrary
             File.Delete(keyPath + ".next");
             File.Delete(path + ".bak");
             File.Delete(path + ".rekey");
+            File.Delete(keyPath + ".retire");
             return db;
         }
         catch

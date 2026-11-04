@@ -107,6 +107,12 @@ internal static partial class CaptureLibrary
             SqliteConnection.ClearAllPools();
 
             string bak = path + ".bak";
+            // Setting a password retires the account key before the swap, so an album that then
+            // fails to reopen is never listed as unprotected beside a key that opens its backup.
+            // Every open tries the retired key, which restores it when the swap never happened.
+            string retired = KeyPath + ".retire";
+            bool retiring = newPassword != null && File.Exists(KeyPath);
+            if (retiring) File.Move(KeyPath, retired, true);
             try
             {
                 ReplaceWithRetry(tmp, path, bak, replaceFile, deleteRestorationCopy);
@@ -119,6 +125,7 @@ internal static partial class CaptureLibrary
                 {
                     RestoreReplacementDestination(path, bak, deleteRestorationCopy);
                     OpenWith(oldPassword, oldByPassword);
+                    if (retiring && File.Exists(retired)) File.Move(retired, KeyPath, true);
                 }
                 catch (Exception recoveryError)
                 {
@@ -137,6 +144,7 @@ internal static partial class CaptureLibrary
                 if (newPassword == null) File.Move(stagedKey, KeyPath, true);
                 NeedsPassword = false;
                 try { File.Delete(bak); } catch (IOException) { }
+                try { File.Delete(retired); } catch (IOException) { }
             }
             catch
             {

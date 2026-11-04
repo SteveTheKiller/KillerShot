@@ -33,6 +33,7 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "album-export-writes") await ExportAllowsWrites(folder, log);
             else if (scenario == "album-network-refused") NetworkAlbumRefused(folder);
             else if (scenario == "album-rekey-leftover") RekeyLeftover(folder);
+            else if (scenario == "album-password-reopen-failure") PasswordReopenFailure(folder);
             else if (scenario == "settings-locked-read") LockedSettingsRead(folder);
             else if (scenario == "album-decode-responsive") await DecodeResponsive(folder, log);
             else if (scenario == "folder-continuous-events") await ContinuousFolderEvents(folder);
@@ -474,6 +475,45 @@ internal static class SelfTestNovemberStorage
         bool left = File.Exists(leftover);
         CaptureLibrary.Close();
         if (left) throw new InvalidOperationException("A verified open kept an abandoned rekeyed album copy.");
+    }
+
+    /// <summary>Setting a password swaps in the re-encrypted album; when it then cannot be opened,
+    /// the album must not be listed as unprotected beside an account-readable key and backup.
+    /// A later successful password change leaves no retired key or backup behind.</summary>
+    private static void PasswordReopenFailure(string folder)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        string library = Path.Combine(folder, "library");
+        CaptureLibrary.UseFolder(library);
+        CaptureLibrary.BackgroundWork = false;
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        string album = CaptureLibrary.FilePath;
+        try
+        {
+            CaptureLibrary.SetPassword("new album password", (source, destination, backup) =>
+            {
+                File.Replace(source, destination, backup);
+                using var damaged = new FileStream(destination, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+                damaged.Write(new byte[4096]);
+            }, File.Delete);
+            throw new InvalidOperationException("A password change into an unreadable album reported success.");
+        }
+        catch (Exception error) when (error is not InvalidOperationException { Message: "A password change into an unreadable album reported success." }) { }
+        CaptureLibrary.Close();
+        var listed = CaptureLibrary.Albums().Single(a => string.Equals(a.Path, album, StringComparison.OrdinalIgnoreCase));
+        if (!listed.PasswordProtected)
+            throw new InvalidOperationException("After a password change failed to reopen, the album was listed as unprotected.");
+
+        string clean = Path.Combine(folder, "clean");
+        CaptureLibrary.UseFolder(clean);
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        string cleanAlbum = CaptureLibrary.FilePath;
+        CaptureLibrary.SetPassword("another password");
+        CaptureLibrary.Close();
+        string[] left = Directory.GetFiles(clean).Where(f => f.EndsWith(".retire", StringComparison.Ordinal)
+            || f.EndsWith(".bak", StringComparison.Ordinal) || f.EndsWith(".key", StringComparison.Ordinal)).ToArray();
+        if (left.Length > 0) throw new InvalidOperationException("A completed password change left " + string.Join(", ", left.Select(Path.GetFileName)));
     }
 
     /// <summary>A settings file another program holds for a moment must not leave KillerShot on
