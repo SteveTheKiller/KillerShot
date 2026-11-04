@@ -35,15 +35,28 @@ internal sealed class ImageOpenRequests(string folder)
             }
             // Process every queued request in timestamp/ID order. Keep dirty-document prompts
             // serialized even when a modal prompt pumps another wake callback.
+            // A request whose open fails is still retired, so it cannot sit first in the queue
+            // forever and starve every later request; the first failure is rethrown afterwards.
+            Exception? failure = null;
             for (int count = 0; count < 64; count++)
             {
                 string? request = Directory.EnumerateFiles(folder, "*.request").Order(StringComparer.Ordinal).FirstOrDefault();
-                if (request == null) return;
-                string path = File.ReadAllText(request);
-                OutputFiles.WriteAtomic(request + ".ack", true, stream => stream.Write("delivered"u8));
-                open(path);
-                File.Delete(request);
+                if (request == null) break;
+                try
+                {
+                    string path = File.ReadAllText(request);
+                    OutputFiles.WriteAtomic(request + ".ack", true, stream => stream.Write("delivered"u8));
+                    open(path);
+                }
+                catch (Exception error) { failure ??= error; }
+                finally
+                {
+                    try { File.Delete(request); }
+                    catch (Exception error) when (error is IOException or UnauthorizedAccessException) { failure ??= error; }
+                }
+                if (File.Exists(request)) break;
             }
+            if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
         }
         finally { _draining = false; }
     }

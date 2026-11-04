@@ -52,6 +52,16 @@ internal static class SelfTestOpenRequests
             if (!delivered.TakeLast(2).SequenceEqual(new[] { "outer.png", "nested.png" }))
                 throw new InvalidOperationException("Nested wakes did not preserve request ordering.");
             report.Add("Nested modal wakes serialize replacement prompts and deliver later requests: PASS");
+            var jammed = new ImageOpenRequests(Path.Combine(folder, "jammed"));
+            jammed.Publish("bad.png");
+            jammed.Publish("good.png");
+            var opened = new List<string>();
+            void OpenOrFail(string path) { if (path == "bad.png") throw new IOException("unreadable"); opened.Add(path); }
+            try { jammed.Drain(OpenOrFail); } catch (IOException) { }
+            try { jammed.Drain(OpenOrFail); } catch (IOException) { }
+            if (!opened.SequenceEqual(new[] { "good.png" }) || Directory.EnumerateFiles(Path.Combine(folder, "jammed"), "*.request").Any())
+                throw new InvalidOperationException("A failing open request jammed the queue: opened=" + string.Join(",", opened));
+            report.Add("A request whose open fails is retired and later requests are still delivered: PASS");
             await CheckProcessesAsync(folder, report);
             bool timedOut = false;
             try { await new ImageOpenRequests(Path.Combine(folder, "unavailable")).SendAsync("queued.png",
