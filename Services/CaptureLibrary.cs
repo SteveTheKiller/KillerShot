@@ -328,6 +328,10 @@ internal static partial class CaptureLibrary
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             try { if (File.Exists(backup)) File.Delete(backup); }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            // A password change stopped after writing its rekeyed copy: a full album under a key
+            // nobody kept, which would also block this album's name.
+            try { if (File.Exists(FilePath + ".rekey")) File.Delete(FilePath + ".rekey"); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         else
         {
@@ -417,6 +421,7 @@ internal static partial class CaptureLibrary
             File.Delete(keyPath);
             File.Delete(keyPath + ".next");
             File.Delete(path + ".bak");
+            File.Delete(path + ".rekey");
             return db;
         }
         catch

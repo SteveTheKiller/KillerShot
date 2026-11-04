@@ -14,7 +14,8 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Stored recordings import, export, play and prepare for dragging in the background, album mutations pause during recording work, and playback copies are reused.
 - Library searches, collection strips, color lookups and thumbnail arrivals do less work on the UI thread, and shelf scrolling works normally.
 - Album switching, unlocking, capture references and edited previews preserve capture identity and release unused files. Image decoding and failed recognition jobs no longer stall other library work.
-- Settings keep unsaved changes across later saves and preserve a backup of damaged settings.
+- Settings keep unsaved changes across later saves and preserve a backup of damaged settings. A settings file another program holds for a moment no longer leaves KillerShot on empty settings, and the default album, for the rest of the session.
+- An album password change that stopped after writing its re-encrypted copy no longer leaves that full copy behind; the next open removes it and frees the album's name.
 - Linked folders refresh from file changes, recover from missed events, and back off checks on unavailable network paths.
 - Install, update and uninstall share the same lock. Failed conflict removal keeps its registration, helper updates and cleanup follow the install scope, and publication leftovers are removed.
 - Capture commands reach the command line, QR scanning has a work limit, unavailable scrolling-capture keys show a warning, and recordings stop cleanly if monitor resolution changes.

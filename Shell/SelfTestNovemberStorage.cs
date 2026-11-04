@@ -32,6 +32,8 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "album-video-import-reads") await VideoImportReads(folder, log);
             else if (scenario == "album-export-writes") await ExportAllowsWrites(folder, log);
             else if (scenario == "album-network-refused") NetworkAlbumRefused(folder);
+            else if (scenario == "album-rekey-leftover") RekeyLeftover(folder);
+            else if (scenario == "settings-locked-read") LockedSettingsRead(folder);
             else if (scenario == "album-decode-responsive") await DecodeResponsive(folder, log);
             else if (scenario == "folder-continuous-events") await ContinuousFolderEvents(folder);
             else if (scenario == "folder-overflow") await FolderOverflow(folder);
@@ -453,6 +455,39 @@ internal static class SelfTestNovemberStorage
         CaptureLibrary.Close();
         if (File.Exists(renamed + "-wal") && new FileInfo(renamed + "-wal").Length > 0)
             throw new InvalidOperationException("Closing the album left uncheckpointed changes beside it.");
+    }
+
+    /// <summary>A password change that stopped after writing its rekeyed copy leaves a full album
+    /// copy under the abandoned key; the next verified open removes it.</summary>
+    private static void RekeyLeftover(string folder)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+        CaptureLibrary.BackgroundWork = false;
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        string leftover = CaptureLibrary.FilePath + ".rekey";
+        CaptureLibrary.Close();
+        File.WriteAllText(leftover, "abandoned rekeyed copy");
+        CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        bool left = File.Exists(leftover);
+        CaptureLibrary.Close();
+        if (left) throw new InvalidOperationException("A verified open kept an abandoned rekeyed album copy.");
+    }
+
+    /// <summary>A settings file another program holds for a moment must not leave KillerShot on
+    /// empty settings for the rest of the session.</summary>
+    private static void LockedSettingsRead(string folder)
+    {
+        string settings = Path.Combine(folder, "locked-settings");
+        Directory.CreateDirectory(settings);
+        File.WriteAllText(Path.Combine(settings, "settings.json"), "{\"ActiveAlbum\":\"Other.kshot\"}");
+        Settings.UseFolder(settings);
+        using (new FileStream(Path.Combine(settings, "settings.json"), FileMode.Open, FileAccess.Read, FileShare.None))
+            _ = Settings.Get("ActiveAlbum");
+        if (Settings.Get("ActiveAlbum") != "Other.kshot")
+            throw new InvalidOperationException("One locked read left the session on empty settings.");
     }
 
     /// <summary>A shared album needs shared memory the network does not provide.</summary>

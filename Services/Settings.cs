@@ -34,9 +34,16 @@ namespace KillerShot
         private static Dictionary<string, string> Load()
         {
             if (_cache != null) return _cache;
-            try { _cache = ReadCurrent(); }
-            catch { _cache = []; }
-            return _cache;
+            // A sharing violation or denied read is usually another program holding the file for
+            // a moment: retry briefly, and never cache the empty fallback, or the whole session
+            // runs on empty settings (the default album instead of the chosen one, say).
+            for (int attempt = 0; ; attempt++)
+            {
+                try { return _cache = ReadCurrent(); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException && attempt < 3)
+                { Thread.Sleep(30); }
+                catch { return []; }
+            }
         }
 
         private static Dictionary<string, string> ReadCurrent(bool preserveCorrupt = false)
@@ -69,7 +76,7 @@ namespace KillerShot
 
         internal static string? Get(string key)
         {
-            lock (Gate) return Load().TryGetValue(key, out var v) ? v : null;
+            lock (Gate) return Pending.TryGetValue(key, out var pending) ? pending : Load().TryGetValue(key, out var v) ? v : null;
         }
 
         internal static void Set(string key, string value)
