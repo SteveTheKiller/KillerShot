@@ -46,6 +46,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - One image that fails to open no longer blocks every later open request from the command line, and the stuck request no longer survives a restart.
 - An unexpected error no longer closes KillerShot silently. It is written to crash.log in the KillerShot folder under local app data, the tray shows a warning, and the app keeps running unless the failure is one no program can survive.
 - A command line call or a second launch no longer deletes the decrypted copy of a recording the running app is playing when it exits.
+- `killershot print` prints only the picture it was given. When that picture could not open, or opening it was declined to keep unsaved edits, the picture already open was printed instead and the command reported success.
 
 ### Added
 - Files is a fifth library view (F9) with folder navigation, live updates, list, icons and details views, file commands, in-place rename, clipboard and drag and drop. Images open in the editor.

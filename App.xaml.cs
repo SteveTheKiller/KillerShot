@@ -292,6 +292,8 @@ public partial class App : Application
         await OpenRequests.SendAsync(CommandPrefix + command, WakeName, TimeSpan.FromSeconds(10));
     }
 
+    internal void TestRunRemoteCommand(string command) => RunRemoteCommand(command);
+
     private void RunRemoteCommand(string command)
     {
         var video = Video;
@@ -307,9 +309,11 @@ public partial class App : Application
             default:
                 if (command.StartsWith("print:", StringComparison.Ordinal))
                 {
-                    OpenImage(command["print:".Length..]);
+                    // Print only the picture that was asked for: a declined discard prompt or an
+                    // unreadable file leaves another picture open, and that one must not print.
+                    bool opened = OpenImage(command["print:".Length..]);
                     ShowEditor();
-                    _editor?.PrintOpenPicture();
+                    if (opened) _editor?.PrintOpenPicture();
                 }
                 break;
         }
@@ -329,8 +333,9 @@ public partial class App : Application
         Shutdown(code);
     }
 
-    /// <summary>Loads an image file or an album-qualified capture reference into the editor.</summary>
-    internal void OpenImage(string path)
+    /// <summary>Loads an image file or an album-qualified capture reference into the editor.
+    /// True only when that picture is now the open document.</summary>
+    internal bool OpenImage(string path)
     {
         try
         {
@@ -340,15 +345,15 @@ public partial class App : Application
                 if (!CaptureLibrary.IsOpen) throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_LockedTitle"));
                 var item = CaptureLibrary.ResolveReference(path)
                     ?? throw new InvalidOperationException(LocaleManager.Loc("Str_Lib_Missing"));
-                OpenLibraryCapture(item);
-                return;
+                return OpenLibraryCapture(item);
             }
             var bmp = ImageOutput.Load(path);
-            SetDocument(new EditorDocument(bmp, path, File.GetLastWriteTime(path)));
+            return SetDocument(new EditorDocument(bmp, path, File.GetLastWriteTime(path)));
         }
         catch (Exception ex)
         {
             Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_FailedTitle"), ex.Message);
+            return false;
         }
     }
 
@@ -357,24 +362,24 @@ public partial class App : Application
 
     /// <summary>Opens a library capture in the editor. It opens as a capture, not a file, so Save
     /// asks where to put it.</summary>
-    internal void OpenLibraryCapture(CaptureItem item)
+    /// <summary>True when the capture is now the open document (a recording plays instead).</summary>
+    internal bool OpenLibraryCapture(CaptureItem item)
     {
         // A recording plays in the viewer's own player; the editor has nothing to edit in it.
         if (VideoCaptures.IsVideo(item))
         {
             VideoCaptures.Play(item, message => Tray?.ShowWarning(LocaleManager.Loc("Str_Rec_PlayFailed"), message));
-            return;
+            return false;
         }
         // A picture from the Screenshots folder opens as the file it is, so Save writes it back.
         if (FolderCaptures.IsFolderId(item.Id) && FolderCaptures.PathOf(item.Id) is { } path)
         {
             _opening = item;
-            try { OpenImage(path); } finally { _opening = null; }
-            return;
+            try { return OpenImage(path); } finally { _opening = null; }
         }
         var document = CaptureLibrary.LoadDocument(item);
         _opening = item;
-        SetDocument(document);
+        return SetDocument(document);
     }
 
     /// <summary>Called only after the original-content recovery warning was accepted.</summary>
