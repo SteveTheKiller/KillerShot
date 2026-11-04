@@ -26,6 +26,7 @@ internal static class SelfTestScrollStitch
             Sideways(report);
             Limits(report);
             Repeating(report);
+            ScrollBarInRegion(report);
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -78,6 +79,32 @@ internal static class SelfTestScrollStitch
     }
 
     /// <summary>A page whose every row is different, so a misplaced row cannot go unnoticed.</summary>
+    /// <summary>The usual case: the selected region includes the window's scroll bar, whose thumb
+    /// moves down the right edge as the page scrolls.</summary>
+    private static void ScrollBarInRegion(List<string> report)
+    {
+        const int w = 300, h = 1200, view = 240, bar = 17, step = 40;
+        var page = Page(w, h, 77);
+        var stitcher = new ScrollStitcher(w, view, ImageOutput.MaxPixels);
+        for (int offset = 0; offset <= h - view; offset += step)
+        {
+            var frame = Rows(page, w, offset, view);
+            int thumbTop = offset * view / h, thumbBottom = (offset + view) * view / h;
+            for (int y = 0; y < view; y++)
+                for (int x = w - bar; x < w; x++)
+                {
+                    byte shade = y >= thumbTop && y < thumbBottom ? (byte)60 : (byte)200;
+                    int at = (y * w + x) * 4;
+                    frame[at] = frame[at + 1] = frame[at + 2] = shade;
+                }
+            stitcher.Add(frame);
+            Expect(!stitcher.LostTrack, $"scroll bar in region: lost track at offset {offset}");
+        }
+        var result = stitcher.Result();
+        Expect(result.PixelHeight == h, $"scroll bar in region: stitched {result.PixelHeight} of {h} rows");
+        report.Add("scroll bar inside the region: the moving thumb does not break the overlap match PASS");
+    }
+
     private static byte[] Page(int w, int h, int seed)
     {
         var rng = new Random(seed);

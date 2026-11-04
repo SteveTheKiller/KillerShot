@@ -138,20 +138,26 @@ internal sealed class ScrollStitcher
         return column;
     }
 
+    /// <summary>Pixels left out at each end of a line when lines are compared. A selected region
+    /// usually takes in the window's scroll bar, whose thumb moves as the page does, so whole-line
+    /// comparison missed every row the thumb crossed. Output still keeps the whole line.</summary>
+    private static int EdgeMargin(int across) => across < 96 ? 0 : Math.Min(across / 4, Math.Max(24, across / 12));
+
     private ulong[] Hashes(byte[] frame, bool vertical)
     {
         int lines = vertical ? _height : _width;
+        int across = vertical ? _width : _height, margin = EdgeMargin(across);
         var hashes = new ulong[lines];
         for (int i = 0; i < lines; i++)
         {
             ulong h = 1469598103934665603UL;
             if (vertical)
             {
-                int start = i * _width * 4;
-                for (int b = start; b < start + _width * 4; b++) { h ^= frame[b]; h *= 1099511628211UL; }
+                int start = (i * _width + margin) * 4, end = (i * _width + _width - margin) * 4;
+                for (int b = start; b < end; b++) { h ^= frame[b]; h *= 1099511628211UL; }
             }
             else
-                for (int y = 0; y < _height; y++)
+                for (int y = margin; y < _height - margin; y++)
                 {
                     int at = (y * _width + i) * 4;
                     for (int b = at; b < at + 4; b++) { h ^= frame[b]; h *= 1099511628211UL; }
