@@ -31,6 +31,8 @@ namespace KillerShot.Shell
 
         internal void TestRefreshAlbumManager() => RefreshAlbumManager();
 
+        internal void TestShowAlbums() => ShowLibrarySettings();
+
         /// <summary>Each album row's detail line, as shown.</summary>
         internal IReadOnlyList<string> TestAlbumManagerDetails() => AlbumList.Items.OfType<ListBoxItem>()
             .Select(row => row.Content is StackPanel { Children.Count: > 1 } panel && panel.Children[1] is TextBlock details ? details.Text : "")
@@ -84,6 +86,10 @@ namespace KillerShot.Shell
             if (e.Key == Key.F2) { e.Handled = true; AlbumRename_Click(sender, e); return; }
             if (e.Key == Key.Enter && AlbumList.IsKeyboardFocusWithin) { e.Handled = true; AlbumOpen_Click(sender, e); return; }
             if (e.Key != Key.Escape) return;
+            // An open drop-down takes Escape first, the way it does everywhere else.
+            if (Keyboard.FocusedElement is DependencyObject focused
+                && (focused as ComboBox ?? ItemsControl.ItemsControlFromItemContainer(focused) as ComboBox
+                    ?? FindAncestor<ComboBox>(focused)) is { IsDropDownOpen: true }) return;
             if (_albumsDialog != null) _albumsDialog.Close();
             else LibrarySettingsPopup.IsOpen = false;
             e.Handled = true;

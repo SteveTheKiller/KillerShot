@@ -21,6 +21,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Linked folders refresh from file changes, recover from missed events, and back off checks on unavailable network paths.
 - Install, update and uninstall share the same lock. Failed conflict removal keeps its registration, helper updates and cleanup follow the install scope, and publication leftovers are removed.
 - Capture commands reach the command line, QR scanning has a work limit, unavailable scrolling-capture keys show a warning, and recordings stop cleanly if monitor resolution changes.
+- The album manager and the toolbar customizer repaint their surface when a contrast theme turns on or off while they are open, and Escape in the album manager closes an open drop-down before the window.
 - The color picker's Hex label and OK button, the play mark's screen reader name and album sizes in the album manager follow the app language.
 - Error warnings use the right color, scrollbar controls have localized names, and promoted touch presses no longer crash dialogs. Recent loads when opened, hidden windows stop polling, and resize presets commit pending text.
 - The file picker loads icons and picture previews in the background, refreshes overwritten previews, and restores its position on any monitor.

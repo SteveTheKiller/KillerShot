@@ -36,6 +36,8 @@ internal static class SelfTestEditorLifetime
             report.Add("the color picker's Hex label and OK button come from the app language PASS");
             VideoMarkAndAlbumSizesAreLocalized();
             report.Add("the video mark's name and album sizes follow the app language PASS");
+            AlbumManagerFollowsThemeAndEscape();
+            report.Add("the album manager repaints with the theme and Escape closes an open drop-down first PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -48,6 +50,48 @@ internal static class SelfTestEditorLifetime
             Application.Current.Shutdown(code);
         }
         return true;
+    }
+
+    private static void AlbumManagerFollowsThemeAndEscape()
+    {
+        var editor = App.Instance.EditorWindow ?? throw new InvalidOperationException("No editor window.");
+        editor.TestUseModelessAlbums();
+        editor.TestShowAlbums();
+        var dialog = editor.TestAlbumsDialog ?? throw new InvalidOperationException("The album manager did not open.");
+        try
+        {
+            var resources = Application.Current.Resources;
+            object? original = resources["BackgroundBrush"];
+            var replaced = new SolidColorBrush(Color.FromRgb(1, 2, 3));
+            resources["BackgroundBrush"] = replaced;
+            try
+            {
+                var root = (System.Windows.Controls.Border)dialog.FindName("RootBorder");
+                if (!ReferenceEquals(root.Background, replaced))
+                    throw new InvalidOperationException("The album manager kept the old surface after the theme brushes changed.");
+            }
+            finally { resources["BackgroundBrush"] = original; }
+
+            System.Windows.Controls.ComboBox? combo = null;
+            void Find(DependencyObject node)
+            {
+                if (combo == null && node is System.Windows.Controls.ComboBox { IsVisible: true, IsEnabled: true } c) combo = c;
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++) Find(VisualTreeHelper.GetChild(node, i));
+            }
+            dialog.UpdateLayout();
+            Find(dialog);
+            if (combo == null) throw new InvalidOperationException("The album manager has no drop-down to check.");
+            combo.Focus();
+            combo.IsDropDownOpen = true;
+            var source = PresentationSource.FromVisual(combo) ?? throw new InvalidOperationException("The drop-down is not on screen.");
+            System.Windows.Input.InputManager.Current.ProcessInput(new System.Windows.Input.KeyEventArgs(
+                System.Windows.Input.Keyboard.PrimaryDevice, source, 0, System.Windows.Input.Key.Escape)
+                { RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyDownEvent });
+            if (editor.TestAlbumsDialog == null || !dialog.IsVisible)
+                throw new InvalidOperationException("Escape on an open drop-down closed the album manager.");
+            if (combo.IsDropDownOpen) throw new InvalidOperationException("Escape did not close the drop-down.");
+        }
+        finally { editor.TestCloseAlbums(); }
     }
 
     private static void VideoMarkAndAlbumSizesAreLocalized()
