@@ -18,6 +18,16 @@ internal static class SelfTestOutputFiles
         string report;
         try
         {
+            // A PNG cut short before its IEND chunk decodes, but must not be saved over in place.
+            string truncated = Path.Combine(folder, "no-end.png");
+            var pixels = BitmapSource.Create(4, 4, 96, 96, PixelFormats.Bgra32, null, new byte[4 * 4 * 4], 16);
+            byte[] png = ImageOutput.EncodePng(pixels);
+            File.WriteAllBytes(truncated, png[..^12]);
+            bool inPlace;
+            try { inPlace = ImageOutput.CanSaveInPlace(truncated); }
+            catch (Exception error) { throw new InvalidOperationException("Checking a PNG without IEND threw " + error.GetType().Name + ".", error); }
+            if (inPlace) throw new InvalidOperationException("A PNG without IEND was offered for saving in place.");
+
             string first = OutputFiles.NextPath(folder, "capture.mp4");
             string second = OutputFiles.NextPath(folder, "capture.mp4");
             if (first == second)

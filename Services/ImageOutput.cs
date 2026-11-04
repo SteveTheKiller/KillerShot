@@ -97,7 +97,9 @@ internal static class ImageOutput
                 _ => false,
             };
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or FileFormatException)
+        // InvalidDataException: a PNG whose chunks run short or never reach IEND.
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException
+            or FileFormatException or InvalidDataException)
         {
             return false;
         }
