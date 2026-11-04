@@ -89,6 +89,7 @@ public partial class App : Application
         if (SelfTestNovemberInstall.TryRun(e.Args)) return;
         if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
         if (SelfTestCrashLog.TryRun(e.Args)) return;
+        if (SelfTestAppLifetime.TryRun(e.Args)) return;
         if (SelfTestNovemberCapture.TryRun(e.Args)) return;
         if (SelfTestNovemberStorage.TryRun(e.Args)) return;
         if (SelfTestNovemberUi.TryRun(e.Args)) return;
@@ -516,8 +517,17 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        ReleaseOnExit();
+        base.OnExit(e);
+    }
+
+    internal void ReleaseOnExit()
+    {
         ImageDrag.Cleanup();
-        VideoCaptures.WipePlayback();
+        // Only the running app owns the playback copies. A command line call, a second launch or a
+        // self-test exits here too and must not delete a clip the running app is playing; the
+        // startup wipe still clears copies a crashed session left.
+        if (_instance != null || DemoMode.IsDemo) VideoCaptures.WipePlayback();
         _wakeWait?.Unregister(null);
         _wake?.Dispose();
         Tray?.Dispose();
@@ -526,7 +536,6 @@ public partial class App : Application
             try { _instance.ReleaseMutex(); } catch { }
             _instance.Dispose();
         }
-        base.OnExit(e);
     }
 
     private bool _exitRequested;
