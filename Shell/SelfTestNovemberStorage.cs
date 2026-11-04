@@ -29,6 +29,9 @@ internal static class SelfTestNovemberStorage
         {
             VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
             if (scenario == "diagnostic-video-read-availability") await VideoImportResponsive(folder, log);
+            else if (scenario == "album-video-import-reads") await VideoImportReads(folder, log);
+            else if (scenario == "album-export-writes") await ExportAllowsWrites(folder, log);
+            else if (scenario == "album-network-refused") NetworkAlbumRefused(folder);
             else if (scenario == "album-decode-responsive") await DecodeResponsive(folder, log);
             else if (scenario == "folder-continuous-events") await ContinuousFolderEvents(folder);
             else if (scenario == "folder-overflow") await FolderOverflow(folder);
@@ -370,6 +373,102 @@ internal static class SelfTestNovemberStorage
         log.AppendLine($"diagnostic_only=True synchronous_read_queries={pings} longest_ms={longest:F1}");
         if (id <= 0 || pings == 0) throw new InvalidOperationException("The recording read-availability probe did not complete.");
         CaptureLibrary.Close();
+    }
+
+    /// <summary>Importing a large recording must not hold the album: listing it from another thread
+    /// answers promptly the whole time, and the stored clip is whole afterwards.</summary>
+    private static async Task VideoImportReads(string folder, StringBuilder log)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+        CaptureLibrary.BackgroundWork = false;
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        string clip = Path.Combine(folder, "large.mp4");
+        using (var stream = File.Create(clip))
+        {
+            var block = new byte[1 << 20];
+            for (int i = 0; i < 200; i++) { block[0] = (byte)i; stream.Write(block); }
+        }
+        var import = Task.Run(() => CaptureLibrary.AddVideo(clip, DateTime.Now, "Large recording"));
+        double longest = 0;
+        int reads = 0;
+        while (!import.IsCompleted)
+        {
+            await Task.Delay(20);
+            double elapsed = await Task.Run(() =>
+            {
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                _ = CaptureLibrary.Items();
+                return clock.Elapsed.TotalMilliseconds;
+            });
+            longest = Math.Max(longest, elapsed);
+            reads++;
+        }
+        long id = await import;
+        log.AppendLine($"listing_reads={reads} longest_ms={longest:F1}");
+        if (reads == 0) throw new InvalidOperationException("The import finished before any listing was timed.");
+        if (longest >= 200) throw new InvalidOperationException($"Listing the album waited {longest:F0} ms behind a recording import.");
+        string exported = Path.Combine(folder, "exported.mp4");
+        CaptureLibrary.ExportVideo(id, exported);
+        if (!File.ReadAllBytes(exported).AsSpan().SequenceEqual(File.ReadAllBytes(clip)))
+            throw new InvalidOperationException("The imported recording is not byte for byte the original.");
+        CaptureLibrary.Close();
+    }
+
+    /// <summary>Exporting a large recording reads the album for a long time; a note written
+    /// meanwhile must not wait for it, and a capture written before a rename of the open album
+    /// must be in the renamed album.</summary>
+    private static async Task ExportAllowsWrites(string folder, StringBuilder log)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+        CaptureLibrary.BackgroundWork = false;
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        string clip = Path.Combine(folder, "large.mp4");
+        using (var stream = File.Create(clip)) stream.SetLength(300L * 1024 * 1024);
+        long video = CaptureLibrary.AddVideo(clip, DateTime.Now, "Large recording");
+        var still = BitmapSource.Create(4, 4, 96, 96, PixelFormats.Bgra32, null, new byte[64], 16);
+        long picture = CaptureLibrary.AddNow(still, DateTime.Now, "region", "Noted", null);
+        var export = Task.Run(() => CaptureLibrary.ExportVideo(video, Path.Combine(folder, "exported.mp4")));
+        while (!export.IsCompleted && !File.Exists(Path.Combine(folder, "exported.mp4"))
+            && !Directory.EnumerateFiles(folder, "exported.mp4.*.partial").Any()) await Task.Delay(5);
+        await Task.Delay(50);
+        bool exporting = !export.IsCompleted;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        await Task.Run(() => CaptureLibrary.SetNote(picture, "written during export"));
+        double noteMs = clock.Elapsed.TotalMilliseconds;
+        await export;
+        log.AppendLine($"exporting_when_written={exporting} note_ms={noteMs:F0}");
+        if (!exporting) throw new InvalidOperationException("The export finished before the write was timed.");
+        if (noteMs >= 1000) throw new InvalidOperationException($"A note waited {noteMs:F0} ms for a recording export.");
+
+        string renamed = CaptureLibrary.RenameAlbum(CaptureLibrary.FilePath, "Renamed while open");
+        CaptureLibrary.Close();
+        CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+        if (!CaptureLibrary.TrySwitchAlbum(renamed, null, out _)) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        if (CaptureLibrary.ItemById(picture)?.Note != "written during export")
+            throw new InvalidOperationException("The renamed album lost a capture written while it was open.");
+        CaptureLibrary.Close();
+        if (File.Exists(renamed + "-wal") && new FileInfo(renamed + "-wal").Length > 0)
+            throw new InvalidOperationException("Closing the album left uncheckpointed changes beside it.");
+    }
+
+    /// <summary>A shared album needs shared memory the network does not provide.</summary>
+    private static void NetworkAlbumRefused(string folder)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        string local = Path.GetFullPath(Path.Combine(folder, "network-library"));
+        Directory.CreateDirectory(local);
+        string share = @"\\localhost\" + local[0] + "$" + local[2..];
+        CaptureLibrary.UseFolder(share);
+        CaptureLibrary.BackgroundWork = false;
+        if (CaptureLibrary.OpenAuto()) throw new InvalidOperationException("An album opened from a network share.");
+        if (CaptureLibrary.LoadError != LocaleManager.Loc("Str_Album_NetworkFolder"))
+            throw new InvalidOperationException("A network album was refused with: " + CaptureLibrary.LoadError);
+        if (Directory.EnumerateFiles(local).Any()) throw new InvalidOperationException("Refusing a network album still created files there.");
     }
 
     private sealed class CountingDirectoryReader : IFolderDirectoryReader

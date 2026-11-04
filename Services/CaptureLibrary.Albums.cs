@@ -22,10 +22,12 @@ internal static partial class CaptureLibrary
     }
 
     private sealed record RenameJournal(string OldName, string NewName, bool Active, string[] Sidecars, bool Committed = false);
-    private static readonly string[] AlbumSidecars = [".key", ".key.next", ".kshot.bak"];
+    // .kshot-wal and .kshot-shm: SQLite's write-ahead log beside an album. Closing checkpoints and
+    // removes them, but after a crash the log can hold committed captures, so it travels with the album.
+    private static readonly string[] AlbumSidecars = [".key", ".key.next", ".kshot.bak", ".kshot-wal", ".kshot-shm"];
     private static bool AlbumNameExists(string path)
     {
-        if (File.Exists(path) || new[] { ".key", ".key.next", ".key.creating", ".kshot.bak", ".kshot.rekey" }
+        if (File.Exists(path) || new[] { ".key", ".key.next", ".key.creating", ".kshot.bak", ".kshot.rekey", ".kshot-wal", ".kshot-shm" }
             .Any(ext => File.Exists(Sidecar(path, ext)))) return true;
         foreach (string journal in Directory.EnumerateFiles(_folder, ".album-rename-*.json"))
         {

@@ -12,6 +12,7 @@
     <sys:String x:Key="Str_About_StartupUpdateHeading">{0} {1} kullanılabilir</sys:String>
     <sys:String x:Key="Str_About_UpdateAvailable">Güncelleme mevcut: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Güncellemeler Microsoft Store üzerinden gelir</sys:String>
+    <sys:String x:Key="Str_Album_NetworkFolder">Albümler bir ağ klasöründe tutulamaz. Bu bilgisayarda bir klasör seçin.</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Uygulama kapanacak ve otomatik olarak yeniden açılacak.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} indirilip yüklensin mi?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Güncelle</sys:String>

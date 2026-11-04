@@ -181,6 +181,7 @@ internal static partial class CaptureLibrary
             NeedsPassword = false;
             try
             {
+                RequireLocalAlbumFolder(_folder);
                 Directory.CreateDirectory(_folder);
                 using var catalogLock = AcquireCatalogLock();
                 RecoverAlbumRenames();
@@ -383,6 +384,10 @@ internal static partial class CaptureLibrary
                 // its own lock before this one.
                 long closing = _session;
                 _ = Task.Run(() => VideoCaptures.ForgetPlayback(closing));
+                // Fold the write-ahead log into the album file, so a rename, copy, backup or
+                // password swap that follows moves one complete file.
+                try { Exec(_db, "PRAGMA wal_checkpoint(TRUNCATE)"); }
+                catch (SqliteException) { }
             }
             _db?.Dispose();
             _db = null;
@@ -422,8 +427,23 @@ internal static partial class CaptureLibrary
         }
     }
 
+    /// <summary>Albums use SQLite's write-ahead log, so a long read such as a recording export never
+    /// blocks a write. The log's shared-memory file does not work over a network share, so an
+    /// album folder there is refused with a plain message instead of risking the album.</summary>
+    private static void RequireLocalAlbumFolder(string path)
+    {
+        string full = Path.GetFullPath(path);
+        bool network = full.StartsWith(@"\\", StringComparison.Ordinal)
+            && !(full.StartsWith(@"\\?\", StringComparison.Ordinal) && full.Length > 6 && full[5] == ':');
+        if (!network && full.Length >= 3 && full[1] == ':')
+            try { network = new DriveInfo(full[..3]).DriveType == DriveType.Network; }
+            catch (ArgumentException) { }
+        if (network) throw new IOException(Loc("Str_Album_NetworkFolder"));
+    }
+
     private static SqliteConnection OpenAlbumConnection(string path, string key, bool create = false)
     {
+        RequireLocalAlbumFolder(path);
         if (!create && new FileInfo(path).Length == 0)
             throw new InvalidDataException("The existing album file is empty.");
         var db = new SqliteConnection(Cs(path, key, create));
@@ -436,6 +456,7 @@ internal static partial class CaptureLibrary
             int coreTables = Convert.ToInt32(probe.ExecuteScalar());
             if (!create && coreTables != 2)
                 throw new InvalidDataException("The existing album schema is incomplete.");
+            Exec(db, "PRAGMA journal_mode = WAL");
             Exec(db, "PRAGMA foreign_keys = ON");
             EnsureSchema(db);
             InitializeAlbumSettings(db, path);

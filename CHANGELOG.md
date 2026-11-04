@@ -51,6 +51,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - `killershot print` prints only the picture it was given. When that picture could not open, or opening it was declined to keep unsaved edits, the picture already open was printed instead and the command reported success.
 - Canceling the discard prompt while a capture waits for review keeps the review bar, Ctrl+Enter and its destinations. Before, the picture stayed open with the review gone.
 - The Files filter matches file names only, so typing part of the current folder's path no longer matches every row.
+- Deleting, noting or recognizing captures no longer waits up to 30 seconds and then fails with "database is locked" while a recording is exported. Albums now keep a write-ahead log, which KillerShot folds back into the album file whenever it closes, renames, copies or backs it up. An album folder on a network share is refused with a plain message, because the log does not work over a network.
 - Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 
 ### Added
