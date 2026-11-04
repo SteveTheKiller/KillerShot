@@ -75,11 +75,20 @@ internal static partial class CaptureLibrary
         byte[] thumb = EncodeThumb(poster);
         long id;
         lock (PendingWriter)
-        lock (_gate)
         {
-            RequireSession(session);
-            if (recordingsCollection) collectionId = RecordingsCollectionCore(notify: false);
-            var album = Db;
+            // The clip can be a gigabyte, so it is written through its own connection, outside the
+            // gate every listing and edit takes. The album keeps a write-ahead log, so readers see
+            // the album as it was until this commits, and the new row appears whole or not at all.
+            string connectionString;
+            lock (_gate)
+            {
+                RequireSession(session);
+                if (recordingsCollection) collectionId = RecordingsCollectionCore(notify: false);
+                connectionString = new SqliteConnectionStringBuilder(Db.ConnectionString) { Pooling = false }.ConnectionString;
+            }
+            using var album = new SqliteConnection(connectionString);
+            album.Open();
+            Exec(album, "PRAGMA foreign_keys = ON");
             using var transaction = album.BeginTransaction();
             id = AllocateCaptureId(album, transaction);
             using (var cmd = album.CreateCommand())

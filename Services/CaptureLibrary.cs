@@ -1214,7 +1214,7 @@ internal static partial class CaptureLibrary
     /// <summary>Rewrites one capture's row in the search index from its current values.</summary>
     private static void IndexText(long id, SqliteTransaction? tx = null)
     {
-        using var cmd = Db.CreateCommand();
+        using var cmd = (tx?.Connection ?? Db).CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = """
             DELETE FROM capture_search WHERE rowid = $id;
