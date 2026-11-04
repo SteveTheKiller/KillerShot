@@ -32,6 +32,8 @@ internal static class SelfTestAppLifetime
             report.Add("exiting without owning the running app leaves its playback copies PASS");
             PrintNeverTakesTheWrongPicture(folder);
             report.Add("a print request whose picture could not open prints nothing PASS");
+            RecordingFrameFollowsDpiChange();
+            report.Add("the recording frame returns around its rectangle after Windows rescales it PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -41,6 +43,33 @@ internal static class SelfTestAppLifetime
             Application.Current.Shutdown(code);
         }
         return true;
+    }
+
+    /// <summary>A recording on a monitor with another scale: Windows moves and resizes the frame
+    /// window as it rescales it and then raises DpiChanged; the frame must go back around the rectangle.</summary>
+    private static void RecordingFrameFollowsDpiChange()
+    {
+        var rect = new KillerShot.Native.Win32.RECT(200, 150, 600, 450);
+        var frame = KillerShot.Video.CaptureChromeWindows.Frame(rect);
+        frame.Show();
+        try
+        {
+            var h = new System.Windows.Interop.WindowInteropHelper(frame).Handle;
+            // What a per-monitor rescale does to the window before DpiChanged.
+            KillerShot.Native.Win32.SetWindowPos(h, IntPtr.Zero, 260, 190, 300, 200, 0x0010 /* SWP_NOACTIVATE */);
+            var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(frame);
+            var args = (RoutedEventArgs)typeof(DpiChangedEventArgs).GetConstructors(
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Single(c => c.GetParameters().Length == 4)
+                .Invoke([dpi, dpi, Window.DpiChangedEvent, frame]);
+            frame.RaiseEvent(args);
+            KillerShot.Native.Win32.GetWindowRect(h, out var placed);
+            int px = KillerShot.Video.CaptureChromeWindows.FramePx;
+            if (placed.Left != rect.Left - px || placed.Top != rect.Top - px
+                || placed.Width != rect.Width + px * 2 || placed.Height != rect.Height + px * 2)
+                throw new InvalidOperationException($"After a rescale the frame sat at {placed.Left},{placed.Top} {placed.Width}x{placed.Height}.");
+        }
+        finally { frame.Close(); }
     }
 
     /// <summary>`killershot print other.png` while an edited picture is open and the user keeps it,

@@ -32,10 +32,22 @@ internal static class CaptureChromeWindows
             int ex = GetWindowLong(h, GWL_EXSTYLE);
             SetWindowLong(h, GWL_EXSTYLE, ex | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
             Win32.SetWindowDisplayAffinity(h, Win32.WDA_EXCLUDEFROMCAPTURE);
-            Win32.SetWindowPos(h, Win32.HWND_TOPMOST, rect.Left - FramePx, rect.Top - FramePx,
-                rect.Width + FramePx * 2, rect.Height + FramePx * 2, Win32.SWP_NOACTIVATE);
+            PlaceFrame(frame, rect);
         };
+        // Windows rescales a per-monitor window when it lands on a monitor with another scale, which
+        // moves and resizes it; the frame must stay exactly around the recorded rectangle.
+        frame.Loaded += (_, _) => PlaceFrame(frame, rect);
+        frame.DpiChanged += (_, _) => PlaceFrame(frame, rect);
         return frame;
+    }
+
+    /// <summary>Puts the frame just outside <paramref name="rect"/>, in physical pixels.</summary>
+    internal static void PlaceFrame(Window frame, Win32.RECT rect)
+    {
+        var h = new WindowInteropHelper(frame).Handle;
+        if (h == IntPtr.Zero) return;
+        Win32.SetWindowPos(h, Win32.HWND_TOPMOST, rect.Left - FramePx, rect.Top - FramePx,
+            rect.Width + FramePx * 2, rect.Height + FramePx * 2, Win32.SWP_NOACTIVATE);
     }
 
     /// <summary>A themed card window for the controls, placed next to <paramref name="rect"/>
@@ -61,6 +73,8 @@ internal static class CaptureChromeWindows
             Win32.SetWindowDisplayAffinity(h, Win32.WDA_EXCLUDEFROMCAPTURE);
         };
         bar.Loaded += (_, _) => Place(bar, rect);
+        // After a rescale the bar has a new size, so it is measured and placed again.
+        bar.DpiChanged += (_, _) => bar.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () => Place(bar, rect));
         return bar;
     }
 
