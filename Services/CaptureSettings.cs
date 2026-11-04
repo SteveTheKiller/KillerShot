@@ -61,11 +61,20 @@ internal static class CaptureSettings
 
     /// <summary>The stored shortcut text, the default when nothing is stored, or empty when the
     /// user turned the shortcut off.</summary>
-    public static string ShortcutText(ShortcutAction action) =>
-        Settings.Get("Shortcut." + action) ?? Defaults[action];
+    public static string ShortcutText(ShortcutAction action)
+    {
+        string? stored = Settings.Get("Shortcut." + action);
+        // A chord Windows owns, put in the settings file by hand, is never registered.
+        if (stored != null && Shortcut.TryParse(stored, out var shortcut) && Shortcut.IsReserved(shortcut)) return Defaults[action];
+        return stored ?? Defaults[action];
+    }
 
-    public static void SetShortcutText(ShortcutAction action, string text) =>
+    /// <summary>Stores the shortcut; a chord Windows owns (Shortcut.IsReserved) is refused.</summary>
+    public static void SetShortcutText(ShortcutAction action, string text)
+    {
+        if (Shortcut.TryParse(text, out var shortcut) && Shortcut.IsReserved(shortcut)) return;
         Settings.Set("Shortcut." + action, text);
+    }
 
     /// <summary>Open the editor after every capture. Off by default: the clipboard is the point.</summary>
     public static bool OpenEditorAfterCapture

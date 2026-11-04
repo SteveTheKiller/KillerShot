@@ -34,7 +34,7 @@ public partial class App : Application
 
     private AlbumMarks? _marks;
     /// <summary>Keeps the open capture's marks in the album; null in self-tests that never show a document.</summary>
-    private AlbumMarks Marks => _marks ??= new AlbumMarks(Dispatcher);
+    internal AlbumMarks Marks => _marks ??= new AlbumMarks(Dispatcher);
     internal event Action? DocumentChanged;
     internal void DocumentSavedToFile(EditorDocument document) => _marks?.SavedToFile(document);
 
@@ -87,6 +87,7 @@ public partial class App : Application
 
         if (SelfTestThemeDump.TryRun(e.Args)) return;
         if (SelfTestNovemberInstall.TryRun(e.Args)) return;
+        if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
         if (SelfTestNovemberCapture.TryRun(e.Args)) return;
         if (SelfTestNovemberStorage.TryRun(e.Args)) return;
         if (SelfTestNovemberUi.TryRun(e.Args)) return;

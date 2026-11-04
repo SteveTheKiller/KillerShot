@@ -108,6 +108,10 @@ internal sealed class TrayHost : IDisposable
         UpdatePrintScreenHook();
     }
 
+    internal bool IsSuspended => _suspended;
+    internal int TestRegisteredCount => _hotkeyIds.Count;
+    internal bool TestRegistered(ShortcutAction action) => _hotkeyIds.ContainsValue(action);
+
     public void Resume()
     {
         if (!_suspended) return;

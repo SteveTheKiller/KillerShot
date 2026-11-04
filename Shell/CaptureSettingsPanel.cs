@@ -186,6 +186,10 @@ namespace KillerShot.Shell
             else if (sender == DelayCombo && tag is int d) CaptureSettings.DelaySeconds = d;
         }
 
+        /// <summary>Any settings overlay fading out ends a shortcut recording, so the global
+        /// shortcuts the recorder suspended come back.</summary>
+        partial void OverlayFadingOut(UIElement overlay, ref bool handled) => StopRecording(apply: null);
+
         private void CloseCaptureSettings()
         {
             StopRecording(apply: null);
@@ -354,7 +358,11 @@ namespace KillerShot.Shell
         private void RecorderKey(KeyEventArgs e)
         {
             e.Handled = true;
-            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+            RecorderKey(e.Key == Key.System ? e.SystemKey : e.Key, Keyboard.Modifiers);
+        }
+
+        private void RecorderKey(Key key, ModifierKeys mods)
+        {
             if (key == Key.Escape) { StopRecording(apply: null); return; }
             if (key is Key.Back or Key.Delete) { StopRecording(apply: ""); return; }
             // Wait for the main key; a bare modifier is not a shortcut.
@@ -371,7 +379,6 @@ namespace KillerShot.Shell
             };
             if (name == null) return;
 
-            var mods = Keyboard.Modifiers;
             var parts = new List<string>();
             if ((mods & ModifierKeys.Control) != 0) parts.Add("Ctrl");
             if ((mods & ModifierKeys.Alt) != 0) parts.Add("Alt");
@@ -380,7 +387,16 @@ namespace KillerShot.Shell
             // Only Print Screen and the F keys may stand alone; a bare letter would steal typing.
             if (parts.Count == 0 && key != Key.Snapshot && !(key >= Key.F1 && key <= Key.F24)) return;
             parts.Add(name);
-            StopRecording(apply: string.Join("+", parts));
+            string chord = string.Join("+", parts);
+            if (Shortcut.TryParse(chord, out var shortcut) && Shortcut.IsReserved(shortcut))
+            {
+                // Windows owns this chord; keep listening and say so the way a taken shortcut does.
+                var refused = new TextBlock { Text = shortcut.Short + "  " + Loc("Str_CS_InUse"), FontFamily = new FontFamily("Consolas"), FontSize = 12 };
+                refused.SetResourceReference(TextBlock.ForegroundProperty, "DangerRed");
+                if (_recording != null) _recording.Content = refused;
+                return;
+            }
+            StopRecording(apply: chord);
         }
     }
 }

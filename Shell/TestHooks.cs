@@ -17,6 +17,27 @@ namespace KillerShot.Shell
 
         internal void TestShowCaptureSettings() => ShowCaptureSettings();
 
+        /// <summary>Clicks the shortcut recorder for <paramref name="action"/>.</summary>
+        internal bool TestStartRecording(Capture.ShortcutAction action)
+        {
+            System.Windows.Controls.Button? Find() => ShortcutRows.Children.OfType<System.Windows.Controls.Button>()
+                .Concat(VideoShortcutRows.Children.OfType<System.Windows.Controls.Button>())
+                .FirstOrDefault(button => button.Tag is Capture.ShortcutAction tagged && tagged == action);
+            if (Find() == null) BuildShortcutRows();
+            var recorder = Find();
+            if (recorder == null) return false;
+            StartRecording(recorder);
+            return true;
+        }
+
+        internal void TestRecorderKey(System.Windows.Input.Key key, System.Windows.Input.ModifierKeys modifiers) => RecorderKey(key, modifiers);
+
+        internal bool TestIsRecording => _recording != null;
+
+        internal void TestHideToTray() => HideToTray();
+
+        internal void TestDeactivate() => OnDeactivated(EventArgs.Empty);
+
         internal void TestShowVideoSettings() => ShowVideoSettings();
 
         internal void TestCloseOverlays()

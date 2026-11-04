@@ -29,6 +29,9 @@ namespace KillerShot.Shell
                 Services.ThemeManager.ThemeChanged += ApplyWindowFrameTheme;
                 ApplyWindowFrameTheme();
             };
+            // A shortcut recorder suspends every global shortcut while it listens, so leaving the
+            // window ends the recording instead of leaving Print Screen dead until the user returns.
+            Deactivated += (_, _) => StopRecording(apply: null);
             Closed += (_, _) =>
             {
                 Services.ThemeManager.ThemeChanged -= ApplyWindowFrameTheme;
@@ -114,6 +117,7 @@ namespace KillerShot.Shell
         private void HideToTray()
         {
             if (_hidingToTray) return;
+            StopRecording(apply: null);
             _hidingToTray = true;
             CommitPendingText();
             bool savePlacement = true;
