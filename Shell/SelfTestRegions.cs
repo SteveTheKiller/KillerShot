@@ -67,6 +67,21 @@ internal static class SelfTestRegions
         report.Add("keyboard chooses another window or monitor, ignores pointer polling, wraps and cancels PASS");
     }
 
+    private static void OverlayIgnoresAltDrag(List<string> report)
+    {
+        var bounds = new Win32.RECT(0, 0, 64, 64);
+        var frozen = new FrozenDesktop(bounds, new byte[64 * 64 * 4], [new((IntPtr)1, bounds, true)], []);
+        var overlay = new RegionOverlay(new RegionSelector(frozen), bounds, frozen.Crop(bounds)!);
+        var plain = new System.Windows.Window();
+        try
+        {
+            Expect(!KillerShot.Controls.AltDrag.ShouldHandle(overlay), "Alt+press on the capture overlay would drag the overlay off its monitor.");
+            Expect(KillerShot.Controls.AltDrag.ShouldHandle(plain), "Alt+drag stopped moving ordinary windows.");
+        }
+        finally { overlay.Close(); plain.Close(); }
+        report.Add("Alt+press on the capture overlay does not move it, other windows still Alt+drag PASS");
+    }
+
     private static async Task RunAsync(string folder)
     {
         int code = 1;
@@ -82,6 +97,7 @@ internal static class SelfTestRegions
             App.InitializeKit();
             LocaleManager.Apply(Locale.EnUS);
             await KeyboardTargets(report);
+            OverlayIgnoresAltDrag(report);
 
             // Layout: two side-by-side monitors; the region repeats only on this layout.
             MonitorBounds[] two = [new(IntPtr.Zero, new Win32.RECT(0, 0, 1920, 1080), true), new(IntPtr.Zero, new Win32.RECT(1920, 0, 3840, 1080), false)];

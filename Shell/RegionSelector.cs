@@ -309,6 +309,7 @@ internal sealed class RegionOverlay : Window
         Background = Brushes.Black;
         Cursor = Cursors.Cross;
         Title = "KillerShot";
+        Controls.AltDrag.SetIsEnabled(this, false);   // Alt+press must not move a full-screen overlay off its monitor
         // Placed in physical pixels once the handle exists; start off screen so nothing flashes.
         WindowStartupLocation = WindowStartupLocation.Manual;
         Left = -32000; Top = -32000; Width = 64; Height = 64;
