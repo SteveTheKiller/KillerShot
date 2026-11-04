@@ -452,7 +452,9 @@ namespace KillerShot.Files
             }
             finally
             {
-                if (!keepRecovery && File.Exists(temp))
+                // The staged copy is kept for recovery only when a failed replacement left the
+                // destination missing; a replacement refused before it began has nothing to recover.
+                if (File.Exists(temp) && (!keepRecovery || File.Exists(dst)))
                 {
                     File.SetAttributes(temp, File.GetAttributes(temp) & ~FileAttributes.ReadOnly);
                     File.Delete(temp);

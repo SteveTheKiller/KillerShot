@@ -57,6 +57,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Scrolling capture keeps its place when the selected region includes the window's scroll bar. The moving thumb made most rows look different, so pages shorter than about ten screens stopped with lost tracking.
 - Importing a recording into an album no longer freezes the album view. The whole clip was copied while every listing waited for it, which took seconds for a large recording.
 - Deleting, noting or recognizing captures no longer waits up to 30 seconds and then fails with "database is locked" while a recording is exported. Albums now keep a write-ahead log, which KillerShot folds back into the album file whenever it closes, renames, copies or backs it up. An album folder on a network share is refused with a plain message, because the log does not work over a network.
+- The Files details view shows the sort arrow on the Modified column, and a refused Replace no longer leaves a hidden full-size copy in the destination folder.
 - Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 
 ### Added

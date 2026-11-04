@@ -185,7 +185,7 @@
                             <Button Grid.Column="4" Visibility="{Binding ViewState.ModifiedVisible, Converter={StaticResource BoolToVis}, RelativeSource={RelativeSource AncestorType=files:FilesView}}" AutomationProperties.Name="{DynamicResource Str_Col_Modified}" Style="{StaticResource ColHeaderBtn}" Click="Header_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{DynamicResource Str_Col_Modified}" FontFamily="{DynamicResource MonoFont}" FontSize="11.5" FontWeight="SemiBold" />
-                                    <TextBlock x:Name="ColModArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="ColModifiedArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button Grid.Column="5" Visibility="{Binding ViewState.TypeVisible, Converter={StaticResource BoolToVis}, RelativeSource={RelativeSource AncestorType=files:FilesView}}" AutomationProperties.Name="{DynamicResource Str_Col_Type}" Style="{StaticResource ColHeaderBtn}" Click="Header_Click">

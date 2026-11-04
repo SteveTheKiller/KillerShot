@@ -63,6 +63,8 @@ internal static class SelfTestFilesSafety
                 await Case("same-folder-paste", path => SameFolderPaste(path, Check));
                 await Case("folder-filter", path => FolderFilter(path, Check));
                 await Case("readonly-cross-volume", path => ReadOnlyCrossVolumeMove(path, Check));
+                await Case("sort-arrow", path => SortArrow(path, Check));
+                await Case("failed-replace-temp", path => FailedReplaceTemp(path, Check));
                 await Case("cache", path => CacheRetention(path, Check, report));
                 await Case("size", path => RequestedSize(path, Check));
                 await Case("orientation", path => Orientations(path, Check, report));
@@ -72,10 +74,12 @@ internal static class SelfTestFilesSafety
                 await Case("cache-concurrency", path => CacheConcurrency(path, Check, report));
                 await Case("address-overflow", path => AddressOverflow(path, Check, report));
                 await Case("cache-workload-minimal", path => CacheWorkloadMinimal(path, Check, report));
-                string[] expectedCases = ["containment", "same-folder-paste", "folder-filter", "readonly-cross-volume", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
+                string[] expectedCases = ["containment", "same-folder-paste", "folder-filter", "readonly-cross-volume", "sort-arrow", "failed-replace-temp", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
                 Check(checks >= 108 && expectedCases.All(name => report.ToString().Contains("SCENARIO PASS: " + name, StringComparison.Ordinal)),
-                    "all thirteen isolated safety scenarios complete with every repair regression selected");
+                    "all fifteen isolated safety scenarios complete with every repair regression selected");
             }
+            else if (scenario == "sort-arrow") await SortArrow(folder, Check);
+            else if (scenario == "failed-replace-temp") await FailedReplaceTemp(folder, Check);
             else if (scenario == "containment") await Containment(folder, Check);
             else if (scenario == "same-folder-paste") await SameFolderPaste(folder, Check);
             else if (scenario == "folder-filter") await FolderFilter(folder, Check);
@@ -659,6 +663,34 @@ internal static class SelfTestFilesSafety
         files.SetFilter("a");
         check(files.VisibleCount == 1, $"filtering by a name matches only that row (visible={files.VisibleCount})");
         files.SetFilter("");
+    }
+
+    /// <summary>Details view sorted by Modified, the default column, shows its sort arrow.</summary>
+    private static async Task SortArrow(string folder, Action<bool, string> check)
+    {
+        File.WriteAllText(Path.Combine(folder, "a.txt"), "a");
+        using var files = new FilesView();
+        check(await files.NavigateTo(folder), "sort arrow fixture opens");
+        files.SetView(2);
+        files.SetSort(4, true);
+        check(files.FindName("ColModifiedArrow") is System.Windows.Controls.TextBlock { Text: "" },
+            "the Modified column shows the ascending sort arrow");
+    }
+
+    /// <summary>A Replace that fails before it touches the existing file leaves nothing behind.</summary>
+    private static Task FailedReplaceTemp(string folder, Action<bool, string> check)
+    {
+        string source = Directory.CreateDirectory(Path.Combine(folder, "source")).FullName;
+        string target = Directory.CreateDirectory(Path.Combine(folder, "target")).FullName;
+        File.WriteAllText(Path.Combine(source, "photo.jpg"), "incoming");
+        File.WriteAllText(Path.Combine(target, "photo.jpg"), "existing");
+        var result = FileOps.CopyOrMove([Path.Combine(source, "photo.jpg")], target, false, _ => ConflictChoice.Replace, _ => { },
+            CancellationToken.None, (_, _, _) => throw new IOException("The replacement was refused before it started."));
+        check(result.Failed.Count == 1 && File.ReadAllText(Path.Combine(target, "photo.jpg")) == "existing",
+            "a refused replacement keeps the existing file and reports the failure");
+        string[] left = Directory.GetFiles(target, ".KillerShot-copy-*");
+        check(left.Length == 0, $"a refused replacement leaves no hidden copy behind (found {left.Length})");
+        return Task.CompletedTask;
     }
 
     /// <summary>A move to another drive is a copy then a delete; camera cards hold read-only files.</summary>
