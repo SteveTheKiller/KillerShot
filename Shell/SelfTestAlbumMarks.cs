@@ -357,6 +357,42 @@ internal static class SelfTestAlbumMarks
         ((System.Windows.Controls.Primitives.Popup)editor.FindName("LibrarySettingsPopup")).IsOpen = false;
     }
 
+    /// <summary>The editor's Delete removes the capture that is open in it.</summary>
+    private static async Task DeleteOpenCapture(List<string> report)
+    {
+        long id = CaptureLibrary.AddNow(Picture(51), DateTime.Now, "region", "Open delete", null);
+        App.Instance.ShowEditor();
+        App.Instance.OpenLibraryCapture(CaptureLibrary.Items().Single(i => i.Id == id));
+        var doc = App.Instance.Document ?? throw new InvalidOperationException("The capture to delete did not open.");
+        doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(20, 20), new Point(60, 50), Colors.Black, 1));
+        var library = App.Instance.EditorWindow?.TestLibrary ?? throw new InvalidOperationException("No editor library.");
+        library.PresentConfirmation = _ => true;
+        library.Delete(App.Instance.CurrentItem ?? throw new InvalidOperationException("The open capture has no item."));
+        await WaitFor(() => CaptureLibrary.Items().All(i => i.Id != id), "The open capture was not deleted.");
+        bool replaced = App.Instance.SetDocument(new EditorDocument(Picture(52)));
+        if (App.Instance.CurrentItem?.Id == id || !replaced)
+            throw new InvalidOperationException($"Deleting the open capture stranded the editor: current={App.Instance.CurrentItem?.Id}, replaced={replaced}.");
+        App.Instance.SetDocument(null);
+        report.Add("deleting the open capture from the editor lets another picture open PASS");
+    }
+
+    /// <summary>The open capture's album row goes away by another route (another window, a prune).</summary>
+    private static async Task OpenCaptureDeletedElsewhere(List<string> report)
+    {
+        long id = CaptureLibrary.AddNow(Picture(53), DateTime.Now, "region", "Deleted elsewhere", null);
+        App.Instance.OpenLibraryCapture(CaptureLibrary.Items().Single(i => i.Id == id));
+        var doc = App.Instance.Document ?? throw new InvalidOperationException("The capture did not open.");
+        CaptureLibrary.Delete([id]);
+        doc.Add(new ShapeAnnotation(ShapeKind.Redact, new Point(20, 20), new Point(60, 50), Colors.Black, 1));
+        App.Instance.Marks.Flush();
+        await WaitFor(() => App.Instance.Marks.CaptureId == null, "The marks stayed tied to a deleted capture.");
+        doc.MarkSaved();
+        if (!App.Instance.SetDocument(new EditorDocument(Picture(54))))
+            throw new InvalidOperationException("A picture whose album row was deleted elsewhere blocks opening another.");
+        App.Instance.SetDocument(null);
+        report.Add("a capture deleted elsewhere becomes an unlinked picture instead of failing every save PASS");
+    }
+
     private static async Task RunAsync(string folder)
     {
         int code = 1;
@@ -371,6 +407,8 @@ internal static class SelfTestAlbumMarks
             App.InitializeKit();
             LocaleManager.Apply(Locale.EnUS);
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The scratch library did not open.");
+            await DeleteOpenCapture(report);
+            await OpenCaptureDeletedElsewhere(report);
             await CaptureLinkTiming(folder, report);
             await FailedSaveKeepsEdits(folder, report);
             await StaleSaveCannotCrossAlbums(report);

@@ -140,21 +140,37 @@ internal sealed class AlbumMarks
         _queuedState = state;
         _saving = _saving.ContinueWith(_ =>
         {
+            Exception failure;
             try
             {
-                if (!CaptureLibrary.SaveMarks(id, state, original, flattened, session))
+                if (CaptureLibrary.SaveMarks(id, state, original, flattened, session))
                 {
-                    CaptureLibrary.ReportWriteFailure(new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed")));
+                    _dispatcher.BeginInvoke(() =>
+                    {
+                        if (CaptureLibrary.Session == session && _session == session && ReferenceEquals(_doc, doc) &&
+                            ReferenceEquals(doc.State, state) && doc.FilePath == null) doc.MarkSaved();
+                    });
+                    return true;
+                }
+                failure = new InvalidOperationException(LocaleManager.Loc("Str_Album_Changed"));
+            }
+            catch (Exception error) { failure = error; }
+            // The capture was deleted while it was open: the picture stays open as an unlinked
+            // one the user can still save to a file, instead of failing every later save.
+            try
+            {
+                if (CaptureLibrary.Session == session && CaptureLibrary.ItemById(id) == null)
+                {
+                    _dispatcher.BeginInvoke(() =>
+                    {
+                        if (_id == id && _session == session && ReferenceEquals(_doc, doc)) _id = null;
+                    });
                     return false;
                 }
-                _dispatcher.BeginInvoke(() =>
-                {
-                    if (CaptureLibrary.Session == session && _session == session && ReferenceEquals(_doc, doc) &&
-                        ReferenceEquals(doc.State, state) && doc.FilePath == null) doc.MarkSaved();
-                });
-                return true;
             }
-            catch (Exception error) { CaptureLibrary.ReportWriteFailure(error); return false; }
+            catch (Exception error) { failure = error; }
+            CaptureLibrary.ReportWriteFailure(failure);
+            return false;
         }, TaskScheduler.Default);
         return true;
     }

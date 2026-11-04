@@ -1298,7 +1298,10 @@ namespace KillerShot.Shell
                 return;
             }
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
-            if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.Delete([item.Id], item.Session));
+            if (!PresentConfirmation(dlg) || !TryChangeAlbum(() => CaptureLibrary.Delete([item.Id], item.Session))) return;
+            // The editor no longer has a capture to keep its marks in, so it closes the picture.
+            if (App.Instance.CurrentItem is { } open && open.Id == item.Id && open.Session == item.Session)
+                App.Instance.CompleteAlbumSwitch();
         }
     }
 }
