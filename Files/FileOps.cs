@@ -106,13 +106,14 @@ namespace KillerShot.Files
         /// </summary>
         private static List<WorkItem> Plan(IEnumerable<string> sources, string targetDir, bool move,
                                            List<string> dirsToCreate, FileOpResult result, CancellationToken ct,
-                                           string? directoryTarget = null)
+                                           string? directoryTarget = null, IReadOnlyDictionary<string, string>? renamed = null)
         {
             var work = new List<WorkItem>();
 
             foreach (string src in sources)
             {
                 ct.ThrowIfCancellationRequested();
+                string? rename = renamed != null && renamed.TryGetValue(src, out string? name) ? name : null;
 
                 if (File.Exists(src))
                 {
@@ -121,13 +122,13 @@ namespace KillerShot.Files
                     work.Add(new WorkItem
                     {
                         Source = src,
-                        Target = Path.Combine(targetDir, Path.GetFileName(src)),
+                        Target = rename ?? Path.Combine(targetDir, Path.GetFileName(src)),
                         Size   = size,
                     });
                 }
                 else if (Directory.Exists(src))
                 {
-                    string root = directoryTarget ?? Path.Combine(targetDir, Path.GetFileName(src.TrimEnd(Path.DirectorySeparatorChar)));
+                    string root = directoryTarget ?? rename ?? Path.Combine(targetDir, Path.GetFileName(src.TrimEnd(Path.DirectorySeparatorChar)));
                     if (IsLink(src))
                     {
                         if (move) work.Add(new WorkItem { Source = src, Target = root, IsLink = true });
@@ -231,10 +232,31 @@ namespace KillerShot.Files
                     result.Failed.Add((source, Services.LocaleManager.Loc("Str_Status_DropIntoSelf")));
             }
             if (result.Failed.Count > 0) return result;
+            // A source already in the target folder: moving it there changes nothing, the way
+            // Explorer treats it, and copying it there makes a duplicate beside it under a new
+            // top-level name instead of colliding every file inside with itself.
+            Dictionary<string, string>? renamed = null;
+            if (directoryTarget == null)
+            {
+                var kept = new List<string>();
+                foreach (string source in sources)
+                {
+                    string full = Path.GetFullPath(source).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    bool sameFolder = string.Equals(Path.GetDirectoryName(full), destination, StringComparison.OrdinalIgnoreCase);
+                    if (sameFolder && move) continue;
+                    if (sameFolder && (File.Exists(full) || Directory.Exists(full)))
+                    {
+                        renamed ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        renamed[source] = UniqueName(full, renamed.Values.ToDictionary(v => v, v => v, StringComparer.OrdinalIgnoreCase));
+                    }
+                    kept.Add(source);
+                }
+                sources = kept;
+            }
             if (move && allowFastMove && TryFastMoveDirectories(sources, targetDir, onConflict, onProgress, result, ct, replace, moveDirectory, renameFile))
                 return result;
 
-            try { work = Plan(sources, targetDir, move, dirsToCreate, result, ct, directoryTarget); }
+            try { work = Plan(sources, targetDir, move, dirsToCreate, result, ct, directoryTarget, renamed); }
             catch (OperationCanceledException) { result.Canceled = true; return result; }
 
             foreach (string d in dirsToCreate)
@@ -253,6 +275,12 @@ namespace KillerShot.Files
                 if (ct.IsCancellationRequested) { result.Canceled = true; return result; }
 
                 string target = item.Target;
+                if (string.Equals(Path.GetFullPath(item.Source), Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Failed.Add((item.Source, Services.LocaleManager.Loc("Str_Status_DropIntoSelf")));
+                    progress.ItemsDone++;
+                    continue;
+                }
 
                 if (File.Exists(target) || Directory.Exists(target))
                 {

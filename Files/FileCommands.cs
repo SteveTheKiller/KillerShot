@@ -10,6 +10,8 @@ public partial class FilesView
     /// <summary>The operating-system clipboard boundary. Defaults use Windows.</summary>
     public Action<IDataObject> WriteClipboard { get; set; } = data => Clipboard.SetDataObject(data, true);
     public Func<IDataObject?> ReadClipboard { get; set; } = Clipboard.GetDataObject;
+    /// <summary>Answers a name collision during copy or move. Null shows the conflict dialog.</summary>
+    public Func<ConflictInfo, ConflictChoice>? ConflictPrompt { get; set; }
     public FileOpResult? LastOperation { get; private set; }
     public string? CommandError { get; private set; }
     private CancellationTokenSource? _fileOperation;
@@ -300,7 +302,8 @@ public partial class FilesView
         try
         {
             result = await Task.Run(() => FileOps.CopyOrMove(paths, target, move,
-                info => Dispatcher.Invoke(() => cancellation.IsCancellationRequested ? ConflictChoice.Cancel : AskConflict(info)),
+                info => Dispatcher.Invoke(() => cancellation.IsCancellationRequested ? ConflictChoice.Cancel
+                    : ConflictPrompt?.Invoke(info) ?? AskConflict(info)),
                 progress => Dispatcher.BeginInvoke(() => CommandStatus.Text = progress.CurrentFile), cancellation.Token), cancellation.Token);
         }
         catch (OperationCanceledException) { result.Canceled = true; }

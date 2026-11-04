@@ -60,6 +60,7 @@ internal static class SelfTestFilesSafety
                     report.AppendLine("SCENARIO PASS: " + name);
                 }
                 await Case("containment", path => Containment(path, Check));
+                await Case("same-folder-paste", path => SameFolderPaste(path, Check));
                 await Case("cache", path => CacheRetention(path, Check, report));
                 await Case("size", path => RequestedSize(path, Check));
                 await Case("orientation", path => Orientations(path, Check, report));
@@ -69,11 +70,12 @@ internal static class SelfTestFilesSafety
                 await Case("cache-concurrency", path => CacheConcurrency(path, Check, report));
                 await Case("address-overflow", path => AddressOverflow(path, Check, report));
                 await Case("cache-workload-minimal", path => CacheWorkloadMinimal(path, Check, report));
-                string[] expectedCases = ["containment", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
+                string[] expectedCases = ["containment", "same-folder-paste", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
                 Check(checks >= 108 && expectedCases.All(name => report.ToString().Contains("SCENARIO PASS: " + name, StringComparison.Ordinal)),
-                    "all ten isolated safety scenarios complete with every repair regression selected");
+                    "all eleven isolated safety scenarios complete with every repair regression selected");
             }
             else if (scenario == "containment") await Containment(folder, Check);
+            else if (scenario == "same-folder-paste") await SameFolderPaste(folder, Check);
             else if (scenario == "cache") await CacheRetention(folder, Check, report);
             else if (scenario == "size") await RequestedSize(folder, Check);
             else if (scenario == "orientation") await Orientations(folder, Check, report);
@@ -598,6 +600,45 @@ internal static class SelfTestFilesSafety
         check(ordinary is { Succeeded: 1, Failed.Count: 0 }
             && File.ReadAllText(Path.Combine(outside, "A", "original.txt")) == "original bytes"
             && Directory.Exists(Path.Combine(outside, "A", "B")), "ordinary directory copy to a sibling remains supported");
+    }
+
+    /// <summary>Copy then paste into the folder that holds the copied folder, the way Explorer users
+    /// duplicate a folder, and cut then paste into the same folder, which Explorer treats as nothing.</summary>
+    private static async Task SameFolderPaste(string folder, Action<bool, string> check)
+    {
+        string source = Directory.CreateDirectory(Path.Combine(folder, "A")).FullName;
+        Directory.CreateDirectory(Path.Combine(source, "sub"));
+        File.WriteAllText(Path.Combine(source, "a.txt"), "a bytes");
+        File.WriteAllText(Path.Combine(source, "sub", "b.txt"), "b bytes");
+        using var files = new FilesView();
+        int conflicts = 0;
+        files.ConflictPrompt = _ => { conflicts++; return ConflictChoice.KeepBoth; };
+        check(await files.NavigateTo(folder), "same-folder paste fixture opens through public navigation");
+        DataObject Clip(int effect)
+        {
+            var data = new DataObject();
+            data.SetData(DataFormats.FileDrop, new[] { source });
+            data.SetData("Preferred DropEffect", new MemoryStream(BitConverter.GetBytes(effect)));
+            return data;
+        }
+        string[] Inside() => Directory.GetFileSystemEntries(source, "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(source, path)).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        string[] original = ["a.txt", "sub", Path.Combine("sub", "b.txt")];
+
+        files.ReadClipboard = () => Clip(1);
+        var copied = await files.PasteFiles();
+        check(conflicts == 0 && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase)
+            && File.ReadAllText(Path.Combine(folder, "A (2)", "a.txt")) == "a bytes"
+            && File.ReadAllText(Path.Combine(folder, "A (2)", "sub", "b.txt")) == "b bytes"
+            && copied is { Failed.Count: 0 },
+            $"same-folder folder copy lands beside the original without self-conflicts (conflicts={conflicts}, inside={string.Join("|", Inside())})");
+
+        conflicts = 0;
+        files.ReadClipboard = () => Clip(2);
+        var moved = await files.PasteFiles();
+        check(conflicts == 0 && (moved == null || moved.Succeeded == 0) && Directory.Exists(source)
+            && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase) && !Directory.Exists(Path.Combine(folder, "A (3)")),
+            $"same-folder cut and paste changes nothing (conflicts={conflicts}, succeeded={moved?.Succeeded})");
     }
 
     private static void WriteImage(string path, int width = 320, int height = 160)
