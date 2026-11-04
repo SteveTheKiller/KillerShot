@@ -345,10 +345,15 @@ namespace KillerShot.Shell
         {
             KsMapRows.Children.Clear();
             // Which cap ids are lit, and with what, on the layer being shown.
-            var lit = new Dictionary<string, KsBinding>();
+            // A key can do one thing in the editor and another in the album (Ctrl+M, Del, F2), so a
+            // cap keeps every binding and shows their actions together.
+            var lit = new Dictionary<string, List<KsBinding>>();
             foreach (var b in KsAll.Where(x => x.Layer == _ksLayer))
                 foreach (var cap in b.Caps)
-                    lit[cap] = b;
+                {
+                    if (!lit.TryGetValue(cap, out var list)) lit[cap] = list = [];
+                    list.Add(b);
+                }
 
             foreach (var row in KbRows)
             {
@@ -360,7 +365,10 @@ namespace KillerShot.Shell
                         panel.Children.Add(new Border { Width = KbUnit * w });
                         continue;
                     }
-                    panel.Children.Add(BuildKeyCap(cap, w, lit.TryGetValue(id, out var b) ? b : (KsBinding?)null));
+                    panel.Children.Add(lit.TryGetValue(id, out var bound)
+                        ? BuildKeyCap(cap, w, bound[0], string.Join(" / ", bound.Select(x => Loc(x.LabelKey)).Distinct()),
+                            string.Join("   ", bound.Select(x => x.Keys + "   " + Loc(x.LabelKey)).Distinct()))
+                        : BuildKeyCap(cap, w, null));
                 }
                 KsMapRows.Children.Add(panel);
             }
@@ -388,6 +396,21 @@ namespace KillerShot.Shell
 
         private KsLayer _ksLayer;
 
+        /// <summary>Every text on the keyboard map's caps for the plain or Ctrl layer, for self-tests.</summary>
+        internal IReadOnlyList<string> TestMapTexts(bool ctrl)
+        {
+            _ksLayer = ctrl ? KsLayer.Ctrl : KsLayer.Base;
+            BuildKeyboardMap();
+            var texts = new List<string>();
+            void Walk(DependencyObject node)
+            {
+                if (node is TextBlock { Text: { Length: > 0 } t }) texts.Add(t);
+                foreach (object child in LogicalTreeHelper.GetChildren(node)) if (child is DependencyObject d) Walk(d);
+            }
+            Walk(KsMapRows);
+            return texts;
+        }
+
         private void KsLayerBase_Click(object sender, RoutedEventArgs e) { _ksLayer = KsLayer.Base; BuildKeyboardMap(); }
         private void KsLayerCtrl_Click(object sender, RoutedEventArgs e) { _ksLayer = KsLayer.Ctrl; BuildKeyboardMap(); }
         private void KsLayerAlt_Click(object sender, RoutedEventArgs e) { _ksLayer = KsLayer.Alt; BuildKeyboardMap(); }
@@ -407,7 +430,7 @@ namespace KillerShot.Shell
         /// The one deliberate difference is color: KillerPDF has a single Accent, Killendar tints
         /// each key by its category (the neon set shared with the website map).
         /// </summary>
-        private Border BuildKeyCap(string cap, double w, KsBinding? bound)
+        private Border BuildKeyCap(string cap, double w, KsBinding? bound, string? label = null, string? detail = null)
         {
             var capText = new TextBlock
             {
@@ -463,7 +486,7 @@ namespace KillerShot.Shell
                 // (2026-07-30)
                 string catKey = "KsCat" + b.Cat;
                 key.SetResourceReference(Border.BorderBrushProperty, catKey);
-                act.Text = Loc(b.LabelKey);
+                act.Text = label ?? Loc(b.LabelKey);
                 act.SetResourceReference(TextBlock.ForegroundProperty, catKey);
                 act.Visibility = Visibility.Visible;
                 bar.SetResourceReference(Shape.FillProperty, catKey);
@@ -475,7 +498,7 @@ namespace KillerShot.Shell
                 key.RenderTransform = lift;
                 key.MouseEnter += (_, _2) =>
                 {
-                    _kbDetail?.Text = b.Keys + "   " + Loc(b.LabelKey);
+                    _kbDetail?.Text = detail ?? b.Keys + "   " + Loc(b.LabelKey);
                     lift.BeginAnimation(TranslateTransform.YProperty,
                         new DoubleAnimation(-3, TimeSpan.FromMilliseconds(90)));
                 };

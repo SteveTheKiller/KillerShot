@@ -36,6 +36,8 @@ internal static class SelfTestEditorLifetime
             report.Add("the color picker's Hex label and OK button come from the app language PASS");
             VideoMarkAndAlbumSizesAreLocalized();
             report.Add("the video mark's name and album sizes follow the app language PASS");
+            KeyboardMapShowsSharedKeys();
+            report.Add("a key with an editor and an album action shows both on the keyboard map PASS");
             AlbumManagerFollowsThemeAndEscape();
             report.Add("the album manager repaints with the theme and Escape closes an open drop-down first PASS");
             code = 0;
@@ -50,6 +52,18 @@ internal static class SelfTestEditorLifetime
             Application.Current.Shutdown(code);
         }
         return true;
+    }
+
+    private static void KeyboardMapShowsSharedKeys()
+    {
+        var editor = App.Instance.EditorWindow ?? throw new InvalidOperationException("No editor window.");
+        string L(string key) => (string)Application.Current.FindResource(key);
+        bool Shown(IReadOnlyList<string> texts, string key) => texts.Any(t => t.Contains(L(key), StringComparison.Ordinal));
+        var ctrl = editor.TestMapTexts(ctrl: true);
+        var plain = editor.TestMapTexts(ctrl: false);
+        var missing = new[] { ("Str_Img_Margin", ctrl), ("Str_Lib_MoveTo", ctrl), ("Str_KS_EditText", plain), ("Str_Lib_Note", plain),
+            ("Str_KS_Delete", plain), ("Str_KS_DeleteCapture", plain) }.Where(p => !Shown(p.Item2, p.Item1)).Select(p => p.Item1).ToArray();
+        if (missing.Length > 0) throw new InvalidOperationException("The keyboard map dropped: " + string.Join(", ", missing));
     }
 
     private static void AlbumManagerFollowsThemeAndEscape()
