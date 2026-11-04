@@ -24,6 +24,7 @@ namespace KillerShot.Services
             public string ImageHash { get; set; } = "";
             public string[] TargetFiles { get; set; } = Array.Empty<string>();
             public bool MetadataRemoved { get; set; }
+            public string[] Leftovers { get; set; } = Array.Empty<string>();
             public DateTime UpdatedUtc { get; set; } = DateTime.UtcNow;
         }
 

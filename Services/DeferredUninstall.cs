@@ -15,6 +15,7 @@ namespace KillerShot.Services
         public const string HelperArgument = "--complete-uninstall";
         public const string WorkerName = "KillerShot.Uninstall.exe";
         public const string ReceiptName = "status.json";
+        public const string RemovePrintScreenHelperArgument = "/remove-printscreen-helper";
         private readonly IInstallRelaunchProcesses _processes;
 
         public DeferredUninstall() : this(new InstallRelaunch.SystemProcesses()) { }
@@ -23,6 +24,9 @@ namespace KillerShot.Services
         public static bool IsHelperRequest(string[] args, string currentImage, string machineStagingRoot, string userStagingRoot)
         {
             if (Array.Exists(args, argument => string.Equals(argument, HelperArgument, StringComparison.OrdinalIgnoreCase))) return true;
+            // Removing the Print Screen helper is its own elevated, signature-checked switch, so a
+            // relaunch of the staged worker for it is never mistaken for a forged helper request.
+            if (args.Length == 1 && string.Equals(args[0], RemovePrintScreenHelperArgument, StringComparison.OrdinalIgnoreCase)) return false;
             if (!string.Equals(Path.GetFileName(currentImage), WorkerName, StringComparison.OrdinalIgnoreCase)) return false;
             string? operation = Path.GetDirectoryName(Path.GetFullPath(currentImage));
             if (operation == null) return false;
@@ -41,13 +45,14 @@ namespace KillerShot.Services
         }
 
         public int Start(string currentImage, string stagingRoot, string targetDirectory,
-            string[] ownedFiles, bool machine, string operationId)
+            string[] ownedFiles, bool machine, string operationId, string[]? leftovers = null)
         {
             string directory = OperationDirectory(stagingRoot, operationId);
             string receiptPath = Path.Combine(directory, ReceiptName);
             var receipt = new UninstallWorkflow.Receipt
             {
                 OperationId = operationId, Machine = machine,
+                Leftovers = leftovers ?? Array.Empty<string>(),
                 TargetDirectory = Path.GetFullPath(targetDirectory),
                 RemainingFiles = ownedFiles.Select(file => Path.Combine(Path.GetFullPath(targetDirectory), file)).ToArray()
             };

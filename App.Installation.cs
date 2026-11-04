@@ -114,6 +114,22 @@ namespace KillerShot
             }
         }
 
+        /// <summary>
+        /// A per-user uninstall removes the Print Screen helper from Program Files itself, while the
+        /// installed exe still exists, so the hidden worker never needs elevation. Silent mode never
+        /// prompts and leaves the helper for the receipt; a declined or failed prompt does the same.
+        /// Returns the helper path when it stays behind, null when it is gone or not ours to remove.
+        /// </summary>
+        internal static string? RemoveHelperBeforeUserUninstall(bool silent, string helperPath, string machineExe, Action removeElevated)
+        {
+            if (!File.Exists(helperPath) || File.Exists(machineExe)) return null;
+            if (silent) return helperPath;
+            try { removeElevated(); }
+            catch (Exception error) when (error is System.ComponentModel.Win32Exception or IOException
+                or UnauthorizedAccessException or System.Security.SecurityException) { }
+            return File.Exists(helperPath) ? helperPath : null;
+        }
+
         private static void RemovePerUserPrintScreenHelper()
         {
             if (!File.Exists(PrintScreenHelper.InstalledPath) || File.Exists(MachineInstallExe)) return;
@@ -640,8 +656,14 @@ namespace KillerShot
                 if (!confirm.Confirmed) return KillerFamily.Deployment.InstallerExitCodes.Cancelled;
             }
 
+            string? helperLeftover = machine ? null : RemoveHelperBeforeUserUninstall(silent,
+                PrintScreenHelper.InstalledPath, MachineInstallExe, RemovePerUserPrintScreenHelper);
             int result = new DeferredUninstall().Start(Process.GetCurrentProcess().MainModule!.FileName,
-                UninstallStagingRoot(machine), machine ? MachineInstallDir : InstallDir, InstalledFiles, machine, operationId);
+                UninstallStagingRoot(machine), machine ? MachineInstallDir : InstallDir, InstalledFiles, machine, operationId,
+                helperLeftover == null ? null : [helperLeftover]);
+            if (helperLeftover != null)
+                Console.Error.WriteLine("The Print Screen helper stays in " + helperLeftover + ". To remove it, run as administrator: KillerShot.exe "
+                    + DeferredUninstall.RemovePrintScreenHelperArgument);
             if (result == UninstallWorkflow.Pending && machine && requestedOperationId == null)
                 RemoveUserUninstallIntegration();
             Console.Error.WriteLine("Uninstall result: " + result + ". Status and retained helper files: " + operationDirectory);
@@ -669,7 +691,6 @@ namespace KillerShot
         /// place, so a failure here leaves an uninstall entry that still works.</summary>
         private static void RemoveUninstallIntegration(bool machine)
         {
-            if (!machine) RemovePerUserPrintScreenHelper();
             string startMenuDir = machine
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), AppName)
                 : StartMenuDir;

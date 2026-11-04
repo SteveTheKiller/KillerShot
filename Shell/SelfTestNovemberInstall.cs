@@ -24,6 +24,8 @@ internal static class SelfTestNovemberInstall
             report.Add(ReleaseImageIdentity(folder));
             StoreBuildDoesNotSelfUpdate();
             report.Add("a Store build reports updates through the Microsoft Store and never downloads the framework-dependent exe PASS");
+            PerUserHelperUninstall(folder);
+            report.Add("per-user uninstall removes the Print Screen helper before the worker, silent mode reports it as a leftover, and a helper relaunch is never rejected PASS");
             CompanionConfigurationRequired(folder);
             report.Add("configured companion requires complete launch arguments before publication is prepared PASS");
             ConfiguredCompanionLaunch(folder, fail: false);
@@ -127,6 +129,49 @@ internal static class SelfTestNovemberInstall
                 throw new InvalidOperationException($"The Store About card offered an update: text={host.UpdateText}, visible={host.UpdateVisible}, enabled={host.UpdateEnabled}.");
         }
         finally { UpdateService.IsStoreBuild = original; }
+    }
+
+    private static void PerUserHelperUninstall(string folder)
+    {
+        string root = Path.Combine(folder, "helper-uninstall");
+        string userRoot = Path.Combine(root, "user"), machineRoot = Path.Combine(root, "machine");
+        string worker = Path.Combine(DeferredUninstall.OperationDirectory(userRoot, Guid.NewGuid().ToString("N")), DeferredUninstall.WorkerName);
+        if (DeferredUninstall.IsHelperRequest(["/remove-printscreen-helper"], worker, machineRoot, userRoot))
+            throw new InvalidOperationException("A Print Screen helper relaunch from the uninstall worker is rejected before it can run.");
+
+        string helper = Path.Combine(machineRoot, "KillerShot.PrintScreen.exe");
+        Directory.CreateDirectory(machineRoot);
+        File.WriteAllText(helper, "helper");
+        string machineExe = Path.Combine(machineRoot, "KillerShot.exe");
+        int elevations = 0;
+        string? silentLeftover = App.RemoveHelperBeforeUserUninstall(silent: true, helper, machineExe, () => elevations++);
+        if (silentLeftover != helper || elevations != 0)
+            throw new InvalidOperationException($"Silent per-user uninstall asked for elevation or lost the helper: leftover={silentLeftover}, elevations={elevations}.");
+        string? interactive = App.RemoveHelperBeforeUserUninstall(silent: false, helper, machineExe, () => { elevations++; File.Delete(helper); });
+        if (interactive != null || elevations != 1 || File.Exists(helper))
+            throw new InvalidOperationException($"Interactive per-user uninstall did not remove the helper: leftover={interactive}, elevations={elevations}.");
+        File.WriteAllText(helper, "helper");
+        string? declined = App.RemoveHelperBeforeUserUninstall(silent: false, helper, machineExe,
+            () => throw new System.ComponentModel.Win32Exception(1223));
+        if (declined != helper) throw new InvalidOperationException("A declined helper removal was not reported as a leftover.");
+
+        string installed = Path.Combine(root, "installed");
+        Directory.CreateDirectory(installed);
+        string source = Path.Combine(root, "synthetic-source.exe");
+        File.WriteAllText(source, "synthetic image");
+        File.Copy(source, Path.Combine(installed, "KillerShot.exe"));
+        var processes = new UninstallProcesses();
+        var uninstall = new DeferredUninstall(processes);
+        string operation = Guid.NewGuid().ToString("N");
+        int started = uninstall.Start(source, userRoot, installed, ["KillerShot.exe"], false, operation, leftovers: [helper]);
+        if (started != UninstallWorkflow.Pending) throw new InvalidOperationException("Per-user deferred uninstall did not start: " + started);
+        processes.Worker = true;
+        string directory = DeferredUninstall.OperationDirectory(userRoot, operation);
+        int result = uninstall.RunWorker(Path.Combine(directory, DeferredUninstall.WorkerName), userRoot, installed, ["KillerShot.exe"],
+            false, operation, () => { }, attempts: 1, retryMilliseconds: 0, removeIntegration: () => { });
+        var receipt = UninstallWorkflow.ReadReceipt(Path.Combine(directory, DeferredUninstall.ReceiptName));
+        if (result != 0 || receipt.State != "Completed" || !receipt.Leftovers.Contains(helper))
+            throw new InvalidOperationException($"Per-user uninstall receipt: result={result}, state={receipt.State}, leftovers={string.Join(",", receipt.Leftovers)}.");
     }
 
     private sealed class StoreAboutHost : KillerShot.Features.About.IAboutHost
