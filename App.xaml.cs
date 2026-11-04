@@ -88,6 +88,7 @@ public partial class App : Application
         if (SelfTestThemeDump.TryRun(e.Args)) return;
         if (SelfTestNovemberInstall.TryRun(e.Args)) return;
         if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
+        if (SelfTestCrashLog.TryRun(e.Args)) return;
         if (SelfTestNovemberCapture.TryRun(e.Args)) return;
         if (SelfTestNovemberStorage.TryRun(e.Args)) return;
         if (SelfTestNovemberUi.TryRun(e.Args)) return;
@@ -173,6 +174,8 @@ public partial class App : Application
             Shutdown(installExit);
             return;
         }
+        // From here on this is the app itself: an exception nobody caught is logged and survived.
+        CrashLog.Install(this);
         // --demo: a scratch library of real app screenshots (DemoMode.cs), beside a working copy.
         bool demo = DemoMode.TryEnter(e.Args);
 
@@ -214,6 +217,7 @@ public partial class App : Application
         try { PrintScreenKey.RestoreLegacy(); }
         catch (Exception error) when (error is UnauthorizedAccessException or System.Security.SecurityException or IOException) { }
         Tray = new TrayHost();
+        CrashLog.Warn = message => Dispatcher.BeginInvoke(new Action(() => Tray?.ShowWarning(AppInfo.DisplayName, message)));
         CaptureLibrary.WriteFailed += error => Dispatcher.BeginInvoke(new Action(() =>
             Tray?.ShowWarning(LocaleManager.Loc("Str_Tray_SaveFailedTitle"), error)));
         Capture = new CaptureController(Tray) { HideEditor = HideEditorForCapture };

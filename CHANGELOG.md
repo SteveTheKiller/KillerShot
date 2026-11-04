@@ -42,6 +42,9 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - The shortcut recorder refuses chords Windows owns, such as Alt+F4 and Win key chords, and keeps listening. Alt+F4 could be recorded as a capture shortcut and then stopped closing windows in every app. A chord like that typed into the settings file by hand is ignored.
 - Global shortcuts come back when a shortcut recorder is left listening and the window is hidden to the tray, loses focus or closes its settings. Print Screen and the other shortcuts stayed off until the recorder was finished.
 - Deleting the open capture from the editor's menu closes it, and a capture deleted elsewhere while open becomes an ordinary picture that can still be saved to a file. Before, the editor kept failing to save it and would not open another picture until the window closed.
+- Ctrl+S on a PNG that is missing its end chunk saves a copy instead of crashing KillerShot and losing the edits.
+- One image that fails to open no longer blocks every later open request from the command line, and the stuck request no longer survives a restart.
+- An unexpected error no longer closes KillerShot silently. It is written to crash.log in the KillerShot folder under local app data, the tray shows a warning, and the app keeps running unless the failure is one no program can survive.
 
 ### Added
 - Files is a fifth library view (F9) with folder navigation, live updates, list, icons and details views, file commands, in-place rename, clipboard and drag and drop. Images open in the editor.
