@@ -56,7 +56,7 @@ namespace KillerShot.Shell
                 Settings.Set("EditorCarouselSide", StripDock.Side.ToString());
                 Settings.SetBool("EditorCarouselMinimized", StripDock.IsMinimized);
                 Settings.Set("EditorCarouselHeight", StripDock.PaneHeight.ToString("0", CultureInfo.InvariantCulture));
-                _strip.Relocalize();
+                _strip.RefreshDockText();
                 SyncEditorPaneMargin();
             };
             NavigationDock.LayoutChanged += () =>
@@ -64,7 +64,7 @@ namespace KillerShot.Shell
                 Settings.Set("CollectionSidebarSide", NavigationDock.Side.ToString());
                 Settings.SetBool("AlbumStripMinimized", NavigationDock.IsMinimized);
                 Settings.Set("AlbumStripWidth", NavigationDock.PaneWidth.ToString("0", CultureInfo.InvariantCulture));
-                _navigationStrip.Relocalize();
+                _navigationStrip.RefreshDockText();
                 SyncEditorPaneMargin();
             };
             ThemeManager.ThemeChanged += SyncEditorPaneMargin;

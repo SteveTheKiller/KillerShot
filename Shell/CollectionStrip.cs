@@ -50,6 +50,8 @@ namespace KillerShot.Shell
         private readonly DispatcherTimer _openDelay = new() { Interval = TimeSpan.FromMilliseconds(180) };
         private string? _pendingSource;
         private IReadOnlyList<CaptureItem> _items = [];
+        /// <summary>Reads the album's captures for a load; replaced in self-tests to count reads.</summary>
+        internal Func<IReadOnlyList<CaptureItem>> ItemsReader { get; set; } = () => CaptureLibrary.Items();
         private string _source = "all";          // all, c<id>, c0 (not in a collection), folder
         private bool _syncing;
         private volatile bool _disposed;
@@ -194,13 +196,20 @@ namespace KillerShot.Shell
             Load(keepCurrent: true);
         }
 
+        /// <summary>The dock's own tooltips, which name the side it is on. Docking, minimizing,
+        /// restoring and resizing change only these, so they never reload the album.</summary>
+        public void RefreshDockText()
+        {
+            _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
+            _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
+            _host.ResizeText = Loc("Str_Dock_Resize");
+        }
+
         public void Relocalize()
         {
             AutomationProperties.SetName(_picker, Loc("Str_Strip_Collection"));
             AutomationProperties.SetName(_browser, Loc("Str_Strip_Collection"));
-            _host.RestoreText = Loc("Str_Dock_Restore") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
-            _host.CollapseText = Loc("Str_Dock_Minimize") + "  (Alt+Shift+" + Arrow(_host.Side) + ")";
-            _host.ResizeText = Loc("Str_Dock_Resize");
+            RefreshDockText();
             Load(keepCurrent: true);
             for (int i = 0; i < _browser.Items.Count; i++)
                 if (_browser.ItemContainerGenerator.ContainerFromIndex(i) is ListBoxItem row
@@ -278,9 +287,10 @@ namespace KillerShot.Shell
                 _picker.SelectedItem = chosen;
                 _caption.Text = chosen.Content?.ToString() ?? "";
 
+                // One read of the album serves the collection previews and the strip alike.
+                var all = FolderCaptures.IsSource(_source) && !_albumMode ? [] : ItemsReader();
                 if (_albumMode)
                 {
-                    var all = CaptureLibrary.Items();
                     var known = collections.Select(c => c.Id).ToHashSet();
                     var membersByCollection = all.ToLookup(i => i.CollectionId);
                     var choices = new List<CollectionChoice>();
@@ -312,9 +322,9 @@ namespace KillerShot.Shell
                 _items = _source switch
                 {
                     var folder when FolderCaptures.IsSource(folder) => FolderCaptures.ItemsForSource(folder),
-                    "c0" => CaptureLibrary.Items().Where(i => i.CollectionId == null || !collections.Any(c => c.Id == i.CollectionId)).ToList(),
-                    "all" => CaptureLibrary.Items(),
-                    _ => CaptureLibrary.Items().Where(i => "c" + i.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source).ToList(),
+                    "c0" => all.Where(i => i.CollectionId == null || !collections.Any(c => c.Id == i.CollectionId)).ToList(),
+                    "all" => all,
+                    _ => all.Where(i => "c" + i.CollectionId?.ToString(CultureInfo.InvariantCulture) == _source).ToList(),
                 };
                 _count.Text = string.Format(CultureInfo.CurrentCulture, Loc(_items.Count == 1 ? "Str_Lib_CountOne" : "Str_Lib_Count"), _items.Count);
                 if (FolderCaptures.IsSource(_source) && FolderCaptures.StatusForSource(_source) is { } folderStatus)

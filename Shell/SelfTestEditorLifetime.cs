@@ -27,6 +27,11 @@ internal static class SelfTestEditorLifetime
             Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             CanceledDiscardKeepsReview();
             report.Add("Cancel on the discard prompt keeps the review, its bar and the picture PASS");
+            CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+            CaptureLibrary.BackgroundWork = false;
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            DockLayoutDoesNotReadLibrary();
+            report.Add("docking, minimizing and restoring the collection strip does not read the album again PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -39,6 +44,24 @@ internal static class SelfTestEditorLifetime
             Application.Current.Shutdown(code);
         }
         return true;
+    }
+
+    private static void DockLayoutDoesNotReadLibrary()
+    {
+        App.Instance.ShowEditor();
+        var editor = App.Instance.EditorWindow ?? throw new InvalidOperationException("No editor window.");
+        var strip = editor.TestStrip ?? throw new InvalidOperationException("No collection strip.");
+        int reads = 0;
+        var read = strip.ItemsReader;
+        strip.ItemsReader = () => { reads++; return read(); };
+        var dock = editor.TestStripDock;
+        int changes = 0;
+        dock.LayoutChanged += () => changes++;
+        var original = dock.Side;
+        foreach (var side in Enum.GetValues<KillerFamily.Layout.DockSide>().Append(original))
+            dock.DockTo(side);
+        if (changes == 0) throw new InvalidOperationException("Docking the strip raised no layout change.");
+        if (reads != 0) throw new InvalidOperationException($"Docking the strip {changes} times read the album {reads} times.");
     }
 
     private static void CanceledDiscardKeepsReview()
