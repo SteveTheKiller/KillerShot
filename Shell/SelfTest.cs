@@ -18,9 +18,20 @@ internal static class SelfTest
         int i = Array.FindIndex(args, a => a.Equals("--selftest", StringComparison.OrdinalIgnoreCase));
         if (i < 0) return false;
         string dir = i + 1 < args.Length ? args[i + 1] : Path.Combine(Path.GetTempPath(), "KillerShot-selftest");
+        // A switch is never a folder, and a handle that cannot be read is a usage error rather than
+        // a run that silently skips the window checks.
+        if (dir.StartsWith("--", StringComparison.Ordinal)) { exitCode = 2; return true; }
         IntPtr window = IntPtr.Zero;
         int w = Array.FindIndex(args, a => a.Equals("--window", StringComparison.OrdinalIgnoreCase));
-        if (w >= 0 && w + 1 < args.Length && long.TryParse(args[w + 1], out long hv)) window = new IntPtr(hv);
+        if (w >= 0)
+        {
+            string text = w + 1 < args.Length ? args[w + 1] : "";
+            bool hex = text.StartsWith("0x", StringComparison.OrdinalIgnoreCase);
+            if (!long.TryParse(hex ? text[2..] : text, hex ? System.Globalization.NumberStyles.HexNumber : System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture, out long hv) || hv == 0)
+            { exitCode = 2; return true; }
+            window = new IntPtr(hv);
+        }
 
         var log = new StringBuilder();
         try
