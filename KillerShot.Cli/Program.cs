@@ -617,7 +617,13 @@ public static class Program
         bool copied = false;
         string? copyError = null;
         if (copy) copied = ImageOutput.TryCopy(bmp, out copyError);
-        if (editor) OpenInEditor((saved ?? libraryRef)!);
+        // The capture may have reached only the clipboard when the library refused it; that is a
+        // warning, not a failed command.
+        if (editor)
+        {
+            if ((saved ?? libraryRef) is { } opened) OpenInEditor(opened);
+            else warnings.Add("The capture was not opened in the editor because it was neither saved nor added to the library.");
+        }
 
         if (o.Has("json"))
         {
