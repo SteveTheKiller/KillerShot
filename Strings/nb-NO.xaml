@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Oppdatering tilgjengelig: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Oppdateringer kommer via Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Album kan ikke ligge i en nettverksmappe. Velg en mappe på denne PC-en.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} kB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Appen lukkes og åpnes på nytt automatisk.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Laste ned og installere {0} {1}?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Oppdater</sys:String>

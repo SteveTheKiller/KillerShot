@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Actualización disponible: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Las actualizaciones llegan a través de Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Los álbumes no se pueden guardar en una carpeta de red. Elige una carpeta de este PC.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">La aplicación se cerrará y volverá a abrirse automáticamente.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">¿Descargar e instalar {0} {1}?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Actualizar</sys:String>

@@ -11,6 +11,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Na voljo je posodobitev: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Posodobitve prihajajo prek trgovine Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Albumov ni mogoče hraniti v omrežni mapi. Izberite mapo v tem računalniku.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Program se bo samodejno zaprl in ponovno odprl.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Prenesem in namestim {0} {1}?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Posodobi</sys:String>

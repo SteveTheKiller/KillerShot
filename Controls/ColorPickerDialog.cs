@@ -207,7 +207,7 @@ namespace KillerShot.Controls
             panel.Children.Add(inputRow);
 
             var hexRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
-            hexRow.Children.Add(new TextBlock { Text = "Hex", Foreground = R("MutedTextBrush"), FontSize = 11,
+            hexRow.Children.Add(new TextBlock { Text = L("Str_Color_Hex", "Hex color"), Foreground = R("MutedTextBrush"), FontSize = 11,
                 VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
             _hexBox = MakeTextBox(96);
             _hexBox.MaxLength = 7;
@@ -239,7 +239,7 @@ namespace KillerShot.Controls
             var cancel = new Button { Content = L("Str_Btn_Cancel", "Cancel"), Width = 74, IsCancel = true,
                 Style = Application.Current.TryFindResource("SurfaceButton") as Style };
             cancel.Click += (_, _) => { DialogResult = false; Close(); };
-            var ok = new Button { Content = "OK", Width = 74, Margin = new Thickness(8, 0, 0, 0), IsDefault = true,
+            var ok = new Button { Content = L("Str_Btn_OK", "OK"), Width = 74, Margin = new Thickness(8, 0, 0, 0), IsDefault = true,
                 Style = Application.Current.TryFindResource("OutlineButton") as Style };
             ok.Click += (_, _) => Accept();
             btnRow.Children.Add(cancel); btnRow.Children.Add(ok);

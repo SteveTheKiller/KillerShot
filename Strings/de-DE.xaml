@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Update verfügbar: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Updates kommen über den Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Alben können nicht in einem Netzwerkordner liegen. Wählen Sie einen Ordner auf diesem PC.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Die App wird geschlossen und automatisch neu gestartet.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} herunterladen und installieren?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Aktualisieren</sys:String>

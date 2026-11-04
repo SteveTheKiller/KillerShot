@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Жаңарту бар: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Жаңартулар Microsoft Store арқылы келеді</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Альбомдарды желілік қалтада сақтауға болмайды. Осы компьютердегі қалтаны таңдаңыз.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} КБ</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Қолданба автоматты түрде жабылып, қайта ашылады.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} жүктеп орнату керек пе?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Жаңарту</sys:String>

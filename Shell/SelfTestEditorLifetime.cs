@@ -32,6 +32,10 @@ internal static class SelfTestEditorLifetime
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
             DockLayoutDoesNotReadLibrary();
             report.Add("docking, minimizing and restoring the collection strip does not read the album again PASS");
+            ColorPickerIsLocalized();
+            report.Add("the color picker's Hex label and OK button come from the app language PASS");
+            VideoMarkAndAlbumSizesAreLocalized();
+            report.Add("the video mark's name and album sizes follow the app language PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
@@ -44,6 +48,61 @@ internal static class SelfTestEditorLifetime
             Application.Current.Shutdown(code);
         }
         return true;
+    }
+
+    private static void VideoMarkAndAlbumSizesAreLocalized()
+    {
+        try
+        {
+            LocaleManager.Apply(Locale.RuRU);
+            var tile = KillerShot.Controls.VideoMark.Wrap(new System.Windows.Controls.Image(), isVideo: true);
+            var host = new Window { Content = tile };
+            FrameworkElement? mark = null;
+            void Find(DependencyObject node)
+            {
+                if (node is FrameworkElement e && System.Windows.Automation.AutomationProperties.GetAutomationId(e) == "VideoAlbumMark") mark = e;
+                foreach (object child in LogicalTreeHelper.GetChildren(node)) if (child is DependencyObject d) Find(d);
+            }
+            Find(tile);
+            string? name = mark == null ? null : System.Windows.Automation.AutomationProperties.GetName(mark);
+            host.Close();
+            if (mark == null || name != (string)Application.Current.FindResource("Str_Capture_Video") || name == "Video")
+                throw new InvalidOperationException($"The video mark is named '{name}' in Russian.");
+
+            LocaleManager.Apply(Locale.Fr);
+            var editor = App.Instance.EditorWindow ?? throw new InvalidOperationException("No editor window.");
+            editor.TestRefreshAlbumManager();
+            var rows = editor.TestAlbumManagerDetails();
+            if (rows.Count == 0) throw new InvalidOperationException("The album manager listed no albums.");
+            if (rows.Any(r => r.EndsWith(" KB", StringComparison.Ordinal)))
+                throw new InvalidOperationException("Album sizes kept the English unit in French: " + rows[0]);
+        }
+        finally { LocaleManager.Apply(Locale.EnUS); }
+    }
+
+    private static void ColorPickerIsLocalized()
+    {
+        var resources = Application.Current.Resources;
+        object? ok = resources["Str_Btn_OK"], hex = resources["Str_Color_Hex"];
+        resources["Str_Btn_OK"] = "Übernehmen";
+        resources["Str_Color_Hex"] = "Hexwert";
+        try
+        {
+            var dialog = new KillerShot.Controls.ColorPickerDialog(null, Colors.SteelBlue);
+            var texts = new List<string>();
+            void Walk(object node)
+            {
+                if (node is System.Windows.Controls.TextBlock { Text: { } t }) texts.Add(t);
+                if (node is System.Windows.Controls.ContentControl { Content: string s }) texts.Add(s);
+                if (node is DependencyObject d)
+                    foreach (object child in LogicalTreeHelper.GetChildren(d)) Walk(child);
+            }
+            Walk(dialog);
+            dialog.Close();
+            if (texts.Contains("OK") || texts.Contains("Hex"))
+                throw new InvalidOperationException("The color picker kept English text: " + string.Join(" | ", texts.Where(t => t is "OK" or "Hex")));
+        }
+        finally { resources["Str_Btn_OK"] = ok; resources["Str_Color_Hex"] = hex; }
     }
 
     private static void DockLayoutDoesNotReadLibrary()

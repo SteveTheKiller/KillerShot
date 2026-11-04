@@ -23,7 +23,7 @@ internal static class VideoMark
             HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
             Child = glyph, IsHitTestVisible = false, Effect = new DropShadowEffect { BlurRadius = 6, ShadowDepth = 0, Opacity = 0.5 } };
         AutomationProperties.SetAutomationId(mark, "VideoAlbumMark");
-        AutomationProperties.SetName(mark, "Video");
+        mark.SetResourceReference(AutomationProperties.NameProperty, "Str_Capture_Video");
         grid.Children.Add(mark);
         return grid;
     }

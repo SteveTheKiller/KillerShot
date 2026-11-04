@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">更新が利用可能: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">更新は Microsoft Store から配信されます</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">アルバムはネットワーク フォルダーに保存できません。この PC のフォルダーを選んでください。</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">アプリは終了し、自動的に再起動します。</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} をダウンロードしてインストールしますか?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">更新</sys:String>

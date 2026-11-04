@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Elérhető frissítés: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">A frissítések a Microsoft Store-on keresztül érkeznek</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Az albumok nem lehetnek hálózati mappában. Válasszon mappát ezen a számítógépen.</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Az alkalmazás bezárul, és automatikusan újraindul.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Letölti és telepíti a következőt: {0} {1}?</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">Frissítés</sys:String>

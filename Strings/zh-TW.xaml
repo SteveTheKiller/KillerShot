@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">有可用更新：{0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">更新透過 Microsoft Store 提供</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">相簿不能放在網路資料夾中。請選擇此電腦上的資料夾。</sys:String>
+    <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">應用程式將關閉並自動重新開啟。</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">下載並安裝 {0} {1}？</sys:String>
     <sys:String x:Key="Str_About_UpdateNow">更新</sys:String>

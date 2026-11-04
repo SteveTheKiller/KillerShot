@@ -29,6 +29,13 @@ namespace KillerShot.Shell
         /// <summary>The open album manager, for self-tests.</summary>
         internal AlbumsDialog? TestAlbumsDialog => _albumsDialog;
 
+        internal void TestRefreshAlbumManager() => RefreshAlbumManager();
+
+        /// <summary>Each album row's detail line, as shown.</summary>
+        internal IReadOnlyList<string> TestAlbumManagerDetails() => AlbumList.Items.OfType<ListBoxItem>()
+            .Select(row => row.Content is StackPanel { Children.Count: > 1 } panel && panel.Children[1] is TextBlock details ? details.Text : "")
+            .ToList();
+
         /// <summary>How the album manager is shown: modal for the user, modeless for self-tests,
         /// which drive it while it is open.</summary>
         internal Func<AlbumsDialog, bool?> PresentAlbums { get; set; } = dialog => dialog.ShowDialog();
@@ -106,7 +113,7 @@ namespace KillerShot.Shell
                     var name = new TextBlock { Text = album.Name + (album.Active ? " (" + Loc("Str_Album_Active") + ")" : ""), FontWeight = album.Active ? FontWeights.SemiBold : FontWeights.Normal, TextTrimming = TextTrimming.CharacterEllipsis };
                     // The name takes the row's foreground, so a selected row's text follows DatabaseSelectionTextBrush.
                     content.Children.Add(name);
-                    var details = new TextBlock { Text = album.Modified.ToString("g") + "   " + (album.Bytes / 1024d).ToString("N0") + " KB", FontSize = 10, Margin = new Thickness(0, 3, 0, 0) };
+                    var details = new TextBlock { Text = album.Modified.ToString("g") + "   " + string.Format(Loc("Str_Size_Kb"), (album.Bytes / 1024d).ToString("N0")), FontSize = 10, Margin = new Thickness(0, 3, 0, 0) };
                     details.SetResourceReference(TextBlock.ForegroundProperty, "DatabaseMetadataBrush");
                     content.Children.Add(details);
                     var row = new ListBoxItem { Content = content, Tag = album, ToolTip = album.Path };
