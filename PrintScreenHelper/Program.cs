@@ -29,6 +29,10 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        // UI Access bypasses window isolation, so the helper never runs with .NET told to load
+        // extra code. KillerShot starts it without these; only another program would set them.
+        foreach (string name in new[] { "DOTNET_STARTUP_HOOKS", "DOTNET_ROOT", "DOTNET_ADDITIONAL_DEPS", "COR_ENABLE_PROFILING", "CORECLR_ENABLE_PROFILING" })
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(name))) return 4;
         if (args.Length != 4
             || !int.TryParse(args[0], NumberStyles.None, CultureInfo.InvariantCulture, out int processId)
             || !long.TryParse(args[1], NumberStyles.None, CultureInfo.InvariantCulture, out long windowValue))

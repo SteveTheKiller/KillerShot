@@ -54,6 +54,22 @@ internal static class SelfTestPrintScreenHelper
             report.Add($"Carried helper: {new FileInfo(extracted).Length} bytes, UI Access manifest={uiAccess}");
             Check(uiAccess, "KillerShot.exe must carry the UI Access build of the helper.");
 
+            // A UI Access process must not run code a user-level program hands it: the runtime
+            // ignores startup hooks, and the helper refuses to run with .NET overrides set.
+            string carried = File.ReadAllText(extracted);
+            int hookSetting = carried.IndexOf("\"System.StartupHookProvider.IsSupported\"", StringComparison.Ordinal);
+            bool hooksOff = hookSetting >= 0 && carried.AsSpan(hookSetting, Math.Min(80, carried.Length - hookSetting)).Contains("false", StringComparison.Ordinal);
+            report.Add($"Carried helper startup hooks disabled: {hooksOff}");
+            Check(hooksOff, "The carried helper must be built with startup hooks disabled.");
+            var hooked = new ProcessStartInfo(helper) { UseShellExecute = false, CreateNoWindow = true };
+            hooked.Environment["DOTNET_STARTUP_HOOKS"] = Path.Combine(folder, "missing-hook.dll");
+            using (var refused = Process.Start(hooked) ?? throw new InvalidOperationException("The helper did not start."))
+            {
+                if (!refused.WaitForExit(10000)) { refused.Kill(); throw new InvalidOperationException("The hooked helper did not exit."); }
+                report.Add($"Helper with DOTNET_STARTUP_HOOKS exit: {refused.ExitCode}");
+                Check(refused.ExitCode == 4, "The helper must refuse to run with a startup hook set.");
+            }
+
             PrintScreenHelper.PathOverride = helper;
             PrintScreenKey.Enabled = true;
             var captures = new List<ShortcutAction?>();

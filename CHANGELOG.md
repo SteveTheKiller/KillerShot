@@ -8,6 +8,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
 - Recording exports stay tied to their album, and failed cleanup identifies the original unencrypted file that remains.
 - Deleting a recording, switching albums, changing the album password or closing the album removes the decrypted copies made for playing its recordings. They used to stay unencrypted on disk until KillerShot exited.
+- The Print Screen helper ignores .NET startup hooks and refuses to run when .NET override variables are set, so another program running as you cannot load its own code into the helper's elevated window access.
 
 ### Fixed
 - Stored recordings import, export, play and prepare for dragging in the background, album mutations pause during recording work, and playback copies are reused.

@@ -12,6 +12,9 @@
     <SelfContained>false</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- A UI Access process must not load code named by DOTNET_STARTUP_HOOKS, which any program
+         running as the user can set (Program.cs also refuses the .NET override variables). -->
+    <StartupHookSupport>false</StartupHookSupport>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <LangVersion>latest</LangVersion>
