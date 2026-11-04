@@ -68,6 +68,8 @@ internal static class SelfTestOpenRequests
                 @"Local\KillerShot-test-missing-" + Guid.NewGuid().ToString("N"), TimeSpan.FromMilliseconds(150)); }
             catch (TimeoutException) { timedOut = true; }
             if (!timedOut) throw new InvalidOperationException("Unavailable receiver reported delivery success.");
+            if (Directory.EnumerateFiles(Path.Combine(folder, "unavailable"), "*.request").Any())
+                throw new InvalidOperationException("A request that timed out stayed queued, so a retry would deliver it twice.");
             report.Add("Unavailable receiver returns a bounded explicit delivery failure: PASS");
             code = 0;
         }

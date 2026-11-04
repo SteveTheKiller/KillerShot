@@ -76,6 +76,12 @@ internal sealed class ImageOpenRequests(string folder)
             catch (WaitHandleCannotBeOpenedException) { }
             await Task.Delay(50);
         }
-        throw new TimeoutException("The image request remains queued, but the running KillerShot did not confirm delivery in time.");
+        // Withdraw the request, so a retry is not delivered twice once the app catches up. An app
+        // that already took it has written the acknowledgment first: that counts as delivered.
+        if (File.Exists(request + ".ack")) { File.Delete(request + ".ack"); return; }
+        try { File.Delete(request); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+        if (File.Exists(request + ".ack")) { File.Delete(request + ".ack"); return; }
+        throw new TimeoutException("The running KillerShot did not confirm delivery in time, so the request was withdrawn.");
     }
 }
