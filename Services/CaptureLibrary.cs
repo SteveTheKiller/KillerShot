@@ -810,8 +810,24 @@ internal static partial class CaptureLibrary
         {
             var dir = new DirectoryInfo(recent);
             if (!dir.Exists) return;
+            // A picture the history limit would prune the moment it arrived stays a file in Recent:
+            // importing it would store it, prune it and then delete the file, losing it entirely.
+            string? kind;
+            int amount, room;
+            lock (_gate)
+            {
+                if (!ReferenceEquals(_db, database) || database == null) return;
+                (kind, amount) = ParseKeep(Keep);
+                room = kind == "count" ? Math.Max(0, amount - Count) : int.MaxValue;
+            }
+            DateTime cutoff = kind == "days" ? DateTime.Now.AddDays(-amount) : DateTime.MinValue;
+            var keep = dir.GetFiles("*.png")
+                .Where(f => (RecentCaptures.TakenFrom(f) ?? f.LastWriteTime) >= cutoff)
+                .OrderByDescending(f => RecentCaptures.TakenFrom(f) ?? f.LastWriteTime).Take(room)
+                .Select(f => f.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var file in dir.GetFiles("*.png").OrderBy(f => f.Name, StringComparer.Ordinal))
             {
+                if (!keep.Contains(file.FullName)) continue;
                 try
                 {
                     lock (PendingWriter)

@@ -34,6 +34,7 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "album-network-refused") NetworkAlbumRefused(folder);
             else if (scenario == "album-rekey-leftover") RekeyLeftover(folder);
             else if (scenario == "album-password-reopen-failure") PasswordReopenFailure(folder);
+            else if (scenario == "album-legacy-import-keep") await LegacyImportKeep(folder);
             else if (scenario == "settings-locked-read") LockedSettingsRead(folder);
             else if (scenario == "album-decode-responsive") await DecodeResponsive(folder, log);
             else if (scenario == "folder-continuous-events") await ContinuousFolderEvents(folder);
@@ -475,6 +476,34 @@ internal static class SelfTestNovemberStorage
         bool left = File.Exists(leftover);
         CaptureLibrary.Close();
         if (left) throw new InvalidOperationException("A verified open kept an abandoned rekeyed album copy.");
+    }
+
+    /// <summary>The one-time import of the old Recent folder under a "keep 1 day" limit: a week-old
+    /// screenshot must not be imported, pruned and deleted from disk in one go.</summary>
+    private static async Task LegacyImportKeep(string folder)
+    {
+        Settings.UseFolder(folder);
+        SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+        string library = Path.Combine(folder, "library");
+        CaptureLibrary.UseFolder(library);
+        CaptureLibrary.BackgroundWork = false;
+        if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+        CaptureLibrary.Keep = "days:1";
+        CaptureLibrary.Close();
+        string recent = Directory.CreateDirectory(Path.Combine(library, "Recent")).FullName;
+        string old = Path.Combine(recent, "old.png");
+        ImageOutput.SavePng(BitmapSource.Create(4, 4, 96, 96, PixelFormats.Bgra32, null, new byte[64], 16), old);
+        File.SetLastWriteTime(old, DateTime.Now.AddDays(-7));
+        CaptureLibrary.UseFolder(library);
+        CaptureLibrary.BackgroundWork = true;
+        try
+        {
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            await Task.Delay(3000);
+            if (!File.Exists(old) && CaptureLibrary.Items().Count == 0)
+                throw new InvalidOperationException("The legacy import deleted a week-old screenshot that the keep limit pruned at once.");
+        }
+        finally { CaptureLibrary.BackgroundWork = false; CaptureLibrary.Close(); }
     }
 
     /// <summary>Setting a password swaps in the re-encrypted album; when it then cannot be opened,
