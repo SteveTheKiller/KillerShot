@@ -28,13 +28,13 @@ internal static class SelfTestCrashLog
             CrashLog.Warn = message => warned = message;
             Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             CrashLog.Install(Application.Current);
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => throw new InvalidOperationException("probe")));
+            _ = Application.Current.Dispatcher.BeginInvoke(new Action(() => throw new InvalidOperationException("probe")));
             await Task.Delay(500);
             string log = File.Exists(CrashLog.LogPath) ? File.ReadAllText(CrashLog.LogPath) : "";
             if (!log.Contains("probe", StringComparison.Ordinal) || warned == null || !warned.Contains("probe", StringComparison.Ordinal))
                 throw new InvalidOperationException($"An unhandled UI exception was not logged and reported: log={log.Length} chars, warned={warned}.");
             report.Add("an unhandled UI-thread exception is logged to crash.log, reported, and the app keeps running PASS");
-            Task.Run(() => throw new InvalidOperationException("unobserved probe"));
+            _ = Task.Run(() => throw new InvalidOperationException("unobserved probe"));
             await Task.Delay(300);
             GC.Collect();
             GC.WaitForPendingFinalizers();
