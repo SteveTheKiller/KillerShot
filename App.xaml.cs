@@ -90,6 +90,7 @@ public partial class App : Application
         if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
         if (SelfTestCrashLog.TryRun(e.Args)) return;
         if (SelfTestAppLifetime.TryRun(e.Args)) return;
+        if (SelfTestEditorLifetime.TryRun(e.Args)) return;
         if (SelfTestNovemberCapture.TryRun(e.Args)) return;
         if (SelfTestNovemberStorage.TryRun(e.Args)) return;
         if (SelfTestNovemberUi.TryRun(e.Args)) return;

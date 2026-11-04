@@ -57,9 +57,10 @@ public partial class MainWindow
     private void DiscardReview()
     {
         if (!InReview) return;
+        // Cancel on the discard prompt keeps the picture, so the review stays with it.
+        if (!App.Instance.SetDocument(null)) return;
         _review = null;
         SyncReview();
-        App.Instance.SetDocument(null);
         StatusText.Text = Loc("Str_Review_Discarded");
     }
 
