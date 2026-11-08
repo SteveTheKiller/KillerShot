@@ -11,7 +11,6 @@ public sealed partial class Browser
     private readonly List<(string OldPath, string NewPath)> _renames = [];
     private bool _watchOverflow;
     private bool _flushing;
-    private long _watchStarted;
     private const int RelistThreshold = 200;
 
     private void StartWatching(string folder)
@@ -45,7 +44,6 @@ public sealed partial class Browser
         _touched.Clear();
         _renames.Clear();
         _watchOverflow = false;
-        _watchStarted = 0;
         if (_watcher == null) return;
         _watcher.Created -= OnFileChange;
         _watcher.Deleted -= OnFileChange;
@@ -79,12 +77,10 @@ public sealed partial class Browser
             if (overflow) _watchOverflow = true;
             if (path.Length > 0) _touched.Add(path);
             if (previous != null) { _touched.Add(previous); _renames.Add((previous, path)); }
-            if (_watchStarted == 0) _watchStarted = System.Diagnostics.Stopwatch.GetTimestamp();
             _watchDebounce ??= CreateWatchTimer();
-            _watchDebounce.Stop();
-            double elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(_watchStarted).TotalMilliseconds;
-            _watchDebounce.Interval = TimeSpan.FromMilliseconds(Math.Max(1, Math.Min(400, 1500 - elapsed)));
-            _watchDebounce.Start();
+            // A pending refresh keeps its deadline while more filesystem events arrive.
+            // The flush schedules the next batch when changes arrive during its worker read.
+            if (!_flushing && !_watchDebounce.IsEnabled) _watchDebounce.Start();
         }, DispatcherPriority.Background);
     }
 
@@ -105,7 +101,6 @@ public sealed partial class Browser
         bool relist = _watchOverflow || _touched.Count > RelistThreshold;
         string[] touched = _touched.ToArray();
         var renames = _renames.ToArray();
-        _watchStarted = 0;
         _touched.Clear();
         _renames.Clear();
         _watchOverflow = false;
