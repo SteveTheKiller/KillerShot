@@ -7,8 +7,6 @@ on:
         description: Version to verify, without the v prefix. Leave blank for the latest release.
         required: false
         type: string
-  schedule:
-    - cron: '37 */6 * * *'
 
 permissions:
   actions: read
