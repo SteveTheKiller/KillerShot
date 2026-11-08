@@ -133,7 +133,7 @@
         </Popup>
 
         <Grid Grid.Row="1">
-            <files:FilesView x:Name="FileBrowser" Visibility="Collapsed"/>
+            <files:FilesWorkspace x:Name="FileBrowser" Visibility="Collapsed"/>
             <!-- Shelves, Grid and Timeline: virtualized rows built in code. -->
             <ItemsControl x:Name="RowsList" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True"

@@ -332,6 +332,7 @@ base: { Esc:['help','Close a card, go back from the library, or cancel'], F1:['h
   Left:['appt','Move the selected mark'], Right:['appt','Move the selected mark'], Up:['appt','Move the selected mark'], Down:['appt','Move the selected mark'],
   PrtSc:['file','Capture a region'] },
 ctrl: { D0:['view','Fit to the window'], D1:['view','Actual size (100%)'], Equals:['view','Zoom in'], Minus:['view','Zoom out'],
+  T:['view','Files: New tab'], W:['view','Files: Close tab'], Tab:['view','Files: next tab (Shift: previous)'],
   Z:['appt','Undo'], Y:['appt','Redo'], C:['appt','Copy the finished picture'],
   N:['file','Capture a region'], L:['file','Show or hide the capture library'], F:['file','Search the library'], R:['file','Start or stop a video recording'],
   O:['file','Open an image'], S:['file','Save'], P:['file','Print'], PrtSc:['file','Capture the monitor under the mouse'] },
@@ -339,6 +340,7 @@ alt: { M:['view','Hide or show the toolbar'], PrtSc:['file','Capture the active 
 shift: { Enter:['appt','Start a new line of text'], Left:['appt','Move the selected mark 10 px'], Right:['appt','Move the selected mark 10 px'],
   Up:['appt','Move the selected mark 10 px'], Down:['appt','Move the selected mark 10 px'], PrtSc:['file','Capture all monitors'] },
 ctrlshift: { D1:['view','Small icons'], D2:['view','Large icons'], D3:['view','No text'], D4:['view','Text beside the icons'],
+  Tab:['view','Files: next tab (Shift: previous)'],
   D5:['view','Text under the icons'], D6:['view','Text only'], Z:['appt','Redo'], S:['file','Save as'], PrtSc:['file','Start or stop a video recording'] },
 altshift: { G:['view','Film Grain'], Left:['view','Sidebar on the left'], Right:['view','Sidebar on the right'],
   Up:['view','Carousel at the top'], Down:['view','Carousel at the bottom'] } };
@@ -407,6 +409,11 @@ window.addEventListener('blur', function(){ layer = 'base'; paint(); });
 document.addEventListener('kshot-languagechange', function(){
   var label = document.querySelector('[data-i18n="hk_files"]');
   if (label) KBL.base.F9[1] = label.textContent;
+  [['T','hk_newtab'],['W','hk_closetab'],['Tab','hk_nexttab']].forEach(function(pair){
+    var row = document.querySelector('[data-files-key="' + pair[1] + '"]');
+    if (row) KBL.ctrl[pair[0]][1] = row.textContent;
+  });
+  KBL.ctrlshift.Tab[1] = KBL.ctrl.Tab[1];
   paint();
 });
 paint();
@@ -474,6 +481,9 @@ window.addEventListener('resize', fit);
 <div class="kbd-row"><span class="k">Ctrl + plus / minus</span><span class="d" data-i18n="hk_zoom">Zoom in and out</span></div>
 <div class="kbd-row"><span class="k">F5 / F6 / F7 / F8</span><span class="d" data-i18n="hk_views">Library as shelves, one big carousel, a grid or a timeline</span></div>
 <div class="kbd-row"><span class="k">F9</span><span class="d" data-i18n="hk_files">Files</span></div>
+<div class="kbd-row"><span class="k">Ctrl + T</span><span class="d" data-files-key="hk_newtab"><span data-i18n="hk_files">Files</span>: <span data-i18n="hk_newtab">New tab</span></span></div>
+<div class="kbd-row"><span class="k">Ctrl + W</span><span class="d" data-files-key="hk_closetab"><span data-i18n="hk_files">Files</span>: <span data-i18n="hk_closetab">Close tab</span></span></div>
+<div class="kbd-row"><span class="k">Ctrl + Tab / Ctrl + Shift + Tab</span><span class="d" data-files-key="hk_nexttab"><span data-i18n="hk_files">Files</span>: <span data-i18n="hk_nexttab">next tab (Shift: previous)</span></span></div>
 <div class="kbd-row"><span class="k">Ctrl + Shift + 1 to 6</span><span class="d" data-i18n="hk_tbstyle">Toolbar style: small or large icons, then no text, text beside, text under or text only</span></div>
 <div class="kbd-row"><span class="k">Alt + M</span><span class="d" data-i18n="hk_tbhide">Hide or show the toolbar</span></div>
 <div class="kbd-row"><span class="k">Alt + Shift + G</span><span class="d" data-i18n="hk_grain">Turn Film Grain on or off</span></div>

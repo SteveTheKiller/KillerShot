@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Renommage impossible - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Fichiers</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrer ces résultats (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nouvel onglet  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Fermer l'onglet  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">onglet suivant (Shift : précédent)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Tous les onglets</sys:String>
 </ResourceDictionary>

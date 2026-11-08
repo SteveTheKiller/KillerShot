@@ -70,7 +70,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Holding Alt while clicking during a region capture no longer drags the dimmed screen off its monitor, which made the selection land on the wrong pixels.
 
 ### Added
-- Files is a fifth library view (F9) with folder navigation, live updates, list, icons and details views, file commands, in-place rename, clipboard and drag and drop. Images open in the editor.
+- Files (F9) adds KillerShell-style folder tabs that retain their state across library switches and restarts, with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 

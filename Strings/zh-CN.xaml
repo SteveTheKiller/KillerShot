@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">无法重命名 - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">文件</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">筛选这些结果（Ctrl+F）</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">新建标签页  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">关闭标签页  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">下一个标签页（Shift：上一个）</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">所有标签页</sys:String>
 </ResourceDictionary>

@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Umbenennen nicht möglich - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Dateien</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Diese Ergebnisse filtern (Strg+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Neuer Tab  (Strg+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Tab schließen  (Strg+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">nächster Tab (Shift: voriger)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Alle Tabs</sys:String>
 </ResourceDictionary>

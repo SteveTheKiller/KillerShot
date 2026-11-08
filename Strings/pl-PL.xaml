@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Nie udało się zmienić nazwy - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Pliki</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtruj te wyniki (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nowa karta  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Zamknij kartę  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">następna karta (Shift: poprzednia)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Wszystkie karty</sys:String>
 </ResourceDictionary>

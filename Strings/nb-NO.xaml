@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Kunne ikke gi nytt navn - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Filer</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrer disse resultatene  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Ny fane  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Lukk fane  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">neste fane (Shift: forrige)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Alle faner</sys:String>
 </ResourceDictionary>

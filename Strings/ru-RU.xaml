@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Не удалось переименовать - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Файлы</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Отфильтровать эти результаты (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Новая вкладка  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Закрыть вкладку  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">следующая вкладка (Shift: предыдущая)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Все вкладки</sys:String>
 </ResourceDictionary>

@@ -99,12 +99,14 @@ namespace KillerShot.Shell
         private string _captureSearch = "";
         private bool _syncingSearch;
         public bool FilesActive => _view == "files";
-        public Files.FilesView Files => FileBrowser;
+        public Files.FilesView Files => FileBrowser.ActiveView;
+        public Files.FilesWorkspace FilesWorkspace => FileBrowser;
         public Task<bool> FilesNavigation { get; private set; } = Task.FromResult(false);
-        private void NavigateFilesSource()
+        private void NavigateFilesSource(bool initialize = false)
         {
             string path = FolderCaptures.IsSource(_source) ? FolderCaptures.PathForSource(_source) : "";
-            FilesNavigation = FileBrowser.NavigateTo(string.IsNullOrWhiteSpace(path) ? CaptureSettings.OutputFolder : path);
+            string folder = string.IsNullOrWhiteSpace(path) ? CaptureSettings.OutputFolder : path;
+            FilesNavigation = initialize ? FileBrowser.EnsureInitialized(folder) : Files.NavigateTo(folder);
         }
         private string _group = "date";
         private IReadOnlyList<CaptureItem> _items = [];
@@ -131,6 +133,13 @@ namespace KillerShot.Shell
             _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" or "files" ? Settings.Get("LibraryView")! : "shelves";
             _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
             FileBrowser.ResultsChanged += UpdateFilesCount;
+            FileBrowser.ActiveChanged += () =>
+            {
+                if (!FilesActive) return;
+                _syncingSearch = true;
+                try { SearchBox.Text = Files.Navigation.FilterText; }
+                finally { _syncingSearch = false; }
+            };
 
             BigFlow.ThumbnailSource = CaptureLibrary.RequestThumb;
             BigFlow.DeferHiddenLoading = true;
@@ -203,8 +212,8 @@ namespace KillerShot.Shell
                 RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = LockPanel.Visibility = PendingBar.Visibility = Visibility.Collapsed;
                 FileBrowser.Visibility = Visibility.Visible;
                 UpdateFilesCount();
-                if (FileBrowser.Navigation.CurrentFolder.Length == 0)
-                    NavigateFilesSource();
+                if (Files.Navigation.CurrentFolder.Length == 0)
+                    NavigateFilesSource(initialize: true);
                 return;
             }
             FileBrowser.Visibility = Visibility.Collapsed;
@@ -698,16 +707,14 @@ namespace KillerShot.Shell
         public void SetView(string view)
         {
             if (view is not ("shelves" or "flow" or "grid" or "timeline" or "files")) return;
-            bool enteringFiles = view == "files" && !FilesActive;
             if (!FilesActive) _captureSearch = SearchBox.Text;
             _view = view;
             _searchDelay.Stop();
             _syncingSearch = true;
-            try { SearchBox.Text = FilesActive ? FileBrowser.Navigation.FilterText : _captureSearch; }
+            try { SearchBox.Text = FilesActive ? Files.Navigation.FilterText : _captureSearch; }
             finally { _syncingSearch = false; }
             SyncSearchPresentation();
             Settings.Set("LibraryView", view);
-            if (enteringFiles) NavigateFilesSource();
             Reload();
             ViewChanged?.Invoke();
         }
@@ -727,7 +734,7 @@ namespace KillerShot.Shell
             SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             if (SearchAnchor != null) SearchAnchor.Tag = SearchBox.Text.Length > 0 ? "on" : null;
             if (_syncingSearch) return;
-            if (FilesActive) { FileBrowser.SetFilter(SearchBox.Text); return; }
+            if (FilesActive) { Files.SetFilter(SearchBox.Text); return; }
             _searchDelay.Stop();
             _searchDelay.Start();
         }
@@ -735,7 +742,7 @@ namespace KillerShot.Shell
         private void UpdateFilesCount()
         {
             if (!FilesActive) return;
-            var entries = CollectionViewSource.GetDefaultView(FileBrowser.Navigation.Results).Cast<Files.FileEntry>().ToArray();
+            var entries = CollectionViewSource.GetDefaultView(Files.Navigation.Results).Cast<Files.FileEntry>().ToArray();
             CountText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Sum_Counts"), entries.Count(entry => entry.IsDirectory), entries.Count(entry => !entry.IsDirectory));
             CountChanged?.Invoke(CountText.Text);
         }

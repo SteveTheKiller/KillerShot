@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">নাম পরিবর্তন করা যায়নি - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">ফাইলগুলি</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">এই ফলাফলগুলি ফিল্টার করুন (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">নতুন ট্যাব  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">ট্যাব বন্ধ করুন  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">পরের ট্যাব (Shift: আগেরটি)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">সব ট্যাব</sys:String>
 </ResourceDictionary>

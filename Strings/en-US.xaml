@@ -707,4 +707,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Could not rename - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Files</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filter these results (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">New tab  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Close tab  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">next tab (Shift: previous)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">All tabs</sys:String>
 </ResourceDictionary>

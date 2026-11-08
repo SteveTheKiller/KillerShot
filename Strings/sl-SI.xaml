@@ -697,4 +697,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Preimenovanje ni uspelo: {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Datoteke</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtriraj te rezultate (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nov zavihek  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Zapri zavihek  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">naslednji zavihek (Shift: prejšnji)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Vsi zavihki</sys:String>
 </ResourceDictionary>

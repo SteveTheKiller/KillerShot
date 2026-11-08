@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Yeniden adlandırılamadı - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Dosyalar</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Bu sonuçları filtrele (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Yeni sekme  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Sekmeyi kapat  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">sonraki sekme (Shift: önceki)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Tüm sekmeler</sys:String>
 </ResourceDictionary>

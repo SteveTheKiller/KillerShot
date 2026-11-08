@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Não foi possível renomear - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Arquivos</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrar estes resultados (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nova guia  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Fechar guia  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">próxima guia (Shift: anterior)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Todas as guias</sys:String>
 </ResourceDictionary>

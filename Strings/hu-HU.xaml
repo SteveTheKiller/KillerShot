@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Nem sikerült átnevezni - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Fájlok</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Az eredmények szűrése (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Új lap (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Lap bezárása (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">következő lap (Shift: előző)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Minden lap</sys:String>
 </ResourceDictionary>

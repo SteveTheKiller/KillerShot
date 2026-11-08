@@ -95,13 +95,13 @@
             </Border>
         </DataTemplate>
     </UserControl.Resources>
-    <local:PickerBorder Margin="{DynamicResource PaneOuterMargin}" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource PaneEdgeBrush}" BorderThickness="{DynamicResource PaneEdgeSideThickness}" CornerRadius="{DynamicResource PanelCornerRadius}" Effect="{DynamicResource PaneShadowEffect}">
+    <local:PickerBorder x:Name="PaneFrame" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource PaneEdgeBrush}" BorderThickness="{DynamicResource PaneEdgeSideThickness}" CornerRadius="{DynamicResource PanelCornerRadius}" Effect="{DynamicResource PaneShadowEffect}">
         <DockPanel PreviewKeyDown="Files_KeyDown">
-            <DockPanel DockPanel.Dock="Bottom" LastChildFill="True">
+            <DockPanel x:Name="StatusBar" DockPanel.Dock="Bottom" LastChildFill="True" MinHeight="24" Background="{DynamicResource MenuBackgroundBrush}">
                 <Button x:Name="CancelOperationButton" DockPanel.Dock="Right" Visibility="Collapsed" Content="{DynamicResource Str_Btn_Cancel}" Style="{StaticResource SurfaceButton}" Click="CancelOperation_Click" />
                 <TextBlock x:Name="CommandStatus" FontFamily="{DynamicResource UiFont}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="8,2" />
             </DockPanel>
-            <DockPanel DockPanel.Dock="Top">
+            <DockPanel x:Name="MenuBars" DockPanel.Dock="Top" Background="{DynamicResource MenuBackgroundBrush}">
                 <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="{DynamicResource MenuBackgroundBrush}">
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0">
                         <Button x:Name="NavBackBtn" Style="{StaticResource PaneViewButton}" ToolTip="{DynamicResource Str_TT_Back}" Click="Back_Click">

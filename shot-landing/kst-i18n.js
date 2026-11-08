@@ -2652,3 +2652,25 @@ I18N["uk"].shot_files = "Перегляд файлів у темній темі.
 I18N["vi"].shot_files = "Chế độ xem tệp với giao diện tối.";
 I18N["zh-cn"].shot_files = "Dark 主题下的文件视图。";
 I18N["zh"].shot_files = "Dark 主題下的檔案檢視。";
+
+// Tab actions use the same translations as the desktop shortcut list.
+Object.assign(I18N["bn"] || (I18N["bn"] = {}), {"hk_newtab":"নতুন ট্যাব","hk_closetab":"ট্যাব বন্ধ করুন","hk_nexttab":"পরের ট্যাব (Shift: আগেরটি)"});
+Object.assign(I18N["cs"] || (I18N["cs"] = {}), {"hk_newtab":"Nová karta","hk_closetab":"Zavřít kartu","hk_nexttab":"další karta (Shift: předchozí)"});
+Object.assign(I18N["de"] || (I18N["de"] = {}), {"hk_newtab":"Neuer Tab  (Strg+T)","hk_closetab":"Tab schließen  (Strg+W)","hk_nexttab":"nächster Tab (Shift: voriger)"});
+Object.assign(I18N["en"] || (I18N["en"] = {}), {"hk_newtab":"New tab","hk_closetab":"Close tab","hk_nexttab":"next tab (Shift: previous)"});
+Object.assign(I18N["es"] || (I18N["es"] = {}), {"hk_newtab":"Nueva pestaña","hk_closetab":"Cerrar pestaña","hk_nexttab":"pestaña siguiente (Shift: anterior)"});
+Object.assign(I18N["fr"] || (I18N["fr"] = {}), {"hk_newtab":"Nouvel onglet","hk_closetab":"Fermer l'onglet","hk_nexttab":"onglet suivant (Shift : précédent)"});
+Object.assign(I18N["hu"] || (I18N["hu"] = {}), {"hk_newtab":"Új lap","hk_closetab":"Lap bezárása","hk_nexttab":"következő lap (Shift: előző)"});
+Object.assign(I18N["it"] || (I18N["it"] = {}), {"hk_newtab":"Nuova scheda","hk_closetab":"Chiudi scheda","hk_nexttab":"scheda successiva (Shift: precedente)"});
+Object.assign(I18N["ja"] || (I18N["ja"] = {}), {"hk_newtab":"新しいタブ","hk_closetab":"タブを閉じる","hk_nexttab":"次のタブ (Shift: 前へ)"});
+Object.assign(I18N["kk"] || (I18N["kk"] = {}), {"hk_newtab":"Жаңа қойынды","hk_closetab":"Қойындыны жабу","hk_nexttab":"келесі қойынды (Shift: алдыңғы)"});
+Object.assign(I18N["nb"] || (I18N["nb"] = {}), {"hk_newtab":"Ny fane","hk_closetab":"Lukk fane","hk_nexttab":"neste fane (Shift: forrige)"});
+Object.assign(I18N["pl"] || (I18N["pl"] = {}), {"hk_newtab":"Nowa karta","hk_closetab":"Zamknij kartę","hk_nexttab":"następna karta (Shift: poprzednia)"});
+Object.assign(I18N["pt"] || (I18N["pt"] = {}), {"hk_newtab":"Nova guia","hk_closetab":"Fechar guia","hk_nexttab":"próxima guia (Shift: anterior)"});
+Object.assign(I18N["ru"] || (I18N["ru"] = {}), {"hk_newtab":"Новая вкладка","hk_closetab":"Закрыть вкладку","hk_nexttab":"следующая вкладка (Shift: предыдущая)"});
+Object.assign(I18N["sl"] || (I18N["sl"] = {}), {"hk_newtab":"Nov zavihek","hk_closetab":"Zapri zavihek","hk_nexttab":"naslednji zavihek (Shift: prejšnji)"});
+Object.assign(I18N["tr"] || (I18N["tr"] = {}), {"hk_newtab":"Yeni sekme","hk_closetab":"Sekmeyi kapat","hk_nexttab":"sonraki sekme (Shift: önceki)"});
+Object.assign(I18N["uk"] || (I18N["uk"] = {}), {"hk_newtab":"Нова вкладка","hk_closetab":"Закрити вкладку","hk_nexttab":"наступна вкладка (Shift: попередня)"});
+Object.assign(I18N["vi"] || (I18N["vi"] = {}), {"hk_newtab":"Tab mới","hk_closetab":"Đóng tab","hk_nexttab":"chuyển đến tab tiếp theo (Shift: tab trước)"});
+Object.assign(I18N["zh-cn"] || (I18N["zh-cn"] = {}), {"hk_newtab":"新建标签页","hk_closetab":"关闭标签页","hk_nexttab":"下一个标签页（Shift：上一个）"});
+Object.assign(I18N["zh"] || (I18N["zh"] = {}), {"hk_newtab":"新增分頁","hk_closetab":"關閉分頁","hk_nexttab":"下一個分頁（Shift：上一個）"});

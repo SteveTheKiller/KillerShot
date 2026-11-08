@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">名前を変更できません - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">ファイル</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">この結果を絞り込む (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">新しいタブ  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">タブを閉じる  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">次のタブ (Shift: 前へ)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">すべてのタブ</sys:String>
 </ResourceDictionary>

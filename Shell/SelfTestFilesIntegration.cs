@@ -100,6 +100,28 @@ internal static class SelfTestFilesIntegration
             var files = library.Files;
             await library.FilesNavigation;
             string original = Path.Combine(CaptureSettings.OutputFolder, "rename.txt");
+            var originalTab = library.FilesWorkspace.ActiveTab;
+            SendKey(window, files.ResultsList, Key.T, ModifierKeys.Control);
+            for (int wait = 0; wait < 200 && library.FilesWorkspace.ActiveView.Navigation.CurrentFolder.Length == 0; wait++) await Task.Delay(10);
+            Check(library.FilesWorkspace.Tabs.Count == 2, "host Ctrl+T opens a Files tab");
+            window.UpdateLayout();
+            var contentPane = (Border)window.FindName("ContentPane");
+            var frame = library.Files.PaneFrame;
+            var edge = frame.TranslatePoint(new Point(), contentPane);
+            Check(Math.Abs(edge.X) < 1 && Math.Abs(frame.ActualWidth - contentPane.ActualWidth) < 1,
+                "Files page spans the real host pane without a nested inset");
+            var render = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+            render.Render(window);
+            var rendered = new PngBitmapEncoder();
+            rendered.Frames.Add(BitmapFrame.Create(render));
+            using (var imageOutput = File.Create(Path.Combine(folder, "files-tabs-host.png"))) rendered.Save(imageOutput);
+            SendKey(window, library.Files.ResultsList, Key.Tab, ModifierKeys.Control | ModifierKeys.Shift);
+            Check(library.FilesWorkspace.ActiveTab == originalTab, "host Ctrl+Shift+Tab selects the previous Files tab");
+            SendKey(window, files.ResultsList, Key.Tab, ModifierKeys.Control);
+            Check(library.FilesWorkspace.ActiveTab != originalTab, "host Ctrl+Tab selects the next Files tab");
+            SendKey(window, library.Files.ResultsList, Key.W, ModifierKeys.Control);
+            Check(library.FilesWorkspace.Tabs.Count == 1 && library.FilesWorkspace.ActiveTab == originalTab,
+                "host Ctrl+W closes only the active Files tab");
             File.WriteAllText(original, "owned");
             await files.NavigateTo(CaptureSettings.OutputFolder);
             files.ResultsList.SelectedItem = files.Navigation.Results.Single(entry => entry.FileName == "rename.txt");
@@ -121,7 +143,8 @@ internal static class SelfTestFilesIntegration
             library.SetView("grid");
             library.SetView("files");
             await library.FilesNavigation;
-            Check(files.Navigation.CurrentFolder == CaptureSettings.OutputFolder, "fresh Files entry hands off selected source fallback");
+            Check(files.Navigation.CurrentFolder == navigated, "returning from library preserves the active Files folder");
+            await files.NavigateTo(CaptureSettings.OutputFolder);
             var search = (System.Windows.Controls.TextBox)library.FindName("SearchBox");
             library.SetView("grid");
             search.Text = "capture query";
@@ -195,7 +218,7 @@ internal static class SelfTestFilesIntegration
             address.RaiseEvent(back);
             Check(!back.Handled && files.Navigation.CurrentFolder == folder, "address Backspace stays with text field");
             files.ResultsList.Focus();
-            foreach (var key in new[] { Key.H, Key.G, Key.I, Key.M, Key.T, Key.Z, Key.Y, Key.D, Key.S, Key.P })
+            foreach (var key in new[] { Key.H, Key.G, Key.I, Key.M, Key.Z, Key.Y, Key.D, Key.S, Key.P })
                 SendKey(window, files.ResultsList, key, ModifierKeys.Control);
             Check(ReferenceEquals(App.Instance.Document, dirty) && dirty.Dirty && dirty.State.Items.Count == 1
                 && dirty.PixelWidth == 24 && dirty.PixelHeight == 16, "Files control chords preserve hidden editor document and marks");
@@ -262,6 +285,10 @@ internal static class SelfTestFilesIntegration
             await FolderCaptures.RefreshScreenshotsAsync();
             await Task.Delay(100);
             var sourceMenu = sidebar.SourceMenu(sidebar);
+            sourceMenu.Items.OfType<MenuItem>().Single(item => Convert.ToString(item.Header) == LocaleManager.Loc("Str_Strip_All"))
+                .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            await library.FilesNavigation;
+            sourceMenu = sidebar.SourceMenu(sidebar);
             sourceMenu.Items.OfType<MenuItem>().Single(item => Convert.ToString(item.Header) == FolderCaptures.Name)
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             for (int wait = 0; wait < 200 && files.Navigation.CurrentFolder != Path.Combine(folder, "screenshots"); wait++) await Task.Delay(10);
@@ -275,7 +302,7 @@ internal static class SelfTestFilesIntegration
             Check(startupView.FilesActive, "persisted Files view survives constructor startup whitelist");
             Check(((TextBlock)startupView.FindName("SearchHint")).Text == LocaleManager.Loc("Str_TT_FilterResults"),
                 "startup Files search describes filtering files");
-            startupView.Files.Dispose();
+            startupView.FilesWorkspace.Dispose();
             await files.NavigateTo(pasteFolder);
             files.SetFilter("image");
             Check(((TextBlock)library.FindName("CountText")).Text == "0 folder(s), 1 file(s)", "Files count describes visible filesystem entries");

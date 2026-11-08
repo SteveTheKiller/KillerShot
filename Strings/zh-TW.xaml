@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">無法重新命名 - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">檔案</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">篩選這些結果（Ctrl+F）</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">新增分頁  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">關閉分頁  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">下一個分頁（Shift：上一個）</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">所有分頁</sys:String>
 </ResourceDictionary>

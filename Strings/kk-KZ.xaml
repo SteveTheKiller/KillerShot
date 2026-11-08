@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Атын өзгерту мүмкін болмады - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Файлдар</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Осы нәтижелерді сүзу (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Жаңа қойынды  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Қойындыны жабу  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">келесі қойынды (Shift: алдыңғы)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Барлық қойындылар</sys:String>
 </ResourceDictionary>

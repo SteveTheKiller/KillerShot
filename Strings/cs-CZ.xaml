@@ -704,4 +704,8 @@
 <sys:String x:Key="Str_Status_RenameFailed">Nelze přejmenovat - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Soubory</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrovat tyto výsledky (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nová karta  (Ctrl+T)</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Zavřít kartu  (Ctrl+W)</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">další karta (Shift: předchozí)</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">Všechny karty</sys:String>
 </ResourceDictionary>

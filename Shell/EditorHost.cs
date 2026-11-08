@@ -439,19 +439,19 @@ namespace KillerShot.Shell
         private void InitLibrary()
         {
             InitLibraryVideoWork();
-            Closed += (_, _) => Library.Files.Dispose();
+            Closed += (_, _) => Library.FilesWorkspace.Dispose();
             Library.SearchAnchor = LibrarySearchButton;
-            Library.Files.CanOpenInHost = path => System.IO.Path.GetExtension(path).ToLowerInvariant()
+            static bool CanOpenFile(string path) => System.IO.Path.GetExtension(path).ToLowerInvariant()
                 is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".tif" or ".tiff";
-            Library.Files.Browser.OpenInEditor = path =>
+            Library.FilesWorkspace.ConfigureEditor(CanOpenFile, path =>
             {
-                if (Library.Files.CanOpenInHost(path))
+                if (CanOpenFile(path))
                 {
                     OpenPath(path);
                     return Task.FromResult(true);
                 }
                 return Task.FromResult(false);
-            };
+            });
             // The library's file name, without its extension, as Killendar and KillerNotes name
             // their open database; the tooltip has the full path.
             TitleLibraryLabel.Text = System.IO.Path.GetFileNameWithoutExtension(CaptureLibrary.FilePath);
@@ -513,7 +513,11 @@ namespace KillerShot.Shell
 
         /// <summary>The editor and every album view keep the same lifted content pane.</summary>
         private void SyncContentPane()
-            => ShowContentPane(true);
+        {
+            bool files = Library.IsVisible && Library.FilesActive;
+            Library.Margin = files ? new Thickness(0) : new Thickness(1);
+            ShowContentPane(!files);
+        }
 
         /// <summary>Keep the themed content surface, border and grain together.</summary>
         private void ShowContentPane(bool on)
