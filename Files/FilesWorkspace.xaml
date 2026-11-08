@@ -3,42 +3,6 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:kc="clr-namespace:KillerShot.Controls"
  xmlns:files="clr-namespace:KillerShot.Files">
- <UserControl.Resources>
-  <!-- KillerShell's tab close button uses the family danger-button face. -->
-  <Style x:Key="TabCloseButton" TargetType="Button">
-   <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
-   <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
-   <Setter Property="Cursor" Value="Hand"/>
-   <Setter Property="Template"><Setter.Value>
-    <ControlTemplate TargetType="Button">
-     <Border x:Name="face" Background="Transparent" CornerRadius="4">
-      <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-     </Border>
-     <ControlTemplate.Triggers>
-      <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{DynamicResource DangerRed}"/></Trigger>
-      <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Foreground" Value="{DynamicResource DangerRed}"/></Trigger>
-      <Trigger Property="IsPressed" Value="True"><Setter Property="Foreground" Value="{DynamicResource DangerRed}"/><Setter TargetName="face" Property="Background" Value="#33C42B1C"/></Trigger>
-     </ControlTemplate.Triggers>
-    </ControlTemplate>
-   </Setter.Value></Setter>
-  </Style>
-  <Style x:Key="TabLabelButton" TargetType="Button">
-   <Setter Property="Background" Value="Transparent"/>
-   <Setter Property="Padding" Value="2,0"/>
-   <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/>
-   <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-   <Setter Property="Template">
-    <Setter.Value><ControlTemplate TargetType="Button">
-     <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-      <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-     </Border>
-     <ControlTemplate.Triggers>
-      <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Background" Value="{DynamicResource ToolHoverFaceBrush}"/></Trigger>
-     </ControlTemplate.Triggers>
-    </ControlTemplate></Setter.Value>
-   </Setter>
-  </Style>
- </UserControl.Resources>
  <Grid>
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
   <Border x:Name="TabBar" Grid.Row="0" Panel.ZIndex="20" Height="{DynamicResource TabBandHeight}" Background="Transparent"
@@ -85,11 +49,11 @@
 <Border x:Name="tabBevelDark" IsHitTestVisible="False" Margin="{DynamicResource TabBevelDarkMargin}" Panel.ZIndex="4" BorderBrush="{DynamicResource BevelDarkBrush}" BorderThickness="{DynamicResource TabInactiveBevelDarkThickness}" />
 <Border x:Name="tabActiveRetroInnerBevel" IsHitTestVisible="False" Panel.ZIndex="6" Margin="{DynamicResource TabActiveInnerBevelMargin}" BorderBrush="{DynamicResource TabActiveInnerBevelBrush}" BorderThickness="{DynamicResource TabActiveInnerBevelThickness}" SnapsToDevicePixels="True" Visibility="Collapsed" />
 <DockPanel x:Name="tabContents" LastChildFill="True" VerticalAlignment="Center" RenderTransform="{DynamicResource TabPlacementTransform}" RenderTransformOrigin="0.5,0.5">
-<Button x:Name="tabClose" DockPanel.Dock="Right" Content="x" Width="24" Height="24" Margin="{DynamicResource TabCloseMargin}" FontSize="17" Padding="0" VerticalAlignment="Center" FocusVisualStyle="{x:Null}" ToolTip="{DynamicResource Str_TT_CloseTab}" Tag="{Binding}" Click="CloseTab_Click" AutomationProperties.Name="{Binding CloseLabel}">
+<Button x:Name="tabClose" DockPanel.Dock="Right" Content="&#xE711;" Style="{StaticResource DangerCloseButton}" Margin="{DynamicResource TabCloseMargin}" VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_CloseTab}" Tag="{Binding}" Click="CloseTab_Click" AutomationProperties.Name="{Binding CloseLabel}">
 </Button>
 <Image x:Name="tabFolderIcon" DockPanel.Dock="Left" Width="{DynamicResource TabIconSize}" Height="{DynamicResource TabIconSize}" Stretch="Uniform" Margin="{DynamicResource TabIconMargin}" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Icon}">
 </Image>
-<Button x:Name="tabLbl" Content="{Binding Title}" Style="{StaticResource TabLabelButton}" FontFamily="{DynamicResource MonoFont}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalContentAlignment="Left" VerticalAlignment="Center" Click="SelectTab_Click">
+<Button x:Name="tabLbl" Content="{Binding Title}" Style="{StaticResource MenuRowButton}" Padding="2,0" FontFamily="{DynamicResource MonoFont}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalContentAlignment="Left" VerticalAlignment="Center" Click="SelectTab_Click">
 <Button.ContentTemplate>
 <DataTemplate>
 <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
@@ -116,7 +80,7 @@
 </MultiDataTrigger>
 <DataTrigger Binding="{Binding IsActive}" Value="True">
 <Setter TargetName="tabBd" Property="CornerRadius" Value="3,3,0,0" />
-<Setter TargetName="tabClose" Property="Style" Value="{StaticResource TabCloseButton}" />
+<Setter TargetName="tabClose" Property="Style" Value="{StaticResource DangerCloseButton}" />
 <Setter TargetName="tabBd" Property="BlendProgress" Value="0" />
 <Setter TargetName="tabGrain" Property="Opacity" Value="{DynamicResource GrainOpacity}" />
 <Setter TargetName="tabBd" Property="BorderThickness" Value="{DynamicResource TabStripeThickness}" />
@@ -201,7 +165,7 @@
 <Setter TargetName="tabBd" Property="MenuBackground" Value="{DynamicResource TabActiveBrush}" />
 </MultiDataTrigger>
 <DataTrigger Binding="{Binding IsActive}" Value="False">
-<Setter TargetName="tabClose" Property="Style" Value="{StaticResource TabCloseButton}" />
+<Setter TargetName="tabClose" Property="Style" Value="{StaticResource DangerCloseButton}" />
 </DataTrigger>
 <DataTrigger Binding="{Binding IsActive}" Value="True">
 <Setter TargetName="tabBd" Property="MenuBackground" Value="{DynamicResource MenuBackgroundBrush}" />
