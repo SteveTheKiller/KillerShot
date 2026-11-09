@@ -119,7 +119,7 @@
             <Border Style="{StaticResource FlyoutCard}">
                 <Grid>
                     <Grid Width="240" Margin="8">
-                        <TextBox x:Name="SearchBox" Style="{StaticResource DarkTextBox}" FontSize="12" Padding="24,3,6,3"
+                        <TextBox x:Name="SearchBox" Style="{StaticResource DarkTextBox}" FontSize="12" Padding="24,0,6,0"
                                  TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown"
                                  AutomationProperties.Name="{DynamicResource Str_Lib_Search}"/>
                         <a11y:Glyph Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="11" IsHitTestVisible="False"
@@ -201,7 +201,7 @@
                 <PasswordBox x:Name="UnlockBox" KeyDown="UnlockBox_KeyDown" AutomationProperties.Name="{DynamicResource Str_Lib_Password}"
                              Background="{DynamicResource InputFieldBrush}" Foreground="{DynamicResource TextBrush}"
                              BorderBrush="{DynamicResource InputBorderBrush}" CaretBrush="{DynamicResource TextBrush}"
-                             Padding="6,4" FontSize="13"/>
+                             Padding="6,3" MinHeight="26" FontSize="13"/>
                 <TextBlock x:Name="UnlockError" Foreground="{DynamicResource DangerRed}" FontSize="11" Margin="0,6,0,0"
                            TextWrapping="Wrap" Visibility="Collapsed" Text="{DynamicResource Str_Lib_WrongPassword}"/>
                 <Button x:Name="UnlockBtn" Content="{DynamicResource Str_Lib_Unlock}" Style="{StaticResource OutlineButton}"
