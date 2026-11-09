@@ -68,7 +68,6 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - The Files details view shows the sort arrow on the Modified column, and a refused Replace no longer leaves a hidden full-size copy in the destination folder.
 - Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 - Holding Alt while clicking during a region capture no longer drags the dimmed screen off its monitor, which made the selection land on the wrong pixels.
-- Toolbar buttons, the sidebar rail buttons, close buttons and the file picker's folder tree keep their keyboard focus ring after a theme change. It used to disappear from them, so a keyboard user could no longer see which of them had focus.
 
 ### Changed
 
