@@ -1,0 +1,35 @@
+using System.Windows;
+using System.Windows.Controls;
+
+internal static class OutlineButtonCaption
+{
+    [STAThread] static int Main()
+    {
+        // The kit dictionaries load by application-relative pack URIs, which resolve against the
+        // resource assembly; the probe's own assembly already holds that slot.
+        typeof(Application).GetField("_resourceAssembly", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(null, typeof(KillerShot.App).Assembly);
+        var root = new Border { Width = 300 };
+        foreach (string resource in new[] { "Themes/Black.xaml", "Controls/Controls.xaml" })
+            root.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/KillerShot;component/" + resource, UriKind.Relative) });
+        var button = new Button { Content = "Unlock", Style = (Style)root.FindResource("OutlineButton") };
+        root.Child = button;
+        root.Measure(new Size(300, double.PositiveInfinity));
+        root.Arrange(new Rect(root.DesiredSize));
+        root.UpdateLayout();
+
+        if (button.Template.FindName("label", button) is not ContentPresenter label)
+        {
+            Console.Error.WriteLine("FAIL: OutlineButton's template has no ContentPresenter named label.");
+            return 1;
+        }
+        if (label.Effect is not null)
+        {
+            Console.Error.WriteLine("FAIL: OutlineButton's caption carries an effect (" + label.Effect.GetType().Name
+                + "), which rasterizes the text and blurs it at rest.");
+            return 1;
+        }
+        Console.WriteLine("PASS: outline button captions are not rasterized.");
+        return 0;
+    }
+}
