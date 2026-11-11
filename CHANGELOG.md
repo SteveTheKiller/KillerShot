@@ -71,6 +71,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 
 ### Changed
 
+- Updated SQLite bindings to 10.0.15.
 - Single-line text fields are as tall as the dropdowns beside them, so form rows line up instead of the text boxes standing oversized.
 
 ### Added
