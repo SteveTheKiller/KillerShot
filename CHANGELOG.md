@@ -68,11 +68,13 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - The Files details view shows the sort arrow on the Modified column, and a refused Replace no longer leaves a hidden full-size copy in the destination folder.
 - Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 - Holding Alt while clicking during a region capture no longer drags the dimmed screen off its monitor, which made the selection land on the wrong pixels.
+- On a narrow window with the portable badge showing, the version number no longer runs into the corner grip once the copyright hides to make room.
 
 ### Changed
 
 - Updated SQLite bindings to 10.0.15.
 - Single-line text fields are as tall as the dropdowns beside them, so form rows line up instead of the text boxes standing oversized.
+- The copyright at the right end of the footer ends 8 px before the corner grip, the same gap in every Killer app.
 
 ### Added
 - Files (F9) adds KillerShell-style folder tabs that retain their state across library switches and restarts, with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor.

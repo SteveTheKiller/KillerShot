@@ -83,6 +83,9 @@ namespace KillerShot.Shell
             if (FooterCopyright.Visibility != copyright)
             {
                 FooterCopyright.Visibility = copyright;
+                // With the copyright hidden the version label is the last text, so it takes the copyright's 25px
+                // trailing space and stays 8px clear of the corner grip instead of running into it.
+                VersionLabel.Margin = new Thickness(0, 0, copyright == Visibility.Collapsed ? 25 : 12, 0);
                 return;
             }
             var controls = FooterViewCell.Children.OfType<StackPanel>().Single();
