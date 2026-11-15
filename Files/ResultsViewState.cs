@@ -181,6 +181,7 @@ public sealed class ResultsViewState : INotifyPropertyChanged
             if (_sizeVisible == value) return;
             _sizeVisible = value;
             Notify();
+            Notify(nameof(SizeGripVisibility));
             Notify(nameof(SizeWidth));
             Notify(nameof(NameWidth));
             Notify(nameof(LocationWidth));
@@ -200,6 +201,7 @@ public sealed class ResultsViewState : INotifyPropertyChanged
             if (_modifiedVisible == value) return;
             _modifiedVisible = value;
             Notify();
+            Notify(nameof(ModifiedGripVisibility));
             Notify(nameof(ModifiedWidth));
             Notify(nameof(NameWidth));
             Notify(nameof(LocationWidth));
@@ -226,6 +228,12 @@ public sealed class ResultsViewState : INotifyPropertyChanged
 
     // A hidden column is zero wide but its grip is not, and a grip left behind would sit on
     // top of its neighbor's and resize a column nobody can see.
+    public Visibility SizeGripVisibility =>
+        _sizeVisible ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility ModifiedGripVisibility =>
+        _modifiedVisible ? Visibility.Visible : Visibility.Collapsed;
+
     public Visibility TypeGripVisibility =>
         _typeVisible ? Visibility.Visible : Visibility.Collapsed;
 
@@ -326,7 +334,10 @@ public sealed class ResultsViewState : INotifyPropertyChanged
     /// Indexed by the column's Grid.Column so the drag handler can carry one number from the
     /// grip's Tag rather than a switch at every call site.
     /// </remarks>
-    public double SetColumnWidth(int column, double px)
+    public double SetColumnWidth(int column, double px) => SetColumnWidth(column, px, true);
+
+    /// <param name="announce">False while a drag is still moving; the drag announces once at its end.</param>
+    public double SetColumnWidth(int column, double px, bool announce)
     {
         px = Math.Max(ColMinWidth, Math.Min(ColMaxWidth, px));
         switch (column)
@@ -338,8 +349,16 @@ public sealed class ResultsViewState : INotifyPropertyChanged
             case 5: _typePx     = px; Notify(nameof(TypeWidth));     break;
             case 6: _createdPx  = px; Notify(nameof(CreatedWidth));  break;
         }
+        if (announce) ColumnWidthSet?.Invoke(column);
         return px;
     }
+
+    /// <summary>Announces a width set without announcing, at the end of a drag.</summary>
+    public void CommitColumnWidth(int column) => ColumnWidthSet?.Invoke(column);
+
+    /// <summary>A column was given a width. A refit to the pane is a drawn change only and
+    /// never raises this, so nothing saves a width the user did not choose.</summary>
+    public event Action<int>? ColumnWidthSet;
 
     /// <summary>The current width of one column, for seeding a drag.</summary>
     public double GetColumnWidth(int column) => column switch

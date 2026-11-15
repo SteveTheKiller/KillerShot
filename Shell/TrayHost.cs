@@ -354,7 +354,7 @@ internal sealed class TrayHost : IDisposable
                 System.IO.Directory.CreateDirectory(folder);
                 Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
             }
-            catch { }
+            catch (Exception ex) { ShowWarning(Loc("Str_Tray_FailedTitle"), ex.Message); }
         });
         menu.Items.Add(new Separator());
         if (_failed.Count > 0)
@@ -453,8 +453,12 @@ internal sealed class TrayHost : IDisposable
         Balloon(title, text, Win32.NIIF_INFO);
     }
 
+    /// <summary>Test seam: every warning, whether or not the icon is there to show it.</summary>
+    internal event Action<string, string>? WarningShown;
+
     public void ShowWarning(string title, string text)
     {
+        WarningShown?.Invoke(title, text);
         _balloonAction = null;
         Balloon(title, text, Win32.NIIF_WARNING);
     }

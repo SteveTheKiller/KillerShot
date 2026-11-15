@@ -96,6 +96,21 @@ public sealed record StrokeAnnotation(ImmutableArray<Point> Points, Color Color,
 
     public override bool Hit(Point p, double tolerance) =>
         Geometry.StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
+
+    // Points compare by value, and the cached outline is not part of the mark, so a change that
+    // moves nothing is recognized as no change (review ED-002).
+    public bool Equals(StrokeAnnotation? other) =>
+        other is not null && (ReferenceEquals(this, other)
+            || (Color == other.Color && Width.Equals(other.Width) && Highlighter == other.Highlighter
+                && Points.AsSpan().SequenceEqual(other.Points.AsSpan())));
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Color); hash.Add(Width); hash.Add(Highlighter); hash.Add(Points.Length);
+        foreach (var p in Points) hash.Add(p);
+        return hash.ToHashCode();
+    }
 }
 
 public enum ShapeKind { Arrow, Rectangle, Ellipse, Redact, Line }
@@ -206,7 +221,10 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
         if (Kind == ShapeKind.Line)
             return new LineGeometry(A, B).StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p);
         if (Kind == ShapeKind.Arrow)
-            return ArrowGeometry().StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p) || ArrowGeometry().FillContains(p);
+        {
+            var arrow = ArrowGeometry();
+            return arrow.StrokeContains(MakePen(Colors.Black, Width + tolerance * 2), p) || arrow.FillContains(p);
+        }
         if (Filled)
         {
             var area = Inflate(Box, Width / 2 + tolerance);

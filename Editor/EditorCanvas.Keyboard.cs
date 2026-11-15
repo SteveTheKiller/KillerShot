@@ -303,6 +303,15 @@ internal sealed class EditorCanvasAutomationPeer(EditorCanvas owner) : Framework
     internal AnnotationAutomationPeer PeerFor(Annotation mark) =>
         _peers.GetValue(mark, m => new AnnotationAutomationPeer(this, m));
 
+    /// <summary>Keys a peer by the mark that replaced its old one, so automation keeps talking to
+    /// the same element after a move or resize instead of a new peer for every change.</summary>
+    internal void Follow(Annotation old, Annotation now, AnnotationAutomationPeer peer)
+    {
+        if (ReferenceEquals(old, now)) return;
+        _peers.Remove(old);
+        _peers.AddOrUpdate(now, peer);
+    }
+
     protected override List<AutomationPeer> GetChildrenCore()
     {
         var children = base.GetChildrenCore() ?? [];
@@ -388,7 +397,14 @@ internal sealed class AnnotationAutomationPeer(EditorCanvasAutomationPeer parent
         var b = Mark.Bounds;
         var to = Canvas.ScreenToImage(new Point(x, y));
         Canvas.Select(Mark);
-        _mark = Canvas.ChangeMark(Mark, m => m.Offset(to - b.TopLeft));
+        Change(m => m.Offset(to - b.TopLeft));
+    }
+
+    private void Change(Func<Annotation, Annotation> change)
+    {
+        var old = Mark;
+        _mark = Canvas.ChangeMark(old, change);
+        parent.Follow(old, _mark, this);
     }
 
     /// <summary>Sizes the mark's bounding rectangle to (width, height) screen pixels, as reported.</summary>
@@ -399,7 +415,7 @@ internal sealed class AnnotationAutomationPeer(EditorCanvasAutomationPeer parent
         if (perPixel <= 0) return;
         var b = Mark.Bounds;
         Canvas.Select(Mark);
-        _mark = Canvas.ChangeMark(Mark, m => m.Resize(new Vector(width / perPixel - b.Width, height / perPixel - b.Height)));
+        Change(m => m.Resize(new Vector(width / perPixel - b.Width, height / perPixel - b.Height)));
     }
 
     void ITransformProvider.Rotate(double degrees) => throw new InvalidOperationException();

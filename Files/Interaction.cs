@@ -216,13 +216,49 @@ public partial class FilesView
     {
         if (InsideTextField(e.OriginalSource as DependencyObject)) return;
         e.Handled = true;
+        string target = DropTarget(e.OriginalSource as DependencyObject);
+        var modifiers = DropModifiers(e.KeyStates);
+        // The answer goes back to the drag source before the operation runs. A copy is reported
+        // as a copy. A move is one this view performs itself (the shell's optimized move), so it
+        // answers None: a source told Move would delete the originals on its own, racing ours.
+        var effect = DragDropEffects.None;
+        try
+        {
+            if (!IsFileOperationBusy && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
+            {
+                effect = DropEffect(paths, target, e.AllowedEffects, modifiers);
+                // A drop into itself or a descendant is refused by DropFiles; answer None now.
+                string destination = System.IO.Path.GetFullPath(target).TrimEnd(System.IO.Path.DirectorySeparatorChar);
+                if (effect != DragDropEffects.None && paths.Any(path =>
+                    {
+                        string full = System.IO.Path.GetFullPath(path).TrimEnd(System.IO.Path.DirectorySeparatorChar);
+                        return destination.Equals(full, StringComparison.OrdinalIgnoreCase)
+                            || destination.StartsWith(full + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+                    }))
+                {
+                    effect = DragDropEffects.None;
+                    SetCommandError(Loc("Str_Status_DropIntoSelf"));
+                }
+            }
+        }
+        catch (Exception error) when (error is ArgumentException or NotSupportedException or System.IO.IOException
+            or System.Runtime.InteropServices.COMException) { }
+        e.Effects = effect == DragDropEffects.Copy ? DragDropEffects.Copy : DragDropEffects.None;
+        // Optimized move per the shell's data transfer rules: Performed DropEffect = DROPEFFECT_NONE.
+        if (effect == DragDropEffects.Move)
+        {
+            try { e.Data.SetData("Performed DropEffect", new System.IO.MemoryStream(BitConverter.GetBytes(0))); }
+            catch (Exception error) when (error is System.Runtime.InteropServices.COMException or InvalidOperationException
+                or NotSupportedException or ArgumentException) { }
+        }
         try
         {
             if (e.Data is System.Runtime.InteropServices.ComTypes.IDataObject native)
                 _dropImage?.Drop(native, PointToScreen(e.GetPosition(this)), (int)e.Effects);
         }
         finally { _dropImage?.Dispose(); _dropImage = null; }
-        StartCommand(DropFiles(e.Data, DropTarget(e.OriginalSource as DependencyObject), e.AllowedEffects, DropModifiers(e.KeyStates)));
+        if (effect != DragDropEffects.None)
+            StartCommand(DropFiles(e.Data, target, e.AllowedEffects, modifiers));
     }
 
     private static ModifierKeys DropModifiers(DragDropKeyStates keys)

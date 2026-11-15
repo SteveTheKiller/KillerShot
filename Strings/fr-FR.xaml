@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Sarcelle</sys:String>
     <sys:String x:Key="Str_Color_Blue">Bleu</sys:String>
     <sys:String x:Key="Str_Color_Purple">Violet</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Magenta</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Images par seconde MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Images par seconde GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Le menu du shell ne traite que des éléments d’un seul dossier à la fois.</sys:String>
     <sys:String x:Key="Str_Color_Black">Noir</sys:String>
     <sys:String x:Key="Str_Color_White">Blanc</sys:String>
     <sys:String x:Key="Str_Color_Hex">Couleur hexadécimale</sys:String>

@@ -173,6 +173,7 @@ namespace KillerShot.Shell
         private IReadOnlyList<CaptureCollection> _collections = [];
         private IReadOnlyList<CaptureCollection> _albumCollections = [];
         private IReadOnlyList<CaptureItem> _folderItems = [];
+        private IReadOnlyList<LinkedFolderListing> _linkedFolders = [];
         private readonly Dictionary<string, long> _shelfFront = [];
         private readonly DispatcherTimer _searchDelay;
         private bool _reloadQueued;
@@ -344,6 +345,7 @@ namespace KillerShot.Shell
             _collections = listing.Collections;
             _albumCollections = listing.AlbumCollections;
             _folderItems = listing.FolderItems;
+            _linkedFolders = listing.LinkedFolders;
             int total = listing.Total;
             FileBrowser.ResetMissingSources(SourceExists);
             FileBrowser.RefreshTitles();
@@ -450,15 +452,15 @@ namespace KillerShot.Shell
                 var known = _collections.Select(c => c.Id).ToHashSet();
                 if (_source == "all" && FolderCaptures.Enabled && (_folderItems.Count > 0 || !searching))
                     groups.Add(new Group("folder", FolderCaptures.Name, FolderCaptures.CollectionId, false, _folderItems.ToList(), IsFolder: true));
-                foreach (var folder in _source == "all" ? FolderCaptures.LinkedCollections() : [])
+                foreach (var folder in _source == "all" ? _linkedFolders : [])
                 {
-                    var members = FolderCaptures.LinkedItems(folder.Source, searching ? SearchBox.Text.Trim() : null);
-                    if (members.Count > 0 || !searching)
-                        groups.Add(new Group(folder.Source, folder.Name, FolderCaptures.CollectionId, false, members.ToList(), IsFolder: true));
+                    if (folder.Members.Count > 0 || !searching)
+                        groups.Add(new Group(folder.Source, folder.Name, FolderCaptures.CollectionId, false, folder.Members.ToList(), IsFolder: true));
                 }
+                var byId = _items.ToLookup(i => i.CollectionId);
                 foreach (var c in _collections)
                 {
-                    var members = _items.Where(i => i.CollectionId == c.Id).ToList();
+                    var members = byId[c.Id].ToList();
                     if (members.Count == 0 && searching) continue;
                     groups.Add(new Group("c" + c.Id, c.Name, c.Id, true, members));
                 }
@@ -840,8 +842,10 @@ namespace KillerShot.Shell
         private void UpdateFilesCount()
         {
             if (!FilesActive) return;
-            var entries = CollectionViewSource.GetDefaultView(Files.Navigation.Results).Cast<Files.FileEntry>().ToArray();
-            CountText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Sum_Counts"), entries.Count(entry => entry.IsDirectory), entries.Count(entry => !entry.IsDirectory));
+            int folders = 0, files = 0;
+            foreach (Files.FileEntry entry in CollectionViewSource.GetDefaultView(Files.Navigation.Results))
+                if (entry.IsDirectory) folders++; else files++;
+            CountText.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Sum_Counts"), folders, files);
             CountChanged?.Invoke(CountText.Text);
         }
 
@@ -1201,7 +1205,7 @@ namespace KillerShot.Shell
             var none = new MenuItem { Header = Loc("Str_Lib_Unfiled"), IsCheckable = true, IsChecked = item.CollectionId == null };
             none.Click += (_, _) => TryChangeAlbum(() => CaptureLibrary.Move([item.Id], null, item.Session));
             target.Items.Add(none);
-            foreach (var c in CaptureLibrary.Collections())
+            foreach (var c in _albumCollections)
             {
                 var collection = c;
                 var mi = new MenuItem { Header = c.Name, IsCheckable = true, IsChecked = item.CollectionId == c.Id };
@@ -1323,6 +1327,16 @@ namespace KillerShot.Shell
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 
+        /// <summary>The Save As name for a recording: its window title made safe for a file name
+        /// (characters Windows refuses become _, trailing dots and spaces go), or the recording
+        /// name when nothing is left. The title is used as it reads, never as a name pattern.</summary>
+        internal static string VideoSaveName(string? window, string ext)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            string name = new string((window ?? "").Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray()).Trim().TrimEnd('.', ' ');
+            return (name.Length == 0 ? Loc("Str_Rec_CollectionName") : name) + ext;
+        }
+
         /// <summary>Writes a stored recording out as the video file it was, byte for byte.</summary>
         private async void SaveVideoAs(CaptureItem item)
         {
@@ -1335,7 +1349,7 @@ namespace KillerShot.Shell
                 Title = Loc("Str_Dlg_SaveTitle"),
                 Filter = Loc(gif ? "Str_VS_FormatGif" : "Str_VS_FormatMp4") + "|*" + ext,
                 DefaultExt = ext,
-                FileName = (string.IsNullOrWhiteSpace(item.Window) ? Loc("Str_Rec_CollectionName") : item.Window) + ext,
+                FileName = VideoSaveName(item.Window, ext),
                 InitialDirectory = VideoSettings.OutputFolder,
             };
             if (PresentExportDialog(dlg, OwnerWindow) != true) return;
@@ -1375,6 +1389,9 @@ namespace KillerShot.Shell
 
         internal Func<ConfirmDialog, bool> PresentConfirmation { get; set; } = dialog => { dialog.ShowDialog(); return dialog.Confirmed; };
 
+        /// <summary>Test seam: sends a folder file to the Recycle Bin.</summary>
+        internal Action<long, IntPtr> RecycleFolderFile { get; set; } = FolderCaptures.Recycle;
+
         internal async void Delete(CaptureItem item)
         {
             if (FolderCaptures.IsFolderId(item.Id))
@@ -1382,17 +1399,24 @@ namespace KillerShot.Shell
                 // A folder file is not in the encrypted album, so Delete sends the file itself to
                 // the Recycle Bin, where a mistake can still be undone. A folder with no Recycle Bin
                 // (a network share, a removable drive) says the file goes for good before asking.
-                bool recyclable = FolderCaptures.PathOf(item.Id) is { } path && FolderCaptures.CanRecycle(path);
+                // A file that is already gone has nothing to delete, for good or otherwise.
+                if (FolderCaptures.PathOf(item.Id) is not { } path) { StatusMessage?.Invoke(Loc("Str_Lib_Missing")); return; }
+                bool recyclable = FolderCaptures.CanRecycle(path);
                 var confirm = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc(recyclable ? "Str_Lib_RecycleDetail" : "Str_Lib_PermanentDetail"),
                     Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
                 if (!PresentConfirmation(confirm)) return;
                 try
                 {
                     if (recyclable)
-                        FolderCaptures.Recycle(item.Id, OwnerWindow is { } owner ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero);
+                        RecycleFolderFile(item.Id, OwnerWindow is { } owner ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero);
                     else await FolderCaptures.DeleteForGoodAsync(item.Id);
                 }
-                catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
+                catch (Exception ex) { StatusMessage?.Invoke(ex.Message); return; }
+                // The editor closes the deleted picture unless it holds unsaved edits: those live
+                // only in the editor, so they stay there to be saved again or discarded.
+                if (App.Instance.CurrentItem is { } shown && shown.Id == item.Id && shown.Session == item.Session
+                    && App.Instance.Document?.Dirty != true)
+                    App.Instance.CompleteAlbumSwitch();
                 return;
             }
             var dlg = new ConfirmDialog(Loc("Str_Lib_DeleteTitle"), Loc("Str_Lib_DeleteDetail"), Loc("Str_Lib_Delete"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };

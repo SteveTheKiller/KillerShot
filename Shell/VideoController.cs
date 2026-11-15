@@ -69,6 +69,9 @@ internal sealed class VideoController
         _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         _stopSucceeded = false;
         _discard = false;
+        // A new recording means any earlier exit was cancelled: this clip is asked about and
+        // placed as usual.
+        _exiting = false;
         _stopRequested = false;
         _starting = true;
         StateChanged?.Invoke();

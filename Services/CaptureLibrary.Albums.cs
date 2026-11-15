@@ -15,11 +15,13 @@ internal static partial class CaptureLibrary
             return new DirectoryInfo(_folder).EnumerateFiles("*.kshot")
                 .Select(file => new AlbumInfo(file.FullName, Path.GetFileNameWithoutExtension(file.Name), file.Length,
                     file.LastWriteTime, string.Equals(file.FullName, FilePath, StringComparison.OrdinalIgnoreCase),
-                    !File.Exists(Path.ChangeExtension(file.FullName, ".key"))
-                    && !File.Exists(Path.ChangeExtension(file.FullName, ".key.next"))))
+                    // Any account key, including one left by an interrupted password change or creation.
+                    !AccountKeySidecars.Any(ext => File.Exists(Path.ChangeExtension(file.FullName, ext)))))
                 .OrderByDescending(album => album.Active).ThenBy(album => album.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
         }
     }
+
+    private static readonly string[] AccountKeySidecars = [".key", ".key.next", ".key.retire", ".key.creating"];
 
     private sealed record RenameJournal(string OldName, string NewName, bool Active, string[] Sidecars, bool Committed = false);
     // .kshot-wal and .kshot-shm: SQLite's write-ahead log beside an album. Closing checkpoints and
@@ -113,12 +115,25 @@ internal static partial class CaptureLibrary
                             _keyedByPassword = byPassword;
                             ObserveExternalChanges();
                         }
+                        RenameFaultForSelfTest?.Invoke();
                     }
                     finally { reopened?.Dispose(); SqliteConnection.ClearAllPools(); }
                     committed = true;
                 }
                 catch
                 {
+                    // A failure after the renamed album was published: let go of it and point
+                    // back at the old name before moving the file back.
+                    if (active)
+                    {
+                        if (string.Equals(_activeFileName, Path.GetFileName(destination), StringComparison.OrdinalIgnoreCase))
+                        {
+                            Close();
+                            _activeFileName = Path.GetFileName(path);
+                        }
+                        try { Settings.SetRequired("ActiveAlbum", Path.GetFileName(path)); }
+                        catch (Exception error) { System.Diagnostics.Trace.TraceWarning("Active album setting not restored: {0}", error.Message); }
+                    }
                     if (moved) File.Move(destination, path);
                     if (active && key != null && _db == null) OpenWith(key, byPassword);
                     foreach (string ext in entry.Sidecars) File.Delete(Sidecar(destination, ext));
@@ -190,64 +205,80 @@ internal static partial class CaptureLibrary
     {
         needsPassword = false;
         path = Path.GetFullPath(path);
+        string? key = password;
+        string staging;
         lock (_gate)
         {
             if (string.Equals(Path.GetDirectoryName(path), Path.GetFullPath(_folder), StringComparison.OrdinalIgnoreCase))
                 return ManagedAlbumPath(path);
-            using var catalogLock = AcquireCatalogLock();
-            string? key = password;
-            if (key == null)
+            staging = AlbumPath(Path.GetFileName(path)) + ".importing-" + Guid.NewGuid().ToString("N");
+        }
+        if (key == null)
+        {
+            string sourceKey = Path.ChangeExtension(path, ".key");
+            if (!File.Exists(sourceKey)) { needsPassword = true; return null; }
+            try { key = ReadSealedKey(sourceKey); }
+            catch (System.Security.Cryptography.CryptographicException error)
+            { throw new InvalidDataException(Loc("Str_Album_KeyUnavailable"), error); }
+        }
+        string stagingKey = staging + ".key";
+        try
+        {
+            // The copy can take a while for a large album, so it runs outside the album gate and
+            // the catalog lock, into a staging file only this call knows. Unpooled, so nothing here
+            // needs the shared pool cleared while the open album is in use.
+            var connectionString = new SqliteConnectionStringBuilder(Cs(path, key, false)) { Mode = SqliteOpenMode.ReadOnly, Pooling = false };
+            using (var source = new SqliteConnection(connectionString.ConnectionString))
             {
-                string sourceKey = Path.ChangeExtension(path, ".key");
-                if (!File.Exists(sourceKey)) { needsPassword = true; return null; }
-                try { key = ReadSealedKey(sourceKey); }
-                catch (System.Security.Cryptography.CryptographicException error)
-                { throw new InvalidDataException(Loc("Str_Album_KeyUnavailable"), error); }
+                source.Open();
+                using var check = source.CreateCommand();
+                check.CommandText = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name IN ('meta','captures')";
+                if (Convert.ToInt32(check.ExecuteScalar()) != 2) throw new InvalidDataException(Loc("Str_Album_SchemaIncomplete"));
+                RequireKnownSchema(source);
+                using var copy = new SqliteConnection(new SqliteConnectionStringBuilder(Cs(staging, key, true)) { Pooling = false }.ConnectionString);
+                copy.Open();
+                source.BackupDatabase(copy);
+                ImportCopiedForSelfTest?.Invoke();
+                EnsureSchema(copy);
             }
-            string destination = AlbumPath(Path.GetFileName(path));
-            for (int suffix = 2; AlbumNameExists(destination); suffix++)
-                destination = AlbumPath(Path.GetFileNameWithoutExtension(path) + " (" + suffix + ")");
-            string staging = destination + ".importing-" + Guid.NewGuid().ToString("N");
-            string stagingKey = staging + ".key";
-            bool promotedKey = false;
-            try
+            // Naming and publishing the copy is quick, and takes the gate and the catalog lock.
+            lock (_gate)
             {
-                var connectionString = new SqliteConnectionStringBuilder(Cs(path, key, false)) { Mode = SqliteOpenMode.ReadOnly, Pooling = false };
-                using (var source = new SqliteConnection(connectionString.ConnectionString))
+                using var catalogLock = AcquireCatalogLock();
+                string destination = AlbumPath(Path.GetFileName(path));
+                for (int suffix = 2; AlbumNameExists(destination); suffix++)
+                    destination = AlbumPath(Path.GetFileNameWithoutExtension(path) + " (" + suffix + ")");
+                using (var copy = new SqliteConnection(new SqliteConnectionStringBuilder(Cs(staging, key, false)) { Pooling = false }.ConnectionString))
                 {
-                    source.Open();
-                    using var check = source.CreateCommand();
-                    check.CommandText = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name IN ('meta','captures')";
-                    if (Convert.ToInt32(check.ExecuteScalar()) != 2) throw new InvalidDataException(Loc("Str_Album_SchemaIncomplete"));
-                    using var copy = new SqliteConnection(Cs(staging, key, true));
                     copy.Open();
-                    source.BackupDatabase(copy);
-                    EnsureSchema(copy);
                     InitializeAlbumSettings(copy, destination);
                 }
-                SqliteConnection.ClearAllPools();
                 using (var validation = OpenAlbumConnection(staging, key)) { }
                 SqliteConnection.ClearAllPools();
-                if (password == null)
+                bool promotedKey = false;
+                try
                 {
-                    WriteSealedKey(key, stagingKey);
-                    File.Move(stagingKey, Path.ChangeExtension(destination, ".key"));
-                    promotedKey = true;
+                    if (password == null)
+                    {
+                        WriteSealedKey(key, stagingKey);
+                        File.Move(stagingKey, Path.ChangeExtension(destination, ".key"));
+                        promotedKey = true;
+                    }
+                    File.Move(staging, destination);
                 }
-                File.Move(staging, destination);
+                catch
+                {
+                    if (promotedKey) File.Delete(Path.ChangeExtension(destination, ".key"));
+                    throw;
+                }
                 return destination;
             }
-            catch (SqliteException error) when (IsKeyFailure(error)) { needsPassword = true; return null; }
-            catch
-            {
-                if (promotedKey) File.Delete(Path.ChangeExtension(destination, ".key"));
-                throw;
-            }
-            finally
-            {
-                SqliteConnection.ClearAllPools();
-                foreach (string owned in new[] { staging, stagingKey }) try { File.Delete(owned); } catch (IOException) { }
-            }
+        }
+        catch (SqliteException error) when (IsKeyFailure(error)) { needsPassword = true; return null; }
+        finally
+        {
+            lock (_gate) SqliteConnection.ClearAllPools();
+            foreach (string owned in new[] { staging, stagingKey }) try { File.Delete(owned); } catch (IOException) { }
         }
     }
 
@@ -353,13 +384,27 @@ internal static partial class CaptureLibrary
         // edits hold neither the album gate nor the writer lock, so the open album stays usable
         // and the interface thread, which the confirmation runs on, never waits on this thread.
         // Captures added meanwhile belong to the old album and are flushed before the swap.
+        if (canActivate != null)
+        {
+            // The question waits on the user, so it is asked with no cross-process lock held: the
+            // destination is proved openable first, then the locks are let go while the user answers,
+            // and the album is opened again under them below in case another process changed it.
+            using (AcquireCatalogLock())
+            using (AcquireTransitionLock(path))
+            {
+                var probe = PrepareAlbum(path, password, out _);
+                if (probe == null) { needsPassword = true; return false; }
+                probe.Dispose();
+                SqliteConnection.ClearPool(probe);
+            }
+            if (!canActivate()) return false;
+        }
         using var catalogLock = AcquireCatalogLock();
         using var transitionLock = AcquireTransitionLock(path);
         SqliteConnection? destination = PrepareAlbum(path, password, out bool byPassword);
         if (destination == null) { needsPassword = true; return false; }
         try
         {
-            if (canActivate != null && !canActivate()) return false;
             lock (PendingWriter)
             {
                 FlushPending();

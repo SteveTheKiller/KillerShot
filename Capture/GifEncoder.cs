@@ -18,6 +18,9 @@ internal sealed class GifEncoder : IVideoSink
     private int _srcW, _srcH, _w, _h;
     private byte[]? _scaled;
     private ushort[]? _keys, _prevKeys;
+    private readonly int[] _count = new int[32768];
+    private readonly long[] _sumR = new long[32768], _sumG = new long[32768], _sumB = new long[32768];
+    private readonly short[] _lut = new short[32768];
     private bool _first = true;
 
     // The frame waiting for its delay, which is known only when the next frame arrives.
@@ -167,8 +170,10 @@ internal sealed class GifEncoder : IVideoSink
 
         // Histogram of the colors that actually changed, with their summed true colors so the
         // palette uses the real average rather than the 5-bit bucket center.
-        var count = new int[32768];
-        var sumR = new long[32768]; var sumG = new long[32768]; var sumB = new long[32768];
+        // The tables are reused across frames: allocating them per frame put about 950 KB on the
+        // large object heap for every frame recorded.
+        var count = _count; var sumR = _sumR; var sumG = _sumG; var sumB = _sumB;
+        Array.Clear(count); Array.Clear(sumR); Array.Clear(sumG); Array.Clear(sumB);
         for (int y = fy; y < fy + fh; y++)
             for (int x = fx; x < fx + fw; x++)
             {
@@ -183,7 +188,7 @@ internal sealed class GifEncoder : IVideoSink
         var palette = MedianCut(present, count, sumR, sumG, sumB, _maxColors);
 
         // Nearest palette entry for every color present.
-        var lut = new short[32768];
+        var lut = _lut;   // only entries for colors present this frame are written and read
         foreach (int k in present)
         {
             int r = (int)(sumR[k] / count[k]), g = (int)(sumG[k] / count[k]), b = (int)(sumB[k] / count[k]);

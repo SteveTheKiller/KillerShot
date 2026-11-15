@@ -23,7 +23,7 @@ internal static class RenderModeService
     ];
 
     public static RenderChoice Choice =>
-        Enum.TryParse<RenderChoice>(Settings.Get("RenderMode"), out var c) ? c : RenderChoice.Auto;
+        Enum.TryParse<RenderChoice>(Settings.Get("RenderMode"), out var c) && Enum.IsDefined(c) ? c : RenderChoice.Auto;
 
     public static bool RemoteControlDetected()
     {

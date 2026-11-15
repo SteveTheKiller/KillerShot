@@ -1057,6 +1057,10 @@ namespace KillerShot.Services
                 combined["AboutCloseGlyph"] = flat ? "\uE8BB" : "\u2715";
                 combined["AboutCloseFont"]  = flat ? new System.Windows.Media.FontFamily("Segoe MDL2 Assets")
                                                    : new System.Windows.Media.FontFamily("Segoe UI");
+                combined["AboutCloseFontSize"] = flat ? 8.0 : 11.0;
+                // The Files tab template's placement transform (FilesWorkspace.xaml). No theme
+                // moves the tabs, so it stays the identity until one does.
+                combined["TabPlacementTransform"] = Transform.Identity;
                 combined["AboutCloseFg"] = flat ? combined["CaptionCloseBrush"] : combined["MutedTextBrush"];
                 if (flat) combined["AboutCloseHoverFg"] = combined["CaptionCloseBrush"];
                 else

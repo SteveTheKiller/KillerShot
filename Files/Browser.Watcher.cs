@@ -12,6 +12,8 @@ public sealed partial class Browser
     private bool _watchOverflow;
     private bool _flushing;
     private const int RelistThreshold = 200;
+    private readonly Dictionary<string, int> _watchRetries = new(StringComparer.OrdinalIgnoreCase);
+    private const int WatchRetryLimit = 10;
 
     private void StartWatching(string folder)
     {
@@ -43,6 +45,7 @@ public sealed partial class Browser
         _watchDebounce?.Stop();
         _touched.Clear();
         _renames.Clear();
+        _watchRetries.Clear();
         _watchOverflow = false;
         if (_watcher == null) return;
         _watcher.Created -= OnFileChange;
@@ -116,16 +119,28 @@ public sealed partial class Browser
                     survivor = ParentOf(survivor);
                 }
                 var entries = new Dictionary<string, FileEntry?>(StringComparer.OrdinalIgnoreCase);
+                var unreadable = new List<string>();
                 if (survivor == folder && !relist)
                     foreach (string path in touched)
                     {
                         deadline.Token.ThrowIfCancellationRequested();
-                        if (string.Equals(Path.GetDirectoryName(path), folder, StringComparison.OrdinalIgnoreCase))
-                            entries[path] = ReadWatchEntry(path, folder, showHidden);
+                        if (!string.Equals(Path.GetDirectoryName(path), folder, StringComparison.OrdinalIgnoreCase)) continue;
+                        // A file still being written or locked is left out of this batch rather
+                        // than read as deleted, and is looked at again on the next flush.
+                        try { entries[path] = ReadWatchEntry(path, folder, showHidden); }
+                        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { unreadable.Add(path); }
                     }
-                return (survivor, entries);
+                return (survivor, entries, unreadable);
             }, deadline.Token).WaitAsync(NavigationTimeout, deadline.Token);
             if (_disposed || !ReferenceEquals(watcher, _watcher) || State.CurrentFolder != folder) return;
+            foreach (string path in observed.unreadable)
+            {
+                int tries = _watchRetries.TryGetValue(path, out int seen) ? seen + 1 : 1;
+                if (tries > WatchRetryLimit) { _watchRetries.Remove(path); continue; }
+                _watchRetries[path] = tries;
+                _touched.Add(path);
+            }
+            foreach (string path in observed.entries.Keys) _watchRetries.Remove(path);
             if (State.IsLoading && (relist || observed.survivor != folder))
             {
                 _watchOverflow = true;
@@ -182,18 +197,36 @@ public sealed partial class Browser
             }
             else if (row.SizeBytes != pair.Value.SizeBytes || row.Modified != pair.Value.Modified || row.Created != pair.Value.Created)
             {
-                pair.Value.Seq = row.Seq;
-                int index = State.Results.IndexOf(row);
-                if (index >= 0) State.Results[index] = pair.Value;
+                // In place, so a file that keeps changing (a download, a log) stays selected. The
+                // edit is committed through the view so the row moves to its new date group and
+                // sort position, which replacing the row used to do.
+                var fresh = pair.Value;
+                void Update()
+                {
+                    var editable = System.Windows.Data.CollectionViewSource.GetDefaultView(State.Results) as System.ComponentModel.IEditableCollectionView;
+                    bool editing = editable is { IsAddingNew: false, IsEditingItem: false };
+                    if (editing) editable!.EditItem(row);
+                    row.ApplyMetadata(fresh.SizeBytes, fresh.Modified, fresh.Created);
+                    if (editing) editable!.CommitEdit();
+                }
+                if (RepositionEntry is { } reposition) reposition(row, Update);
+                else Update();
             }
         }
         if (renamed) Sorting.ApplySort(State);
     }
 
+    /// <summary>Wraps an in-place row update so the view can carry its selection across the move.</summary>
+    public Action<FileEntry, Action>? RepositionEntry { get; set; }
+
+    /// <summary>Test seam: returns an exception to throw while one watched path is read.</summary>
+    internal static Func<string, Exception?>? WatchReadFault { get; set; }
+
     private static FileEntry? ReadWatchEntry(string path, string folder, bool showHidden)
     {
         try
         {
+            if (WatchReadFault?.Invoke(path) is { } fault) throw fault;
             var attributes = File.GetAttributes(path);
             if (ShouldHide(Path.GetFileName(path), attributes, showHidden)) return null;
             bool directory = (attributes & FileAttributes.Directory) != 0;

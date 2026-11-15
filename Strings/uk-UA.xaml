@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Бірюзовий</sys:String>
     <sys:String x:Key="Str_Color_Blue">Синій</sys:String>
     <sys:String x:Key="Str_Color_Purple">Фіолетовий</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Пурпуровий</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Частота кадрів MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Частота кадрів GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Меню оболонки працює з елементами лише з однієї папки за раз.</sys:String>
     <sys:String x:Key="Str_Color_Black">Чорний</sys:String>
     <sys:String x:Key="Str_Color_White">Білий</sys:String>
     <sys:String x:Key="Str_Color_Hex">Шістнадцятковий колір</sys:String>

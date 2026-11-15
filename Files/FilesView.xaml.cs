@@ -18,6 +18,13 @@ public partial class FilesView : UserControl, IDisposable
     {
         InitializeComponent();
         ResultsList.ItemsSource = Browser.State.Results;
+        // A watched row that moves to a new sort place or date group keeps its selection.
+        Browser.RepositionEntry = (entry, update) =>
+        {
+            bool selected = ResultsList.SelectedItems.Contains(entry);
+            update();
+            if (selected && !ResultsList.SelectedItems.Contains(entry)) ResultsList.SelectedItems.Add(entry);
+        };
         ((System.Collections.Specialized.INotifyCollectionChanged)System.Windows.Data.CollectionViewSource.GetDefaultView(Navigation.Results))
             .CollectionChanged += (_, _) => ResultsChanged?.Invoke();
         ResultsList.Tag = ViewState;

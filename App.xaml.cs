@@ -130,6 +130,7 @@ public partial class App : Application
         if (SelfTestAccessiblePickers.TryRun(e.Args)) return;
         if (SelfTestEditorSafety.TryRun(e.Args)) return;
         if (SelfTestRecordingSafety.TryRun(e.Args)) return;
+        if (SelfTestShellReview.TryRun(e.Args)) return;
         if (SelfTestRecordings.TryRun(e.Args)) return;
         if (SelfTestLibrary.TryRun(e.Args)) return;
         if (SelfTestQr.TryRun(e.Args)) return;

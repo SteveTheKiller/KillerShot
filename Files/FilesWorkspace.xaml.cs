@@ -258,8 +258,15 @@ public partial class FilesWorkspace : UserControl, IDisposable
                 navigation.Notify(nameof(BrowseState.CanGoBack));
                 navigation.Notify(nameof(BrowseState.CanGoForward));
             }
-            foreach (var entry in navigation.Results.Where(entry => state.Selection.Contains(entry.FilePath, StringComparer.OrdinalIgnoreCase)))
-                view.ResultsList.SelectedItems.Add(entry);
+            // A set, not a list scan per row, and one save afterwards instead of one per row.
+            var selected = new HashSet<string>(state.Selection, StringComparer.OrdinalIgnoreCase);
+            _holdSave = true;
+            try
+            {
+                foreach (var entry in navigation.Results.Where(entry => selected.Contains(entry.FilePath)))
+                    view.ResultsList.SelectedItems.Add(entry);
+            }
+            finally { _holdSave = false; }
             await Dispatcher.InvokeAsync(() =>
             {
                 view.UpdateLayout();
@@ -373,9 +380,10 @@ public partial class FilesWorkspace : UserControl, IDisposable
         UpdateTabLayout();
         SaveSession();
     }
+    private bool _holdSave;
     private void QueueSave()
     {
-        if (_disposed) return;
+        if (_disposed || _holdSave) return;
         _saveTimer.Stop();
         _saveTimer.Start();
     }

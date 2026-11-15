@@ -14,6 +14,7 @@ internal static class SelfTestRecordingSafety
     public static bool TryRun(string[] args)
     {
         if (SelfTestMp4Timing.TryRun(args)) return true;
+        if (SelfTestReviewCapture.TryRun(args)) return true;
         if (args.Length < 2 || args[0] is not ("--selftest-recording-safety" or "--selftest-recording-fault" or "--selftest-recording-restore" or "--selftest-audio-downmix" or "--selftest-recording-commands" or "--selftest-audio-fault" or "--selftest-recording-countdown" or "--selftest-mp4-fault")) return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);
@@ -422,6 +423,9 @@ internal static class SelfTestRecordingSafety
         int code = 1;
         try
         {
+            // A fresh settings folder has no storage choice, so the first saved recording would
+            // open the modal first-recording question and wait for a click that never comes.
+            RecordingStorage.Choice = RecordingStorage.Folder;
             await StopCutsOffAudioAsync(report);
             await StopCutsOffAudioAsync(report, paused: true);
             await AudioFailureKeepsVideoAsync(dir, report);
@@ -525,10 +529,10 @@ internal static class SelfTestRecordingSafety
         var controller = new VideoController(tray, [audio]);
         try
         {
-            await controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
+            await controller.StartAsync(new Win32.RECT(0, 0, 320, 240)).WaitAsync(TimeSpan.FromSeconds(30));
             if (!controller.IsRecording) throw new InvalidOperationException("The test recording did not start.");
             await Task.Delay(350);
-            await controller.StopAsync(discard: false);
+            await controller.StopAsync(discard: false).WaitAsync(TimeSpan.FromSeconds(30));
             if (controller.LastVideoPath is not { } path || !File.Exists(path))
                 throw new InvalidOperationException("An audio source error discarded the finalized recording.");
             var probe = SelfTestMp4Probe.Read(path, TimeSpan.Zero);
@@ -538,7 +542,7 @@ internal static class SelfTestRecordingSafety
         }
         finally
         {
-            if (controller.IsRecording) await controller.StopAsync(discard: true);
+            if (controller.IsRecording) await controller.StopAsync(discard: true).WaitAsync(TimeSpan.FromSeconds(30));
         }
     }
 
@@ -547,10 +551,10 @@ internal static class SelfTestRecordingSafety
         VideoSettings.OutputFolder = Path.Combine(dir, "discarded");
         using var tray = new TrayHost();
         var controller = new VideoController(tray, [new TestAudioDevice { FailOnStop = true }]);
-        await controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
+        await controller.StartAsync(new Win32.RECT(0, 0, 320, 240)).WaitAsync(TimeSpan.FromSeconds(30));
         if (!controller.IsRecording) throw new InvalidOperationException("The discard test recording did not start.");
         await Task.Delay(350);
-        await controller.StopAsync(discard: true);
+        await controller.StopAsync(discard: true).WaitAsync(TimeSpan.FromSeconds(30));
         if (controller.LastVideoPath != null || Directory.EnumerateFiles(VideoSettings.OutputFolder, "*", SearchOption.AllDirectories).Any())
             throw new InvalidOperationException("Explicitly discarded video was retained after an audio error.");
         report.Add("Explicit discard still removes finalized video after an audio error: PASS");
@@ -563,7 +567,7 @@ internal static class SelfTestRecordingSafety
         using var gate = new ManualResetEventSlim();
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var controller = new VideoController(tray, [new TestAudioDevice { StopGate = gate, StopEntered = entered }]);
-        await controller.StartAsync(new Win32.RECT(0, 0, 320, 240));
+        await controller.StartAsync(new Win32.RECT(0, 0, 320, 240)).WaitAsync(TimeSpan.FromSeconds(30));
         await Task.Delay(150);
         Task first = controller.StopAsync(false);
         try
@@ -580,7 +584,7 @@ internal static class SelfTestRecordingSafety
                 throw new InvalidOperationException("Stop completed without publishing the finalized video.");
             report.Add("Concurrent Stop waits for finalization and publication: PASS");
         }
-        finally { gate.Set(); await first; }
+        finally { gate.Set(); await first.WaitAsync(TimeSpan.FromSeconds(30)); }
     }
 
     private static async Task ExitDuringCountdownAsync(string dir, List<string> report)
@@ -593,7 +597,7 @@ internal static class SelfTestRecordingSafety
         bool ready = await controller.PrepareForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
         if (!ready || !startup.IsCompleted || controller.IsRecording || controller.LastVideoPath != null)
             throw new InvalidOperationException($"Exit did not await countdown cancellation and startup cleanup: ready={ready}, startup={startup.Status}, recording={controller.IsRecording}, path={controller.LastVideoPath}.");
-        await startup;
+        await startup.WaitAsync(TimeSpan.FromSeconds(30));
         VideoSettings.Countdown = false;
         report.Add("Exit during countdown waits for startup cleanup: PASS");
     }
@@ -603,7 +607,7 @@ internal static class SelfTestRecordingSafety
         using var sink = new DelayedEncoder { FailFinalization = true };
         sink.Release.Set();
         var recorder = new Recorder(new Win32.RECT(0, 0, 64, 64), sink, 30, false);
-        await recorder.StartAsync();
+        await recorder.StartAsync().WaitAsync(TimeSpan.FromSeconds(30));
         await sink.FirstFrame.Task.WaitAsync(TimeSpan.FromSeconds(3));
         Exception? failure = null;
         try { await recorder.StopAsync(); }

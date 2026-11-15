@@ -358,7 +358,14 @@ namespace KillerShot.Files
             return n == celt ? 0 : 1; // S_OK or S_FALSE
         }
 
-        public int Skip(int celt) { _index += celt; return 0; }
+        public int Skip(int celt)
+        {
+            // COM contract: stop at the end and say S_FALSE when fewer than celt were left.
+            int left = _formats.Length - _index;
+            if (celt < 0 || celt > left) { _index = _formats.Length; return 1; }
+            _index += celt;
+            return 0;
+        }
         public int Reset() { _index = 0; return 0; }
         public void Clone(out IEnumFORMATETC newEnum) => newEnum = new FormatEtcEnumerator(_formats, _index);
     }

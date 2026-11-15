@@ -470,6 +470,8 @@ internal static partial class CaptureLibrary
             int coreTables = Convert.ToInt32(probe.ExecuteScalar());
             if (!create && coreTables != 2)
                 throw new InvalidDataException("The existing album schema is incomplete.");
+            // Before anything writes to the file: an album a newer KillerShot made stays as it is.
+            if (coreTables == 2) RequireKnownSchema(db);
             Exec(db, "PRAGMA journal_mode = WAL");
             Exec(db, "PRAGMA foreign_keys = ON");
             EnsureSchema(db);
@@ -522,6 +524,8 @@ internal static partial class CaptureLibrary
         Task.Run(() =>
         {
             FlushPending();
+            try { RemoveUnfinishedVideos(database); }
+            catch (SqliteException error) { System.Diagnostics.Trace.TraceWarning("Unfinished recordings stay until the next open: {0}", error.Message); }
             if (importLegacy) ImportRecentFolder(database, recent);
             Prune(database);
             StartOcr();
@@ -619,11 +623,29 @@ internal static partial class CaptureLibrary
             migration.ExecuteNonQuery();
             repair.Commit();
         }
+        // Only ever raised: an album is never marked older than the newest build that opened it.
         using var cmd = db.CreateCommand();
-        cmd.CommandText = "INSERT OR REPLACE INTO meta(key, value) VALUES ('schema', $v)";
+        cmd.CommandText = """
+            INSERT INTO meta(key, value) VALUES ('schema', $v)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value WHERE CAST(meta.value AS INTEGER) < excluded.value
+            """;
         cmd.Parameters.AddWithValue("$v", SchemaVersion);
         cmd.ExecuteNonQuery();
     }
+
+    /// <summary>Refuses an album whose schema is newer than this build knows, before anything
+    /// writes to it, so opening it here can never downgrade or damage it.</summary>
+    private static void RequireKnownSchema(SqliteConnection db)
+    {
+        using var read = db.CreateCommand();
+        read.CommandText = "SELECT CAST(value AS INTEGER) FROM meta WHERE key = 'schema'";
+        if (read.ExecuteScalar() is long stored && stored > SchemaVersion)
+            throw new NewerAlbumException(Loc("Str_Album_NewerSchema"));
+    }
+
+    /// <summary>An album made by a newer KillerShot. Not an InvalidDataException, so the recovery
+    /// that sets a damaged half-created album aside never moves it.</summary>
+    private sealed class NewerAlbumException(string message) : IOException(message);
 
     private static void Exec(string sql) => Exec(Db, sql);
 
@@ -1269,9 +1291,16 @@ internal static partial class CaptureLibrary
         {
             SqliteConnection database;
             lock (_gate) { SetAlbumSetting("LibraryKeep", value); database = Db; }
-            Task.Run(() => Prune(database));
+            // A failed prune is reported like a failed write, never lost with the task.
+            Task.Run(() =>
+            {
+                try { Prune(database); }
+                catch (Exception error) { ReportWriteFailure(error); }
+            });
         }
     }
+
+    private const int MaxKeepDays = 36500;
 
     public static (string? Kind, int Amount) ParseKeep(string keep)
     {
@@ -1279,42 +1308,55 @@ internal static partial class CaptureLibrary
         var parts = keep.Split(':');
         if (parts.Length == 2 && parts[0] is ("count" or "days") &&
             int.TryParse(parts[1], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int n) && n > 0)
-            return (parts[0], n);
+            // A day count past a century would overflow the cutoff date; nothing that old exists.
+            return (parts[0], parts[0] == "days" ? Math.Min(n, MaxKeepDays) : n);
         return (null, 0);
     }
 
     /// <summary>Removes the captures beyond the history limit, oldest first.</summary>
     private static void Prune(SqliteConnection? expectedDatabase = null)
     {
-        int removed;
+        var removed = new List<long>();
+        long session;
         lock (_gate)
         {
             if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
+            session = _session;
             var (kind, amount) = ParseKeep(Keep);
             if (kind is not ("count" or "days")) return;
             using var transaction = _db.BeginTransaction();
+            string beyond = kind == "count"
+                ? "SELECT id FROM captures ORDER BY taken_utc DESC LIMIT -1 OFFSET $n"
+                : "SELECT id FROM captures WHERE taken_utc < $t";
+            long cutoff = kind == "days" ? DateTime.UtcNow.AddDays(-amount).Ticks : 0;
+            void Bind(SqliteCommand command)
+            {
+                command.Transaction = transaction;
+                if (kind == "count") command.Parameters.AddWithValue("$n", amount);
+                else command.Parameters.AddWithValue("$t", cutoff);
+            }
+            // The ids first, so the pruned recordings' playback copies can go with them.
+            using (var select = _db.CreateCommand())
+            {
+                select.CommandText = beyond;
+                Bind(select);
+                using var rows = select.ExecuteReader();
+                while (rows.Read()) removed.Add(rows.GetInt64(0));
+            }
+            if (removed.Count == 0) return;
             using var cmd = _db.CreateCommand();
-            cmd.Transaction = transaction;
-            if (kind == "count")
-            {
-                cmd.CommandText = """
-                    DELETE FROM capture_search WHERE rowid IN (SELECT id FROM captures ORDER BY taken_utc DESC LIMIT -1 OFFSET $n);
-                    DELETE FROM captures WHERE id IN (SELECT id FROM captures ORDER BY taken_utc DESC LIMIT -1 OFFSET $n);
-                    """;
-                cmd.Parameters.AddWithValue("$n", amount);
-            }
-            else
-            {
-                cmd.CommandText = """
-                    DELETE FROM capture_search WHERE rowid IN (SELECT id FROM captures WHERE taken_utc < $t);
-                    DELETE FROM captures WHERE taken_utc < $t;
-                    """;
-                cmd.Parameters.AddWithValue("$t", DateTime.UtcNow.AddDays(-amount).Ticks);
-            }
-            removed = cmd.ExecuteNonQuery();
+            cmd.CommandText = $"""
+                DELETE FROM capture_search WHERE rowid IN ({beyond});
+                DELETE FROM captures WHERE id IN ({beyond});
+                """;
+            Bind(cmd);
+            cmd.ExecuteNonQuery();
             transaction.Commit();
-            if (removed > 0) ClearThumbCache();
+            ClearThumbCache();
         }
-        if (removed > 0) RaiseChanged();
+        // Queued, like Close: playback takes its own lock before PendingWriter and this gate, and
+        // a capture save prunes while holding PendingWriter.
+        _ = Task.Run(() => { foreach (long id in removed) VideoCaptures.ForgetPlayback(session, id); });
+        RaiseChanged();
     }
 }

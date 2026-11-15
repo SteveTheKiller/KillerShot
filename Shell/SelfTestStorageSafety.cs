@@ -17,6 +17,7 @@ internal static class SelfTestStorageSafety
     {
         if (SelfTestAlbums.TryRun(args)) return true;
         if (SelfTestCaptureLifetime.TryRun(args)) return true;
+        if (SelfTestServiceFixes.TryRun(args)) return true;
         if (args.Length != 3 || args[0] != "--selftest-storage-safety") return false;
         string dir = Path.GetFullPath(args[1]);
         Directory.CreateDirectory(dir);

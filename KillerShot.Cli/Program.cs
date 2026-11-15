@@ -1459,7 +1459,9 @@ public static class Program
             && int.TryParse(parts[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int y)
             && int.TryParse(parts[2].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int w)
             && int.TryParse(parts[3].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int h)
-            && w > 0 && h > 0)
+            && w > 0 && h > 0
+            // The right and bottom edges must fit an int, or the bounds checks compare wrapped values.
+            && (long)x + w <= int.MaxValue && (long)y + h <= int.MaxValue)
             return new Win32.RECT(x, y, x + w, y + h);
         throw new CliException("--rect must be x,y,width,height in screen pixels, for example 0,0,800,600.");
     }
@@ -1763,7 +1765,10 @@ public static class Program
                 if (Array.IndexOf(values, name) >= 0)
                 {
                     string? value = inline ?? (i + 1 < args.Length ? args[++i] : null);
-                    if (string.IsNullOrWhiteSpace(value)) throw new CliException($"--{name} needs a value.");
+                    // The next option is not this one's value: "--out --json" leaves --out empty
+                    // instead of writing a file named --json. "--out=--json" still names one.
+                    if (string.IsNullOrWhiteSpace(value) || inline == null && value.StartsWith("--", StringComparison.Ordinal))
+                        throw new CliException($"--{name} needs a value.");
                     o._items[name] = value;
                 }
                 else if (Array.IndexOf(flags, name) >= 0 && inline == null)

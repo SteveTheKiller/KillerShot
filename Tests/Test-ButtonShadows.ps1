@@ -17,7 +17,7 @@ function Test-Shadow($element) {
     }).Count -gt 0
 }
 $files = Get-ChildItem -LiteralPath $Root -Recurse -Filter *.xaml |
-    Where-Object { $_.FullName -notmatch '\\(bin|obj|Strings|shot-landing)\\' }
+    Where-Object { $_.FullName -notmatch '\\(bin|obj|Strings|shot-landing|\.claude)\\' }
 if ($files.Count -eq 0) { throw "No XAML found under $Root." }
 $found = foreach ($file in $files) {
     $xaml = [System.Xml.Linq.XDocument]::Load($file.FullName, [System.Xml.Linq.LoadOptions]::SetLineInfo)

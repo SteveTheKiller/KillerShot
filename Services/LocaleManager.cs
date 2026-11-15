@@ -66,6 +66,7 @@ namespace KillerShot.Services
         private static FileSystemWatcher? _watcher;
         private static System.Windows.Threading.DispatcherTimer? _reloadDebounce;
         private static bool _externalLoadedOnce;
+        private static ResourceDictionary? _lastExternal;
 
         /// <summary>Call once at startup, after ThemeManager.Initialize, to restore the saved locale,
         /// or on first run the one matching the Windows display language.</summary>
@@ -227,6 +228,9 @@ namespace KillerShot.Services
             if (ExternalFile is not null)
             {
                 if (TryApplyExternal()) { EnsureWatcher(); return; }
+                // Unreadable for a moment (mid-save): the last good file stays applied, as it
+                // does on a live reload, and the watcher picks up the finished save.
+                if (_lastExternal is not null) { SetOverride(_lastExternal); EnsureWatcher(); return; }
                 if (!_externalLoadedOnce)
                     MessageBox.Show($"Could not load the translation file:\n{ExternalFile}\n\nCheck the path and the file's XML, then start {AppInfo.DisplayName} again.",
                                     $"{AppInfo.DisplayName} --lang-file", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -303,6 +307,7 @@ namespace KillerShot.Services
                         && (entry.Value is not string text || FitsFormat((string)english, text)))
                         rd[entry.Key] = entry.Value;
                 SetOverride(rd);
+                _lastExternal = rd;
                 _externalLoadedOnce = true;
                 return true;
             }

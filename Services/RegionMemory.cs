@@ -63,39 +63,58 @@ internal static class RegionMemory
 
     public const int MaxPresets = 12;
 
-    public static IReadOnlyList<RegionPreset> Presets
+    public static IReadOnlyList<RegionPreset> Presets => ReadPresets(out _);
+
+    /// <summary>The saved regions, skipping any single entry that does not read. False when the
+    /// stored list itself does not parse, so a save never overwrites what the user could repair.</summary>
+    private static List<RegionPreset> ReadPresets(out bool readable)
     {
-        get
+        readable = true;
+        var result = new List<RegionPreset>();
+        if (Settings.Get("RegionPresets") is not { Length: > 0 } json) return result;
+        JsonArray list;
+        try
+        {
+            if (JsonNode.Parse(json) is not JsonArray parsed) { readable = false; return result; }
+            list = parsed;
+        }
+        catch (JsonException) { readable = false; return result; }
+        foreach (var node in list.OfType<JsonObject>())
         {
             try
             {
-                if (Settings.Get("RegionPresets") is not { } json || JsonNode.Parse(json) is not JsonArray list) return [];
-                var result = new List<RegionPreset>();
-                foreach (var node in list.OfType<JsonObject>())
+                string name = node["n"]?.GetValue<string>() ?? "";
+                int w = node["w"]?.GetValue<int>() ?? 0, h = node["h"]?.GetValue<int>() ?? 0;
+                if (name.Length == 0 || w < 1 || h < 1) continue;
+                Win32.RECT? place = null;
+                if (node["x"] is { } x && node["y"] is { } y)
                 {
-                    string name = node["n"]?.GetValue<string>() ?? "";
-                    int w = node["w"]?.GetValue<int>() ?? 0, h = node["h"]?.GetValue<int>() ?? 0;
-                    if (name.Length == 0 || w < 1 || h < 1) continue;
-                    Win32.RECT? place = node["x"] is { } x && node["y"] is { } y
-                        ? new Win32.RECT(x.GetValue<int>(), y.GetValue<int>(), x.GetValue<int>() + w, y.GetValue<int>() + h) : null;
-                    result.Add(new RegionPreset(name, place, w, h));
+                    int left = x.GetValue<int>(), top = y.GetValue<int>();
+                    if (left > int.MaxValue - w || top > int.MaxValue - h) continue;
+                    place = new Win32.RECT(left, top, left + w, top + h);
                 }
-                return result;
+                result.Add(new RegionPreset(name, place, w, h));
             }
-            catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException) { return []; }
+            catch (Exception error) when (error is JsonException or InvalidOperationException or FormatException) { }
         }
+        return result;
     }
 
     /// <summary>Adds or replaces a saved region by name, keeping at most <see cref="MaxPresets"/>.</summary>
     public static void SavePreset(RegionPreset preset)
     {
-        var list = Presets.Where(p => !p.Name.Equals(preset.Name, StringComparison.CurrentCultureIgnoreCase)).Append(preset)
-            .TakeLast(MaxPresets).ToList();
-        Store(list);
+        var current = ReadPresets(out bool readable);
+        if (!readable) return;
+        Store(current.Where(p => !p.Name.Equals(preset.Name, StringComparison.CurrentCultureIgnoreCase)).Append(preset)
+            .TakeLast(MaxPresets).ToList());
     }
 
-    public static void RemovePreset(string name) =>
-        Store(Presets.Where(p => !p.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)).ToList());
+    public static void RemovePreset(string name)
+    {
+        var current = ReadPresets(out bool readable);
+        if (!readable) return;
+        Store(current.Where(p => !p.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)).ToList());
+    }
 
     private static void Store(IEnumerable<RegionPreset> presets)
     {

@@ -13,6 +13,11 @@ public static class MarksFormat
 {
     public const int Version = 1;
 
+    /// <summary>The largest text, callout or step size a stored mark may have: under WPF's
+    /// FormattedText limit of about 35,791, and far past anything the editor makes, so marks a
+    /// person resized large still load.</summary>
+    internal const double MaxTextSize = 30_000;
+
     public static string Write(IEnumerable<Annotation> marks)
     {
         var list = new JsonArray();
@@ -78,6 +83,9 @@ public static class MarksFormat
         Color c = ParseColor(o["c"]!.GetValue<string>());
         double w = D("w");
         if (!double.IsFinite(w) || w <= 0) return null;
+        // Text, callout and step widths are font and badge sizes. A stored size past what text
+        // layout accepts would fail later when drawn, so it is rejected here (review ED-006).
+        if (w > MaxTextSize && o["t"]?.GetValue<string>() is "text" or "callout" or "step") return null;
         switch (o["t"]?.GetValue<string>())
         {
             case "stroke":

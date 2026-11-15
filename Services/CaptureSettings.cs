@@ -55,7 +55,7 @@ internal static class CaptureSettings
 
     public static CaptureMode LastMode
     {
-        get => Enum.TryParse<CaptureMode>(Settings.Get("LastMode"), out var m) ? m : CaptureMode.Region;
+        get => Enum.TryParse<CaptureMode>(Settings.Get("LastMode"), out var m) && Enum.IsDefined(m) ? m : CaptureMode.Region;
         set => Settings.Set("LastMode", value.ToString());
     }
 

@@ -195,7 +195,9 @@ internal static class SelfTestFilesIntegration
             await files.NavigateTo(pasteFolder);
             SendKey(window, files.ResultsList, Key.V, ModifierKeys.Control);
             await files.CurrentCommand;
-            Check(reads == 1 && File.Exists(Path.Combine(pasteFolder, "image.png")) && !File.Exists(imagePath), "host Ctrl+V moves actual file through FileOps");
+            // The second read checks the clipboard still holds the move list before clearing it.
+            Check(reads == 2 && File.Exists(Path.Combine(pasteFolder, "image.png")) && !File.Exists(imagePath)
+                && clipboard?.GetDataPresent(DataFormats.FileDrop) != true, "host Ctrl+V moves actual file through FileOps and clears the cut list");
             await files.NavigateTo(pasteFolder);
             files.ResultsList.Focus();
             SendKey(window, files.ResultsList, Key.A, ModifierKeys.Control);
@@ -210,7 +212,8 @@ internal static class SelfTestFilesIntegration
                 var down = new KeyEventArgs(new TestKeyboard(ModifierKeys.Control), PresentationSource.FromVisual(window)!, 0, key)
                     { RoutedEvent = Keyboard.PreviewKeyDownEvent };
                 address.RaiseEvent(down);
-                Check(!down.Handled && writes == 2 && reads == 1, "address text retains preview ownership for Ctrl+" + key);
+                // writes 3 and reads 2 include the cut-list clear after the Ctrl+V move above.
+                Check(!down.Handled && writes == 3 && reads == 2, "address text retains preview ownership for Ctrl+" + key);
             }
             address.Text = "abc";
             address.CaretIndex = 3;

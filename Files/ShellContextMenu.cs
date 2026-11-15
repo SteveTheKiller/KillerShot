@@ -45,9 +45,13 @@ namespace KillerShot.Files
             IntPtr hwnd = new WindowInteropHelper(owner).Handle;
             if (hwnd == IntPtr.Zero) return null;
             if (AcquireNativeMenu is { } acquire) return acquire(owner, paths);
+            // One IShellFolder answers for one folder. A selection from several folders (search
+            // results) is refused whole: a menu over part of it would run Delete or Cut on fewer
+            // items than were selected, with nothing saying so.
+            if (SpansFolders(paths)) return null;
             string? dir = Path.GetDirectoryName(paths[0]);
             if (string.IsNullOrEmpty(dir)) return null;
-            var same = paths.Where(path => string.Equals(Path.GetDirectoryName(path), dir, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var same = paths;
             IShellFolder? desktop = null;
             IShellFolder? folder = null;
             IContextMenu? menu = null;
@@ -76,7 +80,8 @@ namespace KillerShot.Files
                 {
                     eaten = 0; attrs = 0;
                     if (folder.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, Path.GetFileName(path),
-                        ref eaten, out IntPtr child, ref attrs) == 0) children.Add(child);
+                        ref eaten, out IntPtr child, ref attrs) != 0) return null;
+                    children.Add(child);
                 }
                 if (children.Count == 0) return null;
                 if (folder.GetUIObjectOf(hwnd, (uint)children.Count, children.ToArray(), ref IID_IContextMenu,
@@ -92,6 +97,14 @@ namespace KillerShot.Files
             }
             catch { return null; }
             finally { if (!transferred) Release(); }
+        }
+
+        /// <summary>True when the paths do not all share one containing folder.</summary>
+        public static bool SpansFolders(IReadOnlyList<string> paths)
+        {
+            if (paths.Count == 0) return false;
+            string? first = Path.GetDirectoryName(paths[0]);
+            return paths.Any(path => !string.Equals(Path.GetDirectoryName(path), first, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>A deterministic lease for the HMENU, PIDLs and shell COM objects.</summary>
@@ -168,9 +181,19 @@ namespace KillerShot.Files
         {
             SetForegroundWindow(hwnd);
             GetCursorPos(out POINT point);
-            return TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+            int chosen = TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
                 point.X, point.Y, hwnd, IntPtr.Zero);
+            // Documented for TrackPopupMenu on a window that was made foreground for it: without
+            // a posted message the next click sometimes reopens or swallows the menu.
+            PostMessage(hwnd, WM_NULL, IntPtr.Zero, IntPtr.Zero);
+            return chosen;
         }
+
+        private const int WM_NULL = 0;
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool PostMessage(IntPtr hwnd, int message, IntPtr wparam, IntPtr lparam);
 
         /// <summary>
         /// The standard Windows properties dialog. Returns false if the shell refused, so the

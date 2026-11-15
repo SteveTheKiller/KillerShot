@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Blågrønn</sys:String>
     <sys:String x:Key="Str_Color_Blue">Blå</sys:String>
     <sys:String x:Key="Str_Color_Purple">Lilla</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Magenta</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Bildefrekvens for MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Bildefrekvens for GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Skallmenyen virker på elementer fra én mappe om gangen.</sys:String>
     <sys:String x:Key="Str_Color_Black">Svart</sys:String>
     <sys:String x:Key="Str_Color_White">Hvit</sys:String>
     <sys:String x:Key="Str_Color_Hex">Heksfarge</sys:String>

@@ -70,6 +70,18 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Holding Alt while clicking during a region capture no longer drags the dimmed screen off its monitor, which made the selection land on the wrong pixels.
 - On a narrow window with the portable badge showing, the version number no longer runs into the corner grip once the copyright hides to make room.
 - Right-clicking the collections sidebar opens its card with the sidebar's side, collection preview style and Minimize. The menu started empty and filled only once it was open, so it could fail to show.
+- An MP4 recording with sound that fails while saving reports the error instead of crashing KillerShot. The sound writer kept writing after the video file was closed.
+- Pressing Escape while dragging out a Read a region area cancels the drag too. Releasing the mouse used to crop the picture or add a shape with the current tool.
+- Dropping files onto Files from another program tells that program what really happened, so it no longer deletes originals that were only copied or never arrived.
+- Deleting for good in Files removes read-only files and folders instead of stopping partway, a partial delete, move or recycle says how many items worked and which failed, and the Windows shell menu refuses a selection spread across folders instead of quietly dropping items.
+- Files keeps a file listed when it is briefly unreadable, keeps a changed file's selection, leaves column widths you set alone when the pane resizes, hides the resize grips of hidden columns, clears a cut after it is pasted, and refreshes icons of changed programs and shortcuts.
+- One damaged saved region no longer erases the other saved regions, and a damaged setting value falls back to its default.
+- An album made by a newer KillerShot is refused with a plain message instead of being opened and marked as the older format. Importing a large recording or album no longer holds up the rest of the library, and a failed album rename puts the album back as it was.
+- Deleting a capture while its marks are being saved, changing the recognition languages while text is being read, and very long history limits are handled without errors or stale text.
+- A recording's Save as cleans characters a file name cannot carry out of the window title, and deleting a linked-folder picture that is already gone says so without asking first.
+- Canceling exit no longer leaves later recordings skipping the storage question and the move into the library.
+- The command line refuses an option given another option as its value, such as `capture --out --json`, and a region too large to add up, as usage errors.
+- Settings combo boxes and text boxes, the keyboard map's keys and the Files list have screen reader names, the two frame rate boxes have different names, and the Magenta accent has its own name in every language.
 
 ### Changed
 

@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">টিল</sys:String>
     <sys:String x:Key="Str_Color_Blue">নীল</sys:String>
     <sys:String x:Key="Str_Color_Purple">বেগুনি</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">ম্যাজেন্টা</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">MP4 ফ্রেম রেট</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">GIF ফ্রেম রেট</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">শেল মেনু একবারে কেবল একটি ফোল্ডারের আইটেমে কাজ করে।</sys:String>
     <sys:String x:Key="Str_Color_Black">কালো</sys:String>
     <sys:String x:Key="Str_Color_White">সাদা</sys:String>
     <sys:String x:Key="Str_Color_Hex">হেক্স রং</sys:String>

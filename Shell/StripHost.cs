@@ -27,7 +27,8 @@ namespace KillerShot.Shell
             // carousel standing on end beside the collections would make three columns.
             NavigationDock.AllowedSides = [DockSide.Left, DockSide.Right];
             StripDock.AllowedSides = [DockSide.Top, DockSide.Bottom];
-            NavigationDock.Side = Settings.Get("CollectionSidebarSide") == "Right" ? DockSide.Right : DockSide.Left;            NavigationDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
+            NavigationDock.Side = Settings.Get("CollectionSidebarSide") == "Right" ? DockSide.Right : DockSide.Left;
+            NavigationDock.IsMinimized = Settings.GetBool("AlbumStripMinimized", false);
             NavigationDock.PaneWidth = double.TryParse(Settings.Get("AlbumStripWidth"), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
                 && double.IsFinite(w) ? Math.Clamp(w, 110, 600) : 220;
             StripDock.Side = Settings.Get("EditorCarouselSide") == "Bottom" ? DockSide.Bottom : DockSide.Top;

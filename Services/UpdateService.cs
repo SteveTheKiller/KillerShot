@@ -82,7 +82,7 @@ namespace KillerShot.Services
         }
 
         /// <summary>Asks GitHub for the latest release tag and returns it only when it is newer than
-        /// <paramref name="current"/>, as "v1.2.3". Null when there is nothing newer, or on any
+        /// <paramref name="current"/>, as its tag reads ("v1.2.3" or "1.2.3"). Null when there is nothing newer, or on any
         /// failure: with no internet this has to stay quiet. Times out fast.</summary>
         internal static async Task<string?> CheckAsync(Version? current)
         {
@@ -98,7 +98,7 @@ namespace KillerShot.Services
             catch { return null; }
         }
 
-        /// <summary>The release in GitHub's latest-release <paramref name="json"/>, as "v1.2.3",
+        /// <summary>The release in GitHub's latest-release <paramref name="json"/>, as its tag reads,
         /// when it is a published, stable vX.Y.Z release newer than <paramref name="current"/>
         /// (KillerBench's release check). Null for anything else.</summary>
         internal static string? NewerReleaseTag(string json, Version current)
@@ -112,7 +112,8 @@ namespace KillerShot.Services
 
             var cur = new Version(current.Major, current.Minor, current.Build < 0 ? 0 : current.Build);
             var lat = new Version(latest.Major, latest.Minor, latest.Build < 0 ? 0 : latest.Build);
-            return lat > cur ? $"v{lat.ToString(3)}" : null;
+            // The tag as published, not rebuilt: the download URLs name the release by it.
+            return lat > cur ? tag : null;
         }
 
         /// <summary>Reads <c>tag_name</c>, <c>draft</c> and <c>prerelease</c> from the top-level object of a

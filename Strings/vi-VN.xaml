@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Xanh mòng két</sys:String>
     <sys:String x:Key="Str_Color_Blue">Xanh dương</sys:String>
     <sys:String x:Key="Str_Color_Purple">Tím</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Đỏ tươi</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Tốc độ khung hình MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Tốc độ khung hình GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Menu shell chỉ hoạt động với các mục trong một thư mục mỗi lần.</sys:String>
     <sys:String x:Key="Str_Color_Black">Đen</sys:String>
     <sys:String x:Key="Str_Color_White">Trắng</sys:String>
     <sys:String x:Key="Str_Color_Hex">Màu hex</sys:String>

@@ -651,7 +651,7 @@ namespace KillerShot.Files
                             return result;
                         }
                     }
-                    else if (File.Exists(p)) File.Delete(p);
+                    else if (File.Exists(p)) { ClearReadOnly(p); File.Delete(p); }
                     result.Succeeded++;
                 }
                 catch (Exception ex) { result.Failed.Add((p, ex.Message)); }
@@ -682,6 +682,7 @@ namespace KillerShot.Files
                     }
                     else
                     {
+                        ClearReadOnly(entry);
                         File.Delete(entry);
                         removedAny = true;
                         removed?.Invoke(entry);
@@ -690,10 +691,19 @@ namespace KillerShot.Files
             }
 
             if (ct.IsCancellationRequested) return false;
+            ClearReadOnly(dir);
             Directory.Delete(dir);
             removedAny = true;
             removed?.Invoke(dir);
             return true;
+        }
+
+        /// <summary>A permanent delete is asked for by name, so a read-only flag (camera cards
+        /// set it on every file) is not a reason to leave half a folder behind.</summary>
+        private static void ClearReadOnly(string path)
+        {
+            var attributes = File.GetAttributes(path);
+            if ((attributes & FileAttributes.ReadOnly) != 0) File.SetAttributes(path, attributes & ~FileAttributes.ReadOnly);
         }
 
         /// <summary>
@@ -737,7 +747,16 @@ namespace KillerShot.Files
             {
                 result.Canceled = op.fAnyOperationsAborted;
                 result.AccessDenied = rc == DE_ACCESSDENIEDSRC || rc == ERROR_ACCESS_DENIED;
-                if (rc != 0) result.Failed.Add((list[0], "SHFileOperation returned " + rc));
+                // The shell reports one code for the whole batch, so the disk says what happened
+                // to each item: gone was recycled, still there was not.
+                foreach (string path in list)
+                {
+                    bool left;
+                    try { left = File.Exists(path) || Directory.Exists(path); }
+                    catch { left = true; }
+                    if (!left) result.Succeeded++;
+                    else if (rc != 0) result.Failed.Add((path, "SHFileOperation returned " + rc));
+                }
             }
             else result.Succeeded = list.Count;
 
@@ -780,12 +799,40 @@ namespace KillerShot.Files
         {
             string path = Path.Combine(parent, baseName);
             int n = 2;
-            while (Directory.Exists(path) || File.Exists(path))
-                path = Path.Combine(parent, baseName + " (" + n++ + ")");
-
-            try { Directory.CreateDirectory(path); return path; }
+            try
+            {
+                // CreateDirectoryW fails on a name that exists, so a folder made by someone else
+                // between the check and the create moves on to the next number instead of being
+                // handed back as ours.
+                while (true)
+                {
+                    if (!Directory.Exists(path) && !File.Exists(path))
+                    {
+                        if (CreateDirectoryW(Extended(path), IntPtr.Zero)) return path;
+                        int error = Marshal.GetLastWin32Error();
+                        if (error != ERROR_ALREADY_EXISTS) return null;
+                    }
+                    if (n > 10000) return null;
+                    path = Path.Combine(parent, baseName + " (" + n++ + ")");
+                }
+            }
             catch { return null; }
         }
+
+        private const int ERROR_ALREADY_EXISTS = 183;
+
+        // The app manifest is not long-path aware, and unlike Directory.CreateDirectory the raw
+        // call adds no \\?\ prefix, so a deep folder needs it written here.
+        private static string Extended(string path)
+        {
+            string full = Path.GetFullPath(path);
+            if (full.StartsWith(@"\\?\", StringComparison.Ordinal)) return full;
+            return full.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + full.Substring(2) : @"\\?\" + full;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CreateDirectoryW(string path, IntPtr security);
 
         // ── Helpers ──────────────────────────────────────────────
 

@@ -47,8 +47,11 @@ public partial class FilesView
                 Settings.Set("Files." + name, value);
                 UpdateOptionButtons();
             }
-            int column = name switch { "NameWidth" => 1, "LocationWidth" => 2, "SizeWidth" => 3, "ModifiedWidth" => 4, "TypeWidth" => 5, "CreatedWidth" => 6, _ => 0 };
-            if (column != 0) Settings.Set("Files.Column." + column, ViewState.GetColumnWidth(column).ToString(CultureInfo.InvariantCulture));
+        };
+        ViewState.ColumnWidthSet += column =>
+        {
+            if (column is >= 1 and <= 6)
+                Settings.Set("Files.Column." + column, ViewState.GetColumnWidth(column).ToString(CultureInfo.InvariantCulture));
         };
     }
     public void SetDensity(int density) => ViewState.Density = density;

@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Petrol</sys:String>
     <sys:String x:Key="Str_Color_Blue">Blau</sys:String>
     <sys:String x:Key="Str_Color_Purple">Lila</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Magenta</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">MP4-Bildrate</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">GIF-Bildrate</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Das Shell-Menü bearbeitet nur Elemente aus jeweils einem Ordner.</sys:String>
     <sys:String x:Key="Str_Color_Black">Schwarz</sys:String>
     <sys:String x:Key="Str_Color_White">Weiß</sys:String>
     <sys:String x:Key="Str_Color_Hex">Hex-Farbe</sys:String>

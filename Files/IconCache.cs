@@ -30,6 +30,15 @@ namespace KillerShot.Files
         private static readonly Dictionary<string, ImageSource?> Cache = new(StringComparer.OrdinalIgnoreCase);
         // Match the picker's 256-entry thumbnail budget. Shell and brand icons remain shared.
         private const int ThumbnailLimit = 256;
+
+        // Per-file icons (exe, ico, lnk, folders) are one entry per path, so a long browse would
+        // otherwise grow without end. Bounded like the thumbnails, least recently used first out.
+        private const int PerFileLimit = 256;
+        private static readonly Dictionary<string, LinkedListNode<(string Key, ImageSource? Image)>> PerFile = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly LinkedList<(string Key, ImageSource? Image)> PerFileLru = new();
+
+        /// <summary>Test seam: how many per-file shell icons are held.</summary>
+        internal static int PerFileIconCount { get { lock (PerFile) return PerFile.Count; } }
         private sealed record Thumbnail(string Key, string Path, long Timestamp, long Generation, ImageSource? Image);
         private static long ThumbnailGeneration;
         private static readonly Dictionary<string, LinkedListNode<Thumbnail>> Thumbnails = new(StringComparer.OrdinalIgnoreCase);
@@ -326,9 +335,23 @@ namespace KillerShot.Files
             }
 
             string key = (perFile ? filePath : ext) + "|" + shil + (isDirectory ? "|d" : string.Empty);
-
-            lock (Cache)
-                if (Cache.TryGetValue(key, out var hit)) return hit;
+            if (perFile)
+            {
+                // A rebuilt exe or an edited desktop.ini gets a new key rather than the old icon.
+                long written;
+                try { written = File.GetLastWriteTimeUtc(filePath).Ticks; } catch { written = 0; }
+                key += "|" + written;
+                lock (PerFile)
+                    if (PerFile.TryGetValue(key, out var node))
+                    {
+                        PerFileLru.Remove(node);
+                        PerFileLru.AddLast(node);
+                        return node.Value.Image;
+                    }
+            }
+            else
+                lock (Cache)
+                    if (Cache.TryGetValue(key, out var hit)) return hit;
 
             string target = perFile ? filePath : "x" + ext;
             bool real = perFile;
@@ -340,7 +363,20 @@ namespace KillerShot.Files
             // Falling back to the 32px path is better than a blank tile.
             if (img == null && shil != SHIL_LARGE) img = LoadSmallPath(target, real);
 
-            lock (Cache) Cache[key] = img;
+            if (perFile)
+            {
+                lock (PerFile)
+                {
+                    if (PerFile.TryGetValue(key, out var raced)) PerFileLru.Remove(raced);
+                    PerFile[key] = PerFileLru.AddLast((key, img));
+                    while (PerFile.Count > PerFileLimit && PerFileLru.First is { } oldest)
+                    {
+                        PerFile.Remove(oldest.Value.Key);
+                        PerFileLru.RemoveFirst();
+                    }
+                }
+            }
+            else lock (Cache) Cache[key] = img;
             return img;
         }
 

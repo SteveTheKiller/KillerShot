@@ -28,8 +28,9 @@ internal static partial class CaptureLibrary
             if (_db == null) return;
             // The search index is kept by hand, so old text must leave it too or it keeps matching.
             Exec("UPDATE captures SET ocr_text = NULL; UPDATE capture_search SET ocr = '';");
+            // Under the gate with the clear, so a worker storing text read before it sees the change.
+            Interlocked.Increment(ref _ocrGeneration);
         }
-        Interlocked.Increment(ref _ocrGeneration);
         lock (_ocrFailed) _ocrFailed.Clear();
         StartOcr();
     }
@@ -39,13 +40,15 @@ internal static partial class CaptureLibrary
         lock (_gate) if (IsCurrent(item)) StoreOcr(item.Id, text, _db);
     }
 
-    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase, long? revision = null)
+    private static void StoreOcr(long id, string text, SqliteConnection? expectedDatabase, long? revision = null, int? generation = null)
     {
         lock (_gate)
         {
             if (_db == null || (expectedDatabase != null && !ReferenceEquals(_db, expectedDatabase))) return;
+            // Read before a reindex: the album forgot that text on purpose, so it is not put back.
+            if (generation is int read && read != Volatile.Read(ref _ocrGeneration)) return;
             using var transaction = _db.BeginTransaction();
-            if (revision is long read && read != MarksRevision(id, transaction)) return;
+            if (revision is long readRevision && readRevision != MarksRevision(id, transaction)) return;
             using var command = _db.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "UPDATE captures SET ocr_text = $text WHERE id = $id";
@@ -125,7 +128,7 @@ internal static partial class CaptureLibrary
                                 lock (_ocrFailed) _ocrFailed.Add(id);
                         continue;
                     }
-                    StoreOcr(id, text, database, revision);
+                    StoreOcr(id, text, database, revision, generation);
                 }
             }
             catch { completed = false; /* search still works on titles, programs, notes and collections */ }

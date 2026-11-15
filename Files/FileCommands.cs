@@ -177,7 +177,20 @@ public partial class FilesView
             }
             finally { if (stream.CanSeek) stream.Position = position; }
         }
-        return await RunCopyMove(paths, Navigation.CurrentFolder, move, cancellationToken);
+        var result = await RunCopyMove(paths, Navigation.CurrentFolder, move, cancellationToken);
+        // Explorer empties the clipboard after a cut-paste: the sources are gone, so a second
+        // paste of the same list could only fail. Anything copied since is left alone.
+        if (move && result.Succeeded > 0 && !result.Canceled)
+        {
+            try
+            {
+                if (ReadClipboard()?.GetData(DataFormats.FileDrop) is string[] still
+                    && still.SequenceEqual(paths, StringComparer.OrdinalIgnoreCase))
+                    WriteClipboard(new DataObject());
+            }
+            catch (Exception error) when (error is System.Runtime.InteropServices.ExternalException or InvalidOperationException) { }
+        }
+        return result;
     }
 
     public void CancelFileOperation() => _fileOperation?.Cancel();
@@ -232,7 +245,7 @@ public partial class FilesView
     public static DragDropEffects DropEffect(IReadOnlyList<string> paths, string target, DragDropEffects allowed,
         System.Windows.Input.ModifierKeys modifiers)
     {
-        if (paths.Count == 0 || Browser.IsThisPc(target)) return DragDropEffects.None;
+        if (paths.Count == 0 || string.IsNullOrEmpty(target) || Browser.IsThisPc(target)) return DragDropEffects.None;
         bool ctrl = (modifiers & System.Windows.Input.ModifierKeys.Control) != 0;
         bool shift = (modifiers & System.Windows.Input.ModifierKeys.Shift) != 0;
         if (ctrl && shift) return DragDropEffects.None; // Shortcuts are outside this view's file-operation scope.
@@ -285,11 +298,19 @@ public partial class FilesView
 
     private void ReportOperation(FileOpResult result)
     {
-        SetCommandError(result.Failed.FirstOrDefault().Error);
-        if (CommandError != null) return;
+        // The error alone only when nothing went through; a mixed result says how many of each
+        // and then the first reason.
+        if (result.Failed.Count > 0 && result.Succeeded == 0)
+        {
+            SetCommandError(result.Failed[0].Error);
+            return;
+        }
+        SetCommandError(null);
         CommandStatus.Text = result.Failed.Count > 0
-            ? string.Format(Loc("Str_Status_OpPartial"), result.Succeeded, result.Failed.Count)
+            ? string.Format(Loc("Str_Status_OpPartial"), result.Succeeded, result.Failed.Count) + ": " + result.Failed[0].Error
             : string.Format(Loc(result.Canceled ? "Str_Status_OpCanceled" : "Str_Status_OpDone"), result.Succeeded);
+        if (result.Failed.Count > 0)
+            CommandStatus.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "DangerRed");
         if (result.SkippedDirectoryLinks > 0)
             CommandStatus.Text += " " + string.Format(Loc("Str_Status_DirectoryLinksSkipped"), result.SkippedDirectoryLinks);
     }

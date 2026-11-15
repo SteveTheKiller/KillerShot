@@ -77,7 +77,10 @@ public partial class FilesView
             Add("shell", "Str_Menu_ShellMenu", () => AfterMenu(() =>
             {
                 var owner = Window.GetWindow(this);
-                if (owner == null || !ShellContextMenu.Show(owner, paths)) SetCommandError(Loc("Str_Status_ShellFailed"));
+                if (ShellContextMenu.SpansFolders(paths))
+                    SetCommandError(TryFindResource("Str_Status_ShellMixedFolders") as string
+                        ?? "The shell menu works on items from one folder at a time.");
+                else if (owner == null || !ShellContextMenu.Show(owner, paths)) SetCommandError(Loc("Str_Status_ShellFailed"));
             }), "Shift+F10", glyph: "");
             Add("properties", "Str_Menu_Properties", () => AfterMenu(() =>
             {

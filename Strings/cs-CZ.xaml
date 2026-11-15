@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Modrozelená</sys:String>
     <sys:String x:Key="Str_Color_Blue">Modrá</sys:String>
     <sys:String x:Key="Str_Color_Purple">Fialová</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Purpurová</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Snímková frekvence MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Snímková frekvence GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Nabídka prostředí pracuje vždy jen s položkami z jedné složky.</sys:String>
     <sys:String x:Key="Str_Color_Black">Černá</sys:String>
     <sys:String x:Key="Str_Color_White">Bílá</sys:String>
     <sys:String x:Key="Str_Color_Hex">Barva v šestnáctkovém zápisu</sys:String>

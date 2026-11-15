@@ -182,6 +182,10 @@
     <sys:String x:Key="Str_Color_Teal">Kékeszöld</sys:String>
     <sys:String x:Key="Str_Color_Blue">Kék</sys:String>
     <sys:String x:Key="Str_Color_Purple">Lila</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Bíbor</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">MP4 képkockasebesség</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">GIF képkockasebesség</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">A rendszerhéj menüje egyszerre csak egy mappa elemeivel működik.</sys:String>
     <sys:String x:Key="Str_Color_Black">Fekete</sys:String>
     <sys:String x:Key="Str_Color_White">Fehér</sys:String>
     <sys:String x:Key="Str_Color_Hex">Hexadecimális szín</sys:String>

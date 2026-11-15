@@ -60,6 +60,14 @@ internal static partial class CaptureLibrary
         {
             if (_db == null || _session != session) return false;
             using var transaction = _db.BeginTransaction();
+            using (var exists = _db.CreateCommand())
+            {
+                // Deleted meanwhile, here or by another process: the marks row would fail its key.
+                exists.Transaction = transaction;
+                exists.CommandText = "SELECT 1 FROM captures WHERE id = $id";
+                exists.Parameters.AddWithValue("$id", id);
+                if (exists.ExecuteScalar() == null) return false;
+            }
             using (var cmd = _db.CreateCommand())
             {
                 cmd.Transaction = transaction;

@@ -24,13 +24,22 @@ public partial class MainWindow
         {
             var menu = card ? CardBuilder.Menu(280) : new ContextMenu();
             element.ContextMenu = menu;
+            // A right-click or the menu key fills it in ContextMenuOpening; Opened fills only a
+            // menu opened some other way, so a filled menu is never rebuilt while it shows.
+            bool filled = false;
             element.ContextMenuOpening += (_, e) =>
             {
                 fill(menu);
                 MenuTidy.HideInactive(menu);
-                if (!menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible)) e.Handled = true;
+                filled = menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible);
+                if (!filled) e.Handled = true;
             };
-            menu.Opened += (_, _) => { fill(menu); MenuTidy.HideInactive(menu); };
+            menu.Opened += (_, _) =>
+            {
+                if (!filled) fill(menu);
+                filled = false;
+                MenuTidy.HideInactive(menu);
+            };
         }
         RailStack.Background = Brushes.Transparent;
         Attach(RailStack, FillSidebarMenu, card: true);
@@ -39,7 +48,6 @@ public partial class MainWindow
         Attach(Library, FillContentMenu, card: true);
         Attach(FooterBar, FillContentMenu, card: true);
         NavigationDock.LayoutChanged += PlaceRailButtons;
-        RailStack.LayoutUpdated += (_, _) => PlaceRailButtons();
         PlaceRailButtons();
     }
 

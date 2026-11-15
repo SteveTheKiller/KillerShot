@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Бирюзовый</sys:String>
     <sys:String x:Key="Str_Color_Blue">Синий</sys:String>
     <sys:String x:Key="Str_Color_Purple">Фиолетовый</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Пурпурный</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Частота кадров MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Частота кадров GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Меню оболочки работает с элементами только из одной папки за раз.</sys:String>
     <sys:String x:Key="Str_Color_Black">Чёрный</sys:String>
     <sys:String x:Key="Str_Color_White">Белый</sys:String>
     <sys:String x:Key="Str_Color_Hex">Шестнадцатеричный цвет</sys:String>

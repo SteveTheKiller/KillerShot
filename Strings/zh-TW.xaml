@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">藍綠色</sys:String>
     <sys:String x:Key="Str_Color_Blue">藍色</sys:String>
     <sys:String x:Key="Str_Color_Purple">紫色</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">洋紅色</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">MP4 影格速率</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">GIF 影格速率</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">殼層選單一次只能處理同一資料夾中的項目。</sys:String>
     <sys:String x:Key="Str_Color_Black">黑色</sys:String>
     <sys:String x:Key="Str_Color_White">白色</sys:String>
     <sys:String x:Key="Str_Color_Hex">十六進位色彩</sys:String>

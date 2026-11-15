@@ -74,53 +74,121 @@ internal static partial class CaptureLibrary
         byte[] image = ImageOutput.EncodePng(poster);
         byte[] thumb = EncodeThumb(poster);
         long id;
+        SqliteConnection openAlbum;
         lock (PendingWriter)
         {
             // The clip can be a gigabyte, so it is written through its own connection, outside the
-            // gate every listing and edit takes. The album keeps a write-ahead log, so readers see
-            // the album as it was until this commits, and the new row appears whole or not at all.
+            // gate every listing and edit takes, and in pieces that each commit on their own, so
+            // no write transaction stays open while the file is copied and notes, marks and OCR
+            // keep saving meanwhile. The clip row is written first with no captures row, which no
+            // listing reads; the captures row that makes the recording visible commits last, so it
+            // appears whole or not at all. A clip row left by a crash is removed after the next open.
             string connectionString;
             lock (_gate)
             {
                 RequireSession(session);
                 if (recordingsCollection) collectionId = RecordingsCollectionCore(notify: false);
+                openAlbum = Db;
                 connectionString = new SqliteConnectionStringBuilder(Db.ConnectionString) { Pooling = false }.ConnectionString;
             }
             using var album = new SqliteConnection(connectionString);
             album.Open();
-            Exec(album, "PRAGMA foreign_keys = ON");
-            using var transaction = album.BeginTransaction();
-            id = AllocateCaptureId(album, transaction);
-            using (var cmd = album.CreateCommand())
+            // Off while the clip row has no captures row yet; on again for the row that publishes it.
+            Exec(album, "PRAGMA foreign_keys = OFF");
+            using (var reserve = album.BeginTransaction())
             {
-                cmd.Transaction = transaction;
-                cmd.CommandText = """
-                    INSERT INTO captures(id, taken_utc, width, height, mode, window_title, collection_id, thumb, image)
-                    VALUES ($id, $t, $w, $h, $m, $win, $c, $thumb, $image);
-                    INSERT INTO capture_videos(capture_id, ext, duration_ticks, data) VALUES ($id, $ext, $d, zeroblob($n));
-                    """;
+                id = AllocateCaptureId(album, reserve);
+                using var cmd = album.CreateCommand();
+                cmd.Transaction = reserve;
+                cmd.CommandText = "INSERT INTO capture_videos(capture_id, ext, duration_ticks, data) VALUES ($id, $ext, $d, zeroblob($n))";
                 cmd.Parameters.AddWithValue("$id", id);
-                cmd.Parameters.AddWithValue("$t", taken.ToUniversalTime().Ticks);
-                cmd.Parameters.AddWithValue("$w", width);
-                cmd.Parameters.AddWithValue("$h", height);
-                cmd.Parameters.AddWithValue("$m", VideoCaptures.Mode);
-                cmd.Parameters.AddWithValue("$win", (object?)Trimmed(title) ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("$c", (object?)collectionId ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("$thumb", thumb);
-                cmd.Parameters.AddWithValue("$image", image);
                 cmd.Parameters.AddWithValue("$ext", Path.GetExtension(path).ToLowerInvariant());
                 cmd.Parameters.AddWithValue("$d", duration.Ticks);
                 cmd.Parameters.AddWithValue("$n", size);
                 cmd.ExecuteNonQuery();
+                reserve.Commit();
             }
-            using (var source = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var blob = new SqliteBlob(album, "capture_videos", "data", id))
-                source.CopyTo(blob, 1 << 20);
-            IndexText(id, transaction);
-            transaction.Commit();
+            try
+            {
+                using (var source = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    var buffer = new byte[VideoChunkBytes];
+                    long written = 0;
+                    while (written < size)
+                    {
+                        int want = (int)Math.Min(buffer.Length, size - written);
+                        int read = source.ReadAtLeast(buffer.AsSpan(0, want), want, throwOnEndOfStream: true);
+                        using (var piece = album.BeginTransaction())
+                        {
+                            using (var blob = new SqliteBlob(album, "capture_videos", "data", id))
+                            {
+                                blob.Position = written;
+                                blob.Write(buffer, 0, read);
+                            }
+                            piece.Commit();
+                        }
+                        written += read;
+                        VideoChunkWrittenForSelfTest?.Invoke(written);
+                    }
+                }
+                Exec(album, "PRAGMA foreign_keys = ON");
+                using var publish = album.BeginTransaction();
+                using (var cmd = album.CreateCommand())
+                {
+                    cmd.Transaction = publish;
+                    cmd.CommandText = """
+                        INSERT INTO captures(id, taken_utc, width, height, mode, window_title, collection_id, thumb, image)
+                        VALUES ($id, $t, $w, $h, $m, $win, $c, $thumb, $image);
+                        """;
+                    cmd.Parameters.AddWithValue("$id", id);
+                    cmd.Parameters.AddWithValue("$t", taken.ToUniversalTime().Ticks);
+                    cmd.Parameters.AddWithValue("$w", width);
+                    cmd.Parameters.AddWithValue("$h", height);
+                    cmd.Parameters.AddWithValue("$m", VideoCaptures.Mode);
+                    cmd.Parameters.AddWithValue("$win", (object?)Trimmed(title) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("$c", (object?)collectionId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("$thumb", thumb);
+                    cmd.Parameters.AddWithValue("$image", image);
+                    cmd.ExecuteNonQuery();
+                }
+                IndexText(id, publish);
+                publish.Commit();
+            }
+            catch
+            {
+                try { DeleteVideoRow(album, id); }
+                catch (SqliteException error) { System.Diagnostics.Trace.TraceWarning("Unfinished recording row stays until the next open: {0}", error.Message); }
+                throw;
+            }
         }
+        // Stored like any capture, so the history limit applies to it too.
+        try { Prune(openAlbum); }
+        catch (Exception error) { ReportWriteFailure(error); }
         RaiseChanged();
         return id;
+    }
+
+    /// <summary>How much of a recording one import transaction writes.</summary>
+    private const int VideoChunkBytes = 4 << 20;
+
+    private static void DeleteVideoRow(SqliteConnection album, long id)
+    {
+        using var cmd = album.CreateCommand();
+        cmd.CommandText = "DELETE FROM capture_videos WHERE capture_id = $id AND NOT EXISTS(SELECT 1 FROM captures WHERE id = $id)";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>Removes clip rows whose import stopped before its captures row was written. Only
+    /// the app imports recordings, under PendingWriter, so none is in progress while this runs.</summary>
+    private static void RemoveUnfinishedVideos(SqliteConnection? database)
+    {
+        lock (PendingWriter)
+        lock (_gate)
+        {
+            if (_db == null || !ReferenceEquals(_db, database)) return;
+            Exec(_db, "DELETE FROM capture_videos WHERE capture_id NOT IN (SELECT id FROM captures)");
+        }
     }
 
     /// <summary>Writes a stored clip out to a file, byte for byte, through a temporary name so a

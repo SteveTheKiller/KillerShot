@@ -43,7 +43,7 @@ internal static class VideoSettings
     /// <summary>Sound for MP4 recordings. GIF has no sound.</summary>
     public static KillerShot.Video.SoundSource Sound
     {
-        get => Enum.TryParse<KillerShot.Video.SoundSource>(Settings.Get("VideoSound"), out var s) ? s : KillerShot.Video.SoundSource.None;
+        get => Enum.TryParse<KillerShot.Video.SoundSource>(Settings.Get("VideoSound"), out var s) && Enum.IsDefined(s) ? s : KillerShot.Video.SoundSource.None;
         set => Settings.Set("VideoSound", value.ToString());
     }
 

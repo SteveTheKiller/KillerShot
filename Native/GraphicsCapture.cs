@@ -40,6 +40,11 @@ internal static unsafe class GraphicsCapture
 
     internal static void Close(ref IntPtr com) => WinRt.Close(ref com);
 
+    private static int _borderlessRequested;
+
+    /// <summary>How many times the borderless request actually went to Windows.</summary>
+    internal static int BorderlessRequestsForTest;
+
     public static bool IsSupported
     {
         get
@@ -60,9 +65,12 @@ internal static unsafe class GraphicsCapture
     }
 
     /// <summary>Asks for borderless capture and waits up to the timeout. It is a request, not a
-    /// requirement, so any failure is ignored.</summary>
+    /// requirement, so any failure is ignored. Access is granted to the process, so only the
+    /// first call asks; window grabs and recordings both call it (review CP-002).</summary>
     public static void RequestBorderless(int timeoutMs)
     {
+        if (Interlocked.Exchange(ref _borderlessRequested, 1) != 0) return;
+        Interlocked.Increment(ref BorderlessRequestsForTest);
         IntPtr statics = IntPtr.Zero, operation = IntPtr.Zero, info = IntPtr.Zero;
         try
         {

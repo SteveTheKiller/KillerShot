@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">Verde acqua</sys:String>
     <sys:String x:Key="Str_Color_Blue">Blu</sys:String>
     <sys:String x:Key="Str_Color_Purple">Viola</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Magenta</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Fotogrammi al secondo MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Fotogrammi al secondo GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Il menu della shell funziona con elementi di una sola cartella alla volta.</sys:String>
     <sys:String x:Key="Str_Color_Black">Nero</sys:String>
     <sys:String x:Key="Str_Color_White">Bianco</sys:String>
     <sys:String x:Key="Str_Color_Hex">Colore esadecimale</sys:String>

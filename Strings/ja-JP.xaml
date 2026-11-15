@@ -183,6 +183,10 @@
     <sys:String x:Key="Str_Color_Teal">ティール</sys:String>
     <sys:String x:Key="Str_Color_Blue">青</sys:String>
     <sys:String x:Key="Str_Color_Purple">紫</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">マゼンタ</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">MP4 フレーム レート</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">GIF フレーム レート</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">シェル メニューは一度に 1 つのフォルダーの項目にのみ使用できます。</sys:String>
     <sys:String x:Key="Str_Color_Black">黒</sys:String>
     <sys:String x:Key="Str_Color_White">白</sys:String>
     <sys:String x:Key="Str_Color_Hex">16 進カラー</sys:String>

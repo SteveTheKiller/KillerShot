@@ -214,6 +214,14 @@ public sealed partial class EditorCanvas : Canvas
         if (_regionPick is not { } pick) return false;
         _regionPick = null;
         ClearKeyboardRegion();
+        // A drag picking the area ends here too, or the button coming up would finish it as the
+        // current tool's crop or shape.
+        if (_dragging)
+        {
+            _dragging = false;
+            _stroke = null;
+            ReleaseMouseCapture();
+        }
         _box = null;
         SetTool(Tool);   // restores the tool's cursor
         pick(null);

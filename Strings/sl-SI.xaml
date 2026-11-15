@@ -179,6 +179,10 @@
     <sys:String x:Key="Str_Color_Teal">Modrozelena</sys:String>
     <sys:String x:Key="Str_Color_Blue">Modra</sys:String>
     <sys:String x:Key="Str_Color_Purple">Vijolična</sys:String>
+    <sys:String x:Key="Str_Color_Magenta">Škrlatna</sys:String>
+    <sys:String x:Key="Str_VS_Mp4Fps">Hitrost sličic MP4</sys:String>
+    <sys:String x:Key="Str_VS_GifFps">Hitrost sličic GIF</sys:String>
+    <sys:String x:Key="Str_Status_ShellMixedFolders">Meni lupine hkrati deluje le na elementih iz ene mape.</sys:String>
     <sys:String x:Key="Str_Color_Black">Črna</sys:String>
     <sys:String x:Key="Str_Color_White">Bela</sys:String>
     <sys:String x:Key="Str_Color_Hex">Šestnajstiška barva</sys:String>

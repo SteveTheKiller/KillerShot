@@ -195,10 +195,13 @@ internal sealed class AudioCapture : IDisposable
         private void Run()
         {
             IAudioClient? client = null;
+            IMMDeviceEnumerator? enumerator = null;
+            IMMDevice? device = null;
+            IAudioCaptureClient? capture = null;
             try
             {
-                var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorCo();
-                Check(enumerator.GetDefaultAudioEndpoint(_loopback ? 0 : 1, 0, out var device));
+                enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorCo();
+                Check(enumerator.GetDefaultAudioEndpoint(_loopback ? 0 : 1, 0, out device));
                 var iid = typeof(IAudioClient).GUID;
                 Check(device.Activate(ref iid, 1 /* CLSCTX_INPROC_SERVER */, IntPtr.Zero, out var obj));
                 client = (IAudioClient)obj;
@@ -230,7 +233,7 @@ internal sealed class AudioCapture : IDisposable
                 finally { Marshal.FreeCoTaskMem(fmtPtr); }
                 var cid = typeof(IAudioCaptureClient).GUID;
                 Check(client.GetService(ref cid, out var capObj));
-                var capture = (IAudioCaptureClient)capObj;
+                capture = (IAudioCaptureClient)capObj;
                 Check(client.Start());
                 _startDone.Set();
 
@@ -255,8 +258,12 @@ internal sealed class AudioCapture : IDisposable
                 if (client != null)
                 {
                     try { Check(client.Stop()); } catch (Exception ex) { _error ??= ex; }
-                    try { Marshal.ReleaseComObject(client); } catch (Exception ex) { _error ??= ex; }
                 }
+                // Every wrapper this thread took, newest first, so no device stays held until the
+                // finalizer runs.
+                foreach (object? com in new object?[] { capture, client, device, enumerator })
+                    if (com != null)
+                        try { Marshal.ReleaseComObject(com); } catch (Exception ex) { _error ??= ex; }
             }
         }
 

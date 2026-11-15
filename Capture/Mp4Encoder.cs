@@ -224,9 +224,10 @@ internal sealed class Mp4Encoder : IVideoSink
     /// <summary>Writes both streams until the queues complete, then finalizes the file.</summary>
     private async Task RunAsync()
     {
+        var audio = Task.CompletedTask;
         try
         {
-            var audio = _hasAudio ? Task.Run(WriteAudio) : Task.CompletedTask;
+            audio = _hasAudio ? Task.Run(WriteAudio) : Task.CompletedTask;
             WriteVideo();
             await audio;
             FinalizeWriter();
@@ -234,9 +235,19 @@ internal sealed class Mp4Encoder : IVideoSink
         catch
         {
             CompleteQueues();
+            // The audio writer must stop before this task ends: Close releases the sink writer as
+            // soon as it does, and a sample written after that is a native access violation.
+            try { await audio; } catch { }
             throw;
         }
     }
+
+    /// <summary>Test seam: runs before each sample is written, with true for audio. It can throw
+    /// to fail a stream or wait to hold one back.</summary>
+    internal Action<bool>? BeforeSampleForTest;
+
+    /// <summary>Samples that reached the writer after it was released. Always zero.</summary>
+    internal int SamplesAfterClose;
 
     private unsafe void FinalizeWriter()
     {
@@ -273,6 +284,7 @@ internal sealed class Mp4Encoder : IVideoSink
 
     private unsafe void WriteSample(int stream, byte[] data, TimeSpan at, TimeSpan duration)
     {
+        BeforeSampleForTest?.Invoke(stream == _audioStream && _hasAudio);
         IntPtr buffer = IntPtr.Zero, sample = IntPtr.Zero;
         try
         {
@@ -288,7 +300,14 @@ internal sealed class Mp4Encoder : IVideoSink
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, long, int>)Slot(sample, 36))(sample, at.Ticks));
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, long, int>)Slot(sample, 38))(sample, duration.Ticks));
             lock (_writerLock)
+            {
+                if (_writer == IntPtr.Zero)
+                {
+                    SamplesAfterClose++;
+                    throw new ObjectDisposedException(nameof(Mp4Encoder));
+                }
                 Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, int, IntPtr, int>)Slot(_writer, 6))(_writer, stream, sample));
+            }
         }
         finally
         {

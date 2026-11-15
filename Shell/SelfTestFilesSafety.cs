@@ -94,6 +94,16 @@ internal static class SelfTestFilesSafety
             else if (scenario == "address-overflow") await AddressOverflow(folder, Check, report);
             else if (scenario == "cache-workload") await CacheWorkload(folder, Check, report);
             else if (scenario == "cache-workload-minimal") await CacheWorkloadMinimal(folder, Check, report);
+            else if (scenario == "review")
+            {
+                foreach (string name in SelfTestFilesReview.Scenarios)
+                {
+                    report.AppendLine("SCENARIO START: " + name);
+                    await SelfTestFilesReview.Run(name, Directory.CreateDirectory(Path.Combine(folder, name)).FullName, Check, report);
+                    report.AppendLine("SCENARIO PASS: " + name);
+                }
+            }
+            else if (SelfTestFilesReview.Scenarios.Contains(scenario)) await SelfTestFilesReview.Run(scenario, folder, Check, report);
             else throw new ArgumentException("Unknown safety scenario: " + scenario);
             exit = 0;
         }

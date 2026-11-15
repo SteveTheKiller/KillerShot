@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -468,7 +469,7 @@ namespace KillerShot.Shell
             inner.Children.Add(actHost);
             inner.Children.Add(bar);
 
-            var key = new Border
+            var key = new KeyCap
             {
                 Width = KbUnit * w - 4, Height = 44,
                 BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 4, 0),
@@ -497,11 +498,19 @@ namespace KillerShot.Shell
 
                 // Only a bound key lifts - dummies staying put is what makes the lit ones read as
                 // the interactive set.
+                // A bound key is a keyboard stop too: focus shows the same detail line as the
+                // pointer, and a screen reader reads that line as the key's name.
+                string spoken = detail ?? b.Keys + "   " + Loc(b.LabelKey);
+                key.Focusable = true;
+                AutomationProperties.SetName(key, spoken);
+                key.GotKeyboardFocus += (_, _2) => _kbDetail?.Text = spoken;
+                key.LostKeyboardFocus += (_, _2) => _kbDetail?.Text = " ";
+
                 var lift = new TranslateTransform();
                 key.RenderTransform = lift;
                 key.MouseEnter += (_, _2) =>
                 {
-                    _kbDetail?.Text = detail ?? b.Keys + "   " + Loc(b.LabelKey);
+                    _kbDetail?.Text = spoken;
                     lift.BeginAnimation(TranslateTransform.YProperty,
                         new DoubleAnimation(-3, TimeSpan.FromMilliseconds(90)));
                 };
@@ -520,5 +529,12 @@ namespace KillerShot.Shell
             return key;
         }
 
+        /// <summary>A keycap on the map. A plain Border has no automation peer, so a bound key
+        /// would never reach a screen reader.</summary>
+        private sealed class KeyCap : Border
+        {
+            protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer() =>
+                new System.Windows.Automation.Peers.FrameworkElementAutomationPeer(this);
+        }
     }
 }

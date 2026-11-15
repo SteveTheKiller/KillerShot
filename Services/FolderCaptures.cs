@@ -418,7 +418,8 @@ internal static partial class FolderCaptures
             _watcher?.Dispose();
             try
             {
-                _watcher = WatcherFactory(folder);
+                var watcher = WatcherFactory(folder);
+                _watcher = watcher;
                 _watcher.IncludeSubdirectories = false;
                 _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
                 FileSystemEventHandler on = (_, e) => Touched(e.FullPath);
@@ -430,6 +431,14 @@ internal static partial class FolderCaptures
                     {
                         _sizes.Clear();
                         ThumbnailCache.Clear(folders: true);
+                        // A watcher that reported an error may have stopped (buffer overflow, the
+                        // folder going away); the scan that follows makes a fresh one.
+                        if (ReferenceEquals(_watcher, watcher))
+                        {
+                            _watcher = null;
+                            watcher.EnableRaisingEvents = false;
+                            watcher.Dispose();
+                        }
                     }
                     Touched(folder);
                 };

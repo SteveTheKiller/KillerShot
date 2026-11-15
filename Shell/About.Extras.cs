@@ -65,7 +65,12 @@ namespace KillerShot.Shell
 
         partial void OnOverlayShowing(UIElement overlay) => ClassicFrameChrome.Opacity = 0.42;
 
-        partial void OnOverlayHidden(UIElement overlay) => ClassicFrameChrome.Opacity = 1;
+        // A fade that lands after another overlay took its place (Esc on Capture settings, then
+        // F1 inside the fade) leaves the frame dimmed behind the overlay now showing.
+        partial void OnOverlayHidden(UIElement overlay)
+        {
+            if (!AnyOverlayOpen) ClassicFrameChrome.Opacity = 1;
+        }
 
         // ---- Start with Windows ----
 

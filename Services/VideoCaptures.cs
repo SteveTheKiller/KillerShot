@@ -164,7 +164,7 @@ internal static class VideoCaptures
     }
 
     /// <summary>Opens a file in the viewer's default player.</summary>
-    public static void OpenInPlayer(string path) => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    public static void OpenInPlayer(string path) => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })?.Dispose();
 
     /// <summary>Deletes the decrypted playback copies of one album session, or of one recording in
     /// it. A copy a player still holds open stays until the next wipe.</summary>

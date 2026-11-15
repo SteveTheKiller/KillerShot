@@ -66,6 +66,19 @@ public sealed class FileEntry : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 
+    /// <summary>New size and dates for the same file. The icon is asked for again because a
+    /// thumbnail is keyed on the write time.</summary>
+    public void ApplyMetadata(long size, DateTime modified, DateTime created)
+    {
+        SizeBytes = size;
+        Modified = modified;
+        Created = created;
+        if (_iconRequested) { ++_iconRevision; _iconRequested = false; }
+        foreach (string property in new[] { nameof(SizeBytes), nameof(SizeLabel), nameof(Modified), nameof(ModifiedLabel),
+            nameof(ModifiedGroup), nameof(Created), nameof(CreatedLabel), nameof(CreatedGroup), nameof(Icon) })
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+    }
+
     private async Task LoadIcon()
     {
         int revision = _iconRevision;

@@ -723,14 +723,14 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="OutputFolderBox" FontSize="12" LostKeyboardFocus="OutputFolderBox_LostFocus"/>
+                                            <TextBox x:Name="OutputFolderBox" FontSize="12" AutomationProperties.Name="{DynamicResource Str_CS_Folder}" LostKeyboardFocus="OutputFolderBox_LostFocus"/>
                                             <Button Grid.Column="1" Content="{DynamicResource Str_CS_Browse}" Style="{StaticResource OutlineButton}"
                                                     Padding="10,3" Margin="6,0,0,0" Click="BrowseFolder_Click"/>
                                             <Button Grid.Column="2" Content="{DynamicResource Str_CS_Default}" Style="{StaticResource OutlineButton}"
                                                     Padding="10,3" Margin="6,0,0,0" Click="DefaultFolder_Click"/>
                                         </Grid>
                                         <TextBlock Text="{DynamicResource Str_CS_FileName}" Style="{StaticResource CsLabel}"/>
-                                        <TextBox x:Name="FileNamePatternBox" FontSize="12" Margin="0,2,0,2" TextChanged="FileNamePatternBox_TextChanged"/>
+                                        <TextBox x:Name="FileNamePatternBox" FontSize="12" AutomationProperties.Name="{DynamicResource Str_CS_FileName}" Margin="0,2,0,2" TextChanged="FileNamePatternBox_TextChanged"/>
                                         <TextBlock x:Name="FileNamePlaceholdersText" Foreground="{DynamicResource DimTextBrush}" FontSize="10" TextWrapping="Wrap"/>
                                         <TextBlock x:Name="FileNameExampleText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
                                         <Grid Margin="0,0,0,4">
@@ -741,11 +741,11 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="{DynamicResource Str_CS_Format}" Style="{StaticResource CsLabel}"/>
-                                                <ComboBox x:Name="FormatCombo" Margin="0,2,0,0" SelectionChanged="CaptureCombo_Changed"/>
+                                                <ComboBox x:Name="FormatCombo" Margin="0,2,0,0" AutomationProperties.Name="{DynamicResource Str_CS_Format}" SelectionChanged="CaptureCombo_Changed"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="{DynamicResource Str_CS_Quality}" Style="{StaticResource CsLabel}"/>
-                                                <ComboBox x:Name="QualityCombo" Margin="0,2,0,0" SelectionChanged="CaptureCombo_Changed"/>
+                                                <ComboBox x:Name="QualityCombo" Margin="0,2,0,0" AutomationProperties.Name="{DynamicResource Str_CS_Quality}" SelectionChanged="CaptureCombo_Changed"/>
                                             </StackPanel>
                                         </Grid>
 
@@ -756,7 +756,7 @@
                                                 <ColumnDefinition Width="140"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="{DynamicResource Str_CS_Delay}" Style="{StaticResource CsLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                            <ComboBox x:Name="DelayCombo" Grid.Column="1" SelectionChanged="CaptureCombo_Changed"/>
+                                            <ComboBox x:Name="DelayCombo" Grid.Column="1" AutomationProperties.Name="{DynamicResource Str_CS_Delay}" SelectionChanged="CaptureCombo_Changed"/>
                                         </Grid>
                                         <CheckBox x:Name="CursorToggle" Content="{DynamicResource Str_CS_Cursor}" Style="{StaticResource CsCheck}"/>
                                         <CheckBox x:Name="SoundToggle" Content="{DynamicResource Str_CS_Sound}" Style="{StaticResource CsCheck}"/>
@@ -847,7 +847,7 @@
                                 <WrapPanel Orientation="Horizontal" MaxWidth="900">
                                     <StackPanel Width="420" Margin="0,0,24,0">
                                         <TextBlock Text="{DynamicResource Str_VS_Format}" Style="{StaticResource VsHeading}"/>
-                                        <ComboBox x:Name="VideoFormatCombo" Style="{StaticResource VsCombo}"/>
+                                        <ComboBox x:Name="VideoFormatCombo" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Format}"/>
 
                                         <TextBlock Text="{DynamicResource Str_VS_Mp4}" Style="{StaticResource VsHeading}" Margin="0,16,0,6"/>
                                         <Grid>
@@ -862,13 +862,13 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <TextBlock Text="{DynamicResource Str_VS_Fps}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="Mp4FpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="Mp4FpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Mp4Fps}"/>
                                             <TextBlock Grid.Row="1" Text="{DynamicResource Str_VS_Quality}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="Mp4QualityCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="Mp4QualityCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Quality}"/>
                                             <TextBlock Grid.Row="2" Text="{DynamicResource Str_VS_Sound}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="SoundCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="SoundCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Sound}"/>
                                             <TextBlock Grid.Row="3" Text="{DynamicResource Str_VS_SoundQuality}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="AudioKbpsCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="AudioKbpsCombo" Grid.Row="3" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_SoundQuality}"/>
                                         </Grid>
                                         <TextBlock Text="{DynamicResource Str_VS_GifNoSound}" Foreground="{DynamicResource DimTextBrush}"
                                                    FontSize="10" TextWrapping="Wrap" Margin="0,2,0,0"/>
@@ -887,11 +887,11 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <TextBlock Text="{DynamicResource Str_VS_Fps}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="GifFpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="GifFpsCombo" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_GifFps}"/>
                                             <TextBlock Grid.Row="1" Text="{DynamicResource Str_VS_Colors}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="GifColorsCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="GifColorsCombo" Grid.Row="1" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Colors}"/>
                                             <TextBlock Grid.Row="2" Text="{DynamicResource Str_VS_Size}" Style="{StaticResource VsLabel}"/>
-                                            <ComboBox x:Name="GifSizeCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}"/>
+                                            <ComboBox x:Name="GifSizeCombo" Grid.Row="2" Grid.Column="1" Style="{StaticResource VsCombo}" AutomationProperties.Name="{DynamicResource Str_VS_Size}"/>
                                         </Grid>
                                         <CheckBox x:Name="GifLoopToggle" Content="{DynamicResource Str_VS_Loop}" Style="{StaticResource VsCheck}" Margin="0,8,0,8"/>
                                     </StackPanel>
@@ -930,14 +930,14 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="VideoFolderBox" FontSize="12" LostKeyboardFocus="VideoFolderBox_LostFocus"/>
+                                            <TextBox x:Name="VideoFolderBox" FontSize="12" AutomationProperties.Name="{DynamicResource Str_CS_Folder}" LostKeyboardFocus="VideoFolderBox_LostFocus"/>
                                             <Button Grid.Column="1" Content="{DynamicResource Str_CS_Browse}" Style="{StaticResource OutlineButton}"
                                                     Padding="10,3" Margin="6,0,0,0" Click="VideoBrowseFolder_Click"/>
                                             <Button Grid.Column="2" Content="{DynamicResource Str_CS_Default}" Style="{StaticResource OutlineButton}"
                                                     Padding="10,3" Margin="6,0,0,0" Click="VideoDefaultFolder_Click"/>
                                         </Grid>
                                         <TextBlock Text="{DynamicResource Str_CS_FileName}" Style="{StaticResource VsLabel}"/>
-                                        <TextBox x:Name="VideoFileNameBox" FontSize="12" Margin="0,2,0,2" TextChanged="VideoFileNameBox_TextChanged"/>
+                                        <TextBox x:Name="VideoFileNameBox" FontSize="12" AutomationProperties.Name="{DynamicResource Str_CS_FileName}" Margin="0,2,0,2" TextChanged="VideoFileNameBox_TextChanged"/>
                                         <TextBlock x:Name="VideoFileNameExampleText" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
                                     </StackPanel>
                                 </WrapPanel>

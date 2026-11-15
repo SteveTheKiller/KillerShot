@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$Output,
-    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account')][string]$Case = 'all'
+    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value')][string]$Case = 'all'
 )
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Output) { throw 'Use a new scratch output folder for each test.' }
@@ -32,6 +32,12 @@ function Invoke-CaptureCase([string]$Name, [string]$Fixture, [string[]]$Argument
 }
 if ($Case -in @('all', 'no-output')) {
     Invoke-CaptureCase 'no-output' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard', '--no-recent') 2 'needs.*output'
+}
+if ($Case -in @('all', 'option-value')) {
+    # "--out --x.png" is a missing value followed by another option, not a file named --x.png
+    # in the working folder.
+    Invoke-CaptureCase 'option-value' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-clipboard', '--out', '--x.png') 2 '--out needs a value'
+    if (Test-Path -LiteralPath (Join-Path (Get-Location) '--x.png')) { throw 'The capture wrote a file named --x.png.' }
 }
 if ($Case -in @('all', 'protected')) {
     Invoke-CaptureCase 'protected-only' 'protected' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard') 1 'command line cannot open password-protected libraries'

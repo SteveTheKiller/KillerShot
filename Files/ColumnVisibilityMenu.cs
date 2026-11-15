@@ -45,11 +45,13 @@ public partial class FilesView
     private void ColGrip_MouseMove(object sender, MouseEventArgs e)
     {
         if (_resizeColumn == 0 || sender is not FrameworkElement { IsMouseCaptured: true }) return;
-        ViewState.SetColumnWidth(_resizeColumn, _resizeStartWidth + e.GetPosition(this).X - _resizeStartX);
+        // Saved once when the drag ends, not on every mouse move.
+        ViewState.SetColumnWidth(_resizeColumn, _resizeStartWidth + e.GetPosition(this).X - _resizeStartX, false);
         e.Handled = true;
     }
     private void ColGrip_MouseUp(object sender, MouseButtonEventArgs e)
     {
+        if (_resizeColumn != 0) ViewState.CommitColumnWidth(_resizeColumn);
         _resizeColumn = 0;
         if (sender is FrameworkElement grip) grip.ReleaseMouseCapture();
         e.Handled = true;
