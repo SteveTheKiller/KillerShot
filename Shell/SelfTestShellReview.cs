@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using KillerShot.Capture;
+using KillerShot.Controls;
 using KillerShot.Native;
 using KillerShot.Services;
 using KillerShot.Video;
@@ -81,6 +82,7 @@ internal static class SelfTestShellReview
             await Check("SH-009 a workspace menu fills once per open", () => CheckMenuFills(w));
             await Check("SR-003 opening Shortcuts during a fade keeps the frame dimmed", () => CheckShortcutsDim(w));
             await Check("SR-006 keyboard map keys are focusable, named and show their detail on focus", () => CheckKeycaps(w));
+            await Check("SR-002 overlay fades always end shown or collapsed, never invisible and clickable", () => CheckFadeRaces(w));
         }
         catch (Exception ex) { failed = true; report.Add("FAIL harness: " + ex); }
         finally
@@ -438,6 +440,41 @@ internal static class SelfTestShellReview
         double opacity = window.ClassicFrameChrome.Opacity;
         window.TestCloseOverlays();
         Require(Math.Abs(opacity - 0.42) < 0.001, $"The frame behind Shortcuts came back to {opacity}.");
+    }
+
+    private static async Task CheckFadeRaces(MainWindow window)
+    {
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var fadeIn = typeof(MainWindow).GetMethod("FadeOverlayIn", flags)!;
+        var fadeOut = typeof(MainWindow).GetMethod("FadeOverlayOut", flags)!;
+        var o = window.AboutOverlay;
+        async Task<string> Run(string name, params (int Delay, bool Show)[] steps)
+        {
+            window.TestCloseOverlays();
+            await Task.Delay(50);
+            fadeIn.Invoke(window, [o]);
+            await Task.Delay(400);
+            foreach (var (delay, show) in steps)
+            {
+                await Task.Delay(delay);
+                (show ? fadeIn : fadeOut).Invoke(window, [o]);
+            }
+            await Task.Delay(Anim.FadeMs * 4 + 400);
+            bool shown = steps[^1].Show;
+            string state = $"{name}: visibility={o.Visibility}, opacity={o.Opacity:F2}";
+            bool ok = shown ? o.Visibility == Visibility.Visible && o.Opacity > 0.99 : o.Visibility == Visibility.Collapsed;
+            return ok ? "" : state;
+        }
+        var problems = new List<string>
+        {
+            await Run("fade out", (0, false)),
+            await Run("Escape twice", (0, false), (40, false)),
+            await Run("reopen during fade out", (0, false), (40, true)),
+            await Run("close during fade in", (0, false), (40, true), (20, false)),
+        };
+        window.TestCloseOverlays();
+        problems.RemoveAll(p => p.Length == 0);
+        Require(problems.Count == 0, string.Join("; ", problems));
     }
 
     private static async Task CheckKeycaps(MainWindow window)

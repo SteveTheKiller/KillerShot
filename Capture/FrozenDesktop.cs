@@ -16,6 +16,8 @@ internal sealed record WindowBounds(IntPtr Handle, Win32.RECT Bounds);
 /// and the selection overlay can never appear in the result.</summary>
 internal sealed class FrozenDesktop
 {
+    [DllImport("gdi32.dll")] private static extern bool GdiFlush();
+
     public Win32.RECT Bounds { get; }
     public IReadOnlyList<MonitorBounds> Monitors { get; }
     /// <summary>Capturable windows, topmost first, as they were when the desktop was frozen.</summary>
@@ -95,6 +97,8 @@ internal sealed class FrozenDesktop
             if (!Win32.BitBlt(mem, 0, 0, w, h, screen, x, y, Win32.SRCCOPY | Win32.CAPTUREBLT))
                 throw new InvalidOperationException("Windows refused to copy the desktop.");
             if (includeCursor) DrawCursor(mem, x, y);
+            // GDI batches calls, so the DIB bits are only final once the batch is flushed.
+            GdiFlush();
             var pixels = new byte[(long)w * h * 4];
             Marshal.Copy(bits, pixels, 0, pixels.Length);
             return new FrozenDesktop(new Win32.RECT(x, y, x + w, y + h), pixels, EnumerateMonitors(), EnumerateWindows());

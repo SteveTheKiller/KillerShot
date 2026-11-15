@@ -82,6 +82,8 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Canceling exit no longer leaves later recordings skipping the storage question and the move into the library.
 - The command line refuses an option given another option as its value, such as `capture --out --json`, and a region too large to add up, as usage errors.
 - Settings combo boxes and text boxes, the keyboard map's keys and the Files list have screen reader names, the two frame rate boxes have different names, and the Magenta accent has its own name in every language.
+- Reopening About, the shortcuts sheet or a settings panel while it fades out keeps it open instead of letting it disappear a moment later.
+- A frozen desktop capture always gets its finished pixels, never a frame GDI hasn't finished drawing.
 
 ### Changed
 
