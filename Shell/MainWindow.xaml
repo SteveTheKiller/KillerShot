@@ -668,6 +668,8 @@
                                 <Button Content="&#xE8BB;" Click="CaptureSettingsClose_Click"
                                         ToolTip="{DynamicResource Str_Sys_Close}"
                                         Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Width="{DynamicResource DialogCloseWidth}" Height="{DynamicResource DialogCloseHeight}"
+                                        VerticalAlignment="Center"
                                         Margin="{DynamicResource AboutCaptionCloseMargin}"/>
                             </Grid>
                         </Border>
@@ -832,6 +834,8 @@
                                 <Button Content="&#xE8BB;" Click="VideoSettingsClose_Click"
                                         ToolTip="{DynamicResource Str_Sys_Close}"
                                         Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Width="{DynamicResource DialogCloseWidth}" Height="{DynamicResource DialogCloseHeight}"
+                                        VerticalAlignment="Center"
                                         Margin="{DynamicResource AboutCaptionCloseMargin}"/>
                             </Grid>
                         </Border>
@@ -1029,6 +1033,8 @@
                                 <Button Content="&#xE8BB;" Click="ShortcutsClose_Click"
                                         ToolTip="{DynamicResource Str_Sys_Close}"
                                         Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Width="{DynamicResource DialogCloseWidth}" Height="{DynamicResource DialogCloseHeight}"
+                                        VerticalAlignment="Center"
                                         Margin="{DynamicResource DialogCaptionCloseMargin}"/>
                             </Grid>
                         </Border>
@@ -1145,6 +1151,8 @@
                                 <Button Content="&#xE8BB;" Click="AboutClose_Click"
                                         ToolTip="{DynamicResource Str_Sys_Close}"
                                         Style="{StaticResource ChromeCloseButton}" HorizontalAlignment="Right"
+                                        Width="{DynamicResource DialogCloseWidth}" Height="{DynamicResource DialogCloseHeight}"
+                                        VerticalAlignment="Center"
                                         Margin="{DynamicResource AboutCaptionCloseMargin}"/>
                             </Grid>
                         </Border>

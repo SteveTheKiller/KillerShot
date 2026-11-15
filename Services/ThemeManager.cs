@@ -948,8 +948,10 @@ namespace KillerShot.Services
             // theme that draws a dialog caption, a compact 28x26 everywhere else, flush with the
             // caption buttons' right inset.
             bool pickerCaption = combined.Contains("UseDialogCaption") && combined["UseDialogCaption"] is bool fp && fp;
-            SetIfAbsent("DialogCloseWidth", pickerCaption ? combined["CaptionButtonWidth"] : 28.0);
-            SetIfAbsent("DialogCloseHeight", pickerCaption ? combined["CaptionButtonHeight"] : 26.0);
+            // Win98 sizes a caption button off its caption: (height - 2) wide, (height - 4) tall.
+            double bar = combined["DialogTitleBarHeight"] is double barH ? barH : 32.0;
+            SetIfAbsent("DialogCloseWidth", pickerCaption ? bar - 2 : 28.0);
+            SetIfAbsent("DialogCloseHeight", pickerCaption ? bar - 4 : 26.0);
             SetIfAbsent("DialogCaptionButtonsMargin", new Thickness(0, 0,
                 combined["CaptionButtonsMargin"] is Thickness pickerButtons ? pickerButtons.Right : 0, 0));
             SetIfAbsent("TitleLogoMargin", combined.Contains("UseDialogCaption") && combined["UseDialogCaption"] is bool fc && fc
@@ -1037,6 +1039,7 @@ namespace KillerShot.Services
 
                 // A 1px MDL2 stroke disappears against a gray button face at 16px.
                 combined["CaptionGlyphWeight"] = flat ? FontWeights.Bold : FontWeights.Normal;
+                combined["CaptionGlyphSize"] = flat ? 8.0 : 10.0;
 
                 // The About card only gets a caption band when the theme asks for one; 0 keeps
                 // every other theme's card at the exact layout it already had.
