@@ -210,7 +210,11 @@ html[data-theme="light"] .kbmap { --kc-file:#009e99; --kc-view:#a316b5; --kc-nav
 </div></div></div>
 <div class="acc-item"><button class="acc-head"><span data-i18n="h_strip_t">The collection strip</span><span class="kbd">Alt + Shift + arrows</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="h_strip_1">With a picture open, its collection runs in a photo carousel at the top or bottom, and every collection is listed in the sidebar at the left or right. Click a picture, or move with the arrow keys, to open it. Pick another collection, or All captures, in the sidebar.</p>
-<p data-i18n="h_strip_2"><b>Alt+Shift</b> with Left or Right moves the collections sidebar to that side, and Up or Down moves the photo carousel. The arrow of the side it is already on hides it, and again brings it back. Drag its edge to resize it.</p>
+<p data-i18n="h_strip_2"><b>Alt+Shift</b> with Left or Right moves the collections sidebar to that side, and Up or Down moves the photo carousel. The arrow of the side it is already on hides it, and again brings it back. Drag its edge to resize it. Right-click the sidebar for its options, including which side it sits on.</p>
+</div></div></div>
+<div class="acc-item" id="tabs"><button class="acc-head"><span data-i18n="h_tabs_t">Library tabs</span><span class="kbd">Ctrl + T / W / Tab</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
+<p data-i18n="h_tabs_1">The library opens in tabs, and each tab shows a collection or a folder. Right-click a collection and choose <b>Open in a new tab</b>, or right-click a linked folder to browse it in a Files tab. <b>Ctrl+T</b> opens a new tab, <b>Ctrl+W</b> closes one, and <b>Ctrl+Tab</b> and <b>Ctrl+Shift+Tab</b> move between them. Drag a tab to reorder it. KillerShot reopens your tabs where you left them.</p>
+<p data-i18n="h_tabs_2">Right-click menus are cards: the common actions sit in a strip of buttons at the top, with the rest listed below with their shortcuts.</p>
 </div></div></div>
 <div class="acc-item" id="files"><button class="acc-head"><span data-i18n="hk_files">Files</span><span class="kbd">F9</span><span class="chev">&#9656;</span></button><div class="acc-body"><div class="acc-body-inner">
 <p data-i18n="f_files_d">Press F9 to browse folders in list, icons or details view. Rename, copy, move and recycle files, or open images in the editor. Files stay in their original folders.</p>
@@ -332,7 +336,7 @@ base: { Esc:['help','Close a card, go back from the library, or cancel'], F1:['h
   Left:['appt','Move the selected mark'], Right:['appt','Move the selected mark'], Up:['appt','Move the selected mark'], Down:['appt','Move the selected mark'],
   PrtSc:['file','Capture a region'] },
 ctrl: { D0:['view','Fit to the window'], D1:['view','Actual size (100%)'], Equals:['view','Zoom in'], Minus:['view','Zoom out'],
-  T:['view','Files: New tab'], W:['view','Files: Close tab'], Tab:['view','Files: next tab (Shift: previous)'],
+  T:['view','Library: new tab'], W:['view','Library: close tab'], Tab:['view','Library: next tab (Shift: previous)'],
   Z:['appt','Undo'], Y:['appt','Redo'], C:['appt','Copy the finished picture'],
   N:['file','Capture a region'], L:['file','Show or hide the capture library'], F:['file','Search the library'], R:['file','Start or stop a video recording'],
   O:['file','Open an image'], S:['file','Save'], P:['file','Print'], PrtSc:['file','Capture the monitor under the mouse'] },
@@ -340,7 +344,7 @@ alt: { M:['view','Hide or show the toolbar'], PrtSc:['file','Capture the active 
 shift: { Enter:['appt','Start a new line of text'], Left:['appt','Move the selected mark 10 px'], Right:['appt','Move the selected mark 10 px'],
   Up:['appt','Move the selected mark 10 px'], Down:['appt','Move the selected mark 10 px'], PrtSc:['file','Capture all monitors'] },
 ctrlshift: { D1:['view','Small icons'], D2:['view','Large icons'], D3:['view','No text'], D4:['view','Text beside the icons'],
-  Tab:['view','Files: next tab (Shift: previous)'],
+  Tab:['view','Library: previous tab'],
   D5:['view','Text under the icons'], D6:['view','Text only'], Z:['appt','Redo'], S:['file','Save as'], PrtSc:['file','Start or stop a video recording'] },
 altshift: { G:['view','Film Grain'], Left:['view','Sidebar on the left'], Right:['view','Sidebar on the right'],
   Up:['view','Carousel at the top'], Down:['view','Carousel at the bottom'] } };
