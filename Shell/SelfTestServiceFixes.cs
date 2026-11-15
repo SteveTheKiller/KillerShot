@@ -70,6 +70,7 @@ internal static class SelfTestServiceFixes
         await Check("AL-008", () => Sync(InterruptedKeyAlbumsAreAccountKeyed));
         await Check("SX-003", () => Task.Run(() => AddVideoPrunes(dir)));
         await Check("SX-001", () => Task.Run(() => PrunedRecordingLosesPlayback(dir)));
+        await Check("SV-006", () => Task.Run(() => HeldPlaybackCopyGoesWhenReleased(dir)));
         await Check("AL-001", () => Task.Run(() => VideoImportLeavesAlbumWritable(dir)));
         await Check("AL-007", () => Task.Run(StaleOcrIsDropped));
         await Check("AL-006", () => Sync(RenameRollbackKeepsAlbum));
@@ -203,6 +204,31 @@ internal static class SelfTestServiceFixes
         var wait = Stopwatch.StartNew();
         while (File.Exists(copy) && wait.Elapsed < TimeSpan.FromSeconds(3)) Thread.Sleep(50);
         Require(!File.Exists(copy), "The pruned recording's playback copy is still on disk.");
+    }
+
+    // ---- SV-006: a playback copy a player held open is deleted once the player lets go ----
+
+    private static void HeldPlaybackCopyGoesWhenReleased(string dir)
+    {
+        Open();
+        var interval = VideoCaptures.PlaybackRetryInterval;
+        VideoCaptures.PlaybackRetryInterval = TimeSpan.FromMilliseconds(200);
+        try
+        {
+            long video = CaptureLibrary.AddVideo(FakeClip(dir, "held", 4096), DateTime.Now, "held");
+            string copy = VideoCaptures.DecryptForPlayback(video);
+            // A player opens the file without delete sharing, so the first delete fails.
+            using (new FileStream(copy, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                CaptureLibrary.Delete([video]);
+                Thread.Sleep(300);
+                Require(File.Exists(copy), "The held copy vanished while the player held it, so this check proves nothing.");
+            }
+            var wait = Stopwatch.StartNew();
+            while (File.Exists(copy) && wait.Elapsed < TimeSpan.FromSeconds(5)) Thread.Sleep(50);
+            Require(!File.Exists(copy), "The decrypted copy stayed on disk after the player let go of it.");
+        }
+        finally { VideoCaptures.PlaybackRetryInterval = interval; }
     }
 
     // ---- AL-001: a long recording import never holds the album's write lock ----

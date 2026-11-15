@@ -34,6 +34,37 @@ internal static class VideoCaptures
     /// <summary>For the self-test: another playback folder in place of the user's.</summary>
     internal static void UsePlaybackFolder(string dir) => _playbackOverride = dir;
 
+    /// <summary>How often a playback copy a player held open is tried again. The self-test shortens it.</summary>
+    internal static TimeSpan PlaybackRetryInterval { get; set; } = TimeSpan.FromSeconds(30);
+
+    // Decrypted copies whose delete failed because a player still held them. They are no longer
+    // served, and the timer keeps trying until each is gone or the next wipe takes them.
+    private static readonly HashSet<string> PendingPlaybackDeletes = new(StringComparer.OrdinalIgnoreCase);
+    private static Timer? _playbackRetry;
+
+    private static void RetryLater(string path)
+    {
+        PendingPlaybackDeletes.Add(path);
+        _playbackRetry ??= new Timer(_ => RetryPendingDeletes(), null, PlaybackRetryInterval, PlaybackRetryInterval);
+    }
+
+    private static void RetryPendingDeletes()
+    {
+        lock (PlaybackGate)
+        {
+            PendingPlaybackDeletes.RemoveWhere(TryDelete);
+            if (PendingPlaybackDeletes.Count > 0 || _playbackRetry is null) return;
+            _playbackRetry.Dispose();
+            _playbackRetry = null;
+        }
+    }
+
+    private static bool TryDelete(string path)
+    {
+        try { File.Delete(path); return true; }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { return false; }
+    }
+
     /// <summary>The frame size and length of a recording, from the properties Windows reads out
     /// of the file. A GIF's size comes from its first frame. Zero when Windows cannot tell.</summary>
     public static (int Width, int Height, TimeSpan Duration) Probe(string path)
@@ -167,19 +198,16 @@ internal static class VideoCaptures
     public static void OpenInPlayer(string path) => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })?.Dispose();
 
     /// <summary>Deletes the decrypted playback copies of one album session, or of one recording in
-    /// it. A copy a player still holds open stays until the next wipe.</summary>
+    /// it. A copy a player still holds open is tried again until the player lets it go.</summary>
     public static void ForgetPlayback(long session, long? id = null)
     {
         lock (PlaybackGate)
         {
             foreach (var key in PlaybackCopies.Keys.Where(k => k.Session == session && (id == null || k.Id == id)).ToList())
             {
-                try
-                {
-                    File.Delete(PlaybackCopies[key]);
-                    PlaybackCopies.Remove(key);
-                }
-                catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+                string path = PlaybackCopies[key];
+                PlaybackCopies.Remove(key);
+                if (!TryDelete(path)) RetryLater(path);
             }
         }
     }
@@ -191,6 +219,7 @@ internal static class VideoCaptures
         lock (PlaybackGate)
         {
             PlaybackCopies.Clear();
+            PendingPlaybackDeletes.Clear();
             try
             {
                 if (!Directory.Exists(PlaybackFolder)) return;
