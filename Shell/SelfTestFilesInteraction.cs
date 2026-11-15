@@ -305,32 +305,41 @@ internal static class SelfTestFilesInteraction
                 uint idleAfter = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
                 uint idleGdiAfter = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
                 report.AppendLine($"Native idle control: USER before={idleBefore}, after={idleAfter}, GDI before={idleGdiBefore}, after={idleGdiAfter}, durationMs={idleDuration.ElapsedMilliseconds}");
-                uint previousObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
-                uint previousGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
-                bool stableMenus = true, stableGdi = true, acquiredAll = true;
+                // Shell extensions can leak their own menu icons on every QueryContextMenu (on
+                // SHREDDER, Hardwipe's hwshell.dll keeps about 13 per query), and that happens in
+                // Explorer too. So the lease is measured against the bare shell sequence on the
+                // same file, interleaved batch by batch: KillerShot must retain nothing beyond
+                // what the shell itself retains.
+                IntPtr process = System.Diagnostics.Process.GetCurrentProcess().Handle;
+                bool stableMenus = true, stableGdi = true, acquiredAll = true, rawAll = true;
                 for (int batch = 0; batch < 3; batch++)
                 {
-                    int acquiredCount = 0;
-                    uint beforeObjects = previousObjects;
-                    uint beforeGdiObjects = previousGdiObjects;
                     var batchDuration = System.Diagnostics.Stopwatch.StartNew();
+                    uint rawUser = GetGuiResources(process, 1), rawGdi = GetGuiResources(process, 0);
+                    int rawCount = 0;
+                    for (int i = 0; i < 10; i++) if (RawShellMenuQuery(nativePaths[0]) > 0) rawCount++;
+                    await DrainNativeIdle();
+                    int rawUserDelta = (int)GetGuiResources(process, 1) - (int)rawUser;
+                    int rawGdiDelta = (int)GetGuiResources(process, 0) - (int)rawGdi;
+                    uint leaseUser = GetGuiResources(process, 1), leaseGdi = GetGuiResources(process, 0);
+                    int acquiredCount = 0;
                     for (int i = 0; i < 10; i++)
                     {
                         using var lease = ShellContextMenu.Acquire(window, nativePaths);
                         if (lease is { CommandCount: > 0 }) acquiredCount++;
                     }
-                    uint immediateObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
-                    uint immediateGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
                     await DrainNativeIdle();
-                    previousObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 1);
-                    previousGdiObjects = GetGuiResources(System.Diagnostics.Process.GetCurrentProcess().Handle, 0);
+                    int leaseUserDelta = (int)GetGuiResources(process, 1) - (int)leaseUser;
+                    int leaseGdiDelta = (int)GetGuiResources(process, 0) - (int)leaseGdi;
                     acquiredAll &= acquiredCount == 10;
-                    stableMenus &= previousObjects <= beforeObjects;
-                    stableGdi &= previousGdiObjects <= beforeGdiObjects;
-                    report.AppendLine($"Native lease batch {batch}: acquired={acquiredCount}/10, USER before={beforeObjects}, immediate={immediateObjects}, settled={previousObjects}, GDI before={beforeGdiObjects}, immediate={immediateGdiObjects}, settled={previousGdiObjects}, durationMs={batchDuration.ElapsedMilliseconds}");
+                    rawAll &= rawCount == 10;
+                    stableMenus &= leaseUserDelta <= Math.Max(0, rawUserDelta);
+                    stableGdi &= leaseGdiDelta <= Math.Max(0, rawGdiDelta);
+                    report.AppendLine($"Native lease batch {batch}: acquired={acquiredCount}/10, raw={rawCount}/10, USER lease+{leaseUserDelta} shell+{rawUserDelta}, GDI lease+{leaseGdiDelta} shell+{rawGdiDelta}, durationMs={batchDuration.ElapsedMilliseconds}");
                 }
-                Check(acquiredAll && stableMenus, "repeated same-target native menu acquire/dispose retains no additional USER objects");
-                Check(acquiredAll && stableGdi, "repeated same-target native menu acquire/dispose retains no additional GDI objects");
+                Check(rawAll, "bare shell menu query builds the same native menu");
+                Check(acquiredAll && stableMenus, "repeated native menu acquire/dispose retains no USER objects beyond the shell's own");
+                Check(acquiredAll && stableGdi, "repeated native menu acquire/dispose retains no GDI objects beyond the shell's own");
             }
             view.ResultsList.SelectedItem = view.Navigation.Results.Single();
             int hostCalls = 0;
@@ -473,4 +482,65 @@ internal static class SelfTestFilesInteraction
     private static extern bool GlobalUnlock(IntPtr memory);
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern uint GetGuiResources(IntPtr process, uint flags);
+
+    // The bare shell sequence the lease wraps: bind the parent, ask for IContextMenu, fill an
+    // HMENU with CMF_EXPLORE, destroy it and release. Returns the item count, or 0 on failure.
+    private static int RawShellMenuQuery(string path)
+    {
+        if (SHParseDisplayName(path, IntPtr.Zero, out IntPtr pidl, 0, out _) != 0) return 0;
+        object? parent = null, menu = null;
+        IntPtr handle = IntPtr.Zero;
+        try
+        {
+            var iidFolder = new Guid("000214E6-0000-0000-C000-000000000046");
+            if (SHBindToParent(pidl, ref iidFolder, out parent, out IntPtr child) != 0 || parent is not IRawShellFolder folder) return 0;
+            var iidMenu = new Guid("000214E4-0000-0000-C000-000000000046");
+            if (folder.GetUIObjectOf(IntPtr.Zero, 1, [child], ref iidMenu, IntPtr.Zero, out menu) != 0 || menu is not IRawContextMenu context) return 0;
+            handle = CreatePopupMenu();
+            if (handle == IntPtr.Zero || context.QueryContextMenu(handle, 0, 1, 0x7FFF, 4) < 0) return 0;
+            return GetMenuItemCount(handle);
+        }
+        finally
+        {
+            if (handle != IntPtr.Zero) DestroyMenu(handle);
+            if (menu != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(menu);
+            if (parent != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(parent);
+            System.Runtime.InteropServices.Marshal.FreeCoTaskMem(pidl);
+        }
+    }
+
+    [System.Runtime.InteropServices.ComImport, System.Runtime.InteropServices.Guid("000214E6-0000-0000-C000-000000000046"),
+     System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IRawShellFolder
+    {
+        [System.Runtime.InteropServices.PreserveSig] int ParseDisplayName(IntPtr hwnd, IntPtr bindContext, IntPtr name, IntPtr eaten, IntPtr pidl, IntPtr attributes);
+        [System.Runtime.InteropServices.PreserveSig] int EnumObjects(IntPtr hwnd, int flags, IntPtr enumerator);
+        [System.Runtime.InteropServices.PreserveSig] int BindToObject(IntPtr pidl, IntPtr bindContext, IntPtr riid, IntPtr result);
+        [System.Runtime.InteropServices.PreserveSig] int BindToStorage(IntPtr pidl, IntPtr bindContext, IntPtr riid, IntPtr result);
+        [System.Runtime.InteropServices.PreserveSig] int CompareIDs(IntPtr parameter, IntPtr first, IntPtr second);
+        [System.Runtime.InteropServices.PreserveSig] int CreateViewObject(IntPtr owner, IntPtr riid, IntPtr result);
+        [System.Runtime.InteropServices.PreserveSig] int GetAttributesOf(uint count, IntPtr items, IntPtr attributes);
+        [System.Runtime.InteropServices.PreserveSig] int GetUIObjectOf(IntPtr owner, uint count,
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPArray)] IntPtr[] items, ref Guid riid, IntPtr reserved,
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Interface)] out object result);
+    }
+
+    [System.Runtime.InteropServices.ComImport, System.Runtime.InteropServices.Guid("000214E4-0000-0000-C000-000000000046"),
+     System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IRawContextMenu
+    {
+        [System.Runtime.InteropServices.PreserveSig] int QueryContextMenu(IntPtr menu, uint index, uint first, uint last, uint flags);
+    }
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int SHParseDisplayName(string name, IntPtr bindContext, out IntPtr pidl, uint query, out uint attributes);
+    [System.Runtime.InteropServices.DllImport("shell32.dll")]
+    private static extern int SHBindToParent(IntPtr pidl, ref Guid riid,
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Interface)] out object folder, out IntPtr child);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern IntPtr CreatePopupMenu();
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool DestroyMenu(IntPtr menu);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int GetMenuItemCount(IntPtr menu);
 }
