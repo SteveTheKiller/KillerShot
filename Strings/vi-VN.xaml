@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">Thu nhỏ</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">Thu nhỏ bộ sưu tập</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">Thanh bên</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">Băng chuyền</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">Phía</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">Trái</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Phải</sys:String>

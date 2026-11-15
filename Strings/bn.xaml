@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">ছোট করুন</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">সংগ্রহ ছোট করুন</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">সাইডবার</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">ক্যারোসেল</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">পাশ</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">বাঁ</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">ডান</sys:String>

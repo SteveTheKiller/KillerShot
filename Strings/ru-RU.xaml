@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">Свернуть</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">Свернуть коллекции</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">Боковая панель</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">Карусель</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">Сторона</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">Слева</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Справа</sys:String>

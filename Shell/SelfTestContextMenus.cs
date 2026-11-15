@@ -73,6 +73,16 @@ internal static class SelfTestContextMenus
                 && !content.Any(row => row == L("Str_Dock_Left") || row == L("Str_Dock_Top") || row == L("Str_Sidebar_Compact")),
                 "The content menu must hold the views and nothing from the sidebar or carousel.");
             Check(L("Str_Dock_Left") == "Sidebar on the left" && L("Str_Dock_Top") == "Carousel at the top", "The dock options must name what they move.");
+            // Every workspace menu is a KillerUI card: the card style, and a header naming the area.
+            foreach (var (area, owner, title) in new (string, FrameworkElement, string)[]
+                { ("sidebar", navigation, L("Str_Sidebar_Title")), ("carousel", carousel, L("Str_Carousel_Title")), ("content", library, L("Str_Btn_Library")) })
+            {
+                var menu = owner.ContextMenu!;
+                _ = new ContextMenuEventArgsProbe(owner);
+                string? head = menu.Items.OfType<MenuItem>().FirstOrDefault() is { } first && System.Windows.Automation.AutomationProperties.GetName(first) is { Length: > 0 } name ? name : null;
+                Check(menu.Style != null && menu.Style == (Style?)window.TryFindResource("CardMenu") && head == title,
+                    $"The {area} menu must be a card headed '{title}' (style={(menu.Style == null ? "none" : "set")}, head='{head}').");
+            }
             report.Add("menus belong to where the click lands, with plain names: PASS");
 
             // What a real right-click on the sidebar does: whatever sits under the pointer gets the

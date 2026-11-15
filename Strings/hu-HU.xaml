@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">Kis méret</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">Gyűjtemények kis méretben</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">Oldalsáv</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">Körhinta</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">Oldal</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">Bal</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Jobb</sys:String>

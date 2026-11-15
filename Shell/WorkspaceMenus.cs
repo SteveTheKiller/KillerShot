@@ -35,9 +35,9 @@ public partial class MainWindow
         RailStack.Background = Brushes.Transparent;
         Attach(RailStack, FillSidebarMenu, card: true);
         if (_navigationStrip != null) Attach(_navigationStrip, FillSidebarMenu, card: true);
-        if (_strip != null) Attach(_strip, FillCarouselMenu);
-        Attach(Library, FillContentMenu);
-        Attach(FooterBar, FillContentMenu);
+        if (_strip != null) Attach(_strip, FillCarouselMenu, card: true);
+        Attach(Library, FillContentMenu, card: true);
+        Attach(FooterBar, FillContentMenu, card: true);
         NavigationDock.LayoutChanged += PlaceRailButtons;
         RailStack.LayoutUpdated += (_, _) => PlaceRailButtons();
         PlaceRailButtons();
@@ -84,6 +84,7 @@ public partial class MainWindow
     private void FillCarouselMenu(ContextMenu menu)
     {
         menu.Items.Clear();
+        menu.Items.Add(CardBuilder.Header(Loc("Str_Carousel_Title"), _strip?.SourceCaption));
         foreach (var (side, key, arrow) in StripSides.Where(s => s.Side is DockSide.Top or DockSide.Bottom))
         {
             var target = side;
@@ -97,7 +98,10 @@ public partial class MainWindow
     private void FillContentMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        foreach (var (view, key) in new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline"), ("files", "Str_Lib_ViewFiles") })
+        var views = new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline"), ("files", "Str_Lib_ViewFiles") };
+        string? shown = Library.IsVisible ? views.FirstOrDefault(v => v.Item1 == Library.CurrentView).Item2 : null;
+        menu.Items.Add(CardBuilder.Header(Loc("Str_Btn_Library"), shown == null ? null : Loc(shown)));
+        foreach (var (view, key) in views)
         {
             string target = view;
             AddItem(menu, key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,

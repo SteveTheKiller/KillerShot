@@ -80,7 +80,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 ### Added
 - The library opens in tabs, the way KillerShell and KillerPDF do. Each tab holds a collection or a folder, Ctrl+T opens another, and the tabs, their order and each one's place are kept across restarts. A collection can open in a new tab from its right-click card, and a linked folder can also open as a Files tab.
 - Files (F9) is a folder tab with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor.
-- Right-click menus on captures, collections, linked folders, files and the editor picture are cards with a title, a row of quick actions and the rest of the commands below, each with its shortcut.
+- Right-click menus on captures, collections, linked folders, files and the editor picture are cards with a title, a row of quick actions and the rest of the commands below, each with its shortcut. The carousel and album area menus are cards too, headed with the carousel's collection or the view on screen.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 

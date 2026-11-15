@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">Кішірейту</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">Жинақтарды кішірейту</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">Бүйірлік тақта</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">Карусель</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">Жағы</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">Сол</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Оң</sys:String>

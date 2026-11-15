@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">最小化</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">コレクションを最小化</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">サイドバー</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">カルーセル</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">位置</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">左</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">右</sys:String>

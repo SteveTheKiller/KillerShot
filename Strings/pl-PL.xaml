@@ -527,6 +527,7 @@
     <sys:String x:Key="Str_Dock_Minimize">Minimalizuj</sys:String>
     <sys:String x:Key="Str_Sidebar_Compact">Minimalizuj kolekcje</sys:String>
     <sys:String x:Key="Str_Sidebar_Title">Pasek boczny</sys:String>
+    <sys:String x:Key="Str_Carousel_Title">Karuzela</sys:String>
     <sys:String x:Key="Str_Sidebar_Side">Strona</sys:String>
     <sys:String x:Key="Str_Sidebar_Left">Lewa</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Prawa</sys:String>
