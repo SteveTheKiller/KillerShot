@@ -515,21 +515,30 @@ namespace KillerShot.Controls
             // An extension the user typed by hand is theirs and is left alone.
             if (_mode == FileDialogMode.Save && !IsFileNameReadOnly)
             {
-                string? newExt = ActiveFilterExt();
                 string  name   = FileNameBox.Text?.Trim() ?? "";
                 // Path.GetExtension throws on characters no path can carry; such a name keeps its
                 // text and gets the invalid-path message instead of an extension swap.
                 if (name.Length > 0 && IsMalformedTyped(name.Trim('"'))) { RejectTyped(); ApplySort(); return; }
-                string  cur    = name.Length == 0 ? "" : Path.GetExtension(name);
-                if (newExt != null && cur.Length > 0 &&
-                    !cur.Equals(newExt, StringComparison.OrdinalIgnoreCase) &&
-                    AllFilterExts().Contains(cur, StringComparer.OrdinalIgnoreCase))
-                {
-                    FileNameBox.Text = Path.ChangeExtension(name, newExt);
-                }
+                if (SwapTypedExtension(name, ActiveFilterExt(), AllFilterExts()) is string swapped)
+                    FileNameBox.Text = swapped;
             }
 
             ApplySort();
+        }
+
+        /// <summary>
+        /// The typed name with its extension swapped for <paramref name="newExt"/>, or null to leave
+        /// it as typed: there is no extension, it already matches, or the user typed one that no
+        /// entry of this filter names.
+        /// </summary>
+        internal static string? SwapTypedExtension(string typed, string? newExt, System.Collections.Generic.IEnumerable<string> filterExts)
+        {
+            // A pasted name keeps its quotes, and a quote is a character Path refuses.
+            string name = typed.Trim().Trim('"');
+            string cur  = name.Length == 0 ? "" : Path.GetExtension(name);
+            if (newExt == null || cur.Length == 0 || cur.Equals(newExt, StringComparison.OrdinalIgnoreCase)
+                || !filterExts.Contains(cur, StringComparer.OrdinalIgnoreCase)) return null;
+            return Path.ChangeExtension(name, newExt);
         }
 
         /// <summary>
@@ -945,11 +954,15 @@ namespace KillerShot.Controls
                                           TreeFadeBottom.Height, 22);
         }
 
-        // Height is NaN until the border has been laid out, hence the fallback.
-        private static double Ramp(double distance, double height, double fallback)
+        // Height is NaN until the border has been laid out, hence the fallback. Scaled by the theme's
+        // EdgeFadeOpacity, as every other edge fade in the kit is: 98SE states 0. Its pane is white
+        // and its scrollbar wider than the fades' right inset, so a fade there was a solid white
+        // block painted over the bottom of the places scrollbar.
+        private double Ramp(double distance, double height, double fallback)
         {
             double h = double.IsNaN(height) || height <= 0 ? fallback : height;
-            return Math.Min(1, Math.Max(0, distance) / h);
+            double strength = TryFindResource("EdgeFadeOpacity") is double fade ? fade : 1;
+            return Math.Min(1, Math.Max(0, distance) / h) * strength;
         }
 
         /// <summary>
@@ -1048,8 +1061,12 @@ namespace KillerShot.Controls
 
         private void FolderTree_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            _treeMenuNode = NodeUnder(Mouse.DirectlyOver as DependencyObject)
-                         ?? NodeUnder(e.OriginalSource as DependencyObject);
+            _treeMenuNode = e.CursorLeft < 0
+                ? NodeUnder(Keyboard.FocusedElement as DependencyObject)
+                    ?? NodeUnder(e.OriginalSource as DependencyObject)
+                    ?? FolderTreeCtl.SelectedItem as FolderNode
+                : NodeUnder(e.OriginalSource as DependencyObject)
+                    ?? NodeUnder(Mouse.DirectlyOver as DependencyObject);
             // Drives are already in places; empty space has nothing to pin.
             if (_treeMenuNode == null || _treeMenuNode.IsDrive) e.Handled = true;
         }
@@ -1534,6 +1551,13 @@ namespace KillerShot.Controls
         // Accept is on exactly when pressing it would do something.
         private void RefreshAcceptEnabled()
             => AcceptButton.IsEnabled = PickerAcceptRule.CanAccept(IsDirectoryListingBusy, IsDirectoryListingAvailable, _accepting, _mode == FileDialogMode.Folder, FileNameBox.Text);
+
+        // Accept depends on the typed name while the folder listing is unavailable, so it is
+        // re-evaluated as the name changes, not only when the listing settles.
+        private void FileNameBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (AcceptButton != null) RefreshAcceptEnabled();
+        }
 
         private void ReportUnanswered(string reason)
         {
