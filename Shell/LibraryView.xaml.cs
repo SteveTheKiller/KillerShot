@@ -923,6 +923,8 @@ namespace KillerShot.Shell
             try { ok = await Task.Run(() => CaptureLibrary.Unlock(password)); }
             catch (Exception ex) { openError = ex.Message; }
             finally { HideBusy(); }
+            // Unlock reports a damaged album as false with a reason, not as a wrong password.
+            if (!ok && openError == null && CaptureLibrary.LoadError is { } loadError) openError = loadError;
             UnlockBox.Clear();
             if (openError != null)
             {

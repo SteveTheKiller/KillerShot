@@ -602,24 +602,28 @@ internal static partial class SelfTestLibrary
             // The folder source must keep its files in the Screenshots group, not Unfiled.
             // Choose it in the collection sidebar, as a user does, so every view agrees on it.
             w.TestNavigationStrip!.SetSource("folder");
+            await view.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));   // the library lists off the UI thread
             view.TestSet("shelves", "collection", "");
             var rowsList = view.FindName("RowsList") as ItemsControl
                 ?? throw new InvalidOperationException("Library rows are unavailable.");
             var folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
             bool folderGrouped = folderRows.Count == 1 && folderRows[0].Key == "folder"
                 && folderRows[0].Title == FolderCaptures.Name && folderRows[0].Items.Count == 6;
-            log.AppendLine($"folder_grouped={folderGrouped}");
+            log.AppendLine($"folder_grouped={folderGrouped} rows=" + string.Join("; ", folderRows.Select(r => $"{r.Key}/{r.Title}/{r.Items.Count}")));
             if (!folderGrouped) throw new InvalidOperationException("Folder captures were grouped under Unfiled.");
             await Shot("library-folder-source");
             view.TestSet("grid", "collection", "2026-10-12");
+            await view.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
             folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
             if (folderRows.Count < 2 || folderRows[0].Key != "folder" || folderRows.Sum(r => r.Items.Count) != 1)
                 throw new InvalidOperationException("Folder search lost its Screenshots group.");
             view.TestSet("shelves", "date", "");
+            await view.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
             folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
             if (folderRows.Sum(r => r.Items.Count) != 6)
                 throw new InvalidOperationException("Folder date grouping lost captures.");
             w.TestNavigationStrip!.SetSource("all");
+            await view.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
             view.TestSet("shelves", "collection", "");
 
             // Open a capture, then the library over it (Ctrl+L).

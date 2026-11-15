@@ -85,10 +85,11 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Reopening About, the shortcuts sheet or a settings panel while it fades out keeps it open instead of letting it disappear a moment later.
 - A frozen desktop capture always gets its finished pixels, never a frame GDI hasn't finished drawing.
 - A decrypted recording that a player still had open when it was deleted or its album closed is removed once the player lets go, instead of staying on disk until KillerShot next starts or exits.
+- Unlocking a damaged album says the library could not be opened and why, instead of calling the password wrong.
 
 ### Changed
 
-- Updated SQLite bindings to 10.0.15.
+- Updated SQLite bindings to 11.0.0.
 - Single-line text fields are as tall as the dropdowns beside them, so form rows line up instead of the text boxes standing oversized.
 - The copyright at the right end of the footer ends 8 px before the corner grip, the same gap in every Killer app.
 
