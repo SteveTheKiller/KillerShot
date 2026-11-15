@@ -69,6 +69,7 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Moving a read-only file to another drive in Files, such as a photo from a camera card, removes it from the card and keeps it read-only. It used to end up in both places with a failure report.
 - Holding Alt while clicking during a region capture no longer drags the dimmed screen off its monitor, which made the selection land on the wrong pixels.
 - On a narrow window with the portable badge showing, the version number no longer runs into the corner grip once the copyright hides to make room.
+- Right-clicking the collections sidebar opens its card with the sidebar's side, collection preview style and Minimize. The menu started empty and filled only once it was open, so it could fail to show.
 
 ### Changed
 
@@ -77,7 +78,9 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - The copyright at the right end of the footer ends 8 px before the corner grip, the same gap in every Killer app.
 
 ### Added
-- Files (F9) adds KillerShell-style folder tabs that retain their state across library switches and restarts, with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor.
+- The library opens in tabs, the way KillerShell and KillerPDF do. Each tab holds a collection or a folder, Ctrl+T opens another, and the tabs, their order and each one's place are kept across restarts. A collection can open in a new tab from its right-click card, and a linked folder can also open as a Files tab.
+- Files (F9) is a folder tab with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor.
+- Right-click menus on captures, collections, linked folders, files and the editor picture are cards with a title, a row of quick actions and the rest of the commands below, each with its shortcut.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 

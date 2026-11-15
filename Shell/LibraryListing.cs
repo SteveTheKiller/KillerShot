@@ -7,9 +7,14 @@ namespace KillerShot.Shell;
 internal sealed record LibraryListing(IReadOnlyList<CaptureItem> Items, IReadOnlyList<CaptureCollection> Collections,
     IReadOnlyList<CaptureItem> FolderItems, int Total, bool LinkedPhotos)
 {
+    /// <summary>Every collection in the album, whatever the listing shows. Collection tabs take
+    /// their names from it and fall back to All when theirs is gone.</summary>
+    internal IReadOnlyList<CaptureCollection> AlbumCollections { get; init; } = Collections;
+
     internal static LibraryListing Read(string source, string search)
     {
         var collections = CaptureLibrary.Collections();
+        var album = collections;
         var items = CaptureLibrary.Items(search.Length > 0 ? search : null);
         var folderItems = FolderCaptures.Snapshot(search.Length > 0 ? search : null);
         bool Matches(CaptureItem item) => source == "all" || (source == "c0"
@@ -30,6 +35,6 @@ internal sealed record LibraryListing(IReadOnlyList<CaptureItem> Items, IReadOnl
         }
         if (source != "all") folderItems = [];
         bool linkedPhotos = FolderCaptures.LinkedCollections().Any(folder => FolderCaptures.LinkedItems(folder.Source, search).Count > 0);
-        return new(items, collections, folderItems, total, linkedPhotos);
+        return new(items, collections, folderItems, total, linkedPhotos) { AlbumCollections = album };
     }
 }

@@ -50,12 +50,19 @@ internal static class SelfTestFilesTabs
             await library.FilesNavigation;
             var workspace = library.FilesWorkspace;
             Check(workspace.FindName("TabStrip") != null, "Files exposes its tab strip");
+            // The library's own collection tab sits beside folder tabs; this test is about folder
+            // tabs, so it steps out of the way (SelfTestCollectionTabs covers it).
+            async Task DropCollectionTabs()
+            {
+                foreach (var tab in workspace.Tabs.Where(tab => tab.IsCollection).ToArray()) await workspace.CloseTab(tab);
+            }
+            await DropCollectionTabs();
             if (restore)
             {
                 Check(workspace.Tabs.Count == 2, "restart restores two tabs");
                 Check(workspace.Tabs.IndexOf(workspace.ActiveTab) == 1, "restart restores active tab and order");
                 var first = workspace.ActiveTab;
-                Check(first.View.Navigation.CurrentFolder == CaptureSettings.OutputFolder, "restart restores active folder");
+                Check(first.View!.Navigation.CurrentFolder == CaptureSettings.OutputFolder, "restart restores active folder");
                 Check(first.View.Navigation.FilterText == "item", "restart restores tab filter");
                 Check(first.View.CurrentMode == 2 && first.View.ViewState.Density == 3, "restart restores view and density");
                 Check(first.View.Navigation.SortIndex == 1 && first.View.Navigation.SortAsc, "restart restores sort");
@@ -64,14 +71,14 @@ internal static class SelfTestFilesTabs
                 await Idle();
                 Check(Descendants<ScrollViewer>(first.View.ResultsList).First().VerticalOffset > 0, "restart restores scrolling");
                 await workspace.SelectTab(workspace.Tabs[0]);
-                Check(workspace.ActiveView.Navigation.CurrentFolder == Path.Combine(folder, "second"), "restart lazily restores other folder");
+                Check(workspace.ActiveView!.Navigation.CurrentFolder == Path.Combine(folder, "second"), "restart lazily restores other folder");
                 Check(workspace.ActiveView.Navigation.FilterText == "other" && workspace.ActiveView.CurrentMode == 1,
                     "restart keeps other tab options independent");
                 await workspace.CloseTab(workspace.ActiveTab);
                 Check(workspace.Tabs.Count == 1 && workspace.ActiveTab == first, "closing active tab selects its neighbor");
                 await workspace.CloseTab(first);
-                Check(workspace.Tabs.Count == 1 && workspace.ActiveView.Navigation.CurrentFolder.Length > 0,
-                    "closing last tab leaves a usable browser");
+                Check(workspace.Tabs.Count == 1 && workspace.ActiveTab.IsCollection && workspace.ActiveTab.Source == "all",
+                    "closing the last tab leaves the library's all-captures tab");
                 Settings.Set("Files.Tabs", "malformed");
                 using var recovery = new FilesWorkspace();
                 Check(recovery.Tabs.Count == 1, "malformed session opens one usable tab");
@@ -84,7 +91,7 @@ internal static class SelfTestFilesTabs
                 for (int i = 0; i < 180; i++) File.WriteAllText(Path.Combine(firstFolder, $"item-{i:000}.txt"), "owned");
                 File.WriteAllText(Path.Combine(secondFolder, "other.txt"), "second");
                 var first = workspace.ActiveTab;
-                await first.View.NavigateTo(child);
+                await first.View!.NavigateTo(child);
                 await first.View.NavigateTo(firstFolder);
                 first.View.SetView(2);
                 first.View.SetDensity(3);
@@ -99,9 +106,10 @@ internal static class SelfTestFilesTabs
                 double offset = scroll.VerticalOffset;
                 Check(offset > 0, "fixture actually scrolls the first tab");
                 var second = await workspace.NewTab(secondFolder);
-                second.View.SetView(1);
+                second.View!.SetView(1);
                 second.View.SetFilter("other");
-                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == second, "new tab selects its independent folder");
+                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == second && second.View.Navigation.CurrentFolder == secondFolder,
+                    "new tab selects its independent folder");
                 await workspace.SelectTab(first);
                 Check(first.View.Navigation.CurrentFolder == firstFolder && first.View.Navigation.FilterText == "item", "switch retains folder and filter");
                 Check(first.View.CurrentMode == 2 && first.View.ViewState.Density == 3, "switch retains independent display options");
@@ -116,6 +124,7 @@ internal static class SelfTestFilesTabs
                     "library round trip retains active tab and folder");
                 Check(first.View.Navigation.FilterText == "item" && first.View.SelectedPaths.Count == 1,
                     "library round trip retains filter and selection");
+                await DropCollectionTabs();
                 Check(workspace.HandleTabKey(Key.Tab, ModifierKeys.Control) && workspace.ActiveTab == second,
                     "Ctrl+Tab selects next tab");
                 Check(workspace.HandleTabKey(Key.Tab, ModifierKeys.Control | ModifierKeys.Shift) && workspace.ActiveTab == first,
@@ -125,7 +134,7 @@ internal static class SelfTestFilesTabs
                 workspace.ConfigureEditor(_ => true, _ => Task.FromResult(true));
                 Check(await second.View.Browser.ActivateEntry(second.View.Navigation.Results.Single()), "editor callback reaches an existing inactive tab");
                 var temporary = await workspace.NewTab(secondFolder);
-                Check(await temporary.View.Browser.ActivateEntry(temporary.View.Navigation.Results.Single()), "new tabs inherit editor handoff");
+                Check(await temporary.View!.Browser.ActivateEntry(temporary.View.Navigation.Results.Single()), "new tabs inherit editor handoff");
                 await workspace.CloseTab(temporary);
                 await workspace.SelectTab(first);
                 Check(workspace.Tabs.Count == 2, "closing temporary tab preserves other tabs");

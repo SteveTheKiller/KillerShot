@@ -207,7 +207,9 @@ internal static class SelfTestFilesInteraction
             view.ResultsList.SelectedItem = view.Navigation.Results.Single(entry => entry.FileName == "alpha.txt");
             view.CanOpenInHost = path => Path.GetExtension(path) == ".txt";
             var menu = view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry);
-            string[] menuTags = menu.Items.OfType<System.Windows.Controls.MenuItem>().Select(item => Convert.ToString(item.Tag) ?? "").ToArray();
+            // The card's strip buttons carry their command on Uid; its rows carry it on Tag.
+            string[] menuTags = menu.Items.OfType<System.Windows.Controls.MenuItem>().Select(item => Convert.ToString(item.Tag) ?? "")
+                .Concat(menu.Items.OfType<System.Windows.Controls.MenuItem>().SelectMany(FilesView.StripButtons).Select(button => button.Uid)).ToArray();
             Check(new[] { "open", "host", "explorer", "cut", "copy", "paste", "rename", "newfolder", "delete", "shell", "properties", "refresh" }
                 .All(menuTags.Contains), "context menu exposes only the approved file command surface");
             if (!commandsOnly)

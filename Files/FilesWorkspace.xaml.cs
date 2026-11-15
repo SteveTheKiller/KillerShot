@@ -10,12 +10,36 @@ using System.Windows.Threading;
 
 namespace KillerShot.Files;
 
+/// <summary>One tab of the library's strip. A folder tab owns a Files page; a collection tab
+/// shows one album collection through the library's own view, which every collection tab
+/// shares (there is one library surface, never a copy per tab).</summary>
 public sealed class FilesTab : INotifyPropertyChanged
 {
-    public FilesView View { get; } = new();
-    private string Folder => View.Navigation.CurrentFolder.Length > 0 ? View.Navigation.CurrentFolder : Pending?.Folder ?? "";
-    public ImageSource? Icon => Browser.IsThisPc(Folder) ? IconCache.ForComputer(32) : IconCache.For(Folder, 32, isDirectory: true);
-    public string Title => Browser.IsThisPc(Folder) ? Services.LocaleManager.Loc("Str_Nav_ThisPc")
+    internal FilesTab(bool collection, string source)
+    {
+        IsCollection = collection;
+        _source = source;
+        if (!collection) View = new FilesView();
+    }
+    /// <summary>The Files page of a folder tab; null on a collection tab.</summary>
+    public FilesView? View { get; }
+    public bool IsCollection { get; }
+    public bool IsFolder => !IsCollection;
+    private string _source;
+    /// <summary>The library source a collection tab shows: all, c0, c&lt;id&gt; or a linked folder.</summary>
+    public string Source { get => _source; internal set { _source = value; Notify(); } }
+    /// <summary>The capture search typed on this collection tab. Kept in memory only: it can
+    /// name what is inside the encrypted album, so it never reaches the plain settings file.</summary>
+    internal string Search { get; set; } = "";
+    internal double ScrollOffset { get; set; }
+    internal long Activated { get; set; }
+    internal Func<string, string>? CollectionTitle { get; set; }
+    private string Folder => View == null ? "" : View.Navigation.CurrentFolder.Length > 0 ? View.Navigation.CurrentFolder : Pending?.Folder ?? "";
+    public ImageSource? Icon => IsCollection ? null : Browser.IsThisPc(Folder) ? IconCache.ForComputer(32) : IconCache.For(Folder, 32, isDirectory: true);
+    /// <summary>The library's shelves glyph marks a collection tab, where a folder tab has its shell icon.</summary>
+    public string Glyph => IsCollection ? "" : "";
+    public string Title => IsCollection ? CollectionTitle?.Invoke(Source) ?? Services.LocaleManager.Loc("Str_Strip_All")
+        : Browser.IsThisPc(Folder) ? Services.LocaleManager.Loc("Str_Nav_ThisPc")
         : Path.GetFileName(Path.TrimEndingDirectorySeparator(Folder)) is { Length: > 0 } name ? name
         : Folder.Length > 0 ? Folder : Services.LocaleManager.Loc("Str_Lib_ViewFiles");
     public string CloseLabel => $"{Services.LocaleManager.Loc("Str_TT_CloseTab")}: {Title}";
@@ -34,6 +58,12 @@ public sealed class FilesTab : INotifyPropertyChanged
 
 public sealed class FilesTabState
 {
+    /// <summary>"collection" for a collection tab. Sessions saved before tabs had kinds hold
+    /// folder tabs only and read back as folders.</summary>
+    public string Kind { get; set; } = "folder";
+    /// <summary>A collection tab's source id. Only the id: collection names live inside the
+    /// encrypted album and are looked up when it is open.</summary>
+    public string Source { get; set; } = "";
     public string Folder { get; set; } = "";
     public string[] History { get; set; } = [];
     public int HistoryIndex { get; set; } = -1;
@@ -66,15 +96,29 @@ public partial class FilesWorkspace : UserControl, IDisposable
     private readonly ObservableCollection<FilesTab> _tabs = [];
     public ReadOnlyObservableCollection<FilesTab> Tabs { get; }
     public FilesTab ActiveTab { get; private set; } = null!;
-    public FilesView ActiveView => ActiveTab.View;
+    /// <summary>The active tab's Files page, or null while a collection tab is active.</summary>
+    public FilesView? ActiveView => ActiveTab.View;
+    public bool ActiveIsFolder => ActiveTab.IsFolder;
     public event Action? ResultsChanged;
-    public event Action? ActiveChanged;
+    /// <summary>Raised after another tab became active, with the tab that was active before.</summary>
+    public event Action<FilesTab?>? ActiveChanged;
     private readonly DispatcherTimer _saveTimer;
     private bool _disposed;
     private Func<string, bool>? _canOpen;
     private Func<string, Task<bool>>? _open;
+    private Func<string, string>? _collectionTitle;
     private Point _dragStart;
     private int _tabWindow;
+    private long _activation;
+
+    public static readonly DependencyProperty CollectionContentProperty = DependencyProperty.Register(
+        nameof(CollectionContent), typeof(object), typeof(FilesWorkspace));
+    /// <summary>The library's own view, shown as the page of every collection tab.</summary>
+    public object? CollectionContent
+    {
+        get => GetValue(CollectionContentProperty);
+        set => SetValue(CollectionContentProperty, value);
+    }
 
     public FilesWorkspace()
     {
@@ -83,12 +127,7 @@ public partial class FilesWorkspace : UserControl, IDisposable
         TabStrip.ItemsSource = _tabs;
         _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); SaveSession(); };
-        Session? session = null;
-        try { session = JsonSerializer.Deserialize<Session>(Settings.Get("Files.Tabs") ?? "null"); }
-        catch (JsonException) { }
-        foreach (var state in session?.Tabs ?? []) AddTab(state);
-        if (_tabs.Count == 0) AddTab(null);
-        SelectCore(_tabs[Math.Clamp(session?.Active ?? 0, 0, _tabs.Count - 1)]);
+        Restore(collectionFirst: false);
         Loaded += (_, _) =>
         {
             Services.ThemeManager.ThemeChanged -= UpdateTabLayout;
@@ -98,12 +137,43 @@ public partial class FilesWorkspace : UserControl, IDisposable
         Unloaded += (_, _) => Services.ThemeManager.ThemeChanged -= UpdateTabLayout;
     }
 
+    /// <summary>Reads the saved tabs again. The library calls this once with what it showed last:
+    /// a session saved before collection tabs existed holds only folder tabs, and a library that
+    /// was showing captures puts its collection tab first and active so it opens where it was.</summary>
+    internal void Restore(bool collectionFirst)
+    {
+        foreach (var tab in _tabs) tab.View?.Dispose();
+        _tabs.Clear();
+        Pages.Children.Clear();
+        Session? session = null;
+        try { session = JsonSerializer.Deserialize<Session>(Settings.Get("Files.Tabs") ?? "null"); }
+        catch (JsonException) { }
+        foreach (var state in session?.Tabs ?? [])
+            if (state != null) AddTab(state);
+        int active = Math.Clamp(session?.Active ?? 0, 0, Math.Max(0, _tabs.Count - 1));
+        if (collectionFirst && !_tabs.Any(tab => tab.IsCollection))
+        {
+            InsertTab(0, NewCollectionTabCore("all"));
+            active = 0;
+        }
+        if (_tabs.Count == 0) AddCollection("all");
+        SelectCore(_tabs[Math.Clamp(active, 0, _tabs.Count - 1)]);
+    }
+
     public void ConfigureEditor(Func<string, bool> canOpen, Func<string, Task<bool>> open)
     {
         _canOpen = canOpen;
         _open = open;
-        foreach (var tab in _tabs) Configure(tab.View);
+        foreach (var tab in _tabs) if (tab.View != null) Configure(tab.View);
     }
+    /// <summary>Names a collection tab from its source while the album is open.</summary>
+    internal void ConfigureCollections(Func<string, string> title)
+    {
+        _collectionTitle = title;
+        foreach (var tab in _tabs) tab.CollectionTitle = title;
+        RefreshTitles();
+    }
+    internal void RefreshTitles() { foreach (var tab in _tabs) tab.Notify(); }
     private void Configure(FilesView view)
     {
         view.CanOpenInHost = _canOpen;
@@ -111,14 +181,16 @@ public partial class FilesWorkspace : UserControl, IDisposable
     }
     private FilesTab AddTab(FilesTabState? state)
     {
+        if (state?.Kind == "collection")
+            return AddCollection(string.IsNullOrWhiteSpace(state.Source) ? "all" : state.Source);
         if (state != null)
         {
             state.History ??= [];
             state.Selection ??= [];
             state.Columns ??= [];
         }
-        var tab = new FilesTab { Pending = state };
-        var view = tab.View;
+        var tab = new FilesTab(false, "") { Pending = state };
+        var view = tab.View!;
         Configure(view);
         view.Visibility = Visibility.Collapsed;
         if (state != null) ApplyOptions(view, state);
@@ -131,6 +203,14 @@ public partial class FilesWorkspace : UserControl, IDisposable
         Pages.Children.Add(view);
         return tab;
     }
+    private FilesTab NewCollectionTabCore(string source) => new(true, source) { CollectionTitle = _collectionTitle };
+    private FilesTab AddCollection(string source)
+    {
+        var tab = NewCollectionTabCore(source);
+        _tabs.Add(tab);
+        return tab;
+    }
+    private void InsertTab(int index, FilesTab tab) => _tabs.Insert(Math.Clamp(index, 0, _tabs.Count), tab);
     private static void ApplyOptions(FilesView view, FilesTabState state)
     {
         view.SetView(Math.Clamp(state.Mode, 0, 2));
@@ -148,23 +228,27 @@ public partial class FilesWorkspace : UserControl, IDisposable
         view.SetSort(Math.Clamp(state.Sort, 1, 6), state.Ascending);
         view.SetFilter(state.Filter ?? "");
     }
+    /// <summary>Lists the active folder tab's folder the first time it is shown. A collection
+    /// tab has nothing to list here; the library reads it.</summary>
     public Task<bool> EnsureInitialized(string fallback)
     {
         var tab = ActiveTab;
+        if (tab.View == null) return Task.FromResult(true);
         if (tab.Loading is { IsCompleted: false }) return tab.Loading;
         if (tab.View.Navigation.CurrentFolder.Length > 0) return Task.FromResult(true);
         return tab.Loading = InitializeTab(tab, fallback);
     }
     private async Task<bool> InitializeTab(FilesTab tab, string fallback)
     {
+        var view = tab.View!;
         var state = tab.Pending;
-        bool success = await tab.View.NavigateTo(string.IsNullOrWhiteSpace(state?.Folder) ? fallback : state.Folder);
+        bool success = await view.NavigateTo(string.IsNullOrWhiteSpace(state?.Folder) ? fallback : state.Folder);
         if (_disposed || !_tabs.Contains(tab)) return false;
-        if (!success && state != null) success = await tab.View.NavigateTo(fallback);
+        if (!success && state != null) success = await view.NavigateTo(fallback);
         if (_disposed || !_tabs.Contains(tab)) return false;
-        if (success && state != null && string.Equals(state.Folder, tab.View.Navigation.CurrentFolder, StringComparison.OrdinalIgnoreCase))
+        if (success && state != null && string.Equals(state.Folder, view.Navigation.CurrentFolder, StringComparison.OrdinalIgnoreCase))
         {
-            var navigation = tab.View.Navigation;
+            var navigation = view.Navigation;
             if (state.History.Length > 0 && state.HistoryIndex >= 0 && state.HistoryIndex < state.History.Length
                 && string.Equals(state.History[state.HistoryIndex], state.Folder, StringComparison.OrdinalIgnoreCase))
             {
@@ -175,11 +259,11 @@ public partial class FilesWorkspace : UserControl, IDisposable
                 navigation.Notify(nameof(BrowseState.CanGoForward));
             }
             foreach (var entry in navigation.Results.Where(entry => state.Selection.Contains(entry.FilePath, StringComparer.OrdinalIgnoreCase)))
-                tab.View.ResultsList.SelectedItems.Add(entry);
+                view.ResultsList.SelectedItems.Add(entry);
             await Dispatcher.InvokeAsync(() =>
             {
-                tab.View.UpdateLayout();
-                if (FindScroll(tab.View.ResultsList) is { } scroll)
+                view.UpdateLayout();
+                if (FindScroll(view.ResultsList) is { } scroll)
                 {
                     if (double.IsFinite(state.Horizontal)) scroll.ScrollToHorizontalOffset(state.Horizontal);
                     if (double.IsFinite(state.Vertical)) scroll.ScrollToVerticalOffset(state.Vertical);
@@ -191,15 +275,55 @@ public partial class FilesWorkspace : UserControl, IDisposable
         QueueSave();
         return success;
     }
+    /// <summary>Opens a folder tab at the end of the strip and selects it.</summary>
     public async Task<FilesTab> NewTab(string? folder = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        string start = folder ?? ActiveView.Navigation.CurrentFolder;
+        string start = folder ?? ActiveView?.Navigation.CurrentFolder ?? "";
         var tab = AddTab(null);
+        // The tab starts loading its own folder before it is selected: selecting it tells the
+        // library, which would otherwise list the empty tab at the output folder first.
+        var loading = tab.Loading = InitializeTab(tab, string.IsNullOrEmpty(start) ? Services.CaptureSettings.OutputFolder : start);
         SelectCore(tab);
-        await EnsureInitialized(string.IsNullOrEmpty(start) ? Services.CaptureSettings.OutputFolder : start);
+        await loading;
         SaveSession();
         return tab;
+    }
+    /// <summary>Opens a collection tab at the end of the strip and selects it.</summary>
+    public Task<FilesTab> NewCollectionTab(string source)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var tab = AddCollection(source);
+        SelectCore(tab);
+        SaveSession();
+        return Task.FromResult(tab);
+    }
+    /// <summary>The most recently active tab of one kind, so F9 and the capture views go back
+    /// to the tab they left instead of opening another.</summary>
+    public FilesTab? LastTab(bool collection) =>
+        _tabs.Where(tab => tab.IsCollection == collection).OrderByDescending(tab => tab.Activated).FirstOrDefault();
+    /// <summary>Points the active collection tab at another collection.</summary>
+    internal void RetargetActive(string source)
+    {
+        if (!ActiveTab.IsCollection || ActiveTab.Source == source) return;
+        ActiveTab.Source = source;
+        ActiveTab.Search = "";
+        ActiveTab.ScrollOffset = 0;
+        QueueSave();
+    }
+    /// <summary>Points every collection tab whose collection is gone at every capture: another
+    /// album opened, or the collection was deleted.</summary>
+    internal void ResetMissingSources(Func<string, bool> exists)
+    {
+        bool changed = false;
+        foreach (var tab in _tabs.Where(tab => tab.IsCollection && !exists(tab.Source)))
+        {
+            tab.Source = "all";
+            tab.Search = "";
+            tab.ScrollOffset = 0;
+            changed = true;
+        }
+        if (changed) QueueSave();
     }
     public async Task SelectTab(FilesTab tab)
     {
@@ -211,15 +335,18 @@ public partial class FilesWorkspace : UserControl, IDisposable
     }
     private void SelectCore(FilesTab tab)
     {
+        var previous = _tabs.Contains(ActiveTab) ? ActiveTab : null;
         foreach (var item in _tabs)
         {
             item.IsActive = item == tab;
-            item.View.Visibility = item.IsActive ? Visibility.Visible : Visibility.Collapsed;
+            if (item.View != null) item.View.Visibility = item.IsActive ? Visibility.Visible : Visibility.Collapsed;
             item.Notify();
         }
+        CollectionHost.Visibility = tab.IsCollection ? Visibility.Visible : Visibility.Collapsed;
+        tab.Activated = ++_activation;
         ActiveTab = tab;
         UpdateTabLayout();
-        ActiveChanged?.Invoke();
+        if (previous != tab) ActiveChanged?.Invoke(previous);
         ResultsChanged?.Invoke();
     }
     public async Task CloseTab(FilesTab tab)
@@ -228,9 +355,13 @@ public partial class FilesWorkspace : UserControl, IDisposable
         int index = _tabs.IndexOf(tab);
         bool active = tab == ActiveTab;
         _tabs.Remove(tab);
-        Pages.Children.Remove(tab.View);
-        tab.View.Dispose();
-        if (_tabs.Count == 0) AddTab(null);
+        if (tab.View != null)
+        {
+            Pages.Children.Remove(tab.View);
+            tab.View.Dispose();
+        }
+        // The library is never left without a tab: the last one closed leaves every capture.
+        if (_tabs.Count == 0) AddCollection("all");
         if (active) await SelectTab(_tabs[Math.Min(index, _tabs.Count - 1)]);
         else UpdateTabLayout();
         SaveSession();
@@ -272,18 +403,37 @@ public partial class FilesWorkspace : UserControl, IDisposable
             tab.IsStripVisible = i >= _tabWindow && i < _tabWindow + count;
             tab.IsFirst = i == _tabWindow;
             tab.IsLast = fills && i == _tabWindow + count - 1;
-            tab.View.PaneFrame.CornerRadius = new CornerRadius(show && tab.IsActive && tab.IsFirst ? 0 : radius.TopLeft,
-                show && tab.IsActive && tab.IsLast ? 0 : radius.TopRight, radius.BottomRight, radius.BottomLeft);
+            if (tab.View != null)
+                tab.View.PaneFrame.CornerRadius = new CornerRadius(show && tab.IsActive && tab.IsFirst ? 0 : radius.TopLeft,
+                    show && tab.IsActive && tab.IsLast ? 0 : radius.TopRight, radius.BottomRight, radius.BottomLeft);
             tab.Notify();
         }
+        // The collection page wears the same frame as a Files page, joined to its tab.
+        CollectionFrame.CornerRadius = new CornerRadius(show && ActiveTab is { IsFirst: true } ? 0 : radius.TopLeft,
+            show && ActiveTab is { IsLast: true } ? 0 : radius.TopRight, radius.BottomRight, radius.BottomLeft);
+        // A lone collection tab shows the library as it always looked, on the window's own
+        // surface. Beside other tabs it sits in the Files page's frame, so the active tab joins it.
+        if (show)
+        {
+            CollectionFrame.SetResourceReference(Border.BackgroundProperty, "MenuBackgroundBrush");
+            CollectionFrame.SetResourceReference(Border.BorderThicknessProperty, "PaneEdgeSideThickness");
+            CollectionFrame.SetResourceReference(EffectProperty, "PaneShadowEffect");
+        }
+        else
+        {
+            CollectionFrame.Background = Brushes.Transparent;
+            CollectionFrame.BorderThickness = new Thickness(0);
+            CollectionFrame.Effect = null;
+        }
         Pages.Margin = show ? new Thickness(0, -1, 0, 0) : new Thickness(0);
+        CollectionHost.Margin = Pages.Margin;
     }
     private void TabOverflow_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu { PlacementTarget = TabOverflowButton, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
         foreach (var tab in _tabs.Where(tab => !tab.IsStripVisible))
         {
-            var item = new MenuItem { Header = tab.Title, ToolTip = tab.View.Navigation.CurrentFolder };
+            var item = new MenuItem { Header = tab.Title, ToolTip = tab.View?.Navigation.CurrentFolder };
             item.Click += async (_, _) => await SelectTab(tab);
             menu.Items.Add(item);
         }
@@ -298,8 +448,9 @@ public partial class FilesWorkspace : UserControl, IDisposable
     }
     private static FilesTabState Capture(FilesTab tab)
     {
+        if (tab.IsCollection) return new FilesTabState { Kind = "collection", Source = tab.Source };
         if (tab.Pending != null) return tab.Pending;
-        var view = tab.View;
+        var view = tab.View!;
         var state = view.Navigation;
         var scroll = FindScroll(view.ResultsList);
         return new FilesTabState
@@ -320,9 +471,11 @@ public partial class FilesWorkspace : UserControl, IDisposable
         string json = JsonSerializer.Serialize(new Session { Active = _tabs.IndexOf(ActiveTab), Tabs = _tabs.Select(Capture).ToArray() });
         if (Settings.Get("Files.Tabs") != json) Settings.Set("Files.Tabs", json);
     }
+    /// <summary>Ctrl+T opens a tab like the active one, Ctrl+W closes it and Ctrl+Tab and
+    /// Ctrl+Shift+Tab step through the strip, over a folder or a collection.</summary>
     public bool HandleTabKey(Key key, ModifierKeys modifiers)
     {
-        if (modifiers == ModifierKeys.Control && key == Key.T) { _ = NewTab(); return true; }
+        if (modifiers == ModifierKeys.Control && key == Key.T) { _ = DuplicateActive(); return true; }
         if (modifiers == ModifierKeys.Control && key == Key.W) { _ = CloseTab(ActiveTab); return true; }
         if (key == Key.Tab && modifiers is ModifierKeys.Control or (ModifierKeys.Control | ModifierKeys.Shift))
         {
@@ -332,7 +485,8 @@ public partial class FilesWorkspace : UserControl, IDisposable
         }
         return false;
     }
-    private async void NewTab_Click(object sender, RoutedEventArgs e) => await NewTab();
+    private Task<FilesTab> DuplicateActive() => ActiveTab.IsCollection ? NewCollectionTab(ActiveTab.Source) : NewTab();
+    private async void NewTab_Click(object sender, RoutedEventArgs e) => await DuplicateActive();
     private async void CloseTab_Click(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).DataContext is FilesTab tab) await CloseTab(tab); e.Handled = true; }
     private async void SelectTab_Click(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).DataContext is FilesTab tab) await SelectTab(tab); }
     private async void Tab_MouseDown(object sender, MouseButtonEventArgs e)
@@ -366,6 +520,6 @@ public partial class FilesWorkspace : UserControl, IDisposable
         _disposed = true;
         _saveTimer.Stop();
         Services.ThemeManager.ThemeChanged -= UpdateTabLayout;
-        foreach (var tab in _tabs) tab.View.Dispose();
+        foreach (var tab in _tabs) tab.View?.Dispose();
     }
 }

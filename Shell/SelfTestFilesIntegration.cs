@@ -102,8 +102,9 @@ internal static class SelfTestFilesIntegration
             string original = Path.Combine(CaptureSettings.OutputFolder, "rename.txt");
             var originalTab = library.FilesWorkspace.ActiveTab;
             SendKey(window, files.ResultsList, Key.T, ModifierKeys.Control);
-            for (int wait = 0; wait < 200 && library.FilesWorkspace.ActiveView.Navigation.CurrentFolder.Length == 0; wait++) await Task.Delay(10);
-            Check(library.FilesWorkspace.Tabs.Count == 2, "host Ctrl+T opens a Files tab");
+            for (int wait = 0; wait < 200 && library.FilesWorkspace.ActiveView!.Navigation.CurrentFolder.Length == 0; wait++) await Task.Delay(10);
+            // The library's all-captures tab, the original folder tab and the new one.
+            Check(library.FilesWorkspace.Tabs.Count == 3 && library.FilesWorkspace.ActiveTab.IsFolder, "host Ctrl+T opens a Files tab");
             window.UpdateLayout();
             var contentPane = (Border)window.FindName("ContentPane");
             var frame = library.Files.PaneFrame;
@@ -120,7 +121,7 @@ internal static class SelfTestFilesIntegration
             SendKey(window, files.ResultsList, Key.Tab, ModifierKeys.Control);
             Check(library.FilesWorkspace.ActiveTab != originalTab, "host Ctrl+Tab selects the next Files tab");
             SendKey(window, library.Files.ResultsList, Key.W, ModifierKeys.Control);
-            Check(library.FilesWorkspace.Tabs.Count == 1 && library.FilesWorkspace.ActiveTab == originalTab,
+            Check(library.FilesWorkspace.Tabs.Count == 2 && library.FilesWorkspace.ActiveTab == originalTab,
                 "host Ctrl+W closes only the active Files tab");
             File.WriteAllText(original, "owned");
             await files.NavigateTo(CaptureSettings.OutputFolder);
@@ -296,8 +297,13 @@ internal static class SelfTestFilesIntegration
             sourceMenu = sidebar.SourceMenu(sidebar);
             sourceMenu.Items.OfType<MenuItem>().Single(item => Convert.ToString(item.Header) == LocaleManager.Loc("Str_Strip_All"))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            for (int wait = 0; wait < 200 && files.Navigation.CurrentFolder != fallback; wait++) await Task.Delay(10);
-            Check(files.Navigation.CurrentFolder == fallback, "non-folder sidebar source hands off configured output fallback");
+            for (int wait = 0; wait < 200 && library.FilesActive; wait++) await Task.Delay(10);
+            Check(!library.FilesActive && library.FilesWorkspace.ActiveTab is { IsCollection: true, Source: "all" }
+                && files.Navigation.CurrentFolder == Path.Combine(folder, "screenshots"),
+                "non-folder sidebar source opens its collection tab and leaves the folder tab where it was");
+            _ = library.FilesWorkspace.SelectTab(library.FilesWorkspace.Tabs.Last(tab => !tab.IsCollection));
+            for (int wait = 0; wait < 200 && !library.FilesActive; wait++) await Task.Delay(10);
+            library.FilesWorkspace.SaveSession();
             var startupView = new LibraryView();
             Check(startupView.FilesActive, "persisted Files view survives constructor startup whitelist");
             Check(((TextBlock)startupView.FindName("SearchHint")).Text == LocaleManager.Loc("Str_TT_FilterResults"),
@@ -332,8 +338,8 @@ internal static class SelfTestFilesIntegration
             await obsoleteListing;
             library.ListingReader = originalReader;
             await Task.Delay(100);
-            Check(files.IsVisible && ((FrameworkElement)library.FindName("RowsList")).Visibility == Visibility.Collapsed
-                && ((FrameworkElement)library.FindName("FlowHost")).Visibility == Visibility.Collapsed,
+            Check(files.IsVisible && !((FrameworkElement)library.FindName("RowsList")).IsVisible
+                && !((FrameworkElement)library.FindName("FlowHost")).IsVisible,
                 "late capture listing cannot replace Files presentation");
             CaptureLibrary.AddNow(image, DateTime.Now, "region", "Strip first", null);
             CaptureLibrary.AddNow(image, DateTime.Now.AddSeconds(1), "region", "Strip second", null);

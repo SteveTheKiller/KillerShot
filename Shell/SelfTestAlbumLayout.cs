@@ -124,6 +124,7 @@ internal static class SelfTestAlbumLayout
                 "Selecting a collection must filter the album without opening a photo.");
             library.SetView("flow");
             var mainFlow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
+            for (int wait = 0; wait < 100 && mainFlow.Items.Count < 2; wait++) await Task.Delay(20);
             mainFlow.SelectedIndex = 1;
             long? selectedPhoto = mainFlow.SelectedItem?.Id;
             App.Instance.SetDocument(new EditorDocument(image));
@@ -136,6 +137,7 @@ internal static class SelfTestAlbumLayout
             {
                 dock.DockTo(sidebar);
                 photoDock.DockTo(carousel);
+                await Task.Delay(300);   // a moved pane slides open over 180 ms
                 Layout(root);
                 var photos = (FrameworkElement)photoDock.Pane!;
                 var imageView = (FrameworkElement)window.FindName("EditorScroll");
@@ -147,7 +149,7 @@ internal static class SelfTestAlbumLayout
                     "Editor placement must retain the collection sidebar, filtered photo carousel, and document.");
                 Check(carousel == DockSide.Top ? photoBounds.Bottom <= imageBounds.Top : photoBounds.Top >= imageBounds.Bottom,
                     "The photo carousel must sit above or below the large editor.");
-                Check(Math.Abs(pane.ActualWidth - 180) < 1, "Editor mode must keep the collection sidebar's width.");
+                Check(Math.Abs(pane.ActualWidth - 180) < 1, $"Editor mode must keep the collection sidebar's width ({sidebar}/{carousel}: {pane.ActualWidth:0.#}, setting {dock.PaneWidth:0.#}).");
                 foreach (var button in ((Panel)window.FindName("RailStack")).Children.OfType<Button>().Where(button => button.IsVisible))
                 {
                     var point = button.TranslatePoint(new Point(button.ActualWidth / 2, button.ActualHeight / 2), window);
@@ -163,7 +165,7 @@ internal static class SelfTestAlbumLayout
             Layout(root);
             Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
                 && mainFlow.Items.Count == 2 && mainFlow.SelectedItem?.Id == selectedPhoto,
-                "Editor navigation must not replace the album's collection, view, or photo selection.");
+                $"Editor navigation must not replace the album's collection, view, or photo selection (source {window.TestStrip.Source}, view {library.CurrentView}, items {mainFlow.Items.Count}, selected {mainFlow.SelectedItem?.Id} of {selectedPhoto}).");
             var workspaceMenu = pane.ContextMenu;
             workspaceMenu.PlacementTarget = pane;
             workspaceMenu.IsOpen = true;
@@ -259,9 +261,11 @@ internal static class SelfTestAlbumLayout
             }
             Render(root, Path.Combine(folder, "album-sidebar-expanded.png"));
             chevron.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // Minimizing slides the pane shut over 180 ms before it counts as minimized.
+            for (int wait = 0; wait < 100 && !dock.IsMinimized; wait++) await Task.Delay(20);
             Layout(root);
             Check(dock.IsMinimized && !Visuals(dock).Contains(pane) && chevron.Visibility == Visibility.Visible,
-                "The album chevron must collapse the sidebar and remain available to restore it.");
+                $"The album chevron must collapse the sidebar and remain available to restore it (minimized {dock.IsMinimized}, pane shown {Visuals(dock).Contains(pane)}, chevron {chevron.Visibility}).");
             Check(Settings.Get("StripSide") == "Right" && !Settings.GetBool("StripMinimized", true),
                 "Collapsing the album sidebar overwrote the editor layout preference.");
             Render(root, Path.Combine(folder, "album-sidebar-collapsed.png"));
@@ -271,6 +275,7 @@ internal static class SelfTestAlbumLayout
                 "Collection navigation must stay collapsed while the independent editor carousel stays expanded.");
             photoDock.DockTo(DockSide.Bottom);
             photoDock.Minimize();
+            for (int wait = 0; wait < 100 && !photoDock.IsMinimized; wait++) await Task.Delay(20);
             App.Instance.SetDocument(null);
             Layout(root);
             Check(dock.Side == DockSide.Left && dock.IsMinimized, "Returning to the album must preserve its own collapsed sidebar.");
@@ -352,10 +357,12 @@ internal static class SelfTestAlbumLayout
             var emptyCollection = CaptureLibrary.Collections().Single(c => c.Name == "From rail");
             var previousDocument = App.Instance.Document;
             browser.SelectedItem = browser.Items.Cast<CollectionChoice>().Single(c => c.Source == "c" + emptyCollection.Id);
+            await Task.Delay(50);
+            await library.ListingTask;   // the library lists the collection off the UI thread
             Layout(root);
             Check(window.TestStrip.Source == "c" + emptyCollection.Id && ReferenceEquals(App.Instance.Document, previousDocument)
                 && ((FrameworkElement)library.FindName("EmptyPanel")).IsVisible,
-                "An empty collection must remain selectable without opening a photo.");
+                $"An empty collection must remain selectable without opening a photo (strip {window.TestStrip.Source} of c{emptyCollection.Id}, same document {ReferenceEquals(App.Instance.Document, previousDocument)}, document {App.Instance.Document != null}, library {library.IsVisible}, empty panel {((FrameworkElement)library.FindName("EmptyPanel")).Visibility}/{((FrameworkElement)library.FindName("EmptyPanel")).IsVisible}, tab {library.FilesWorkspace.ActiveTab.Source}).");
             FolderCaptures.Enabled = true;
             await Task.Delay(200);
             Layout(root);

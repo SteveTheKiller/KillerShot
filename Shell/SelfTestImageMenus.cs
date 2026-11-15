@@ -116,6 +116,7 @@ internal static class SelfTestImageMenus
             {
                 var resizeHost = side is DockSide.Left or DockSide.Right ? window.TestNavigationDock : window.TestStripDock;
                 resizeHost.DockTo(side);
+                await Task.Delay(300);   // a moved pane slides open over 180 ms
                 window.UpdateLayout();
                 var resizePane = (FrameworkElement)resizeHost.Pane!;
                 var handle = Visuals(resizeHost).OfType<GridSplitter>().Single(splitter =>
@@ -135,7 +136,7 @@ internal static class SelfTestImageMenus
                     resizeHost.IsHorizontal ? Key.Down : Key.Right) { RoutedEvent = Keyboard.KeyDownEvent });
                 window.UpdateLayout();
                 double after = resizeHost.IsHorizontal ? resizePane.ActualHeight : resizePane.ActualWidth;
-                if (Math.Abs(after - before) < 1) throw new InvalidOperationException(side + " resize handle cannot resize its pane.");
+                if (Math.Abs(after - before) < 1) throw new InvalidOperationException(side + $" resize handle cannot resize its pane (width {before:0.#}, min {resizePane.MinWidth:0.#}, max {resizePane.MaxWidth:0.#}, host {resizeHost.ActualWidth:0.#}, minimized {resizeHost.IsMinimized}).");
             }
             window.TestStripDock.DockTo(DockSide.Top);
             window.TestNavigationDock.DockTo(DockSide.Left);
@@ -187,17 +188,20 @@ internal static class SelfTestImageMenus
             var editor = (EditorCanvas)window.FindName("Editor");
             var stage = (FrameworkElement)window.FindName("EditorStage");
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");
-            void Open() => menu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
+            // What a right-click raises: the card rebuilds from the editor's current state.
+            void Open() => _ = new SelfTestContextMenus.ContextMenuEventArgsProbe(stage);
             MenuItem Item(string id) => Descendants(menu).OfType<MenuItem>().Single(m => Equals(m.Tag, id));
             Open();
             menu.IsOpen = true;
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
-            if (Descendants(menu).OfType<MenuItem>().Any(i => i.Icon == null))
-                throw new InvalidOperationException("Missing menu icons: " + string.Join(", ", Descendants(menu).OfType<MenuItem>().Where(i => i.Icon == null).Select(i => i.Header)));
+            // The card's header slot is the picture's name, not an action, so it has no icon.
+            var actions = Descendants(menu).OfType<MenuItem>().Where(i => !Equals(i.Tag, "cardhead")).ToArray();
+            if (actions.Any(i => i.Icon == null))
+                throw new InvalidOperationException("Missing menu icons: " + string.Join(", ", actions.Where(i => i.Icon == null).Select(i => i.Header)));
             menu.IsOpen = false;
             if (Item("copy").InputGestureText != "Ctrl+C" || Item("saveas").InputGestureText != "Ctrl+Shift+S"
                 || !Item("copy").IsEnabled || Item("undo").IsEnabled || Item("redo").IsEnabled)
-                throw new InvalidOperationException("The menu's actions, shortcuts or initial edit states are wrong.");
+                throw new InvalidOperationException($"The menu's actions, shortcuts or initial edit states are wrong (copy '{Item("copy").InputGestureText}' {Item("copy").IsEnabled}, saveas '{Item("saveas").InputGestureText}', undo {Item("undo").IsEnabled}, redo {Item("redo").IsEnabled}).");
             doc.Add(new ShapeAnnotation(ShapeKind.Rectangle, new Point(20, 20), new Point(120, 100), Colors.Red, 4));
             Open();
             Item("undo").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
@@ -234,7 +238,7 @@ internal static class SelfTestImageMenus
             foreach (var (side, view) in new[] { (DockSide.Top, "flow"), (DockSide.Bottom, "flow") })
             {
                 window.TestStripDock.DockTo(side);
-                await Task.Delay(150);
+                await Task.Delay(300);
                 FrameworkElement browser = Visuals(window.TestStrip!).OfType<FrameworkElement>().First(e => e.IsVisible &&
                     e is CoverFlow);
                 browser.Focus();
@@ -242,7 +246,8 @@ internal static class SelfTestImageMenus
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
                 var opened = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
                     .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().SingleOrDefault(m => m.IsOpen);
-                if (opened == null || !opened.Items.OfType<MenuItem>().Any(i => Equals(i.Header, LocaleManager.Loc("Str_Lib_Copy"))))
+                // The picture card's Copy is a quick-strip button, named for the action.
+                if (opened == null || !opened.Items.OfType<MenuItem>().SelectMany(KillerShot.Files.FilesView.StripButtons).Any(b => System.Windows.Automation.AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Lib_Copy")))
                     throw new InvalidOperationException(view + " has no image menu through the context-menu key.");
                 opened.IsOpen = false;
                 await Task.Delay(250);

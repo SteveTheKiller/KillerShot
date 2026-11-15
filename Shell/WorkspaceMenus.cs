@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using KillerFamily.Controls;
 using KillerFamily.Layout;
 using KillerShot.Controls;
 using KillerShot.Services;
@@ -17,15 +18,23 @@ public partial class MainWindow
 {
     private void InitWorkspaceMenus()
     {
-        void Attach(FrameworkElement element, Action<ContextMenu> fill)
+        // The menu fills before it opens, not after: an empty menu opened and filled late can
+        // measure as nothing and never show.
+        void Attach(FrameworkElement element, Action<ContextMenu> fill, bool card = false)
         {
-            var menu = new ContextMenu();
+            var menu = card ? CardBuilder.Menu(280) : new ContextMenu();
             element.ContextMenu = menu;
+            element.ContextMenuOpening += (_, e) =>
+            {
+                fill(menu);
+                MenuTidy.HideInactive(menu);
+                if (!menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible)) e.Handled = true;
+            };
             menu.Opened += (_, _) => { fill(menu); MenuTidy.HideInactive(menu); };
         }
         RailStack.Background = Brushes.Transparent;
-        Attach(RailStack, FillSidebarMenu);
-        if (_navigationStrip != null) Attach(_navigationStrip, FillSidebarMenu);
+        Attach(RailStack, FillSidebarMenu, card: true);
+        if (_navigationStrip != null) Attach(_navigationStrip, FillSidebarMenu, card: true);
         if (_strip != null) Attach(_strip, FillCarouselMenu);
         Attach(Library, FillContentMenu);
         Attach(FooterBar, FillContentMenu);
@@ -56,6 +65,7 @@ public partial class MainWindow
     {
         menu.Items.Clear();
         if (_navigationStrip is not { } strip) return;
+        menu.Items.Add(CardBuilder.Header(Loc("Str_Sidebar_Title"), strip.SourceCaption));
         var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
         var choices = strip.SourceMenu(CollectionPickerBtn);
         while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }

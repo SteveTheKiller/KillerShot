@@ -132,8 +132,11 @@
             </Border>
         </Popup>
 
-        <Grid Grid.Row="1">
-            <files:FilesWorkspace x:Name="FileBrowser" Visibility="Collapsed"/>
+        <!-- One tab strip: a folder tab shows its Files page, and every collection tab shows
+             this one capture view, pointed at the tab's collection. The page is declared here so
+             its names belong to this view, and the constructor hands it to the tab host. -->
+        <files:FilesWorkspace x:Name="FileBrowser" Grid.Row="1"/>
+        <Grid x:Name="CollectionPage" Grid.Row="1">
             <!-- Shelves, Grid and Timeline: virtualized rows built in code. -->
             <ItemsControl x:Name="RowsList" Focusable="False"
                           VirtualizingPanel.IsVirtualizing="True"

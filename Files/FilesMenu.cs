@@ -28,60 +28,84 @@ public partial class FilesView
             ResultsList.SelectedItems.Clear();
             ResultsList.SelectedItems.Add(seed);
         }
-        var menu = new ContextMenu();
-        menu.SetResourceReference(Control.FontFamilyProperty, "MenuFontFamily");
+        // The file card, KillerShell 1.6.0's pattern: what was clicked, the clipboard and edit
+        // actions as a strip, then the rest as rows. ShellContextMenu stays the native menu.
+        var menu = KillerFamily.Controls.CardBuilder.Menu(320);
         bool onItem = !background && (seed != null || ResultsList.SelectedItems.Count > 0);
         if (onItem)
         {
+            int count = ResultsList.SelectedItems.Count;
+            var first = ResultsList.SelectedItem as FileEntry;
+            menu.Items.Add(count > 1
+                ? KillerFamily.Controls.CardBuilder.Header(string.Format(System.Globalization.CultureInfo.CurrentCulture, Loc("Str_Files_SelectedCount"), count), Navigation.CurrentFolder)
+                : KillerFamily.Controls.CardBuilder.Header(first?.FileName ?? "", first == null ? null : first.IsDirectory || first.SizeLabel.Length == 0 ? first.TypeName : first.TypeName + "  ·  " + first.SizeLabel));
+            var strip = KillerFamily.Controls.CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
+            [
+                Quick("", "Str_Menu_Cut", () => CopySelection(true), "Ctrl+X", CanCut),
+                Quick("", "Str_Menu_Copy", () => CopySelection(), "Ctrl+C"),
+                Quick("", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste),
+                Quick("", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename),
+                Quick("", "Str_Btn_Delete", () => StartCommand(RecycleSelection()), "Delete", CanRecycle),
+            ]);
+            // Tags ride on Uid so the command surface reads the same on buttons and rows.
+            string[] stripTags = ["cut", "copy", "paste", "rename", "delete"];
+            int index = 0;
+            foreach (var button in StripButtons(strip)) button.Uid = stripTags[index++];
+            menu.Items.Add(strip);
             Add("open", "Str_Btn_Open", () =>
             {
                 if (ResultsList.SelectedItem is FileEntry entry) StartCommand(Browser.ActivateEntry(entry));
-            }, "Enter");
+            }, "Enter", glyph: "");
             if (ResultsList.SelectedItem is FileEntry { IsDirectory: false } entry && CanOpenInHost?.Invoke(entry.FilePath) == true)
-                Add("host", "Str_Files_OpenInShot", () => StartCommand(OpenSelectionInHost()));
+                Add("host", "Str_Files_OpenInShot", () => StartCommand(OpenSelectionInHost()), glyph: "");
             Add("explorer", "Str_Menu_ShowExplorer", () =>
             {
                 if (SelectedPaths.FirstOrDefault() is { } path)
                     Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, Arguments = "/select,\"" + path + "\"" });
-            });
-            menu.Items.Add(new Separator());
-            Add("cut", "Str_Menu_Cut", () => CopySelection(true), "Ctrl+X", CanCut);
-            Add("copy", "Str_Menu_Copy", () => CopySelection(), "Ctrl+C");
+            }, glyph: "");
         }
-        Add("paste", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste);
-        if (onItem) Add("rename", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename);
-        Add("newfolder", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste);
+        else
+        {
+            menu.Items.Add(KillerFamily.Controls.CardBuilder.Header(Path.GetFileName(Navigation.CurrentFolder.TrimEnd('\\')) is { Length: > 0 } name ? name : Navigation.CurrentFolder, Navigation.CurrentFolder));
+            Add("paste", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste, "");
+        }
+        Add("newfolder", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste, "");
         if (onItem)
         {
-            Add("delete", "Str_Btn_Delete", () => StartCommand(RecycleSelection()), "Delete", CanRecycle);
             menu.Items.Add(new Separator());
             string[] paths = SelectedPaths.ToArray();
             Add("shell", "Str_Menu_ShellMenu", () => AfterMenu(() =>
             {
                 var owner = Window.GetWindow(this);
                 if (owner == null || !ShellContextMenu.Show(owner, paths)) SetCommandError(Loc("Str_Status_ShellFailed"));
-            }));
+            }), "Shift+F10", glyph: "");
             Add("properties", "Str_Menu_Properties", () => AfterMenu(() =>
             {
                 if (paths.FirstOrDefault() is { } path && !ShellContextMenu.ShowProperties(path)) SetCommandError(Loc("Str_Status_ShellFailed"));
-            }));
+            }), "Alt+Enter", glyph: "");
         }
         menu.Items.Add(new Separator());
-        Add("refresh", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)));
+        Add("refresh", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5", glyph: "");
         return menu;
 
-        void Add(string tag, string key, Action action, string gesture = "", bool enabled = true)
+        Action Guarded(Action action) => () =>
         {
-            var item = new MenuItem { Tag = tag, InputGestureText = gesture, IsEnabled = enabled };
-            item.SetResourceReference(HeaderedItemsControl.HeaderProperty, key);
-            item.Click += (_, _) =>
-            {
-                try { action(); }
-                catch (Exception error) { SetCommandError(error.Message); }
-            };
+            try { action(); }
+            catch (Exception error) { SetCommandError(error.Message); }
+        };
+        KillerFamily.Controls.CardAction Quick(string glyph, string key, Action action, string gesture, bool enabled = true) =>
+            new(glyph, Loc(key), Loc(key), gesture, Guarded(action), enabled);
+        void Add(string tag, string key, Action action, string gesture = "", bool enabled = true, string? glyph = null)
+        {
+            var item = KillerFamily.Controls.CardBuilder.Row(Loc(key), gesture, glyph, Guarded(action), enabled);
+            item.Tag = tag;
             menu.Items.Add(item);
         }
     }
+
+    /// <summary>The quick buttons on a card strip, in order.</summary>
+    internal static IEnumerable<Button> StripButtons(MenuItem strip) =>
+        strip.Header is Border { Child: System.Windows.Controls.Primitives.UniformGrid grid } ? grid.Children.OfType<Button>() : [];
 
     private void AfterMenu(Action action) => Dispatcher.BeginInvoke(action, DispatcherPriority.Background);
 

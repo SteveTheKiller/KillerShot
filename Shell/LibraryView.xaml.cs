@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using KillerFamily.Controls;
 using KillerShot.Capture;
 using KillerShot.Controls;
 using KillerShot.Services;
@@ -86,20 +87,44 @@ namespace KillerShot.Shell
         public event Action<string>? CountChanged;
         private string _source = "all";
 
+        /// <summary>The collection the sidebar picked. As in KillerShell, the active tab shows it
+        /// when it can: a collection tab is pointed at it, and a folder tab goes to a linked
+        /// folder's own folder. A folder tab cannot show an album collection, so that opens a
+        /// collection tab.</summary>
         public void SetSource(string source)
         {
-            if (_source == source) return;
+            if (FilesActive)
+            {
+                if (FolderCaptures.IsSource(source))
+                {
+                    _source = source;
+                    NavigateFilesSource();
+                    return;
+                }
+                if (_source == source && FileBrowser.LastTab(collection: true) is { } open && open.Source == source)
+                    return;
+                _source = source;
+                _ = FileBrowser.NewCollectionTab(source);
+                return;
+            }
+            if (_source == source && FileBrowser.ActiveTab.Source == source) return;
             _source = source;
-            if (FilesActive) NavigateFilesSource();
+            FileBrowser.RetargetActive(source);
+            FileBrowser.RefreshTitles();
             if (IsLoaded) Reload(); else _dirty = true;
         }
+        /// <summary>The collection the library is showing, for the sidebar to follow when a
+        /// collection tab brings its own.</summary>
+        internal string CurrentSource => _source;
+        /// <summary>A collection tab became active with its own collection; the sidebar follows.</summary>
+        public event Action<string>? SourceShown;
         public event Action<string, FrameworkElement>? LinkRequested;
 
         private string _view = "shelves";
-        private string _captureSearch = "";
         private bool _syncingSearch;
-        public bool FilesActive => _view == "files";
-        public Files.FilesView Files => FileBrowser.ActiveView;
+        /// <summary>A folder tab is active, so the Files page shows instead of the captures.</summary>
+        public bool FilesActive => FileBrowser.ActiveIsFolder;
+        public Files.FilesView Files => FileBrowser.ActiveView ?? throw new InvalidOperationException("No folder tab is active.");
         public Files.FilesWorkspace FilesWorkspace => FileBrowser;
         public Task<bool> FilesNavigation { get; private set; } = Task.FromResult(false);
         private void NavigateFilesSource(bool initialize = false)
@@ -108,9 +133,45 @@ namespace KillerShot.Shell
             string folder = string.IsNullOrWhiteSpace(path) ? CaptureSettings.OutputFolder : path;
             FilesNavigation = initialize ? FileBrowser.EnsureInitialized(folder) : Files.NavigateTo(folder);
         }
+
+        /// <summary>The name a collection tab wears. Album names come from the open album and are
+        /// never saved with the tab.</summary>
+        private string CollectionTitle(string source) => source switch
+        {
+            "all" => Loc("Str_Strip_All"),
+            "c0" => Loc("Str_Lib_Unfiled"),
+            _ when FolderCaptures.IsSource(source) => FolderCaptures.NameForSource(source),
+            _ => _albumCollections.FirstOrDefault(c => "c" + c.Id.ToString(CultureInfo.InvariantCulture) == source)?.Name
+                 ?? Loc("Str_Strip_Collection"),
+        };
+
+        /// <summary>Whether a collection tab's source still names something in this album.</summary>
+        private bool SourceExists(string source) => source is "all" or "c0" || FolderCaptures.IsSource(source)
+            || _albumCollections.Any(c => "c" + c.Id.ToString(CultureInfo.InvariantCulture) == source);
+
+        /// <summary>Another tab became active. The outgoing collection tab keeps its search, the
+        /// incoming one brings back its collection and search, and a folder tab brings its filter.</summary>
+        private void OnActiveTabChanged(Files.FilesTab? previous)
+        {
+            if (previous is { IsCollection: true }) previous.Search = SearchBox.Text;
+            var tab = FileBrowser.ActiveTab;
+            _searchDelay.Stop();
+            _syncingSearch = true;
+            try { SearchBox.Text = tab.IsCollection ? tab.Search : Files.Navigation.FilterText; }
+            finally { _syncingSearch = false; }
+            SyncSearchPresentation();
+            if (tab.IsCollection && tab.Source != _source)
+            {
+                _source = tab.Source;
+                SourceShown?.Invoke(_source);
+            }
+            if (IsLoaded) Reload(); else _dirty = true;
+            ViewChanged?.Invoke();
+        }
         private string _group = "date";
         private IReadOnlyList<CaptureItem> _items = [];
         private IReadOnlyList<CaptureCollection> _collections = [];
+        private IReadOnlyList<CaptureCollection> _albumCollections = [];
         private IReadOnlyList<CaptureItem> _folderItems = [];
         private readonly Dictionary<string, long> _shelfFront = [];
         private readonly DispatcherTimer _searchDelay;
@@ -130,16 +191,19 @@ namespace KillerShot.Shell
         public LibraryView()
         {
             InitializeComponent();
-            _view = Settings.Get("LibraryView") is "shelves" or "flow" or "grid" or "timeline" or "files" ? Settings.Get("LibraryView")! : "shelves";
+            ((Panel)CollectionPage.Parent).Children.Remove(CollectionPage);
+            Grid.SetRow(CollectionPage, 0);
+            FileBrowser.CollectionContent = CollectionPage;
+            // Files used to be a fifth view. It is a kind of tab now, so a stored "files" view
+            // means the folder tab was in front and the captures fall back to shelves.
+            string stored = Settings.Get("LibraryView") ?? "";
+            _view = stored is "shelves" or "flow" or "grid" or "timeline" ? stored : "shelves";
             _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
+            FileBrowser.ConfigureCollections(CollectionTitle);
+            FileBrowser.Restore(collectionFirst: stored != "files");
+            if (FileBrowser.ActiveTab.IsCollection) _source = FileBrowser.ActiveTab.Source;
             FileBrowser.ResultsChanged += UpdateFilesCount;
-            FileBrowser.ActiveChanged += () =>
-            {
-                if (!FilesActive) return;
-                _syncingSearch = true;
-                try { SearchBox.Text = Files.Navigation.FilterText; }
-                finally { _syncingSearch = false; }
-            };
+            FileBrowser.ActiveChanged += OnActiveTabChanged;
 
             BigFlow.ThumbnailSource = CaptureLibrary.RequestThumb;
             BigFlow.DeferHiddenLoading = true;
@@ -209,22 +273,28 @@ namespace KillerShot.Shell
                 _listingWork.Cancel();
                 _dirty = false;
                 HideBusy();
-                RowsList.Visibility = FlowHost.Visibility = EmptyPanel.Visibility = LockPanel.Visibility = PendingBar.Visibility = Visibility.Collapsed;
-                FileBrowser.Visibility = Visibility.Visible;
+                PendingBar.Visibility = Visibility.Collapsed;
                 UpdateFilesCount();
                 if (Files.Navigation.CurrentFolder.Length == 0)
                     NavigateFilesSource(initialize: true);
                 return;
             }
-            FileBrowser.Visibility = Visibility.Collapsed;
             if (CaptureLibrary.VideoBusy) { _listingWork.Cancel(); _dirty = true; return; }
             long session = CaptureLibrary.Session;
             if (_albumSession != session)
             {
+                bool switched = _albumSession >= 0;
                 _albumSession = session;
                 _searchDelay.Stop();
-                SearchBox.Clear();
-                _source = "all";
+                // Another album's collection ids mean nothing here, so those tabs go back to All.
+                // The first open keeps the restored tabs; the listing drops any that are gone.
+                if (switched)
+                {
+                    SearchBox.Clear();
+                    FileBrowser.ResetMissingSources(s => s is "all" or "c0" || FolderCaptures.IsSource(s));
+                    foreach (var tab in FileBrowser.Tabs) tab.Search = "";
+                }
+                _source = FileBrowser.ActiveTab.IsCollection ? FileBrowser.ActiveTab.Source : _source;
                 _shelfFront.Clear();
                 BigFlow.Items = [];
             }
@@ -272,8 +342,19 @@ namespace KillerShot.Shell
         {
             _items = listing.Items;
             _collections = listing.Collections;
+            _albumCollections = listing.AlbumCollections;
             _folderItems = listing.FolderItems;
             int total = listing.Total;
+            FileBrowser.ResetMissingSources(SourceExists);
+            FileBrowser.RefreshTitles();
+            if (FileBrowser.ActiveTab.IsCollection && FileBrowser.ActiveTab.Source != _source)
+            {
+                // The shown collection was deleted, so its tab went back to All; show that instead.
+                _source = FileBrowser.ActiveTab.Source;
+                SourceShown?.Invoke(_source);
+                Reload();
+                return;
+            }
 
             SyncHeader();
             string? folderStatus = FolderReadStatus();
@@ -482,10 +563,18 @@ namespace KillerShot.Shell
                 mark.SetResourceReference(TextBlock.ForegroundProperty, "SelectionAccent");
                 line.Children.Add(mark);
                 line.Background = Brushes.Transparent;
-                var open = new MenuItem { Header = Loc("Str_Lib_OpenFolder") };
-                open.Click += (_, _) => ShowInExplorer(null, row.Key);
+                // The linked folder's card: open it as a collection tab or as a folder tab, or in
+                // File Explorer.
+                string folderSource = row.Key;
                 line.ContextMenu = new ContextMenu();
-                line.ContextMenu.Items.Add(open);
+                MakeCard(line.ContextMenu);
+                line.ContextMenu.Items.Add(CardBuilder.Header(row.Title, FolderCaptures.PathForSource(folderSource)));
+                line.ContextMenu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
+                [
+                    new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)),
+                    new("", Loc("Str_Tab_Browse"), Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))),
+                    new("", Loc("Str_Tab_Explorer"), Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)),
+                ]));
                 line.ToolTip = FolderCaptures.PathForSource(row.Key);
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
@@ -501,7 +590,7 @@ namespace KillerShot.Shell
             {
                 line.Background = Brushes.Transparent;
                 line.ContextMenu = new ContextMenu();
-                line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title, row.Session); };
+                line.ContextMenuOpening += (_, e) => { FillCollectionMenu(line.ContextMenu, id, row.Title, row.Session, row.Detail); };
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
             if (line.ContextMenu != null)
@@ -511,7 +600,7 @@ namespace KillerShot.Shell
                 line.OpenMenu = () =>
                 {
                     if (row.IsCollection && row.CollectionId is long collectionId)
-                        FillCollectionMenu(line.ContextMenu, collectionId, row.Title, row.Session);
+                        FillCollectionMenu(line.ContextMenu, collectionId, row.Title, row.Session, row.Detail);
                     line.ContextMenu.PlacementTarget = line;
                     line.ContextMenu.Placement = PlacementMode.Bottom;
                     line.ContextMenu.IsOpen = true;
@@ -695,7 +784,7 @@ namespace KillerShot.Shell
         // ============================================================
 
         /// <summary>The view: shelves, flow (the carousel), grid, timeline or files.</summary>
-        public string CurrentView => _view;
+        public string CurrentView => FilesActive ? "files" : _view;
 
         /// <summary>The grouping: date or collection. The timeline is always by date.</summary>
         public string CurrentGroup => _view == "timeline" ? "date" : _group;
@@ -707,14 +796,23 @@ namespace KillerShot.Shell
         public void SetView(string view)
         {
             if (view is not ("shelves" or "flow" or "grid" or "timeline" or "files")) return;
-            if (!FilesActive) _captureSearch = SearchBox.Text;
-            _view = view;
-            _searchDelay.Stop();
-            _syncingSearch = true;
-            try { SearchBox.Text = FilesActive ? Files.Navigation.FilterText : _captureSearch; }
-            finally { _syncingSearch = false; }
-            SyncSearchPresentation();
             Settings.Set("LibraryView", view);
+            // Files is a folder tab and the capture views belong to collection tabs, so picking
+            // one brings the last tab of that kind forward, or opens one. The tab switch reloads.
+            if (view == "files")
+            {
+                if (FilesActive) return;
+                if (FileBrowser.LastTab(collection: false) is { } folder) _ = FileBrowser.SelectTab(folder);
+                else _ = FileBrowser.NewTab(CaptureSettings.OutputFolder);
+                return;
+            }
+            _view = view;
+            if (FilesActive)
+            {
+                if (FileBrowser.LastTab(collection: true) is { } open) _ = FileBrowser.SelectTab(open);
+                else _ = FileBrowser.NewCollectionTab(_source);
+                return;
+            }
             Reload();
             ViewChanged?.Invoke();
         }
@@ -927,75 +1025,59 @@ namespace KillerShot.Shell
 
         internal void ShowItemMenu(CaptureItem item, FrameworkElement anchor, Action<CaptureItem>? open, string deleteGesture)
         {
-            var menu = new ContextMenu { PlacementTarget = anchor };
-            if (Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver)
-                menu.Placement = PlacementMode.Bottom;
-            MenuItem Add(string key, Action action, string gesture = "")
-            {
-                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture };
-                mi.Click += (_, _) => { if (CaptureLibrary.IsCurrent(item)) action(); };
-                menu.Items.Add(mi);
-                return mi;
-            }
-            Add("Str_Lib_Open", () => open?.Invoke(item)).FontWeight = FontWeights.SemiBold;
-            if (VideoCaptures.IsVideo(item))
-            {
-                // A recording: no picture to copy, print or recognize, only the clip itself.
-                if (FolderCaptures.IsFolderId(item.Id))
-                {
-                    Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item), "Ctrl+E");
-                    Add("Str_Rec_MoveToLibrary", () => MoveVideoToLibrary(item));
-                }
-                else
-                {
-                    Add("Str_Lib_SaveAs", () => SaveAs(item), "Ctrl+Shift+S");
-                    menu.Items.Add(new Separator());
-                    var moveVideo = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M" };
-                    FillMoveItems(moveVideo, item);
-                    menu.Items.Add(moveVideo);
-                    Add("Str_Lib_Note", () => EditNote(item), "F2");
-                }
-                menu.Items.Add(new Separator());
-                Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
-                MenuTidy.HideInactive(menu);
-                menu.IsOpen = true;
-                Anim.FadeIn(menu);
-                return;
-            }
-            Add("Str_Lib_Copy", () => Copy(item));
-            Add("Str_Btn_Print", () =>
+            // The capture card, KillerShell 1.6.0's pattern: the capture's name and when and how big
+            // it is, a strip of the everyday actions, then the rest as rows. Every action shows
+            // its shortcut, and a stale card does nothing once the album has changed under it.
+            bool keyboard = Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver;
+            var menu = CardBuilder.Menu(320);
+            menu.Items.Add(CardBuilder.Header(Title(item), item.Taken.ToString("g", CultureInfo.CurrentCulture) + "  ·  "
+                + item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture)));
+            Action Guard(Action action) => () => { if (CaptureLibrary.IsCurrent(item)) action(); };
+            CardAction Quick(string glyph, string key, string? gesture, Action action) => new(glyph, Loc(key), Loc(key), gesture, Guard(action));
+            void Row(string key, string? gesture, string glyph, Action action) => menu.Items.Add(CardBuilder.Row(Loc(key), gesture, glyph, Guard(action)));
+            void Rows(params object[] rows) { foreach (var row in rows) menu.Items.Add(row); }
+            var quick = new List<CardAction> { Quick("", "Str_Lib_Open", "Enter", () => open?.Invoke(item)) };
+            bool video = VideoCaptures.IsVideo(item), inFolder = FolderCaptures.IsFolderId(item.Id);
+            void Print()
             {
                 try { PrintOutput.Print(CaptureLibrary.LoadOutput(item), Title(item)); }
                 catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
-            });
-            if (FolderCaptures.IsFolderId(item.Id))
+            }
+            // A recording has no picture to copy, print or recognize, only the clip itself.
+            if (!video)
+            {
+                quick.Add(Quick("", "Str_Lib_Copy", "Ctrl+C", () => Copy(item)));
+                quick.Add(Quick("", "Str_Btn_Print", "Ctrl+P", Print));
+            }
+            if (inFolder) quick.Add(Quick("", "Str_Lib_ShowInExplorer", "Ctrl+E", () => ShowInExplorer(item)));
+            else quick.Add(Quick("", "Str_Lib_SaveAs", "Ctrl+Shift+S", () => SaveAs(item)));
+            quick.Add(Quick("", "Str_Lib_Delete", deleteGesture, () => Delete(item)));
+            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"), quick));
+
+            if (inFolder)
             {
                 // A file in a folder collection: the folder keeps it, so no collections or notes,
-                // only a way to it, a way into the encrypted library, and Delete to the Recycle Bin.
-                Add("Str_Lib_ShowInExplorer", () => ShowInExplorer(item), "Ctrl+E");
-                Add("Str_Lib_AddToLibrary", () => AddToLibrary(item));
-                menu.Items.Add(new Separator());
-                Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
-                MenuTidy.HideInactive(menu);
-                menu.IsOpen = true;
-                Anim.FadeIn(menu);
-                return;
+                // only a way into the encrypted library.
+                if (video) Row("Str_Rec_MoveToLibrary", null, "", () => MoveVideoToLibrary(item));
+                else Row("Str_Lib_AddToLibrary", null, "", () => AddToLibrary(item));
             }
-            Add("Str_Lib_SaveAs", () => SaveAs(item), "Ctrl+Shift+S");
-            Add("Str_Marks_OpenOriginal", () => RecoverOriginal(item));
-            if (BuildOcrLinksMenu(item.Id, anchor) is { } links) menu.Items.Add(links);
-            menu.Items.Add(new Separator());
-
-            var move = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M" };
-            FillMoveItems(move, item);
-            menu.Items.Add(move);
-            Add("Str_Lib_Note", () => EditNote(item), "F2");
-            Add("Str_Lib_CardColor", PickCardColor);
-            if (!CardColors.CardIsDefault) Add("Str_Lib_CardColorDefault", () => CardColors.SetCard(null));
-            menu.Items.Add(new Separator());
-            Add("Str_Lib_Delete", () => Delete(item), deleteGesture);
+            else
+            {
+                var move = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M", Icon = "" };
+                FillMoveItems(move, item);
+                Rows(move);
+                Row("Str_Lib_Note", "F2", "", () => EditNote(item));
+                if (!video)
+                {
+                    Row("Str_Marks_OpenOriginal", null, "", () => RecoverOriginal(item));
+                    if (BuildOcrLinksMenu(item.Id, anchor) is { } links) { links.Icon = ""; Rows(links); }
+                    Rows(new Separator());
+                    Row("Str_Lib_CardColor", null, "", PickCardColor);
+                    if (!CardColors.CardIsDefault) Row("Str_Lib_CardColorDefault", null, "", () => CardColors.SetCard(null));
+                }
+            }
             MenuTidy.HideInactive(menu);
-            menu.IsOpen = true;
+            CardBuilder.Open(menu, anchor, keyboard, new Rect(0, anchor.ActualHeight, 0, 0));
             Anim.FadeIn(menu);
         }
 
@@ -1015,40 +1097,49 @@ namespace KillerShot.Shell
 
         internal Func<PromptDialog, bool?> PresentPrompt { get; set; } = dialog => dialog.ShowDialog();
 
-        internal void FillCollectionMenu(ContextMenu menu, long id, string name, long session)
+        /// <summary>Gives a header's own ContextMenu the card look at the card's width.</summary>
+        private static void MakeCard(ContextMenu menu, double width = 300)
+        {
+            menu.SetResourceReference(FrameworkElement.StyleProperty, "CardMenu");
+            menu.MinWidth = menu.MaxWidth = width + 44;
+        }
+
+        /// <summary>The collection card: its name and count, a strip to open it in a tab of its own
+        /// or color it, then rename and delete as rows.</summary>
+        internal void FillCollectionMenu(ContextMenu menu, long id, string name, long session, string? detail = null)
         {
             menu.Items.Clear();
-            var rename = new MenuItem { Header = Loc("Str_Lib_RenameCollection") };
-            rename.Click += (_, _) =>
-            {
-                var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
-                if (PresentPrompt(dlg) == true && dlg.Text.Trim().Length > 0)
-                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text, session));
-            };
-            menu.Items.Add(rename);
-            var color = new MenuItem { Header = Loc("Str_Lib_CollectionColor") };
-            color.Click += (_, _) =>
+            MakeCard(menu);
+            menu.Items.Add(CardBuilder.Header(name, detail));
+            string source = "c" + id.ToString(CultureInfo.InvariantCulture);
+            void PickColor()
             {
                 var dlg = new ColorPickerDialog(OwnerWindow, CardColors.Collection(id) ?? Color.FromRgb(0x50, 0xAE, 0xE8));
                 dlg.ShowDialog();
                 if (dlg.Accepted) TryChangeAlbum(() => CardColors.SetCollection(id, dlg.SelectedColor, session));
-            };
-            menu.Items.Add(color);
-            if (CardColors.Collection(id) != null)
-            {
-                var clear = new MenuItem { Header = Loc("Str_Lib_CollectionColorNone") };
-                clear.Click += (_, _) => TryChangeAlbum(() => CardColors.SetCollection(id, null, session));
-                menu.Items.Add(clear);
             }
+            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
+            [
+                new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null,
+                    () => { if (CaptureLibrary.Session == session) _ = FileBrowser.NewCollectionTab(source); }),
+                new("", Loc("Str_Lib_ColorShort"), Loc("Str_Lib_CollectionColor"), null, PickColor),
+            ]));
+            menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_RenameCollection"), null, "", () =>
+            {
+                var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
+                if (PresentPrompt(dlg) == true && dlg.Text.Trim().Length > 0)
+                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text, session));
+            }));
+            if (CardColors.Collection(id) != null)
+                menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_CollectionColorNone"), null, "",
+                    () => TryChangeAlbum(() => CardColors.SetCollection(id, null, session))));
             menu.Items.Add(new Separator());
-            var delete = new MenuItem { Header = Loc("Str_Lib_DeleteCollection") };
-            delete.Click += (_, _) =>
+            menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_DeleteCollection"), null, "", () =>
             {
                 var dlg = new ConfirmDialog(string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_DeleteCollectionTitle"), name),
                     Loc("Str_Lib_DeleteCollectionDetail"), Loc("Str_Lib_DeleteCollection"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
                 if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.DeleteCollection(id, session));
-            };
-            menu.Items.Add(delete);
+            }));
         }
 
         /// <summary>Picks the color of every card captures sit on.</summary>

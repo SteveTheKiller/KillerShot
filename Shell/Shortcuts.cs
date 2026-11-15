@@ -77,9 +77,10 @@ namespace KillerShot.Shell
             }
 
             bool captureView = Library.IsVisible && !Library.FilesActive;
+            // Tabs hold folders and collections alike, so the tab keys work over either.
+            if (Library.IsVisible && Library.FilesWorkspace.HandleTabKey(dockKey, mods)) { e.Handled = true; return; }
             if (Library.IsVisible && Library.FilesActive)
             {
-                if (Library.FilesWorkspace.HandleTabKey(dockKey, mods)) { e.Handled = true; return; }
                 if (Library.Files.HandleFileKey(dockKey, mods, e.OriginalSource as DependencyObject))
                 { e.Handled = true; return; }
                 // Text fields keep their native edit commands; Files never falls into capture or editor actions.

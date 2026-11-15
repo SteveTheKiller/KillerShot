@@ -2,6 +2,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using KillerFamily.Layout;
 using KillerShot.Controls;
@@ -50,8 +51,9 @@ internal static class SelfTestContextMenus
             string[] Rows(FrameworkElement owner)
             {
                 var menu = owner.ContextMenu!;
-                menu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent, menu));
-                return menu.Items.OfType<MenuItem>().Where(item => item.Visibility == Visibility.Visible).Select(item => (string)item.Header).ToArray();
+                _ = new ContextMenuEventArgsProbe(owner);
+                return menu.Items.OfType<MenuItem>().Where(item => item.Visibility == Visibility.Visible && item.Header is string)
+                    .Select(item => (string)item.Header).ToArray();
             }
             string L(string key) => LocaleManager.Loc(key);
 
@@ -72,6 +74,57 @@ internal static class SelfTestContextMenus
                 "The content menu must hold the views and nothing from the sidebar or carousel.");
             Check(L("Str_Dock_Left") == "Sidebar on the left" && L("Str_Dock_Top") == "Carousel at the top", "The dock options must name what they move.");
             report.Add("menus belong to where the click lands, with plain names: PASS");
+
+            // What a real right-click on the sidebar does: whatever sits under the pointer gets the
+            // button-up, and WPF opens a context menu only when nothing handled it. Probe a
+            // collection and the empty space under the list.
+            window.UpdateLayout();
+            foreach (var (label, point) in new[] { ("collection", new Point(navigation.ActualWidth / 2, 60)), ("empty", new Point(navigation.ActualWidth / 2, navigation.ActualHeight - 8)) })
+            {
+                var hit = navigation.InputHitTest(point) as DependencyObject;
+                var chain = new List<string>();
+                ContextMenu? owner = null;
+                for (var node = hit; node != null; node = System.Windows.Media.VisualTreeHelper.GetParent(node) ?? LogicalTreeHelper.GetParent(node))
+                {
+                    chain.Add(node.GetType().Name);
+                    if (owner == null && node is FrameworkElement { ContextMenu: { } found }) owner = found;
+                    if (ReferenceEquals(node, window)) break;
+                }
+                report.Add($"sidebar_{label}_hit=" + string.Join(" < ", chain.Take(12)));
+                Check(hit is UIElement, $"A right-click on the sidebar's {label} must land on an element.");
+                var up = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right) { RoutedEvent = UIElement.MouseRightButtonUpEvent };
+                ((UIElement)hit!).RaiseEvent(up);
+                Check(!up.Handled, $"Nothing on the sidebar's {label} may swallow the right button, or no menu opens.");
+                Check(owner != null, $"The sidebar's {label} must have a context menu above it.");
+                var sidebarOpening = new ContextMenuEventArgsProbe((FrameworkElement)(hit as FrameworkElement ?? System.Windows.Media.VisualTreeHelper.GetParent(hit) as FrameworkElement)!);
+                Check(!sidebarOpening.Cancelled, $"Opening the sidebar's {label} menu must not be cancelled.");
+            }
+            report.Add("a real right-click on the sidebar reaches its menu: PASS");
+
+            // The sidebar card as it draws, in the three base themes.
+            foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 })
+            {
+                ThemeManager.Apply(theme);
+                await Idle();
+                var sidebarCard = navigation.ContextMenu!;
+                _ = new ContextMenuEventArgsProbe(navigation);
+                sidebarCard.PlacementTarget = navigation;
+                sidebarCard.IsOpen = true;
+                await Idle();
+                Check(sidebarCard.Items.OfType<MenuItem>().First().Header is FrameworkElement, $"{theme} sidebar card opens with its title.");
+                var surface = (FrameworkElement)System.Windows.Media.VisualTreeHelper.GetChild(sidebarCard, 0);
+                surface.Opacity = 1; surface.Margin = new Thickness(0);
+                surface.Measure(new Size(500, double.PositiveInfinity));
+                surface.Arrange(new Rect(surface.DesiredSize));
+                surface.UpdateLayout();
+                var sidebarShot = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(surface.ActualWidth), (int)Math.Ceiling(surface.ActualHeight), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+                sidebarShot.Render(surface);
+                ImageOutput.SavePng(sidebarShot, Path.Combine(folder, $"sidebar-card-{theme}.png"));
+                sidebarCard.IsOpen = false;
+                await Idle();
+            }
+            ThemeManager.Apply(Theme.Dark);
+            report.Add("sidebar card renders in Dark, Light and SE98: PASS");
 
             navigation.Compact = true;
             await Idle();
@@ -246,7 +299,7 @@ internal static class SelfTestContextMenus
 
     /// <summary>Raises the right-click opening event the way WPF does, and reads whether the menu
     /// cancelled itself. Nothing is shown.</summary>
-    private sealed class ContextMenuEventArgsProbe
+    internal sealed class ContextMenuEventArgsProbe
     {
         public bool Cancelled { get; }
 

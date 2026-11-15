@@ -15,7 +15,7 @@ public partial class MainWindow
         EditorStage.ContextMenuOpening += (_, e) =>
         {
             BuildEditorContextMenu(menu);
-            if (!menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible)) e.Handled = true;
+            if (!menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible && !Equals(item.Tag, "cardhead"))) e.Handled = true;
         };
         menu.Opened += (_, _) => { if (menu.Items.Count == 0) BuildEditorContextMenu(menu); };
         EditorStage.ContextMenu = menu;
@@ -26,6 +26,17 @@ public partial class MainWindow
     {
         Editor.CommitText();
         menu.Items.Clear();
+        // The picture card: the picture's name and size on top, then its actions as rows, each
+        // with its shortcut. Rows rather than a quick strip, because the tool and zoom lists nest.
+        menu.SetResourceReference(StyleProperty, "CardMenu");
+        menu.MinWidth = menu.MaxWidth = 300 + 44;
+        if (_doc != null)
+        {
+            var head = KillerFamily.Controls.CardBuilder.Header(App.Instance.CurrentItem is { } shown ? LibraryView.Title(shown) : Loc("Str_Lib_Capture"),
+                _doc.PixelWidth.ToString(System.Globalization.CultureInfo.CurrentCulture) + " x " + _doc.PixelHeight.ToString(System.Globalization.CultureInfo.CurrentCulture));
+            head.Tag = "cardhead";
+            menu.Items.Add(head);
+        }
         MenuItem ToolbarAction(string id)
         {
             var unit = _toolbarUnits.Single(u => u.Id == id);
@@ -44,7 +55,7 @@ public partial class MainWindow
         // first, as it does in the album (a folder file goes to the Recycle Bin).
         if (App.Instance.CurrentItem is { } current)
         {
-            var delete = new MenuItem { Tag = "deletecapture", Header = Loc("Str_Lib_Delete") };
+            var delete = new MenuItem { Tag = "deletecapture", Header = Loc("Str_Lib_Delete"), Icon = "" };
             delete.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => Library.Delete(current)));
             menu.Items.Add(delete);
         }
