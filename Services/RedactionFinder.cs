@@ -101,7 +101,7 @@ internal static partial class RedactionFinder
             foreach (Match m in EmailPattern().Matches(line)) yield return (m.Index, m.Index + m.Length);
         if (kinds.HasFlag(RedactKinds.Card))
             foreach (Match m in CardPattern().Matches(line))
-                if (IsCardNumber(m.Value)) yield return (m.Index, m.Index + m.Length);
+                if (ContainsCardNumber(m.Value)) yield return (m.Index, m.Index + m.Length);
         if (kinds.HasFlag(RedactKinds.Ssn))
             foreach (Match m in SsnPattern().Matches(line))
                 if (IsSsn(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)) yield return (m.Index, m.Index + m.Length);
@@ -122,6 +122,28 @@ internal static partial class RedactionFinder
             foreach (Match m in TokenPattern().Matches(line)) yield return (m.Index, m.Index + m.Length);
             foreach (Match m in LongKeyPattern().Matches(line)) yield return (m.Index, m.Index + m.Length);
         }
+    }
+
+    /// <summary>
+    /// True when the run is a card number, or holds one between its separators. OCR often puts a
+    /// code, a row number or a column of digits on the same line, and the greedy pattern takes
+    /// them into the run, which then fails the checksum as a whole. Windows start and end only at
+    /// separators, because cutting inside a group would let a random digit run pass Luhn about one
+    /// time in ten. The whole run is covered either way.
+    /// </summary>
+    internal static bool ContainsCardNumber(string run)
+    {
+        if (IsCardNumber(run)) return true;
+        var cuts = new List<int> { 0 };
+        for (int i = 0; i < run.Length; i++)
+            if (run[i] is ' ' or '-') cuts.Add(i + 1);
+        for (int a = 0; a < cuts.Count; a++)
+            for (int b = a + 1; b <= cuts.Count; b++)
+            {
+                int start = cuts[a], end = b < cuts.Count ? cuts[b] - 1 : run.Length;
+                if ((a, b) != (0, cuts.Count) && IsCardNumber(run[start..end])) return true;
+            }
+        return false;
     }
 
     /// <summary>13 to 19 digits that pass the Luhn checksum every card number carries.</summary>
