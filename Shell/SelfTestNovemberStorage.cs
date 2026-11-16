@@ -41,6 +41,7 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "folder-overflow") await FolderOverflow(folder);
             else if (scenario == "folder-linked-watch") await LinkedFolderWatch(folder);
             else if (scenario == "folder-linked-spacing") await LinkedFolderSpacing(folder);
+            else if (scenario == "folder-linked-recreated") await LinkedFolderRecreated(folder);
             else if (scenario == "album-video-drag-responsive") await VideoDragResponsive(folder, log);
             else if (scenario == "folder-linked-initial-arrival") await LinkedInitialArrival(folder);
             else if (scenario == "folder-network-backoff") await NetworkFolderBackoff(folder);
@@ -673,6 +674,32 @@ internal static class SelfTestNovemberStorage
             throw new InvalidOperationException("Continuous writes to a linked folder never caused a rescan.");
         if (scans > 4)
             throw new InvalidOperationException($"A continuously written linked folder was rescanned {scans} times in six seconds, back to back.");
+    }
+
+    /// <summary>A watched linked folder that is deleted and made again (a card pulled and put
+    /// back, a sync tool replacing the folder) is found again and its new pictures show up.</summary>
+    private static async Task LinkedFolderRecreated(string folder)
+    {
+        Settings.UseFolder(folder);
+        string photos = Path.Combine(folder, "photos");
+        Directory.CreateDirectory(photos);
+        ImageOutput.SavePng(Pixel(), Path.Combine(photos, "first.png"));
+        FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"), new CountingDirectoryReader());
+        string source = FolderCaptures.AddFolder(photos);
+        await FolderCaptures.RefreshFolderAsync(source);
+        if (FolderCaptures.LinkedItems(source).Count != 1) throw new InvalidOperationException("The linked folder's first picture was not listed.");
+        Directory.Delete(photos, true);
+        await Task.Delay(1500);
+        Directory.CreateDirectory(photos);
+        ImageOutput.SavePng(Pixel(), Path.Combine(photos, "second.png"));
+        ImageOutput.SavePng(Pixel(), Path.Combine(photos, "third.png"));
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        while (watch.Elapsed.TotalSeconds < 90 && FolderCaptures.LinkedItems(source).Count != 2)
+            await Task.Delay(100);
+        double seconds = watch.Elapsed.TotalSeconds;
+        FolderCaptures.RemoveFolder(source);
+        if (seconds > 10)
+            throw new InvalidOperationException($"A linked folder that was deleted and made again showed its new picture after {seconds:F0} seconds (90 means never).");
     }
 
     private sealed class OverflowWatcher(string folder) : FileSystemWatcher(folder)

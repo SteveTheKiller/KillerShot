@@ -282,7 +282,7 @@ internal static partial class FolderCaptures
                     {
                         folder.Available = false;
                         folder.Initialized = true;
-                        folder.PollSeconds = Math.Min(300, folder.PollSeconds * 2);
+                        folder.PollSeconds = MissingPollSeconds(folder);
                         folder.NextScan = DateTime.UtcNow.AddSeconds(folder.PollSeconds);
                     }
                     Changed?.Invoke();
@@ -292,6 +292,13 @@ internal static partial class FolderCaptures
         }
     }
 
+    /// <summary>How long a missing linked folder waits before it is looked for again. A local
+    /// folder that was deleted and made again, or a card put back, costs only a failed open to
+    /// check, so it is checked every few seconds. A share backs off, since a stalled server makes
+    /// every check slow.</summary>
+    private static int MissingPollSeconds(LinkedFolder folder) =>
+        folder.Network ? Math.Min(300, folder.PollSeconds * 2) : 5;
+
     private static void ConfigureLinkedWatch(LinkedFolder folder, bool beforeScan = false)
     {
         lock (LinkedGate)
@@ -299,7 +306,7 @@ internal static partial class FolderCaptures
             if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder)) return;
             if (!beforeScan)
             {
-                folder.PollSeconds = folder.Available ? (folder.Network ? 60 : 30) : Math.Min(300, folder.PollSeconds * 2);
+                folder.PollSeconds = folder.Available ? (folder.Network ? 60 : 30) : MissingPollSeconds(folder);
                 folder.NextScan = DateTime.UtcNow.AddSeconds(folder.PollSeconds);
             }
             if (folder.Network || !beforeScan && !folder.Available) { folder.Watcher?.Dispose(); folder.Watcher = null; return; }
