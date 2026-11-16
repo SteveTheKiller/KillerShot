@@ -23,19 +23,31 @@ public partial class MainWindow
         if (dialog.Added > 0) ShowRedactionResult(dialog.Added);
     }
 
+    /// <summary>How many times a scan reads the picture again when it keeps changing underneath.</summary>
+    private const int RedactionScanAttempts = 3;
+
     /// <summary>Boxes added to the document, or null when Windows cannot read text here. A document
-    /// that was replaced while the picture was being read gets nothing.</summary>
+    /// that was replaced while the picture was being read gets nothing. Words belong to the exact
+    /// picture they were read from: when the picture is cropped, turned, resized, undone or marked
+    /// while Windows reads it, the scan reads the current picture again instead of placing old
+    /// positions on the new one, and gives up with nothing added if it never holds still.</summary>
     internal async Task<int?> ScanForRedactionAsync(EditorDocument doc)
     {
         var kinds = RedactSettings.Kinds;
         if (kinds == RedactKinds.None) return 0;
-        // The picture as it stands, so text under marks already drawn is not read twice.
-        var lines = await ReadWordsAsync(doc.State.Image);
-        if (lines == null) return null;
-        if (!ReferenceEquals(doc, _doc)) return 0;
-        int added = RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
-        if (added > 0) Editor.InvalidateVisual();
-        return added;
+        for (int attempt = 0; attempt < RedactionScanAttempts; attempt++)
+        {
+            var state = doc.State;
+            // The picture as it stands, so text under marks already drawn is not read twice.
+            var lines = await ReadWordsAsync(state.Image);
+            if (lines == null) return null;
+            if (!ReferenceEquals(doc, _doc)) return 0;
+            if (!ReferenceEquals(state, doc.State)) continue;
+            int added = RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
+            if (added > 0) Editor.InvalidateVisual();
+            return added;
+        }
+        return 0;
     }
 
     /// <summary>Scan every capture: runs once on a new capture as it opens.</summary>

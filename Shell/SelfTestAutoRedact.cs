@@ -47,6 +47,67 @@ internal static class SelfTestAutoRedact
         return rtb;
     }
 
+    private static readonly Rect OldEmail = new(260, 30, 560, 50);
+    private static readonly Rect NewEmail = new(20, 10, 120, 30);
+
+    private static IReadOnlyList<IReadOnlyList<OcrWord>> EmailAt(Rect box) =>
+        [[new OcrWord("jane.doe@example.com", box)]];
+
+    /// <summary>Scan every capture reads the picture in the background. The picture changes under
+    /// it when the capture is cropped, turned, resized or undone while Windows is still reading;
+    /// the words that come back belong to the old picture and must not land as boxes on the new
+    /// one. Recognition is replaced by a reader the check controls, so this runs everywhere.</summary>
+    private static async Task StaleScanChecks(MainWindow window, List<string> report)
+    {
+        var real = window.ReadWordsAsync;
+        var kinds = RedactSettings.Kinds;
+        RedactSettings.Kinds = RedactKinds.Email;
+        App.Instance.PresentDocumentReplacement = _ => true;
+        var changes = new (string Name, Action<EditorDocument>? Before, Action<EditorDocument>? During)[]
+        {
+            ("unchanged", null, null),
+            ("crop", null, d => d.Crop(new Int32Rect(600, 0, 1200, 220))),
+            ("rotate", null, d => d.Rotate(true)),
+            ("resize", null, d => d.Scale(900, 110)),
+            ("undo", d => d.Crop(new Int32Rect(0, 0, 1700, 220)), d => d.Undo()),
+        };
+        try
+        {
+            foreach (var (name, before, during) in changes)
+            {
+                var doc = new EditorDocument(Picture());
+                before?.Invoke(doc);
+                App.Instance.SetDocument(doc);
+                await Task.Delay(50);
+                var read = new List<BitmapSource>();
+                var first = new TaskCompletionSource<IReadOnlyList<IReadOnlyList<OcrWord>>?>();
+                window.ReadWordsAsync = picture =>
+                {
+                    read.Add(picture);
+                    return read.Count == 1 ? first.Task : Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>(EmailAt(NewEmail));
+                };
+                var scan = window.ScanForRedactionAsync(doc);
+                during?.Invoke(doc);
+                int width = doc.PixelWidth, height = doc.PixelHeight;
+                first.SetResult(EmailAt(OldEmail));
+                await scan;
+                var boxes = doc.State.Items.OfType<ShapeAnnotation>().Where(s => s.Kind == ShapeKind.Redact).Select(s => s.PixelCells).ToList();
+                var expected = during == null ? OldEmail : NewEmail;
+                bool covers = boxes.Count == 1 && boxes[0].Contains(new Rect(expected.X + 1, expected.Y + 1, expected.Width - 2, expected.Height - 2))
+                    && boxes[0].Width < expected.Width + 20;
+                bool fresh = during == null ? read.Count == 1 : read.Count == 2 && read[1].PixelWidth == width && read[1].PixelHeight == height;
+                if (!covers || !fresh)
+                    throw new InvalidOperationException($"stale scan {name}: reads={read.Count} boxes={string.Join("; ", boxes.Select(b => b.ToString(CultureInfo.InvariantCulture)))} picture={width}x{height}");
+                report.Add($"stale scan {name}: boxes only what the current picture shows PASS");
+            }
+        }
+        finally
+        {
+            window.ReadWordsAsync = real;
+            RedactSettings.Kinds = kinds;
+        }
+    }
+
     private static async Task RunAsync(string folder)
     {
         int code = 1;
@@ -62,12 +123,7 @@ internal static class SelfTestAutoRedact
             App.InitializeKit();
             LocaleManager.Apply(Locale.EnUS);
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The scratch library did not open.");
-            if (TextRecognition.CreateRecognizer() == null)
-            {
-                report.Add("no recognition language installed: SKIPPED");
-                code = 0;
-                return;
-            }
+            bool canRecognize = TextRecognition.CreateRecognizer() != null;
             RedactSettings.Fill = Fill;
             RedactSettings.Feather = Feather;
             // A toolbar layout saved by 1.1.1, before Auto redact existed: the button must still
@@ -84,6 +140,16 @@ internal static class SelfTestAutoRedact
             if (!window.AutoRedactBtn.IsVisible || bar == null || redactAt < 0 || bar.Children.IndexOf(window.AutoRedactBtn) != redactAt + 1)
                 throw new InvalidOperationException($"Auto redact is not on the toolbar beside Redact (visible={window.AutoRedactBtn.IsVisible}).");
             report.Add("toolbar: Auto redact shows beside Redact with a 1.1.1 saved layout PASS");
+
+            await StaleScanChecks(window, report);
+            if (!canRecognize)
+            {
+                report.Add("no recognition language installed: real recognition SKIPPED");
+                code = 0;
+                return;
+            }
+            App.Instance.SetDocument(doc);
+            await Task.Delay(50);
 
             // The toolbar button opens the dialog modally; work it from a queued callback.
             var done = new TaskCompletionSource<string>();
