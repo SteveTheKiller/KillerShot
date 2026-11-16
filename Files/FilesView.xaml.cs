@@ -32,6 +32,7 @@ public partial class FilesView : UserControl, IDisposable
         ResultsList.SizeChanged += (_, _) => FitColumns();
         ViewState.PropertyChanged += (_, _) => FitColumns();
         RestoreOptions();
+        InitToolbar();
         InitAddress();
         InitInteraction();
         InitFilesMenu();

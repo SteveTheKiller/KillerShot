@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0}-fil</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">dimensjoner</sys:String>
     <sys:String x:Key="Str_Status_Selected">{0} elementer valgt</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Legg til bokmerke for denne mappen  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Nylig besøkte mapper  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Ingen nylige mapper ennå</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Tøm listen</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Eksporter resultater  (Ctrl+Alt+E)  |  Ctrl+Alt+Shift+E for CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Flere verktøy</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Lagre resultater som CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Lagre resultater som HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Eksportert: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Eksport mislyktes: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Ingenting å eksportere ennå.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">tema</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">aksent</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Opprettet {0} &#183; {1} elementer</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Oversikt over {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Opprettet av {0}</sys:String>
 </ResourceDictionary>

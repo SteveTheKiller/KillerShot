@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">Файл {0}</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">розміри</sys:String>
     <sys:String x:Key="Str_Status_Selected">Вибрано елементів: {0}</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Додати цю папку до закладок  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Нещодавно відвідані папки  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Нещодавніх папок поки немає</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Очистити список</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Експортувати результати  (Ctrl+Alt+E)  |  Ctrl+Alt+Shift+E для CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Більше інструментів</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Зберегти результати як CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Зберегти результати як HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Експортовано: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Не вдалося експортувати: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Поки немає що експортувати.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">тема</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">акцент</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Створено {0} &#183; елементів: {1}</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Список вмісту {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Створено за допомогою {0}</sys:String>
 </ResourceDictionary>

@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">Tệp {0}</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">kích thước</sys:String>
     <sys:String x:Key="Str_Status_Selected">Đã chọn {0} mục</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Đánh dấu thư mục này  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Các thư mục đã truy cập gần đây  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Chưa có thư mục nào được truy cập gần đây</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Xóa danh sách</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Xuất kết quả  (Ctrl+Alt+E)  |  Nhấn Ctrl+Alt+Shift+E để xuất CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Công cụ khác</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Lưu kết quả dưới dạng CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Lưu kết quả dưới dạng HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Đã xuất: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Xuất không thành công: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Chưa có nội dung nào để xuất.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">giao diện</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">màu nhấn</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Được tạo lúc {0} · {1} mục</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Danh sách của {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Được tạo bởi {0}</sys:String>
 </ResourceDictionary>

@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0} ফাইল</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">মাত্রা</sys:String>
     <sys:String x:Key="Str_Status_Selected">{0} টি আইটেম নির্বাচিত</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">এই ফোল্ডার সংরক্ষণ করুন  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">সম্প্রতি দেখা ফোল্ডার  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">এখনো কোনো সাম্প্রতিক ফোল্ডার নেই</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">তালিকা মুছুন</sys:String>
+    <sys:String x:Key="Str_Btn_Export">ফলাফল রপ্তানি করুন  (Ctrl+Alt+E)  |  CSV-এর জন্য Ctrl+Alt+Shift+E</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">আরও টুল</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">ফলাফল CSV হিসেবে সংরক্ষণ করুন</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">ফলাফল HTML হিসেবে সংরক্ষণ করুন</sys:String>
+    <sys:String x:Key="Str_Status_Exported">রপ্তানি করা হয়েছে: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">রপ্তানি ব্যর্থ হয়েছে: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">রপ্তানি করার মতো এখনও কিছু নেই।</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">থিম</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">অ্যাকসেন্ট</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">তৈরি {0} &#183; {1}টি আইটেম</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} এর তালিকা।</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">{0} দিয়ে তৈরি</sys:String>
 </ResourceDictionary>

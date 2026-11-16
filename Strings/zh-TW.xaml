@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0} 檔案</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">尺寸</sys:String>
     <sys:String x:Key="Str_Status_Selected">已選取 {0} 項</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">儲存此資料夾  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">最近造訪的資料夾  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">尚無最近的資料夾</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">清除清單</sys:String>
+    <sys:String x:Key="Str_Btn_Export">匯出結果  (Ctrl+Alt+E)  |  Ctrl+Alt+Shift+E 匯出 CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">更多工具</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">將結果另存為 CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">將結果另存為 HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">已匯出：{0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">匯出失敗：{0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">目前沒有可匯出的內容。</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">佈景主題</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">強調色</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">產生於 {0} &#183; {1} 個項目</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} 的清單。</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">由 {0} 產生</sys:String>
 </ResourceDictionary>

@@ -283,6 +283,7 @@ public partial class FilesView
                 case Key.C: CopySelection(); return true;
                 case Key.X: CopySelection(true); return true;
                 case Key.V: StartCommand(PasteFiles()); return true;
+                case Key.D: FavoriteStar_Click(FavoriteStarBtn, new RoutedEventArgs()); return true;
                 case Key.OemPlus or Key.Add: StepResultsSize(1); return true;
                 case Key.OemMinus or Key.Subtract: StepResultsSize(-1); return true;
             }

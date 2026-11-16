@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0} Fájl</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">méretek</sys:String>
     <sys:String x:Key="Str_Status_Selected">{0} elem kiválasztva</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Könyvjelzők közé sorolja ezt a mappát (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Nemrég látogatott mappák (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Még nincsenek legutóbbi mappák</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Törölje a listát</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Eredmények exportálása (Ctrl+Alt+E) |  Ctrl+Alt+Shift+E CSV esetén</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Több eszköz</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Találatok mentése CSV-ként</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Találatok mentése HTML-ként</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Exportált: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Az exportálás sikertelen: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Még nincs exportálandó.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">téma</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">akcentussal</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">{0} · {1} elem generált</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">A(z) {0} listája.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Generálta: {0}</sys:String>
 </ResourceDictionary>

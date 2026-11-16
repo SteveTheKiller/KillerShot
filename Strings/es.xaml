@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">Archivo {0}</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">dimensiones</sys:String>
     <sys:String x:Key="Str_Status_Selected">{0} elementos seleccionados</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Guardar esta carpeta  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Carpetas visitadas recientemente  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Aún no hay carpetas recientes</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Borrar la lista</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Exportar resultados  (Ctrl+Alt+E)  |  Ctrl+Alt+Shift+E para CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Más herramientas</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Guardar resultados como CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Guardar resultados como HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Exportado: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Error al exportar: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Aún no hay nada que exportar.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">tema</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">acento</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Generado {0} &#183; {1} elementos</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Contenido de {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Generado por {0}</sys:String>
 </ResourceDictionary>

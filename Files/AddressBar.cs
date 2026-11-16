@@ -97,6 +97,7 @@ public partial class FilesView
             PlacesBox.SelectedItem = match ?? Places.FirstOrDefault();
         }
         finally { _syncingPlace = false; }
+        UpdateToolbarForFolder();
     }
     private async void Back_Click(object sender, RoutedEventArgs e) => await GoBack();
     private async void Forward_Click(object sender, RoutedEventArgs e) => await GoForward();
@@ -112,6 +113,7 @@ public partial class FilesView
     {
         if (!_syncingPlace && PlacesBox.SelectedItem is PickerPlace place) await NavigateTo(place.Path);
     }
+    private static Key RealKey(KeyEventArgs e) => e.Key == Key.System ? e.SystemKey : e.Key;
     private async void Files_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Handled || e.OriginalSource is TextBox) return;
@@ -130,6 +132,9 @@ public partial class FilesView
             if (e.Key == Key.D4) SetDensity((ViewState.Density + 1) % 5); else SetView(e.Key - Key.D1);
         }
         else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.P) { CycleDetailsPane(); e.Handled = true; }
+        else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.R) { Recents_Click(RecentsBtn, e); e.Handled = true; }
+        else if (modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && RealKey(e) == Key.E) { ExportWithDialog(csv: false); e.Handled = true; }
+        else if (modifiers == (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift) && RealKey(e) == Key.E) { ExportWithDialog(csv: true); e.Handled = true; }
         else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.O) { SetFoldersFirst(!Navigation.FoldersOnTop); e.Handled = true; }
         else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.S) { SortBox.IsDropDownOpen = true; e.Handled = true; }
         else if (modifiers == (ModifierKeys.Alt | ModifierKeys.Shift) && e.SystemKey == Key.S) { SetSort(Navigation.SortIndex, !Navigation.SortAsc); e.Handled = true; }

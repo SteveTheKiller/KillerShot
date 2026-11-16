@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0} файлы</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">өлшемдері</sys:String>
     <sys:String x:Key="Str_Status_Selected">Таңдалған элементтер: {0}</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Бұл қалтаны бетбелгіге қосу  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Жақында ашылған қалталар  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Жақындағы қалталар әзірге жоқ</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Тізімді тазалау</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Нәтижелерді экспорттау  (Ctrl+Alt+E)  |  CSV үшін Ctrl+Alt+Shift+E</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Басқа құралдар</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Нәтижелерді CSV ретінде сақтау</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Нәтижелерді HTML ретінде сақтау</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Экспортталды: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Экспорттау сәтсіз аяқталды: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Әзірге экспорттайтын ештеңе жоқ.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">тақырып</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">акцент</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Жасалған {0} &#183; элементтер: {1}</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} мазмұны.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">{0} арқылы жасалған</sys:String>
 </ResourceDictionary>

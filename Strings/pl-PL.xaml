@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">Plik {0}</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">wymiary</sys:String>
     <sys:String x:Key="Str_Status_Selected">Zaznaczono elementów: {0}</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Dodaj ten folder do zakładek  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Ostatnio odwiedzone foldery  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Brak ostatnich folderów</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Wyczyść listę</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Eksportuj wyniki  (Ctrl+Alt+E)  |  CSV: Ctrl+Alt+Shift+E</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Więcej narzędzi</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Zapisz wyniki jako CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Zapisz wyniki jako HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Wyeksportowano: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Eksport nie powiódł się: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Nie ma jeszcze nic do wyeksportowania.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">motyw</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">akcent</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Wygenerowano {0} · elementy: {1}</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Lista zawartości {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Wygenerowano przez {0}</sys:String>
 </ResourceDictionary>

@@ -146,6 +146,8 @@ internal static class SelfTestFilesView
             if (detailsName.Text != "pixel.png" || previewImage.Source == null || !dimensions.StartsWith("3 × 2", StringComparison.Ordinal))
                 throw new InvalidOperationException($"Image details missing (name '{detailsName.Text}', preview {previewImage.Source != null}, dimensions '{dimensions}').");
             checks++;
+            window.UpdateLayout();
+            Save(Render(view), Path.Combine(folder, "details-bottom.png"));
             view.ResultsList.SelectedItems.Clear();
             foreach (var file in view.ResultsList.Items.OfType<FileEntry>().Where(e => e.FileName is "alpha.txt" or "pixel.png")) view.ResultsList.SelectedItems.Add(file);
             await Idle();
@@ -165,12 +167,61 @@ internal static class SelfTestFilesView
                 if (restored.DetailsPosition != 1) throw new InvalidOperationException("Details pane position did not restore.");
                 checks++;
             }
+            // KillerShell's favorite star beside the address: saves and unsaves the folder you are in.
+            if (view.FindName("FavoriteStarBtn") is not Button star) throw new InvalidOperationException("Files view has no favorite star.");
+            string SavedPlaces() => Settings.Get("Files.Places") ?? "";
+            star.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            if (!SavedPlaces().Split('|').Contains(files, StringComparer.OrdinalIgnoreCase) || !Equals(star.Tag, "on") || (string)star.Content != "")
+                throw new InvalidOperationException($"Star did not save the current folder (places '{SavedPlaces()}').");
+            star.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            if (SavedPlaces().Split('|').Contains(files, StringComparer.OrdinalIgnoreCase) || Equals(star.Tag, "on") || (string)star.Content != "")
+                throw new InvalidOperationException("Second star click did not remove the folder.");
+            checks += 2;
+            // KillerShell's recents button: visited folders, newest first, each row navigates there.
+            if (view.FindName("RecentsBtn") is not Button recentsBtn || view.FindName("RecentsMenu") is not ContextMenu recentsMenu)
+                throw new InvalidOperationException("Files view has no recents button.");
+            await view.NavigateTo(child);
+            await view.NavigateTo(files);
+            await Idle();
+            recentsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            var recentRows = recentsMenu.Items.OfType<MenuItem>().Where(item => item.ToolTip is string).ToList();
+            if (!recentsMenu.IsOpen || recentRows.Count < 2 || (string)recentRows[0].ToolTip != files || (string)recentRows[1].ToolTip != child)
+                throw new InvalidOperationException($"Recents menu did not list the visited folders newest first ({string.Join(", ", recentRows.Select(r => r.ToolTip))}).");
+            recentRows[1].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            for (int wait = 0; wait < 50 && view.Navigation.CurrentFolder != child; wait++) await Task.Delay(20);
+            if (view.Navigation.CurrentFolder != child) throw new InvalidOperationException("Recent folder row did not navigate.");
+            recentsMenu.IsOpen = false;
+            await view.NavigateTo(files);
+            await Idle();
+            checks += 2;
+            // KillerShell's export button: one icon, a CSV and HTML flyout, both written from the listing.
+            if (view.FindName("ExportBtn") is not Button exportBtn || view.FindName("ExportPopup") is not Popup exportPopup)
+                throw new InvalidOperationException("Files view has no export button.");
+            exportBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            if (!exportPopup.IsOpen) throw new InvalidOperationException("Export button did not open its flyout.");
+            exportPopup.IsOpen = false;
+            string csv = Path.Combine(folder, "export.csv"), html = Path.Combine(folder, "export.html");
+            if (!view.ExportCsvTo(csv) || !view.ExportHtmlTo(html, openAfter: false)) throw new InvalidOperationException("Export reported failure.");
+            string csvText = File.ReadAllText(csv), htmlText = File.ReadAllText(html);
+            if (!csvText.StartsWith("Name,Folder,SizeBytes,Modified", StringComparison.Ordinal) || !csvText.Contains("\"alpha.txt\"", StringComparison.Ordinal))
+                throw new InvalidOperationException("CSV export is missing its header or rows.");
+            if (!htmlText.Contains("alpha.txt", StringComparison.Ordinal) || !htmlText.Contains("killershot.net", StringComparison.Ordinal) || htmlText.Contains("killershell", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("HTML export is missing rows or carries the wrong app's branding.");
+            checks += 3;
             detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             await Idle();
             window.UpdateLayout();
             if (!detailsPane.IsVisible || DockPanel.GetDock(detailsPane) != Dock.Right || Settings.Get("Files.DetailsPane") != "2")
                 throw new InvalidOperationException("Second details click did not move the pane to the right.");
             checks++;
+            view.ResultsList.SelectedItem = view.ResultsList.Items.OfType<FileEntry>().First(e => e.FileName == "alpha.txt");
+            await Idle();
+            window.UpdateLayout();
+            Save(Render(view), Path.Combine(folder, "details-right.png"));
             detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             await Idle();
             if (detailsPane.IsVisible || Settings.Get("Files.DetailsPane") != "0")
@@ -274,6 +325,15 @@ internal static class SelfTestFilesView
                 double sum = row.ColumnDefinitions.Sum(column => column.ActualWidth) + view.ViewState.RowPad.Left + view.ViewState.RowPad.Right;
                 details.AppendLine($"Actual details columns width={sum:F1} listWidth={view.ResultsList.ActualWidth:F1} windowWidth={width:F0}");
                 if (sum <= 0 || sum > view.ResultsList.ActualWidth - 16 + 1) throw new InvalidOperationException("Realized details columns overflow the actual list viewport.");
+                checks++;
+                // KillerShell's toolbar sheds into an overflow menu before the address gets cramped.
+                var addressCell = (FrameworkElement)VisualTreeHelper.GetParent(view.ScopePathLabel);
+                var overflowBtn = (Button)view.FindName("OverflowBtn");
+                var overflowPanel = (StackPanel)view.FindName("OverflowPanel");
+                details.AppendLine($"Toolbar windowWidth={width:F0} address={addressCell.ActualWidth:F0} shed={overflowPanel.Children.Count}");
+                if (addressCell.ActualWidth < 250) throw new InvalidOperationException($"Address is cramped to {addressCell.ActualWidth:F0}px at {width:F0}px wide.");
+                if (width < 600 && (!overflowBtn.IsVisible || overflowPanel.Children.Count == 0))
+                    throw new InvalidOperationException("Narrow Files view did not shed tools into the overflow menu.");
                 checks++;
             }
             if (scenario == "sorting") checks += await CheckSortReference(folder, details);

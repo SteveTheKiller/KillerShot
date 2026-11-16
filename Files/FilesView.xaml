@@ -190,7 +190,7 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.ColumnSpan="2" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
                 <DockPanel Grid.Column="0" LastChildFill="True" VerticalAlignment="Center">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0" VerticalAlignment="Center" TextOptions.TextRenderingMode="Grayscale">
+                    <StackPanel x:Name="NavStrip" DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0" VerticalAlignment="Center" TextOptions.TextRenderingMode="Grayscale">
                         <Button x:Name="NavBackBtn" Style="{StaticResource PaneViewButton}" ToolTip="{DynamicResource Str_TT_Back}" Click="Back_Click">
                             <Path Data="M7,1 L0,8 L7,15 M0,8 H16" Width="16" Height="16" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" />
                         </Button>
@@ -200,14 +200,51 @@
                         <Button x:Name="NavUpBtn" Style="{StaticResource PaneViewButton}" ToolTip="{DynamicResource Str_TT_Up}" Click="Up_Click">
                             <Path Data="M1,7 L8,0 L15,7 M8,0 V16" Width="16" Height="16" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" />
                         </Button>
+                        <!-- KillerShell's favorite star (Bookmarks.cs): a bare glyph beside the address that
+                             saves or unsaves the current folder in Places. Filled and accent when saved. -->
+                        <Button x:Name="FavoriteStarBtn" Content="&#xE734;" Width="22" Height="22" Padding="0" Margin="2,0,0,0" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center" Cursor="Hand" ToolTip="{DynamicResource Str_TT_Favorite}" Click="FavoriteStar_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                                        </Trigger>
+                                        <Trigger Property="Tag" Value="on">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                     <Border Padding="6,6,8,4" MinHeight="22" Background="Transparent" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{DynamicResource Str_Lbl_In}" FontFamily="{DynamicResource MonoFont}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <!-- KillerShell's recents button (Recents.cs) on the right edge of the address. -->
+                            <Button x:Name="RecentsBtn" Grid.Column="2" Style="{StaticResource ViewToggleBtn}" Width="20" Height="20" Padding="0" Margin="4,0,0,0" VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_Recents}" Click="Recents_Click">
+                                <Image Width="18" Height="18" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{x:Static files:IconCache.RecentsArt}" />
+                                <Button.ContextMenu>
+                                    <ContextMenu x:Name="RecentsMenu" />
+                                </Button.ContextMenu>
+                            </Button>
+                            <TextBlock x:Name="ScopePrefixText" Text="{DynamicResource Str_Lbl_In}" FontFamily="{DynamicResource MonoFont}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <TextBlock x:Name="ScopePathLabel" Grid.Column="1" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" MouseLeftButtonDown="ScopeBar_Click" />
                             <TextBox x:Name="AddressBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" Grid.Column="1" Visibility="Collapsed" Height="22" VerticalAlignment="Center" VerticalContentAlignment="Center" Background="{DynamicResource SearchFieldBrush}" Foreground="{DynamicResource TextBrush}" CaretBrush="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" FontFamily="{DynamicResource MonoFont}" FontSize="12" Padding="4,1" KeyDown="AddressBox_KeyDown" LostKeyboardFocus="AddressBox_LostKeyboardFocus" />
                         </Grid>
@@ -231,11 +268,74 @@
                     <Button x:Name="SortDirectionBtn" Style="{StaticResource PaneViewButton}" Content="&#xE74A;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_SortDir}" Click="SortDirection_Click" />
                     <Button x:Name="ShowHiddenBtn" Style="{StaticResource PaneViewButton}" Content="&#xE7B3;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_ShowHidden}" Click="Hidden_Click" />
                     <Button x:Name="FoldersTopBtn" Style="{StaticResource PaneViewButton}" Content="&#xE8B7;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_FoldersTop}" Click="Folders_Click" />
-                    <Button Style="{StaticResource PaneViewButton}" Content="&#xE72C;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_Btn_Reload}" Click="Refresh_Click" />
+                    <Button x:Name="ReloadBtn" Style="{StaticResource PaneViewButton}" Content="&#xE72C;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_Btn_Reload}" Click="Refresh_Click" />
                     <Button x:Name="DetailsPaneBtn" Style="{StaticResource PaneViewButton}" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_DetailsPane}" Click="DetailsPane_Click">
                         <Path x:Name="DetailsPaneGlyph" Width="15" Height="15" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" Data="M0,0 H14 V14 H0 Z M2,2 L12,12" />
                     </Button>
                     <ComboBox x:Name="PlacesBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" MinWidth="110" MaxWidth="220" Height="24" FontSize="11" Margin="4,0,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Label" SelectionChanged="Place_Changed" />
+                    <!-- KillerShell's export (Export.cs): one icon, the format picked from a flyout. -->
+                    <Button x:Name="ExportBtn" Style="{StaticResource PaneViewButton}" Content="&#xE72D;" Margin="2,0,2,0" FontSize="15" ToolTip="{DynamicResource Str_Btn_Export}" Click="ExportButton_Click" />
+                    <Popup x:Name="ExportPopup" PlacementTarget="{Binding ElementName=ExportBtn}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" HorizontalOffset="-14" VerticalOffset="-2">
+                        <Grid Margin="14">
+                            <Grid.Resources>
+                                <Style x:Key="ExportRow" TargetType="Button">
+                                    <Setter Property="Cursor" Value="Hand" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MenuTextBrush}" />
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}" Padding="8,4,10,4">
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Grid.Resources>
+                            <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False" Opacity="{DynamicResource MenuShadowOpacity}" Effect="{DynamicResource MenuShadowEffect}" />
+                            <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}" Padding="6">
+                                <StackPanel MinWidth="200">
+                                    <Button Style="{StaticResource ExportRow}" Margin="0,0,0,2" Click="ExportCsv_Click">
+                                        <DockPanel LastChildFill="True">
+                                            <TextBlock DockPanel.Dock="Left" Text="&#xE80A;" FontFamily="Segoe MDL2 Assets" FontSize="12" Width="22" VerticalAlignment="Center" />
+                                            <TextBlock DockPanel.Dock="Right" Text="Ctrl+Alt+Shift+E" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                            <TextBlock Text="CSV" FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource ExportRow}" Click="ExportHtml_Click">
+                                        <DockPanel LastChildFill="True">
+                                            <TextBlock DockPanel.Dock="Left" Text="&lt;&gt;" FontFamily="{DynamicResource MonoFont}" FontSize="11" FontWeight="Bold" Width="22" VerticalAlignment="Center" />
+                                            <TextBlock DockPanel.Dock="Right" Text="Ctrl+Alt+E" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                            <TextBlock Text="HTML" FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource FlyoutGrain}" IsHitTestVisible="False" />
+                        </Grid>
+                    </Popup>
+                    <!-- KillerShell's overflow (PaneToolbar.cs): collapsed until the strip sheds a tool. -->
+                    <Button x:Name="OverflowBtn" Style="{StaticResource PaneViewButton}" Content="&#xE712;" Width="20" FontSize="11" Visibility="Collapsed" ToolTip="{DynamicResource Str_TT_MoreTools}" Click="Overflow_Click" />
+                    <Popup x:Name="OverflowPopup" PlacementTarget="{Binding ElementName=OverflowBtn}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" HorizontalOffset="-14" VerticalOffset="-2">
+                        <Grid Margin="14">
+                            <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="{DynamicResource OverflowCornerRadius}" IsHitTestVisible="False">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="{DynamicResource OverflowShadowOpacity}" />
+                                </Border.Effect>
+                            </Border>
+                            <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource OverflowCornerRadius}" Padding="6">
+                                <StackPanel x:Name="OverflowPanel" Orientation="Horizontal" />
+                            </Border>
+                            <Border Style="{StaticResource FlyoutGrain}" Margin="1" CornerRadius="{DynamicResource OverflowCornerRadius}" />
+                        </Grid>
+                    </Popup>
                 </StackPanel>
             </Grid>
             <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed" Background="{DynamicResource TableHeaderBrush}" BorderBrush="{DynamicResource HeaderLineBrush}" BorderThickness="0,0,0,1" ContextMenuOpening="DetailsHeader_ContextMenuOpening">

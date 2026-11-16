@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">Soubor {0}</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">rozměry</sys:String>
     <sys:String x:Key="Str_Status_Selected">Vybráno {0} položek</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Uložit tuto složku  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">Naposledy navštívené složky  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Zatím žádné nedávné složky</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Vymazat seznam</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Exportovat výsledky  (Ctrl+Alt+E)  |  Ctrl+Alt+Shift+E pro CSV</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Další nástroje</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">Uložit výsledky jako CSV</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">Uložit výsledky jako HTML</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Exportováno: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Export selhal: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Zatím není co exportovat.</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">motiv</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">akcent</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Vygenerováno {0} &#183; {1} položek</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Obsah složky {0}.</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Vygenerováno programem {0}</sys:String>
 </ResourceDictionary>

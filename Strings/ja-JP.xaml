@@ -758,4 +758,20 @@
     <sys:String x:Key="Str_Details_ExtFile">{0} ファイル</sys:String>
     <sys:String x:Key="Str_Details_Dimensions">画像サイズ</sys:String>
     <sys:String x:Key="Str_Status_Selected">{0} 件を選択中</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">このフォルダーを保存  (Ctrl+D)</sys:String>
+    <sys:String x:Key="Str_TT_Recents">最近開いたフォルダー  (Alt+R)</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">最近のフォルダーはまだありません</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">履歴を消去</sys:String>
+    <sys:String x:Key="Str_Btn_Export">結果を書き出し  (Ctrl+Alt+E)  |  CSV は Ctrl+Alt+Shift+E</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">その他のツール</sys:String>
+    <sys:String x:Key="Str_Export_TitleCsv">結果を CSV として保存</sys:String>
+    <sys:String x:Key="Str_Export_TitleHtml">結果を HTML として保存</sys:String>
+    <sys:String x:Key="Str_Status_Exported">書き出しました: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">書き出しに失敗しました: {0}</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">書き出せるものがまだありません。</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">テーマ</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">アクセント</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">生成 {0} &#183; {1} 件</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} の一覧。</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">{0} で生成</sys:String>
 </ResourceDictionary>
