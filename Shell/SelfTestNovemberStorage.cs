@@ -40,6 +40,7 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "folder-continuous-events") await ContinuousFolderEvents(folder);
             else if (scenario == "folder-overflow") await FolderOverflow(folder);
             else if (scenario == "folder-linked-watch") await LinkedFolderWatch(folder);
+            else if (scenario == "folder-linked-spacing") await LinkedFolderSpacing(folder);
             else if (scenario == "album-video-drag-responsive") await VideoDragResponsive(folder, log);
             else if (scenario == "folder-linked-initial-arrival") await LinkedInitialArrival(folder);
             else if (scenario == "folder-network-backoff") await NetworkFolderBackoff(folder);
@@ -579,9 +580,11 @@ internal static class SelfTestNovemberStorage
     {
         public int Reads;
         public Action? AfterRead;
+        public int DelayMs;
         public IEnumerable<FileInfo> EnumerateFiles(DirectoryInfo directory, EnumerationOptions options)
         {
             Interlocked.Increment(ref Reads);
+            if (DelayMs > 0) Thread.Sleep(DelayMs);
             foreach (var file in directory.EnumerateFiles("*", options)) yield return file;
             Interlocked.Exchange(ref AfterRead, null)?.Invoke();
         }
@@ -640,6 +643,36 @@ internal static class SelfTestNovemberStorage
         await Task.Delay(11000);
         if (reader.Reads != reads) throw new InvalidOperationException("An idle linked local folder was recursively polled.");
         FolderCaptures.RemoveFolder(source);
+    }
+
+    /// <summary>A linked folder that is written to without a pause is rescanned at a steady pace (each scan here takes 300 ms, so the folder is dirty again as soon as one ends),
+    /// not back to back: scans start at least about two seconds apart.</summary>
+    private static async Task LinkedFolderSpacing(string folder)
+    {
+        Settings.UseFolder(folder);
+        string photos = Path.Combine(folder, "photos");
+        Directory.CreateDirectory(photos);
+        var reader = new CountingDirectoryReader { DelayMs = 300 };
+        FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"), reader);
+        string source = FolderCaptures.AddFolder(photos);
+        await FolderCaptures.RefreshFolderAsync(source);
+        await Task.Delay(500);
+        int before = reader.Reads;
+        var writes = Task.Run(async () =>
+        {
+            for (int n = 0; n < 120; n++)
+            {
+                File.WriteAllText(Path.Combine(photos, "incoming.txt"), n.ToString());
+                await Task.Delay(50);
+            }
+        });
+        await writes;
+        int scans = reader.Reads - before;
+        FolderCaptures.RemoveFolder(source);
+        if (scans < 1)
+            throw new InvalidOperationException("Continuous writes to a linked folder never caused a rescan.");
+        if (scans > 4)
+            throw new InvalidOperationException($"A continuously written linked folder was rescanned {scans} times in six seconds, back to back.");
     }
 
     private sealed class OverflowWatcher(string folder) : FileSystemWatcher(folder)

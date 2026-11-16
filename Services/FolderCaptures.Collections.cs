@@ -27,6 +27,8 @@ internal static partial class FolderCaptures
         internal Timer? Debounce;
         internal long ChangedAt;
         internal bool Dirty;
+        /// <summary>A change-driven rescan loop is running for this folder.</summary>
+        internal bool Refreshing;
         internal int PollSeconds = 30;
         public void Dispose() { Watcher?.Dispose(); Debounce?.Dispose(); }
     }
@@ -344,21 +346,48 @@ internal static partial class FolderCaptures
         }
     }
 
+    /// <summary>A folder that keeps changing while it is scanned is scanned again, but each scan
+    /// starts at least this long after the one before it, so a folder written to without a pause
+    /// is not read back to back. The first scan after a change is not delayed.</summary>
+    private const int LinkedRescanGapMs = 2000;
+
     private static async Task RefreshLinkedChangesAsync(LinkedFolder folder)
     {
+        // One loop per folder: changes that arrive while it runs only mark the folder dirty.
+        lock (LinkedGate)
+        {
+            if (folder.Refreshing) return;
+            folder.Refreshing = true;
+        }
         try
         {
             do
             {
+                long started = Environment.TickCount64;
                 await RefreshFolderAsync(folder.Source).ConfigureAwait(false);
-                lock (LinkedGate)
-                {
-                    if (!Linked.TryGetValue(folder.Source, out var current) || !ReferenceEquals(current, folder) || !folder.Dirty)
-                    { folder.ChangedAt = 0; return; }
-                }
+                if (!StillDirty(folder)) return;
+                long wait = LinkedRescanGapMs - (Environment.TickCount64 - started);
+                if (wait > 0) await Task.Delay((int)wait).ConfigureAwait(false);
             } while (true);
         }
-        catch (Exception error) { System.Diagnostics.Trace.TraceWarning("Linked folder refresh failed: {0}", error.Message); }
+        catch (Exception error)
+        {
+            lock (LinkedGate) { folder.Refreshing = false; folder.ChangedAt = 0; }
+            System.Diagnostics.Trace.TraceWarning("Linked folder refresh failed: {0}", error.Message);
+        }
+    }
+
+    /// <summary>True while the folder changed since its scan began. Otherwise the loop ends, in the
+    /// same step that a later change would see, so no change is left without a scan.</summary>
+    private static bool StillDirty(LinkedFolder folder)
+    {
+        lock (LinkedGate)
+        {
+            if (Linked.TryGetValue(folder.Source, out var current) && ReferenceEquals(current, folder) && folder.Dirty) return true;
+            folder.ChangedAt = 0;
+            folder.Refreshing = false;
+            return false;
+        }
     }
 
     private static void ScanLinkedFolder(LinkedFolder folder)
