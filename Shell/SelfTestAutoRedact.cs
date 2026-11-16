@@ -108,6 +108,44 @@ internal static class SelfTestAutoRedact
         }
     }
 
+    /// <summary>Auto redact reads the picture that will be saved: a filled mark drawn over a white
+    /// capture must reach recognition, and text under an existing redaction must not.</summary>
+    private static async Task MarksAreReadChecks(MainWindow window, List<string> report)
+    {
+        var real = window.ReadWordsAsync;
+        var kinds = RedactSettings.Kinds;
+        RedactSettings.Kinds = RedactKinds.Email;
+        try
+        {
+            var white = new WriteableBitmap(400, 100, 96, 96, PixelFormats.Bgra32, null);
+            var fill = new byte[400 * 100 * 4];
+            Array.Fill(fill, (byte)0xFF);
+            white.WritePixels(new Int32Rect(0, 0, 400, 100), fill, 400 * 4, 0);
+            white.Freeze();
+            var doc = new EditorDocument(white);
+            doc.Add(new ShapeAnnotation(ShapeKind.Rectangle, new Point(50, 20), new Point(150, 60), Colors.Black, 1, true));
+            App.Instance.SetDocument(doc);
+            await Task.Delay(50);
+            BitmapSource? seen = null;
+            window.ReadWordsAsync = picture => { seen = picture; return Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([]); };
+            await window.ScanForRedactionAsync(doc);
+            if (seen == null) throw new InvalidOperationException("marks are read: recognition was not called.");
+            var bgra = new FormatConvertedBitmap(seen, PixelFormats.Bgra32, null, 0);
+            var px = new byte[4];
+            bgra.CopyPixels(new Int32Rect(100, 40, 1, 1), px, 4, 0);
+            if (px[0] > 64 || px[1] > 64 || px[2] > 64)
+                throw new InvalidOperationException($"marks are read: recognition saw {px[2]},{px[1]},{px[0]} under a black filled mark, so it read the capture without its marks.");
+            if (seen.PixelWidth != 400 || seen.PixelHeight != 100)
+                throw new InvalidOperationException($"marks are read: recognition saw {seen.PixelWidth}x{seen.PixelHeight}, not the 400x100 picture.");
+            report.Add("marks are read: recognition sees marks drawn over the capture PASS");
+        }
+        finally
+        {
+            window.ReadWordsAsync = real;
+            RedactSettings.Kinds = kinds;
+        }
+    }
+
     private static async Task RunAsync(string folder)
     {
         int code = 1;
@@ -142,6 +180,7 @@ internal static class SelfTestAutoRedact
             report.Add("toolbar: Auto redact shows beside Redact with a 1.1.1 saved layout PASS");
 
             await StaleScanChecks(window, report);
+            await MarksAreReadChecks(window, report);
             if (!canRecognize)
             {
                 report.Add("no recognition language installed: real recognition SKIPPED");

@@ -38,8 +38,9 @@ public partial class MainWindow
         for (int attempt = 0; attempt < RedactionScanAttempts; attempt++)
         {
             var state = doc.State;
-            // The picture as it stands, so text under marks already drawn is not read twice.
-            var lines = await ReadWordsAsync(state.Image);
+            // The picture as it will be saved: inserted pictures and text marks are read, and text
+            // already under a redaction is not read twice.
+            var lines = await ReadWordsAsync(EditorDocument.Render(state));
             if (lines == null) return null;
             if (!ReferenceEquals(doc, _doc)) return 0;
             if (!ReferenceEquals(state, doc.State)) continue;

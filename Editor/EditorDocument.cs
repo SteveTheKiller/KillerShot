@@ -136,9 +136,11 @@ public sealed partial class EditorDocument
 
     /// <summary>The finished picture at exactly the capture's pixel size. With no marks this is
     /// the captured bitmap itself, so an unedited capture is exported bit for bit.</summary>
-    public BitmapSource Render()
+    public BitmapSource Render() => Render(State);
+
+    /// <summary>The finished picture of one state, as <see cref="Render()"/> draws the current one.</summary>
+    public static BitmapSource Render(EditorState st)
     {
-        var st = State;
         if (st.Items.IsEmpty) return st.Image;
         int w = st.Image.PixelWidth, h = st.Image.PixelHeight;
         var visual = new DrawingVisual();
