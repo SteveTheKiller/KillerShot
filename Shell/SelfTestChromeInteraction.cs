@@ -76,7 +76,7 @@ internal static class SelfTestChromeInteraction
                     report.Add($"{theme} bottom inset={inset} hit={hit}");
                     if (hit != 15) failures.Add($"{theme}: bottom {inset}px must resize (HTBOTTOM), got {hit}.");
                 }
-                var viewButton = Visuals((DependencyObject)window.FindName("FooterBar")).OfType<Button>()
+                var viewButton = Visuals((DependencyObject)window.FindName("FooterBar")).OfType<ButtonBase>() // the view controls are radio buttons
                     .First(b => b.IsVisible && b.ActualWidth > 0 && b.ActualHeight > 0);
                 Point center = viewButton.PointToScreen(new Point(viewButton.ActualWidth / 2, viewButton.ActualHeight / 2));
                 int client = Hit(hwnd, (int)center.X, (int)center.Y);
