@@ -46,6 +46,7 @@ internal static class SelfTestStorageSafety
             else if (scenario == "mutations") MutationRollback(log);
             else if (scenario == "retention") await RetentionRollback(log);
             else if (scenario == "collection-color") CollectionColorReuse(log);
+            else if (scenario == "recording-retention") await RecordingRetention(dir, log);
             else if (scenario == "redacted-text") await RedactedText(log);
             else throw new ArgumentException("Unknown storage scenario.");
             log.AppendLine("result=ok");
@@ -54,6 +55,88 @@ internal static class SelfTestStorageSafety
         finally { CaptureLibrary.Close(); }
         File.WriteAllText(Path.Combine(dir, "report.txt"), log.ToString());
         Application.Current.Shutdown(exit);
+    }
+
+    private static readonly byte[] TinyGif = Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+
+    /// <summary>Moving a recording into an album whose history limit would drop it at once must
+    /// never end with both copies gone. Logs PASS:/FAIL: per assertion and a count footer.</summary>
+    private static async Task RecordingRetention(string dir, StringBuilder log)
+    {
+        int assertions = 0, failures = 0;
+        void Check(bool ok, string what)
+        {
+            assertions++;
+            if (!ok) failures++;
+            log.AppendLine((ok ? "PASS: " : "FAIL: ") + what);
+        }
+        VideoCaptures.UsePlaybackFolder(Path.Combine(dir, "playback"));
+        string clips = Directory.CreateDirectory(Path.Combine(dir, "clips")).FullName;
+
+        // Old GIF, days:1: the library cannot keep it, so the move must refuse and keep the file.
+        CaptureLibrary.Keep = "days:1";
+        string old = Path.Combine(clips, "old.gif");
+        File.WriteAllBytes(old, TinyGif);
+        long oldId = 0;
+        Exception? refused = null;
+        try { oldId = (await RecordingStorage.MoveToLibraryAsync(old, DateTime.Now.AddDays(-10))).Id; }
+        catch (Exception error) { refused = error; }
+        bool inAlbum = oldId != 0 && CaptureLibrary.Items().Any(i => i.Id == oldId);
+        bool sourceKept = File.Exists(old) && File.ReadAllBytes(old).AsSpan().SequenceEqual(TinyGif);
+        Check(inAlbum || sourceKept, "days_retention_old_gif_leaves_at_least_one_copy");
+        Check(refused != null ? sourceKept : inAlbum, "days_retention_old_gif_status_matches_outcome");
+        Check(!inAlbum || RoundTrips(oldId, Path.Combine(dir, "old-export.gif"), TinyGif), "days_retention_old_gif_album_copy_exports_same_bytes");
+
+        // count:1 with a newer capture already in the album: the older recording ranks past the limit.
+        CaptureLibrary.Keep = "all";
+        long newerId = CaptureLibrary.AddNow(Pixel(), DateTime.Now, "region", "Newer capture", null);
+        CaptureLibrary.Keep = "count:1";
+        string counted = Path.Combine(clips, "counted.gif");
+        File.WriteAllBytes(counted, TinyGif);
+        long countedId = 0;
+        Exception? countRefused = null;
+        try { countedId = (await RecordingStorage.MoveToLibraryAsync(counted, DateTime.Now.AddDays(-3))).Id; }
+        catch (Exception error) { countRefused = error; }
+        bool countInAlbum = countedId != 0 && CaptureLibrary.Items().Any(i => i.Id == countedId);
+        bool countSourceKept = File.Exists(counted) && File.ReadAllBytes(counted).AsSpan().SequenceEqual(TinyGif);
+        Check(countInAlbum || countSourceKept, "count_retention_older_recording_leaves_at_least_one_copy");
+        Check(countRefused != null ? countSourceKept : countInAlbum, "count_retention_older_recording_status_matches_outcome");
+        Check(CaptureLibrary.Items().Any(i => i.Id == newerId), "count_retention_newer_capture_survives");
+
+        // An ordinary recent recording still moves in and its plain file goes.
+        CaptureLibrary.Keep = "all";
+        string recent = Path.Combine(clips, "recent.gif");
+        File.WriteAllBytes(recent, TinyGif);
+        long recentId = 0;
+        string? recentWarning = null;
+        try { var stored = await RecordingStorage.MoveToLibraryAsync(recent, DateTime.Now); recentId = stored.Id; recentWarning = stored.Warning(recent); }
+        catch (Exception) { }
+        Check(recentId != 0 && CaptureLibrary.Items().Any(i => i.Id == recentId), "recent_recording_is_in_album");
+        Check(!File.Exists(recent) && recentWarning == null, "recent_recording_source_removed_without_warning");
+        Check(recentId != 0 && RoundTrips(recentId, Path.Combine(dir, "recent-export.gif"), TinyGif), "recent_recording_album_copy_exports_same_bytes");
+
+        // A source that cannot be deleted after the commit keeps the committed copy and the warning.
+        string locked = Path.Combine(clips, "locked.gif");
+        File.WriteAllBytes(locked, TinyGif);
+        long lockedId = 0;
+        string? lockedWarning = null;
+        using (new FileStream(locked, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            try { var stored = await RecordingStorage.MoveToLibraryAsync(locked, DateTime.Now); lockedId = stored.Id; lockedWarning = stored.Warning(locked); }
+            catch (Exception) { }
+        }
+        Check(lockedId != 0 && CaptureLibrary.Items().Any(i => i.Id == lockedId), "locked_source_recording_stays_committed_in_album");
+        Check(File.Exists(locked) && lockedWarning != null, "locked_source_recording_keeps_cleanup_warning");
+        Check(CaptureLibrary.Items().Count(i => i.Window == "locked") == 1, "locked_source_recording_is_not_imported_twice");
+
+        log.AppendLine($"assertions={assertions} failures={failures}");
+        if (failures > 0) throw new InvalidOperationException($"{failures} of {assertions} recording retention assertions failed.");
+    }
+
+    private static bool RoundTrips(long id, string destination, byte[] expected)
+    {
+        try { CaptureLibrary.ExportVideo(id, destination); return File.ReadAllBytes(destination).AsSpan().SequenceEqual(expected); }
+        catch (Exception) { return false; }
     }
 
     private static void CollectionColorReuse(StringBuilder log)

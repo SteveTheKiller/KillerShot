@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Salvata nella libreria crittografata.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Salvato nella libreria crittografata, ma non è stato possibile rimuovere il file originale non crittografato: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">È troppo grande per la libreria, quindi è rimasta in {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Il limite di cronologia dell'album la rimuoverebbe subito, quindi è rimasta in {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Non è potuta entrare nella libreria, quindi è rimasta in {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">La libreria è bloccata.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Impossibile riprodurre la registrazione</sys:String>

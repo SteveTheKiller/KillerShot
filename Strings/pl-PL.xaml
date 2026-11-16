@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Zapisano w zaszyfrowanej bibliotece.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Zapisano w zaszyfrowanej bibliotece, ale nie można usunąć oryginalnego niezaszyfrowanego pliku: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Jest za duże dla biblioteki, więc zostało w folderze {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Limit historii albumu od razu by je usunął, więc zostało w folderze {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nie udało się dodać go do biblioteki, więc zostało w folderze {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteka jest zablokowana.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Nie udało się odtworzyć nagrania</sys:String>

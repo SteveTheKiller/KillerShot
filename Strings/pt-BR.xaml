@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Salva na biblioteca criptografada.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Salvo na biblioteca criptografada, mas não foi possível remover o arquivo original não criptografado: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Ela é grande demais para a biblioteca, então ficou em {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">O limite de histórico do álbum a removeria na hora, então ela ficou em {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Não foi possível colocá-la na biblioteca, então ficou em {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">A biblioteca está bloqueada.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Não foi possível reproduzir a gravação</sys:String>

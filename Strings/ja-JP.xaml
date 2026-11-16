@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">暗号化されたライブラリに保存しました。</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">暗号化されたライブラリに保存しましたが、暗号化されていない元のファイルを削除できませんでした: {0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">ライブラリには大きすぎるため、{0} に残りました。</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">アルバムの履歴の上限ですぐに削除されるため、{0} に残りました。</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">ライブラリに入れられなかったため、{0} に残りました。{1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">ライブラリはロックされています。</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">録画を再生できませんでした</sys:String>

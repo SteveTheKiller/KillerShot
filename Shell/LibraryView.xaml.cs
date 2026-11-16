@@ -1410,6 +1410,7 @@ namespace KillerShot.Shell
                 StatusMessage?.Invoke(result.Warning(path) ?? Loc("Str_Rec_SavedToLibrary"));
             }
             catch (VideoTooLargeException) { StatusMessage?.Invoke(string.Format(Loc("Str_Rec_TooLarge"), RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(path)!))); }
+            catch (RecordingNotRetainedException) { StatusMessage?.Invoke(string.Format(Loc("Str_Rec_NotRetained"), RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(path)!))); }
             catch (Exception ex) { StatusMessage?.Invoke(ex.Message); }
         }
 

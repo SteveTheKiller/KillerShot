@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Lagret i det krypterte biblioteket.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Lagret i det krypterte biblioteket, men den opprinnelige ukrypterte filen kunne ikke fjernes: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Det er for stort for biblioteket, så det ble liggende i {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Albumets historikkgrense ville fjernet det med en gang, så det ble liggende i {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Det kunne ikke legges i biblioteket, så det ble liggende i {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Biblioteket er låst.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Kunne ikke spille av opptaket</sys:String>

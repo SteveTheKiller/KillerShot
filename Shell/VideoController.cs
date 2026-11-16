@@ -266,6 +266,7 @@ internal sealed class VideoController
                 kept = stored.Warning(published);
             }
             catch (VideoTooLargeException) { kept = string.Format(Loc("Str_Rec_TooLarge"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!)); }
+            catch (RecordingNotRetainedException) { kept = string.Format(Loc("Str_Rec_NotRetained"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!)); }
             catch (Exception ex) { kept = string.Format(Loc("Str_Rec_KeptInFolder"), Controls.RecordingStorageDialog.ShortFolder(Path.GetDirectoryName(published)!), ex.Message); }
         }
         if (stored == null && VideoSettings.CopyFile) await CopyFileToClipboardAsync(published, _showWarning);

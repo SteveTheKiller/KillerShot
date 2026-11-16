@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">已保存到加密的截图库。</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">已保存到加密库，但无法删除未加密的原始文件：{0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">它太大，截图库放不下，所以留在了 {0}。</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">相册的历史记录上限会立即将其删除，所以它留在了 {0}。</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">它无法放入截图库，所以留在了 {0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">截图库已锁定。</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">无法播放录像</sys:String>

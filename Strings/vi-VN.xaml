@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Đã lưu vào thư viện được mã hóa.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Đã lưu vào thư viện được mã hóa, nhưng không thể xóa tệp gốc chưa được mã hóa: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Nó quá lớn so với thư viện, nên vẫn nằm trong {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Giới hạn lịch sử của album sẽ xóa nó ngay lập tức, nên nó vẫn nằm trong {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Không đưa vào thư viện được, nên nó vẫn nằm trong {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Thư viện đang bị khóa.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Không phát được bản quay</sys:String>

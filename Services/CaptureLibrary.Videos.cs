@@ -6,6 +6,10 @@ using Microsoft.Data.Sqlite;
 
 namespace KillerShot.Services;
 
+/// <summary>The recording was stored but the album's history limit dropped it at once, so the file stays where it was.</summary>
+internal sealed class RecordingNotRetainedException()
+    : IOException("The album's history limit removed this recording as soon as it was stored, so the original file was kept.");
+
 /// <summary>A recording too large for one SQLite value. It stays in its folder.</summary>
 internal sealed class VideoTooLargeException(long size, long limit)
     : IOException($"The recording is {size} bytes and the library takes at most {limit}.")
@@ -166,6 +170,23 @@ internal static partial class CaptureLibrary
         catch (Exception error) { ReportWriteFailure(error); }
         RaiseChanged();
         return id;
+    }
+
+    /// <summary>Runs <paramref name="action"/> only if the capture is still in the open album of
+    /// <paramref name="session"/>, holding the album gate so history-limit pruning cannot remove
+    /// it between the check and the action. False, without running it, when it is gone.</summary>
+    public static bool RunWhileRetained(long id, long session, Action action)
+    {
+        lock (_gate)
+        {
+            if (_db == null || _session != session) return false;
+            using var cmd = _db.CreateCommand();
+            cmd.CommandText = "SELECT 1 FROM captures WHERE id = $id";
+            cmd.Parameters.AddWithValue("$id", id);
+            if (cmd.ExecuteScalar() == null) return false;
+            action();
+            return true;
+        }
     }
 
     /// <summary>How much of a recording one import transaction writes.</summary>

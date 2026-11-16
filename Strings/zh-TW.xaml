@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">已儲存到加密的擷取庫。</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">已儲存至加密資料庫，但無法刪除未加密的原始檔案：{0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">它太大，擷取庫放不下，所以留在了 {0}。</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">相簿的歷史記錄上限會立即將其移除，所以它留在了 {0}。</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">它無法放入擷取庫，所以留在了 {0}。{1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">擷取庫已鎖定。</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">無法播放錄影</sys:String>

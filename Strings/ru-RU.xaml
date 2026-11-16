@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Сохранено в зашифрованной библиотеке.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Сохранено в зашифрованной библиотеке, но исходный незашифрованный файл не удалось удалить: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Файл слишком велик для библиотеки, поэтому он остался в папке {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Ограничение истории альбома сразу удалило бы запись, поэтому она осталась в папке {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Не удалось поместить его в библиотеку, поэтому он остался в папке {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Библиотека заблокирована.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Не удалось воспроизвести запись</sys:String>

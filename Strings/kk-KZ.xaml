@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Шифрланған кітапханаға сақталды.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Шифрланған кітапханаға сақталды, бірақ шифрланбаған бастапқы файлды жою мүмкін болмады: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Кітапхана үшін тым үлкен, сондықтан {0} ішінде қалды.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Альбом тарихының шегі оны бірден жояр еді, сондықтан {0} ішінде қалды.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Кітапханаға түспеді, сондықтан {0} ішінде қалды. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Кітапхана құлыпталған.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Жазбаны ойнату мүмкін болмады</sys:String>

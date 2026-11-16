@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Şifrelenmiş kitaplığa kaydedildi.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Şifreli kitaplığa kaydedildi, ancak şifrelenmemiş özgün dosya kaldırılamadı: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Kitaplık için çok büyük, bu yüzden {0} içinde kaldı.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Albümün geçmiş sınırı onu hemen kaldıracaktı, bu yüzden {0} içinde kaldı.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Kitaplığa konamadı, bu yüzden {0} içinde kaldı. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Kitaplık kilitli.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Kayıt oynatılamadı</sys:String>

@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Uloženo do šifrované knihovny.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Uloženo do šifrované knihovny, ale původní nešifrovaný soubor se nepodařilo odstranit: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Je příliš velké pro knihovnu, proto zůstalo ve složce {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Limit historie alba by ho hned odstranil, proto zůstalo ve složce {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nepodařilo se ho vložit do knihovny, proto zůstalo ve složce {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Knihovna je zamčená.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Nahrávku se nepodařilo přehrát</sys:String>

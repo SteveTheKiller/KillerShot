@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Enregistré dans la bibliothèque chiffrée.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Enregistré dans la bibliothèque chiffrée, mais le fichier original non chiffré n’a pas pu être supprimé : {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Il est trop volumineux pour la bibliothèque, il est donc resté dans {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">La limite d'historique de l'album le supprimerait aussitôt, il est donc resté dans {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Il n'a pas pu aller dans la bibliothèque, il est donc resté dans {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">La bibliothèque est verrouillée.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Impossible de lire l'enregistrement</sys:String>

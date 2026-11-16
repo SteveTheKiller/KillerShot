@@ -434,6 +434,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Shranjeno v šifrirano knjižnico.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Shranjeno v šifrirano knjižnico, vendar izvirne nešifrirane datoteke ni bilo mogoče odstraniti: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Je prevelik za knjižnico, zato je ostal v {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Omejitev zgodovine albuma bi ga takoj odstranila, zato je ostal v {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Ni ga bilo mogoče dati v knjižnico, zato je ostal v {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Knjižnica je zaklenjena.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Videoposnetka ni bilo mogoče predvajati</sys:String>

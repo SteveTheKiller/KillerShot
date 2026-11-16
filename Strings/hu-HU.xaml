@@ -436,6 +436,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">Elmentve a titkosított könyvtárba.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">Mentve a titkosított könyvtárba, de az eredeti, titkosítatlan fájlt nem sikerült eltávolítani: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Túl nagy a könyvtárhoz, ezért itt maradt: {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Az album előzménykorlátja azonnal eltávolítaná, ezért itt maradt: {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Nem került be a könyvtárba, ezért itt maradt: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">A könyvtár zárolva van.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">A felvételt nem sikerült lejátszani</sys:String>

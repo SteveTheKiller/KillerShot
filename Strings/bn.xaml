@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">এনক্রিপ্টেড লাইব্রেরিতে সেভ হয়েছে।</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">এনক্রিপ্ট করা লাইব্রেরিতে সংরক্ষিত হয়েছে, কিন্তু মূল এনক্রিপ্ট না করা ফাইলটি মুছে ফেলা যায়নি: {0}। {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">লাইব্রেরির জন্য এটি খুব বড়, তাই এটি {0}-এ রয়ে গেছে।</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">অ্যালবামের ইতিহাসের সীমা এটি সঙ্গে সঙ্গে সরিয়ে দিত, তাই এটি {0}-এ রয়ে গেছে।</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">এটি লাইব্রেরিতে যেতে পারেনি, তাই {0}-এ রয়ে গেছে। {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">লাইব্রেরি লক করা আছে।</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">রেকর্ডিং চালানো যায়নি</sys:String>

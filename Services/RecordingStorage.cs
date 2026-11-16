@@ -31,8 +31,8 @@ internal static class RecordingStorage
     }
 
     /// <summary>Moves a finished recording into the encrypted library and deletes the plain file
-    /// once the copy is committed. Throws, leaving the file where it was, when the library is
-    /// locked, the clip is over MaxVideoBytes, or the write fails. A committed copy and any
+    /// once the copy is committed and still retained. Throws, leaving the file where it was, when the library is
+    /// locked, the clip is over MaxVideoBytes, the write fails, or the history limit drops it at once. A committed copy and any
     /// failure to remove its original are returned together, so cleanup never retries the import.</summary>
     public static Task<RecordingStorageResult> MoveToLibraryAsync(string path, DateTime taken)
     {
@@ -43,8 +43,14 @@ internal static class RecordingStorage
             long id = CaptureLibrary.AddVideo(path, taken, Path.GetFileNameWithoutExtension(path),
                 expectedSession: session, recordingsCollection: true);
             Exception? cleanupError = null;
-            try { File.Delete(path); }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { cleanupError = error; }
+            // The plain file goes only while the album still holds the clip, checked under the gate
+            // pruning takes, so a history limit that dropped it leaves the original in place.
+            bool retained = CaptureLibrary.RunWhileRetained(id, session, () =>
+            {
+                try { File.Delete(path); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException) { cleanupError = error; }
+            });
+            if (!retained) throw new RecordingNotRetainedException();
             return new RecordingStorageResult(id, session, cleanupError);
         });
     }

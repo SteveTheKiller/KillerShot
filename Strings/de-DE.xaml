@@ -437,6 +437,7 @@
     <sys:String x:Key="Str_Rec_SavedToLibrary">In der verschlüsselten Bibliothek gespeichert.</sys:String>
     <sys:String x:Key="Str_Rec_PlaintextRetained">In der verschlüsselten Bibliothek gespeichert, aber die unverschlüsselte Originaldatei konnte nicht entfernt werden: {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_TooLarge">Die Aufnahme ist zu groß für die Bibliothek und blieb deshalb in {0}.</sys:String>
+    <sys:String x:Key="Str_Rec_NotRetained">Das Verlaufslimit des Albums würde die Aufnahme sofort entfernen, deshalb blieb sie in {0}.</sys:String>
     <sys:String x:Key="Str_Rec_KeptInFolder">Sie konnte nicht in die Bibliothek verschoben werden und blieb deshalb in {0}. {1}</sys:String>
     <sys:String x:Key="Str_Rec_LibraryLocked">Die Bibliothek ist gesperrt.</sys:String>
     <sys:String x:Key="Str_Rec_PlayFailed">Die Aufnahme konnte nicht abgespielt werden</sys:String>
