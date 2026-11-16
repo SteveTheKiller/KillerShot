@@ -21,6 +21,11 @@ internal static class KillerPdfHandoff
     /// <summary>Test seam: replaces Process.Start.</summary>
     internal static Action<ProcessStartInfo>? StartOverride;
 
+    /// <summary>Test seam for the decrypting export: called as ("before-load", file) once the
+    /// album session is checked and before that picture is read, and as ("after-write", file)
+    /// once the plaintext file is on disk.</summary>
+    internal static Action<string, string>? ExportHook;
+
     /// <summary>The KillerPDF exe, per user first, or null when it is not installed.</summary>
     internal static string? FindKillerPdf()
     {
@@ -66,9 +71,14 @@ internal static class KillerPdfHandoff
         string? folder;
         try { folder = await Task.Run(() => DecryptCollection(collectionId, session)); }
         catch (InvalidOperationException) { return Result.AlbumChanged; }
+        // Retirement can delete the folder under a running export, so a write that finds it gone
+        // is the album changing, not a crash.
+        catch (Exception) { return CaptureLibrary.Session != session ? Result.AlbumChanged : Result.Failed; }
         if (folder == null) return Result.NoImages;
-        if (CaptureLibrary.Session != session) { DeleteFolder(folder); return Result.AlbumChanged; }
-        return MakePdf(folder);
+        if (CaptureLibrary.Session != session) { Discard(folder); return Result.AlbumChanged; }
+        var result = MakePdf(folder);
+        if (result != Result.Started) Discard(folder);
+        return result;
     }
 
     private static string? DecryptCollection(long collectionId, long session)
@@ -80,14 +90,25 @@ internal static class KillerPdfHandoff
         string folder = Path.Combine(VideoCaptures.PlaybackFolder, "PDF " + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(folder);
         lock (CopiesGate) Copies.Add((session, folder));
-        int width = Math.Max(4, items.Count.ToString(System.Globalization.CultureInfo.InvariantCulture).Length);
-        for (int i = 0; i < items.Count; i++)
+        try
         {
-            if (CaptureLibrary.Session != session) throw new InvalidOperationException();
-            File.WriteAllBytes(Path.Combine(folder, (i + 1).ToString("D" + width, System.Globalization.CultureInfo.InvariantCulture) + ".png"),
-                CaptureLibrary.LoadOutputPng(items[i].Id));
+            int width = Math.Max(4, items.Count.ToString(System.Globalization.CultureInfo.InvariantCulture).Length);
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (CaptureLibrary.Session != session) throw new InvalidOperationException();
+                string file = Path.Combine(folder, (i + 1).ToString("D" + width, System.Globalization.CultureInfo.InvariantCulture) + ".png");
+                ExportHook?.Invoke("before-load", file);
+                File.WriteAllBytes(file, CaptureLibrary.LoadOutputPng(items[i]));
+                ExportHook?.Invoke("after-write", file);
+            }
+            return folder;
         }
-        return folder;
+        catch (Exception)
+        {
+            // A retired album, a failed read or a failed write leaves no half-made plaintext behind.
+            Discard(folder);
+            throw;
+        }
     }
 
     /// <summary>Deletes the decrypted Make PDF folders of one album session.</summary>
@@ -99,24 +120,76 @@ internal static class KillerPdfHandoff
             gone = Copies.Where(c => c.Session == session).Select(c => c.Folder).ToList();
             Copies.RemoveAll(c => c.Session == session);
         }
-        foreach (string folder in gone) DeleteFolder(folder);
+        foreach (string folder in gone) DeleteOrRetry(folder);
+    }
+
+    /// <summary>Drops one export folder from tracking and deletes it, retrying if it is held.</summary>
+    private static void Discard(string folder)
+    {
+        lock (CopiesGate) Copies.RemoveAll(c => string.Equals(c.Folder, folder, StringComparison.OrdinalIgnoreCase));
+        DeleteOrRetry(folder);
     }
 
     /// <summary>Deletes every decrypted Make PDF folder, including ones left by an earlier run.</summary>
     internal static void WipeCopies()
     {
-        lock (CopiesGate) Copies.Clear();
+        lock (CopiesGate)
+        {
+            Copies.Clear();
+            PendingFolders.Clear();
+            StopRetry();
+        }
         try
         {
             if (Directory.Exists(VideoCaptures.PlaybackFolder))
-                foreach (string folder in Directory.EnumerateDirectories(VideoCaptures.PlaybackFolder, "PDF *")) DeleteFolder(folder);
+                foreach (string folder in Directory.EnumerateDirectories(VideoCaptures.PlaybackFolder, "PDF *")) TryDeleteFolder(folder);
         }
         catch (Exception) { }
     }
 
-    private static void DeleteFolder(string folder)
+    // Folders whose delete failed because a consumer still held a picture. They are no longer
+    // handed to anyone; the timer keeps trying until each is gone or the next wipe takes them.
+    private static readonly HashSet<string> PendingFolders = new(StringComparer.OrdinalIgnoreCase);
+    private static Timer? _retry;
+
+    private static void DeleteOrRetry(string folder)
     {
-        try { Directory.Delete(folder, true); } catch (Exception) { }
+        if (TryDeleteFolder(folder)) return;
+        lock (CopiesGate)
+        {
+            PendingFolders.Add(folder);
+            _retry ??= new Timer(_ => RetryPending(), null, VideoCaptures.PlaybackRetryInterval, VideoCaptures.PlaybackRetryInterval);
+        }
+    }
+
+    private static void RetryPending()
+    {
+        lock (CopiesGate)
+        {
+            PendingFolders.RemoveWhere(TryDeleteFolder);
+            if (PendingFolders.Count == 0) StopRetry();
+        }
+    }
+
+    private static void StopRetry()
+    {
+        _retry?.Dispose();
+        _retry = null;
+    }
+
+    /// <summary>Only a Make PDF folder directly inside the playback folder is ours to delete.
+    /// True once the folder is gone.</summary>
+    private static bool TryDeleteFolder(string folder)
+    {
+        try
+        {
+            string parent = Path.GetFullPath(Path.GetDirectoryName(Path.GetFullPath(folder)) ?? "");
+            if (!string.Equals(parent, Path.GetFullPath(VideoCaptures.PlaybackFolder), StringComparison.OrdinalIgnoreCase)
+                || !Path.GetFileName(folder).StartsWith("PDF ", StringComparison.Ordinal)) return true;
+            if (Directory.Exists(folder)) Directory.Delete(folder, true);
+        }
+        catch (Exception) { }
+        return !Directory.Exists(folder);
     }
 
     /// <summary>The string key that explains a failed handoff, or null when it started.</summary>

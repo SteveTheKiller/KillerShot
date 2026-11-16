@@ -11,7 +11,7 @@ namespace KillerShot.Shell;
 /// folder's own pictures go over as bare names with the folder as the working directory, other
 /// files and subfolders stay out, and empty or oversized folders get their message. Opens no window.
 /// </summary>
-internal static class SelfTestMakePdf
+internal static partial class SelfTestMakePdf
 {
     internal static bool TryRun(string[] args)
     {
@@ -94,12 +94,16 @@ internal static class SelfTestMakePdf
             Directory.CreateDirectory(Path.Combine(folder, "playback", "PDF leftover"));
             VideoCaptures.WipePlayback();
             Check(!Directory.Exists(Path.Combine(folder, "playback", "PDF leftover")), "exit wipe deletes leftover copies");
+            await RetirementAsync(folder, Check, report);
+            await SameIdRaceAsync(folder, Check, report, hold: false);
+            await SameIdRaceAsync(folder, Check, report, hold: true);
         }
         catch (Exception error) { failures++; report.Add(error.ToString()); }
         finally
         {
             KillerPdfHandoff.FindOverride = null;
             KillerPdfHandoff.StartOverride = null;
+            KillerPdfHandoff.ExportHook = null;
         }
         report.Add(failures == 0 ? "result=ok" : $"result=error failures={failures}");
         Directory.CreateDirectory(folder);
