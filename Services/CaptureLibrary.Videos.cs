@@ -120,18 +120,27 @@ internal static partial class CaptureLibrary
                     long written = 0;
                     while (written < size)
                     {
-                        int want = (int)Math.Min(buffer.Length, size - written);
-                        int read = source.ReadAtLeast(buffer.AsSpan(0, want), want, throwOnEndOfStream: true);
+                        // Reaching an offset in a blob walks every overflow page before it, so a
+                        // piece costs time in proportion to what is already stored. Pieces that
+                        // grow with the stored length keep the whole import linear; the cap keeps
+                        // any one write transaction short.
+                        long end = written + Math.Min(size - written, Math.Clamp(written, VideoChunkBytes, VideoPieceMaxBytes));
                         using (var piece = album.BeginTransaction())
                         {
                             using (var blob = new SqliteBlob(album, "capture_videos", "data", id))
                             {
                                 blob.Position = written;
-                                blob.Write(buffer, 0, read);
+                                for (long at = written; at < end;)
+                                {
+                                    int want = (int)Math.Min(buffer.Length, end - at);
+                                    int read = source.ReadAtLeast(buffer.AsSpan(0, want), want, throwOnEndOfStream: true);
+                                    blob.Write(buffer, 0, read);
+                                    at += read;
+                                }
                             }
                             piece.Commit();
                         }
-                        written += read;
+                        written = end;
                         VideoChunkWrittenForSelfTest?.Invoke(written);
                     }
                 }
@@ -191,6 +200,9 @@ internal static partial class CaptureLibrary
 
     /// <summary>How much of a recording one import transaction writes.</summary>
     private const int VideoChunkBytes = 4 << 20;
+
+    /// <summary>The most one import transaction writes once the clip is large.</summary>
+    private const int VideoPieceMaxBytes = 64 << 20;
 
     private static void DeleteVideoRow(SqliteConnection album, long id)
     {
