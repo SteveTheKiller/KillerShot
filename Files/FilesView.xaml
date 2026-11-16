@@ -1,4 +1,4 @@
-<UserControl x:Class="KillerShot.Files.FilesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:KillerShot.Controls" xmlns:files="clr-namespace:KillerShot.Files" xmlns:shellns="clr-namespace:KillerShot.Files" xmlns:models="clr-namespace:KillerShot.Files" UseLayoutRounding="True">
+<UserControl x:Class="KillerShot.Files.FilesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:KillerShot.Controls" xmlns:files="clr-namespace:KillerShot.Files" xmlns:shellns="clr-namespace:KillerShot.Files" xmlns:models="clr-namespace:KillerShot.Files" xmlns:theme="clr-namespace:KillerFamily.Theming" UseLayoutRounding="True">
     <UserControl.Resources>
         <Style x:Key="PaneViewButton" TargetType="Button" BasedOn="{StaticResource ViewToggleBtn}">
             <Setter Property="FontSize" Value="16" />
@@ -120,7 +120,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="DetailsEmptyText" Grid.Column="0" Text="{DynamicResource Str_Details_Empty}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center" Visibility="Collapsed" />
                             <StackPanel x:Name="DetailsFieldsGrid" Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock x:Name="DetailsNameText" Margin="0,0,0,9" FontFamily="{DynamicResource WordmarkAccentFont}" FontSize="20" FontWeight="Normal" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                <TextBlock x:Name="DetailsNameText" theme:Bevel.Enabled="True" Margin="0,0,0,9" FontFamily="{DynamicResource WordmarkAccentFont}" FontSize="20" FontWeight="Normal" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
                                 <Grid Margin="0,0,0,3">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                     <TextBlock Text="{DynamicResource Str_Col_Size}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />

@@ -127,6 +127,44 @@ internal static class SelfTestFilesView
             await Idle();
             if (detailsName.Text != "alpha.txt") throw new InvalidOperationException($"Details pane shows '{detailsName.Text}' for alpha.txt.");
             checks++;
+            // An image gets a real decoded preview and a dimensions row from the background decode.
+            string png = Path.Combine(files, "pixel.png");
+            using (var stream = File.Create(png))
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(3, 2, 96, 96, PixelFormats.Bgra32, null, new byte[3 * 2 * 4], 12)));
+                encoder.Save(stream);
+            }
+            await view.NavigateTo(files);
+            await Idle();
+            view.ResultsList.SelectedItem = view.ResultsList.Items.OfType<FileEntry>().First(e => e.FileName == "pixel.png");
+            var previewImage = (Image)view.FindName("DetailsPreviewImage");
+            var metadataRows = (StackPanel)view.FindName("DetailsMetadataRows");
+            for (int wait = 0; wait < 100 && previewImage.Source == null; wait++) await Task.Delay(30);
+            await Idle();
+            string dimensions = metadataRows.Children.OfType<Grid>().SelectMany(row => row.Children.OfType<TextBlock>()).Select(text => text.Text).LastOrDefault() ?? "";
+            if (detailsName.Text != "pixel.png" || previewImage.Source == null || !dimensions.StartsWith("3 × 2", StringComparison.Ordinal))
+                throw new InvalidOperationException($"Image details missing (name '{detailsName.Text}', preview {previewImage.Source != null}, dimensions '{dimensions}').");
+            checks++;
+            view.ResultsList.SelectedItems.Clear();
+            foreach (var file in view.ResultsList.Items.OfType<FileEntry>().Where(e => e.FileName is "alpha.txt" or "pixel.png")) view.ResultsList.SelectedItems.Add(file);
+            await Idle();
+            if (!detailsName.Text.StartsWith("2 ", StringComparison.Ordinal)) throw new InvalidOperationException($"Two selected files show '{detailsName.Text}'.");
+            checks++;
+            view.ResultsList.SelectedItems.Clear();
+            view.ResultsList.SelectedItem = view.ResultsList.Items.OfType<FileEntry>().First(e => e.IsDirectory);
+            await Idle();
+            if (view.FindName("DetailsEmptyText") is not TextBlock { IsVisible: true }) throw new InvalidOperationException("A selected folder did not show the empty details state.");
+            checks++;
+            view.ResultsList.SelectedItems.Clear();
+            File.Delete(png);
+            await view.NavigateTo(files);
+            await Idle();
+            using (var restored = new FilesView())
+            {
+                if (restored.DetailsPosition != 1) throw new InvalidOperationException("Details pane position did not restore.");
+                checks++;
+            }
             detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             await Idle();
             window.UpdateLayout();
