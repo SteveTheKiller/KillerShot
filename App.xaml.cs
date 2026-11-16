@@ -110,6 +110,7 @@ public partial class App : Application
         if (SelfTestFilesNativeMessages.TryRun(e.Args)) return;
         if (SelfTestFilesWatchRefresh.TryRun(e.Args)) return;
         if (SelfTestReview120.TryRun(e.Args)) return;
+        if (SelfTestCaptureLatency.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
