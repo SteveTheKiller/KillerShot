@@ -32,6 +32,8 @@ namespace KillerShot.Shell
         public bool AlbumMode => _albumMode;
         public string SourceCaption => _caption.Text;
         public string CountCaption => _count.Text;
+        /// <summary>Gives each collection row in the album sidebar its own card.</summary>
+        internal Func<CollectionChoice, ContextMenu, bool>? RowMenu { get => _browser.RowMenu; set => _browser.RowMenu = value; }
 
         internal FrameworkElement TestCarousel => _flow;
         internal ComboBox CollectionPicker => _picker;

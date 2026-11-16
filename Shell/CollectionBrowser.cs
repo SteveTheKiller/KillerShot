@@ -22,6 +22,36 @@ internal sealed record CollectionChoice(string Source, string StoredName, IReadO
 
 internal sealed class CollectionBrowser : ListBox
 {
+    /// <summary>Fills a row's own card. Returns false for rows that have no card of their own
+    /// (All captures, Unfiled), which keep the sidebar's menu.</summary>
+    internal Func<CollectionChoice, ContextMenu, bool>? RowMenu { get; set; }
+
+    protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+    {
+        base.PrepareContainerForItemOverride(element, item);
+        if (element is not ListBoxItem row) return;
+        row.ContextMenuOpening -= Row_ContextMenuOpening;
+        row.ContextMenu = null;
+        if (item is not CollectionChoice choice || RowMenu is not { } fill) return;
+        var probe = new ContextMenu();
+        if (!fill(choice, probe)) return;
+        row.ContextMenu = probe;
+        row.ContextMenuOpening += Row_ContextMenuOpening;
+    }
+
+    protected override void ClearContainerForItemOverride(DependencyObject element, object item)
+    {
+        if (element is ListBoxItem row) { row.ContextMenuOpening -= Row_ContextMenuOpening; row.ContextMenu = null; }
+        base.ClearContainerForItemOverride(element, item);
+    }
+
+    // The card is rebuilt each time it opens, so names, counts and KillerPDF are current.
+    private void Row_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (sender is ListBoxItem { DataContext: CollectionChoice choice, ContextMenu: { } menu } && RowMenu is { } fill)
+            fill(choice, menu);
+    }
+
     public CollectionBrowser()
     {
         Background = Brushes.Transparent;

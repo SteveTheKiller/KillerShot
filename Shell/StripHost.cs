@@ -37,6 +37,19 @@ namespace KillerShot.Shell
                 && double.IsFinite(h) ? Math.Clamp(h, 110, 320) : 170;
             _navigationStrip = new CollectionStrip(NavigationDock, (Style)Library.FindResource("LibSlider"));
             _navigationStrip.ClipToBounds = true;
+            // Each collection in the sidebar has its own card, the same one its header carries in
+            // Grid and Timeline. All captures and Unfiled keep the sidebar's menu.
+            _navigationStrip.RowMenu = (choice, menu) =>
+            {
+                if (FolderCaptures.IsSource(choice.Source)) { Library.FillFolderMenu(menu, choice.Source, choice.Name); return true; }
+                if (choice.Source.Length > 1 && choice.Source[0] == 'c'
+                    && long.TryParse(choice.Source.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out long id) && id > 0)
+                {
+                    Library.FillCollectionMenu(menu, id, choice.Name, CaptureLibrary.Session, choice.Detail);
+                    return true;
+                }
+                return false;
+            };
             _navigationStrip.SetAlbumMode(true);
             NavigationDock.Pane = _navigationStrip;
             _strip = new CollectionStrip(StripDock, (Style)Library.FindResource("LibSlider"));

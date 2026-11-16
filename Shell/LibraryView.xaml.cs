@@ -502,7 +502,9 @@ namespace KillerShot.Shell
             _tilesPerRow = TilesPerRow();
             if (_view == "shelves")
             {
-                foreach (var g in Groups(_group == "collection"))
+                // Inside one collection, grouping by collection would leave a single carousel,
+                // the same as Single carousel. Multiple carousels then gives one per day.
+                foreach (var g in Groups(_group == "collection" && _source == "all"))
                 {
                     rows.Add(new LibraryRow
                     {
@@ -1114,6 +1116,27 @@ namespace KillerShot.Shell
         {
             menu.SetResourceReference(FrameworkElement.StyleProperty, "CardMenu");
             menu.MinWidth = menu.MaxWidth = width + 44;
+        }
+
+        /// <summary>The card for a folder on disk shown as a collection (Screenshots or a linked
+        /// folder): open it as a collection tab, a folder tab or in File Explorer, and Make PDF.</summary>
+        internal void FillFolderMenu(ContextMenu menu, string folderSource, string title)
+        {
+            menu.Items.Clear();
+            MakeCard(menu);
+            menu.Items.Add(CardBuilder.Header(title, FolderCaptures.PathForSource(folderSource)));
+            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
+            [
+                new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)),
+                new("", Loc("Str_Tab_Browse"), Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))),
+                new("", Loc("Str_Tab_Explorer"), Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)),
+            ]));
+            if (KillerPdfHandoff.IsInstalled)
+                menu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", () =>
+                {
+                    if (KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(FolderCaptures.PathForSource(folderSource))) is { } problem)
+                        ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
+                }, true));
         }
 
         /// <summary>The collection card: its name and count, a strip to open it in a tab of its own

@@ -8,6 +8,9 @@ namespace KillerShot.Files;
 public partial class FilesView
 {
     public int CurrentMode { get; private set; }
+    /// <summary>Self-test seam for the keyboard modifiers a wheel event sees; null reads the real keyboard.</summary>
+    internal static Func<ModifierKeys>? ModifierSource;
+    private static ModifierKeys CurrentModifiers => ModifierSource?.Invoke() ?? Keyboard.Modifiers;
     public BrowseState Navigation => Browser.State;
     private bool _syncingOptions;
     private static int ReadInt(string key, int fallback) => int.TryParse(Settings.Get("Files." + key), out int value) ? value : fallback;
@@ -29,6 +32,7 @@ public partial class FilesView
         Navigation.FoldersOnTop = Settings.Get("Files.FoldersOnTop") != "0";
         SetView(Math.Clamp(ReadInt("Mode", 0), 0, 2));
         UpdateOptionButtons();
+        ResultsList.PreviewMouseWheel += ResultsList_PreviewMouseWheel;
         ViewState.PropertyChanged += (_, e) =>
         {
             string? name = e.PropertyName;
@@ -82,6 +86,46 @@ public partial class FilesView
     private void View_Click(object sender, RoutedEventArgs e)
         => SetView(ReferenceEquals(sender, ViewIconsBtn) ? 1 : ReferenceEquals(sender, ViewDetailsBtn) ? 2 : 0);
     private void Density_Click(object sender, RoutedEventArgs e) => SetDensity((ViewState.Density + 1) % 5);
+    // Ctrl+wheel over the list, as in KillerShell: list rows grow through the row icon sizes,
+    // then the details view, then icon tiles, and the ends wrap. Ctrl+= and Ctrl+- step the same.
+    private void ResultsList_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if ((CurrentModifiers & ModifierKeys.Control) == 0) return;
+        e.Handled = true;
+        StepResultsSize(e.Delta > 0 ? 1 : -1);
+    }
+    internal void StepResultsSize(int direction)
+    {
+        var rows = ResultsViewState.RowIconSteps;
+        var tiles = ResultsViewState.Steps;
+        int current = CurrentMode switch
+        {
+            1 => rows.Length * 2 + NearestStep(tiles, ViewState.TileSize),
+            2 => rows.Length + NearestStep(rows, ViewState.RowIconSize),
+            _ => NearestStep(rows, ViewState.RowIconSize),
+        };
+        int count = rows.Length * 2 + tiles.Length;
+        int next = (current + (direction > 0 ? 1 : -1) + count) % count;
+        if (next >= rows.Length * 2)
+        {
+            ViewState.TileSize = tiles[next - rows.Length * 2];
+            SetView(1);
+            return;
+        }
+        int row = next % rows.Length;
+        ViewState.RowIconSize = rows[row];
+        if (next >= rows.Length) ViewState.Density = Math.Max(0, ResultsViewState.DensityLevels - 1 - row);
+        SetView(next >= rows.Length ? 2 : 0);
+    }
+    private static int NearestStep(int[] steps, int now)
+    {
+        int i = Array.IndexOf(steps, now);
+        if (i >= 0) return i;
+        i = 0;
+        for (int k = 1; k < steps.Length; k++)
+            if (Math.Abs(steps[k] - now) < Math.Abs(steps[i] - now)) i = k;
+        return i;
+    }
     private void Density_Wheel(object sender, MouseWheelEventArgs e) { SetDensity(ViewState.Density + (e.Delta > 0 ? -1 : 1)); e.Handled = true; }
     private async void Hidden_Click(object sender, RoutedEventArgs e) => await SetShowHidden(!Navigation.ShowHidden);
     private void Folders_Click(object sender, RoutedEventArgs e) => SetFoldersFirst(!Navigation.FoldersOnTop);

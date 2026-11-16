@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -69,11 +70,20 @@ internal static class SelfTestAutoRedact
             }
             RedactSettings.Fill = Fill;
             RedactSettings.Feather = Feather;
+            // A toolbar layout saved by 1.1.1, before Auto redact existed: the button must still
+            // reach the bar, beside Redact, and not only exist as an object.
+            Settings.Set("ToolbarLayout", "capture,record,open,save,copy,copytext,print;undo,redo,select,pen,highlighter,arrow,line,rectangle,ellipse,fill,text,step,callout,redact,crop,image,color,width;");
             var doc = new EditorDocument(Picture());
             App.Instance.SetDocument(doc);
             window = new MainWindow { ShowActivated = false, Left = -20000, Top = -20000, Width = 1400, Height = 760, WindowStartupLocation = WindowStartupLocation.Manual };
             window.Show();
             await Task.Delay(300);
+            window.UpdateLayout();
+            var bar = VisualTreeHelper.GetParent(window.ToolRedactBtn) as Panel;
+            int redactAt = bar?.Children.IndexOf(window.ToolRedactBtn) ?? -1;
+            if (!window.AutoRedactBtn.IsVisible || bar == null || redactAt < 0 || bar.Children.IndexOf(window.AutoRedactBtn) != redactAt + 1)
+                throw new InvalidOperationException($"Auto redact is not on the toolbar beside Redact (visible={window.AutoRedactBtn.IsVisible}).");
+            report.Add("toolbar: Auto redact shows beside Redact with a 1.1.1 saved layout PASS");
 
             // The toolbar button opens the dialog modally; work it from a queued callback.
             var done = new TaskCompletionSource<string>();

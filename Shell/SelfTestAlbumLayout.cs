@@ -54,7 +54,8 @@ internal static class SelfTestAlbumLayout
                 Enumerable.Repeat((byte)255, 168 * 104 * 4).ToArray(), 168 * 4);
             image.Freeze();
             CaptureLibrary.AddNow(image, DateTime.Today, "region", "Layout sample", null);
-            CaptureLibrary.AddNow(image, DateTime.Today, "region", "Second layout sample", null);
+            // A day apart, so Multiple carousels inside the collection has two days to show.
+            CaptureLibrary.AddNow(image, DateTime.Today.AddDays(-1), "region", "Second layout sample", null);
             long collectionId = CaptureLibrary.CreateCollection("Layout collection", CaptureLibrary.Items().Select(item => item.Id));
             var workArea = SystemParameters.WorkArea;
             window = new MainWindow
@@ -245,6 +246,19 @@ internal static class SelfTestAlbumLayout
             LocaleManager.Apply(Locale.EnUS);
             Layout(root);
             report.Add("all_themes_main_photo_and_narrow_localized_browser_rendered=True");
+            // Multiple carousels inside one collection: grouping by collection would give one
+            // carousel, the same as Single carousel, so it shows one per day instead.
+            string layoutSource = "c" + collectionId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            browser.SelectedItem = browser.Items.OfType<CollectionChoice>().Single(c => c.Source == layoutSource);
+            library.SetGroup("collection");
+            library.SetView("shelves");
+            Layout(root);
+            await Task.Delay(180);
+            Layout(root);
+            int shelves = Visuals(library).OfType<KillerShot.Controls.CoverFlow>().Count(flow => flow.IsVisible && flow.Name != "BigFlow");
+            report.Add("multiple_carousels_in_one_collection=" + shelves);
+            Check(shelves >= 2, $"Multiple carousels inside one collection with captures on two days must show a carousel per day, not {shelves}.");
+            Render(root, Path.Combine(folder, "multiple-carousels-one-collection.png"));
             browser.SelectedIndex = 0;
             Layout(root);
             report.Add("album_collection_selection_filters_without_opening=True");

@@ -607,8 +607,9 @@ internal static partial class SelfTestLibrary
             var rowsList = view.FindName("RowsList") as ItemsControl
                 ?? throw new InvalidOperationException("Library rows are unavailable.");
             var folderRows = ((IEnumerable<LibraryRow>)rowsList.ItemsSource).ToList();
-            bool folderGrouped = folderRows.Count == 1 && folderRows[0].Key == "folder"
-                && folderRows[0].Title == FolderCaptures.Name && folderRows[0].Items.Count == 6;
+            // Inside one collection, Multiple carousels shows a carousel per day; none is Unfiled.
+            bool folderGrouped = folderRows.Count > 0 && folderRows.All(r => r.Key.StartsWith('d') && r.Key != "c0")
+                && folderRows.Sum(r => r.Items.Count) == 6;
             log.AppendLine($"folder_grouped={folderGrouped} rows=" + string.Join("; ", folderRows.Select(r => $"{r.Key}/{r.Title}/{r.Items.Count}")));
             if (!folderGrouped) throw new InvalidOperationException("Folder captures were grouped under Unfiled.");
             await Shot("library-folder-source");

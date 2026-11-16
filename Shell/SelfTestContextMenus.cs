@@ -111,6 +111,58 @@ internal static class SelfTestContextMenus
             }
             report.Add("a real right-click on the sidebar reaches its menu: PASS");
 
+            // A right-click on a collection in the sidebar opens that collection's own card, not
+            // the sidebar's: titled with the row under the pointer, with Make PDF when KillerPDF is
+            // installed. The sidebar's own card does not borrow the selected collection's name.
+            string fakePdf = Path.Combine(folder, "KillerPDF.exe");
+            File.WriteAllBytes(fakePdf, [0]);
+            KillerPdfHandoff.FindOverride = () => fakePdf;
+            try
+            {
+                long clip = CaptureLibrary.AddNow(BitmapSourceOf(64, 48), DateTime.Now, "region", "Sidebar sample", null);
+                CaptureLibrary.CreateCollection("Sidebar Pick", [clip]);
+                await Task.Delay(100);
+                await Idle();
+                var rows = (ListBox)Field(navigation, "_browser")!;
+                foreach (var (source, name) in new[] { ("c", "Sidebar Pick"), ("folder", FolderCaptures.Name) })
+                {
+                    var choice = rows.Items.OfType<CollectionChoice>().FirstOrDefault(c => source == "folder" ? c.Source == "folder" : c.Name == name);
+                    Check(choice != null, $"The sidebar must list {name}.");
+                    rows.ScrollIntoView(choice);
+                    window.UpdateLayout();
+                    await Idle();
+                    var row = (FrameworkElement)rows.ItemContainerGenerator.ContainerFromItem(choice)!;
+                    var spot = row.InputHitTest(new Point(row.ActualWidth / 2, row.ActualHeight / 2)) as DependencyObject ?? row;
+                    ContextMenu? rowCard = null;
+                    FrameworkElement? holder = null;
+                    for (var node = spot; node != null && rowCard == null; node = System.Windows.Media.VisualTreeHelper.GetParent(node))
+                        if (node is FrameworkElement { ContextMenu: { } found } element) { rowCard = found; holder = element; }
+                    Check(rowCard != null && !ReferenceEquals(rowCard, navigation.ContextMenu), $"A right-click on {name} in the sidebar opens the sidebar's menu, not {name}'s card.");
+                    var probe = new ContextMenuEventArgsProbe((FrameworkElement)(spot as FrameworkElement ?? holder!));
+                    Check(!probe.Cancelled, $"{name}'s card must open.");
+                    rowCard = holder!.ContextMenu!;
+                    string? head = rowCard.Items.OfType<MenuItem>().FirstOrDefault() is { } first ? System.Windows.Automation.AutomationProperties.GetName(first) : null;
+                    var labels = rowCard.Items.OfType<MenuItem>().Select(item => System.Windows.Automation.AutomationProperties.GetName(item) is { Length: > 0 } named ? named : item.Header as string ?? "").ToArray();
+                    report.Add($"sidebar_{source}_card=" + string.Join(" | ", labels));
+                    Check(head == name, $"{name}'s card must be titled {name}, not '{head}'.");
+                    Check(labels.Contains(L("Str_Menu_MakePdf")), $"{name}'s card must offer Make PDF when KillerPDF is installed.");
+                }
+                _ = new ContextMenuEventArgsProbe(navigation);
+                var sidebarHead = navigation.ContextMenu!.Items.OfType<MenuItem>().First();
+                static IEnumerable<string> Texts(object node) => node switch
+                {
+                    TextBlock text => [text.Text],
+                    DependencyObject parent => LogicalTreeHelper.GetChildren(parent).Cast<object>().SelectMany(Texts),
+                    _ => [],
+                };
+                var headTexts = Texts(sidebarHead).ToArray();
+                report.Add("sidebar_head=" + string.Join(" / ", headTexts));
+                Check(navigation.SourceCaption.Length > 0 && !headTexts.Contains(navigation.SourceCaption),
+                    "The sidebar's own card must not carry the selected collection's name.");
+                report.Add("a right-click on a sidebar collection opens its own card with Make PDF: PASS");
+            }
+            finally { KillerPdfHandoff.FindOverride = null; }
+
             // The sidebar card as it draws, in the three base themes.
             foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 })
             {

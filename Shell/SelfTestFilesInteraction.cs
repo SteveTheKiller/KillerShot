@@ -54,6 +54,29 @@ internal static class SelfTestFilesInteraction
             window.UpdateLayout();
             Check(await Dispatch(view, Key.A, ModifierKeys.Control, view.ResultsList)
                 && view.ResultsList.SelectedItems.Count == 2, "Ctrl+A selects actual extended ListBox rows");
+            // Ctrl+wheel over the list zooms it the way KillerShell does: row icons grow, then the
+            // details view, then tiles. A plain wheel only scrolls. Ctrl+= and Ctrl+- step the same.
+            view.SetView(0);
+            view.ViewState.RowIconSize = 16;
+            bool Wheel(int delta, ModifierKeys modifiers)
+            {
+                FilesView.ModifierSource = () => modifiers;
+                var args = new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, delta) { RoutedEvent = UIElement.PreviewMouseWheelEvent };
+                view.ResultsList.RaiseEvent(args);
+                FilesView.ModifierSource = null;
+                return args.Handled;
+            }
+            Check(!Wheel(120, ModifierKeys.None) && view.ViewState.RowIconSize == 16 && view.CurrentMode == 0, "a plain wheel scrolls and leaves the size alone");
+            Check(Wheel(120, ModifierKeys.Control) && view.ViewState.RowIconSize == 20 && view.CurrentMode == 0, "Ctrl+wheel up over the list makes row icons larger");
+            for (int i = 0; i < 6; i++) Wheel(120, ModifierKeys.Control);
+            Check(view.CurrentMode == 2, $"Ctrl+wheel past the largest list icon moves to details (mode {view.CurrentMode})");
+            for (int i = 0; i < 7; i++) Wheel(120, ModifierKeys.Control);
+            Check(view.CurrentMode == 1, $"Ctrl+wheel past the largest details icon moves to tiles (mode {view.CurrentMode})");
+            int tile = view.ViewState.TileSize;
+            Check(await Dispatch(view, Key.OemPlus, ModifierKeys.Control, view.ResultsList) && view.ViewState.TileSize > tile, "Ctrl+= makes tiles larger");
+            Check(await Dispatch(view, Key.OemMinus, ModifierKeys.Control, view.ResultsList) && view.ViewState.TileSize == tile, "Ctrl+- makes them smaller again");
+            view.SetView(0);
+            view.ViewState.RowIconSize = 16;
             IDataObject? clipboard = null;
             view.WriteClipboard = data => clipboard = data;
             view.ReadClipboard = () => clipboard;

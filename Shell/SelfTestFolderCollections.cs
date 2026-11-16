@@ -96,10 +96,13 @@ internal static partial class SelfTestLibrary
             select.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             var library = (LibraryView)window.FindName("Library");
             library.SetView("flow");
+            // The library lists off the UI thread, so the view fills after the listing lands.
+            await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
+            await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
             window.UpdateLayout();
             var flow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
             if (navigation.Source != source || flow.Items.Count != 1 || flow.Items[0].Window != "second")
-                throw new InvalidOperationException("Selecting a linked folder must filter the main photo view.");
+                throw new InvalidOperationException($"Selecting a linked folder must filter the main photo view (source {navigation.Source}, {flow.Items.Count} photos).");
             var root = (FrameworkElement)window.Content;
             var render = new RenderTargetBitmap((int)root.ActualWidth, (int)root.ActualHeight, 96, 96, PixelFormats.Pbgra32);
             render.Render(root);
@@ -107,10 +110,17 @@ internal static partial class SelfTestLibrary
             report.Add("saved_folder_selected_through_collection_menu_and_rendered=PASS");
             long stored = CaptureLibrary.AddNow(pixel, DateTime.Now, "region", "Stored sample", null);
             long storedCollection = CaptureLibrary.CreateCollection("Stored collection", [stored]);
+            async Task Listed()
+            {
+                await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
+                await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
+            }
             library.SetGroup("collection");
             navigation.SetSource("all");
-            if (flow.Items.Count != 2) throw new InvalidOperationException("All collection groups must include linked folders.");
+            await Listed();
+            if (flow.Items.Count != 2) throw new InvalidOperationException($"All collection groups must include linked folders ({flow.Items.Count} photos).");
             navigation.SetSource("c" + storedCollection);
+            await Listed();
             if (flow.Items.Count != 1 || flow.Items[0].Id != stored)
                 throw new InvalidOperationException("Linked folders must not leak into another collection's filter.");
             navigation.SetSource(source);

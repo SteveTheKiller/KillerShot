@@ -34,7 +34,7 @@ namespace KillerShot.Shell
         // File and capture operations on the left, annotation tools on the right.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
             ["capture", "record", "open", "save", "copy", "copytext", "print"],
-            ["undo", "redo", "select", "pen", "highlighter", "arrow", "line", "rectangle", "ellipse", "fill", "text", "step", "callout", "redact", "crop", "image", "color", "width"],
+            ["undo", "redo", "select", "pen", "highlighter", "arrow", "line", "rectangle", "ellipse", "fill", "text", "step", "callout", "redact", "autoredact", "crop", "image", "color", "width"],
             []);
 
         // Buttons leave the bar for the More menu in this order as the window narrows, a group at a
@@ -53,6 +53,7 @@ namespace KillerShot.Shell
             ["step"],
             ["highlighter"],
             ["arrow"],
+            ["autoredact"],
             ["redact"],
             ["rectangle"],
             ["text"],
@@ -123,10 +124,26 @@ namespace KillerShot.Shell
                 return result;
             }
             List<string> left = Clean(layout.Left, true), right = Clean(layout.Right, true), more = Clean(layout.More, false);
-            foreach (string id in DefaultToolbarLayout.Left.Where(id => id != ToolbarSeparatorToken && !seen.Contains(id)))
-                left.Add(id);
-            foreach (string id in DefaultToolbarLayout.Right.Where(id => id != ToolbarSeparatorToken && !seen.Contains(id)))
-                right.Add(id);
+            // A button the saved layout has never heard of goes right after its default
+            // neighbour on the same side, so Auto redact lands beside Redact, not at the end.
+            void PutBack(IReadOnlyList<string> defaults, List<string> side)
+            {
+                for (int i = 0; i < defaults.Count; i++)
+                {
+                    string id = defaults[i];
+                    if (id == ToolbarSeparatorToken || seen.Contains(id)) continue;
+                    int at = side.Count;
+                    for (int k = i - 1; k >= 0; k--)
+                    {
+                        int found = side.IndexOf(defaults[k]);
+                        if (found >= 0) { at = found + 1; break; }
+                    }
+                    side.Insert(at, id);
+                    seen.Add(id);
+                }
+            }
+            PutBack(DefaultToolbarLayout.Left, left);
+            PutBack(DefaultToolbarLayout.Right, right);
             return new ToolbarLayout(left, right, more);
         }
 

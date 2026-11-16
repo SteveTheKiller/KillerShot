@@ -73,7 +73,8 @@ public partial class MainWindow
     {
         menu.Items.Clear();
         if (_navigationStrip is not { } strip) return;
-        menu.Items.Add(CardBuilder.Header(Loc("Str_Sidebar_Title"), strip.SourceCaption));
+        // A collection's own card names it; the sidebar's card is about the sidebar.
+        menu.Items.Add(CardBuilder.Header(Loc("Str_Sidebar_Title"), null));
         var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
         var choices = strip.SourceMenu(CollectionPickerBtn);
         while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
