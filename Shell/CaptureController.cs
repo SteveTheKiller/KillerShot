@@ -44,6 +44,9 @@ internal sealed partial class CaptureController
         _tray.PrintLastRequested += PrintLast;
         _tray.HasLastCapture = () => Last != null;
         _tray.RegionItems = RegionMenuItems;
+        // Once startup settles, so the first Print Screen opens the selector as fast as later ones.
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(RegionSelector.Warm));
     }
 
     /// <summary>Starts a capture from the editor or the tray menu.</summary>

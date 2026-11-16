@@ -19,6 +19,10 @@ internal static class SelfTestCaptureLatency
 {
     private const int Presses = 5;
     private const double BudgetMs = 300;
+    // Before the overlay was warmed at startup, the first press cost about 350 ms more than a
+    // warm one on both the three-monitor desktop and the one-monitor lab VM. An allowance in
+    // milliseconds, not a ratio, because a ratio of a fast machine's 80 ms median is too tight.
+    private const double FirstPressAllowanceMs = 200;
 
     internal static bool TryRun(string[] args)
     {
@@ -104,10 +108,14 @@ internal static class SelfTestCaptureLatency
                 for (int i = 0; i < 200 && Application.Current.Windows.OfType<RegionOverlay>().Any(w => w.IsVisible); i++) await Task.Delay(10);
             }
 
+            double first = totals[0];
             totals.Sort();
             double median = totals[totals.Count / 2];
             report.Add($"Median press to overlay: {median:F0} ms (budget {BudgetMs:F0} ms)");
-            code = median <= BudgetMs ? 0 : 1;
+            // The first press after startup is the one people feel most: KillerShot usually starts
+            // at sign-in and Print Screen comes much later. It must cost no more than a warm press.
+            report.Add($"First press: {first:F0} ms (limit {median + FirstPressAllowanceMs:F0} ms, the median plus {FirstPressAllowanceMs:F0} ms)");
+            code = median <= BudgetMs && first <= median + FirstPressAllowanceMs ? 0 : 1;
         }
         catch (Exception error) { report.Add(error.ToString()); }
         finally

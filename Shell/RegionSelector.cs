@@ -42,6 +42,48 @@ internal sealed class RegionSelector
     /// <summary>The window chosen by a click, or zero when the result is a dragged region.</summary>
     public IntPtr PickedWindow { get; private set; }
 
+    /// <summary>Builds an overlay and the capture bar once, hidden, then discards them. The first
+    /// Print Screen after startup otherwise pays for loading their code, styles and fonts, which
+    /// doubled its pause. Nothing is shown: the windows get handles but are never made visible.</summary>
+    internal static void Warm()
+    {
+        try
+        {
+            var bounds = new Win32.RECT(0, 0, 1, 1);
+            var monitor = new MonitorBounds(IntPtr.Zero, bounds, true);
+            var frozen = new FrozenDesktop(bounds, new byte[4], [monitor], []);
+            var selector = new RegionSelector(frozen, showBar: true);
+            var overlay = new RegionOverlay(selector, bounds, frozen.Crop(bounds)!);
+            new WindowInteropHelper(overlay).EnsureHandle();
+            overlay.Measure(new Size(64, 64));
+            overlay.Arrange(new Rect(0, 0, 64, 64));
+            var bar = new CaptureBar(selector, monitor);
+            new WindowInteropHelper(bar).EnsureHandle();
+            bar.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            bar.Arrange(new Rect(bar.DesiredSize));
+            selector._overlays.Add(overlay);
+            selector._bar = bar;
+            selector.Cancel();
+
+            // The first window WPF puts on screen also sets up its rendering, which the overlays
+            // paid for on the first press. A one-pixel window parked off every monitor renders
+            // once and closes, so nothing appears on screen.
+            var primer = new Window
+            {
+                WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false,
+                ShowActivated = false, Topmost = false, WindowStartupLocation = WindowStartupLocation.Manual,
+                Left = -32000, Top = -32000, Width = 1, Height = 1, Background = Brushes.Black, Title = "KillerShot",
+            };
+            primer.ContentRendered += (_, _) => primer.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background, new Action(primer.Close));
+            primer.Show();
+        }
+        catch (Exception error) when (error is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            // A warm-up that fails costs only the speed of the first capture.
+        }
+    }
+
     public RegionSelector(FrozenDesktop frozen, bool windowOnly = false, bool showBar = false, CaptureMode? mode = null, bool video = false)
     {
         _frozen = frozen;
@@ -75,9 +117,24 @@ internal sealed class RegionSelector
             Keyboard.Focus(home);
             if (_showBar)
             {
-                _bar = new CaptureBar(this, _frozen.Monitors.FirstOrDefault(m => m.Primary) ?? _frozen.Monitors[0]) { Owner = home };
-                _bar.Show();
-                _bar.FocusFirstControl();
+                // The bar comes up once the overlays have drawn, so the frozen desktop is on screen
+                // without waiting for the bar's own layout and window.
+                home.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                {
+                    if (_finished) return;
+                    try
+                    {
+                        _bar = new CaptureBar(this, _frozen.Monitors.FirstOrDefault(m => m.Primary) ?? _frozen.Monitors[0]) { Owner = home };
+                        _bar.Show();
+                        _bar.FocusFirstControl();
+                    }
+                    catch
+                    {
+                        // Never leave a topmost overlay covering the desktop.
+                        Finish(null);
+                        throw;
+                    }
+                }));
             }
             Move();   // Window mode highlights the target under the pointer.
         }

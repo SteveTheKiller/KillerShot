@@ -72,7 +72,10 @@ internal static class SelfTestCaptureMenus
             }
             selector = new RegionSelector(desktop, showBar: true, video: true);
             var canceled = selector.RunAsync();
-            Key(Application.Current.Windows.OfType<CaptureBar>().Single(), System.Windows.Input.Key.F2);
+            // The capture bar arrives after the frozen screen, so wait for it the way a person would.
+            CaptureBar? bar = null;
+            for (int i = 0; i < 200 && (bar = Application.Current.Windows.OfType<CaptureBar>().SingleOrDefault()) == null; i++) await Task.Delay(10);
+            Key(bar ?? throw new InvalidOperationException("The capture bar never appeared."), System.Windows.Input.Key.F2);
             if (selector.CurrentSelection == null) throw new InvalidOperationException("F2 from the capture bar did not establish an anchor.");
             for (int i = 0; i < 50; i++)
             {
