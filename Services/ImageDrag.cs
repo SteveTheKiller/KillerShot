@@ -15,6 +15,8 @@ internal static class ImageDrag
     private static FileStream? _owner;
     private static System.Windows.Threading.DispatcherTimer? _cleanupTimer;
     internal static bool Active { get; private set; }
+    /// <summary>The album capture being dragged, so a drop on a sidebar collection can move it.</summary>
+    internal static CaptureItem? DraggedCapture { get; private set; }
 
     internal static void Initialize(string? root = null)
     {
@@ -186,7 +188,12 @@ internal static class ImageDrag
             if (Active || _preparingCapture) return;
             if (!VideoCaptures.IsVideo(item))
             {
-                if (CaptureLibrary.LoadOutput(item) is { } image) Start(image);
+                if (CaptureLibrary.LoadOutput(item) is { } image)
+                {
+                    DraggedCapture = item;
+                    try { Start(image); }
+                    finally { DraggedCapture = null; }
+                }
                 return;
             }
             cursor = Mouse.OverrideCursor;
@@ -196,7 +203,11 @@ internal static class ImageDrag
             var preview = await Task.Run(() => CaptureLibrary.LoadThumb(item));
             Mouse.OverrideCursor = cursor;
             if (file != null && Mouse.LeftButton == MouseButtonState.Pressed && CaptureLibrary.IsCurrent(item))
-                StartFile(file, preview);
+            {
+                DraggedCapture = item;
+                try { StartFile(file, preview); }
+                finally { DraggedCapture = null; }
+            }
         }
         catch (Exception error) { System.Diagnostics.Debug.WriteLine(error); }
         finally

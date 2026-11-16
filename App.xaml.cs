@@ -85,6 +85,12 @@ public partial class App : Application
             return;
         }
 
+        // Self-tests never share the real native cache: a running KillerShot of the same version
+        // holds its e_sqlcipher.dll open, so a test build with a different engine could not
+        // replace it. Suites that pick their own cache folder still override this one.
+        if (e.Args.Length > 0 && e.Args[0].StartsWith("--selftest", StringComparison.Ordinal))
+            Services.SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(Path.GetTempPath(), "KillerShot-selftest-native"));
+
         if (SelfTestThemeDump.TryRun(e.Args)) return;
         if (SelfTestNovemberInstall.TryRun(e.Args)) return;
         if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
@@ -146,6 +152,7 @@ public partial class App : Application
         if (SelfTestCaptureMenus.TryRun(e.Args)) return;
         if (SelfTestOutputFiles.TryRun(e.Args)) return;
         if (SelfTestSidebarSelection.TryRun(e.Args)) return;
+        if (SelfTestCaptureDrop.TryRun(e.Args)) return;
         if (SelfTestMenuOverflow.TryRun(e.Args)) return;
         if (SelfTestFlyoutScale.TryRun(e.Args)) return;
         if (SelfTestFlyoutSide.TryRun(e.Args)) return;

@@ -112,6 +112,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recording
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
 - Auto redact, beside Redact on the editor toolbar, finds email addresses, credit card numbers, phone numbers, US Social Security numbers, IP addresses, and keys and passwords with Windows text recognition, and covers each one with a redaction box you can remove before saving. Its settings choose which kinds to look for, the box color, an outward feather and whether every new capture is scanned on arrival. The color and feather apply to hand-drawn redactions too, and the boxes are burned into the pixels when the picture is saved.
 - Make PDF on the right-click card of a folder in Files, of the open folder's background, and of the Screenshots folder or a linked folder in the sidebar opens that folder's pictures in KillerPDF as one new document. On an album collection's card, in the sidebar or on its heading, it opens the collection's pictures, as edited and oldest first, from temporary decrypted copies that are deleted when the album closes, switches or changes password, and at exit. It appears only when KillerPDF is installed.
+- Dragging a capture from the album onto a collection in the sidebar moves it into that collection, the same as Move to (Ctrl+M). Dropping it on Unfiled takes it out of its collection.
 
 ## [1.1.1] - 2026-10-28
 
