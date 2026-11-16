@@ -59,7 +59,10 @@ internal static class SelfTestCaptureLifetime
             yield return monitors[0];
             // Enumeration advances only after the first monitor's resources are initialized.
             requestedSecondMonitor = true;
-            yield return monitors[0] with { Handle = IntPtr.Zero };
+            // A null HMONITOR is not a reliable failure: some Windows builds return a capture item
+            // for it. A size that disagrees with the real monitor fails after the item is created.
+            var b = monitors[0].Bounds;
+            yield return monitors[0] with { Bounds = new Win32.RECT(b.Left, b.Top, b.Right + 1, b.Bottom + 1) };
         }
         if (scenario is "part" or "success")
             rect = new Win32.RECT(monitors[0].Bounds.Left, monitors[0].Bounds.Top,
