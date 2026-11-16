@@ -103,14 +103,23 @@ internal static class SelfTestEditorSafety
     {
         var activeHost = new DockHost { Side = DockSide.Left };
         var active = new CollectionStrip(activeHost, new Style(typeof(Slider)));
+        activeHost.Body = new Border();
         activeHost.Pane = active;
+        // Strips reload only while showing (a hidden one catches up when shown), so the active strip is on screen.
+        var activeWindow = new Window { Content = activeHost, Width = 400, Height = 300, Left = -20000, Top = -20000,
+            ShowActivated = false, ShowInTaskbar = false, WindowStartupLocation = WindowStartupLocation.Manual };
+        activeWindow.Show();
         int activeReloads = 0, retiredReloads = 0;
         active.SourceChanged += () => activeReloads++;
         var retired = RetireStrip(() => retiredReloads++);
         CaptureLibrary.CreateCollection("After closing");
         await Task.Delay(250);
         if (retiredReloads != 0) throw new InvalidOperationException($"The disposed strip reloaded {retiredReloads} times after closing.");
-        if (activeReloads != 2) throw new InvalidOperationException($"The active strip reloaded {activeReloads} times for two album changes.");
+        // Both album changes land in one turn of the UI thread, so the showing strip loads once for them.
+        // That one load must show both new albums, and it must not repeat.
+        var shown = active.CollectionPicker.Items.OfType<ComboBoxItem>().Select(item => item.Content?.ToString()).ToList();
+        if (activeReloads != 1 || !shown.Contains("Queued before closing") || !shown.Contains("After closing"))
+            throw new InvalidOperationException($"The active strip reloaded {activeReloads} times for two album changes and lists [{string.Join(", ", shown)}].");
         CardColors.SetCard(Colors.DarkCyan);
         FolderCaptures.Enabled = false;
         for (int attempt = 0; attempt < 3 && retired.IsAlive; attempt++)
@@ -122,6 +131,7 @@ internal static class SelfTestEditorSafety
         }
         if (retired.IsAlive) throw new InvalidOperationException("The disposed strip remains retained after publisher updates and collection.");
         if ((object)active is IDisposable lifetime) lifetime.Dispose();
+        activeWindow.Close();
         activeHost.Pane = null;
     }
 

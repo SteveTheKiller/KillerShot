@@ -34,6 +34,11 @@ internal static partial class SelfTestLibrary
             string source = FolderCaptures.AddFolder(photos);
             await FolderCaptures.RefreshFolderAsync(source);
             using var strip = new CollectionStrip(new DockHost(), new Style(typeof(Slider)));
+            // A strip reloads for library and folder changes only while it is showing; a hidden one
+            // waits and catches up when shown. The editor's strip is showing, so this one is too.
+            var stripWindow = new Window { Content = strip, Width = 640, Height = 240, Left = -20000, Top = -20000,
+                ShowActivated = false, ShowInTaskbar = false, WindowStartupLocation = WindowStartupLocation.Manual };
+            stripWindow.Show();
             strip.SetSource(source);
             string? failureMessage = null;
             strip.StatusMessage += message => failureMessage = message;
@@ -75,6 +80,7 @@ internal static partial class SelfTestLibrary
             if (carousel.Items.Count != 1 || carousel.SelectedItem?.Id != selected.Id)
                 throw new InvalidOperationException("A linked editor refresh must remove deleted files and preserve the surviving selected photo.");
             report.Add("same_source_editor_refreshes_added_removed_files_and_retains_selection=PASS");
+            stripWindow.Close();
             var pixels = new byte[6000 * 4000 * 4];
             Array.Fill(pixels, (byte)255);
             var large = BitmapSource.Create(6000, 4000, 96, 96, PixelFormats.Bgra32, null, pixels, 6000 * 4);
