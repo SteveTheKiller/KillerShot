@@ -163,6 +163,8 @@ internal static class SelfTestRecordings
             // 7. Deleting the capture takes its clip with it, and its decrypted playback copy.
             string played = VideoCaptures.DecryptForPlayback(id);
             CaptureLibrary.Delete([id]);
+            // The copy is deleted on a queued task (lock order), so give it a moment.
+            for (int i = 0; i < 100 && File.Exists(played); i++) await Task.Delay(20);
             if (File.Exists(played)) throw new InvalidOperationException("A deleted recording's decrypted playback copy stayed on disk.");
             try { CaptureLibrary.ExportVideo(id, Path.Combine(folder, "gone.mp4")); throw new InvalidOperationException("A deleted recording could still be exported."); }
             catch (InvalidOperationException ex) when (ex.Message != "A deleted recording could still be exported.") { }
