@@ -77,6 +77,39 @@ namespace KillerShot.Files
     public static class FileOps
     {
         private const int CopyProgressInterval = 4 << 20;
+        private const int MaxCollisionRetries = 8;
+
+        /// <summary>A destination appeared, or an approved replacement target changed, after the conflict answer.</summary>
+        private sealed class PublicationCollisionException(string path, Exception? inner = null)
+            : IOException("The destination changed while publishing: " + path, inner);
+
+        /// <summary>
+        /// What the conflict answer allows at publication. Absent and KeepBoth names publish
+        /// fail-if-exists; only an explicit Replace may overwrite, and only the file that was
+        /// shown to the user (identified by size and timestamps at the time of the answer).
+        /// </summary>
+        private sealed class Publication
+        {
+            private readonly (long Length, DateTime Written, DateTime Created)? approved;
+            private Publication((long, DateTime, DateTime)? approved) { this.approved = approved; }
+
+            public static readonly Publication FailIfExists = new(null);
+
+            public static Publication ReplaceApproved(string target)
+            {
+                try { var f = new FileInfo(target); return new Publication(f.Exists ? (f.Length, f.LastWriteTimeUtc, f.CreationTimeUtc) : null); }
+                catch { return FailIfExists; }
+            }
+
+            /// <summary>Called when the destination exists at publication; throws unless it is the approved file.</summary>
+            public void RequireApprovedTarget(string target)
+            {
+                if (approved is not { } want) throw new PublicationCollisionException(target);
+                var f = new FileInfo(target);
+                if (!f.Exists || (f.Length, f.LastWriteTimeUtc, f.CreationTimeUtc) != want)
+                    throw new PublicationCollisionException(target);
+            }
+        }
 
         /// <summary>
         /// One unit of work: a single FILE to copy or move. Directories are not units - they are
@@ -282,29 +315,50 @@ namespace KillerShot.Files
                     continue;
                 }
 
+                var rule = Publication.FailIfExists;
                 if (File.Exists(target) || Directory.Exists(target))
                 {
                     var choice = onConflict(BuildConflictInfo(item.Source, target));
                     if (choice == ConflictChoice.Cancel) { result.Canceled = true; return result; }
                     if (choice == ConflictChoice.Skip)   { result.Skipped++; progress.ItemsDone++; continue; }
                     if (choice == ConflictChoice.KeepBoth) target = UniqueName(target);
-                    // Replace falls through - the copy below overwrites.
+                    else rule = Publication.ReplaceApproved(target);
                 }
 
                 progress.CurrentFile = item.Source;
                 onProgress(progress);
 
-                try
+                bool finished = false, skipped = false;
+                long bytesBefore = progress.BytesDone;
+                for (int attempt = 0; attempt < MaxCollisionRetries && !finished && !skipped; attempt++)
                 {
-                    ct.ThrowIfCancellationRequested();
-                    if (item.IsLink) MoveLink(item.Source, target);
-                    else if (move) MoveFile(item.Source, target, ref progress, onProgress, ct, replace, renameFile);
-                    else      CopyFile(item.Source, target, ref progress, onProgress, ct, replace, renameFile);
-                    result.Succeeded++;
-                    result.SucceededTargets.Add(target);
+                    try
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        if (item.IsLink) MoveLink(item.Source, target);
+                        else if (move) MoveFile(item.Source, target, ref progress, onProgress, ct, rule, replace, renameFile);
+                        else      CopyFile(item.Source, target, ref progress, onProgress, ct, rule, replace, renameFile);
+                        result.Succeeded++;
+                        result.SucceededTargets.Add(target);
+                        finished = true;
+                    }
+                    catch (OperationCanceledException) { result.Canceled = true; return result; }
+                    catch (PublicationCollisionException)
+                    {
+                        // Something took the name after the conflict check (or the approved
+                        // replacement target changed). The earlier answer no longer applies:
+                        // ask again, and never replace without a fresh Replace.
+                        progress.BytesDone = bytesBefore;
+                        var choice = onConflict(BuildConflictInfo(item.Source, target));
+                        if (choice == ConflictChoice.Cancel) { result.Canceled = true; return result; }
+                        if (choice == ConflictChoice.Skip) { result.Skipped++; skipped = true; }
+                        else if (choice == ConflictChoice.KeepBoth) { target = UniqueName(item.Target); rule = Publication.FailIfExists; }
+                        else rule = Publication.ReplaceApproved(target);
+                    }
+                    catch (Exception ex) { result.Failed.Add((item.Source, ex.Message)); finished = true; }
                 }
-                catch (OperationCanceledException) { result.Canceled = true; return result; }
-                catch (Exception ex) { result.Failed.Add((item.Source, ex.Message)); }
+                if (!finished && !skipped)
+                    result.Failed.Add((item.Source, "The destination kept changing while it was being published: " + target));
 
                 progress.ItemsDone++;
                 onProgress(progress);
@@ -393,6 +447,7 @@ namespace KillerShot.Files
 
         private static void CopyFile(string src, string dst, ref FileOpProgress progress,
                                      Action<FileOpProgress> onProgress, CancellationToken ct,
+                                     Publication rule,
                                      Action<string, string, string?>? replace = null,
                                      Action<string, string, uint>? renameFile = null)
         {
@@ -444,11 +499,12 @@ namespace KillerShot.Files
                 File.SetAttributes(temp, File.GetAttributes(temp) & ~FileAttributes.ReadOnly);
                 if (File.Exists(dst))
                 {
+                    rule.RequireApprovedTarget(dst);
                     keepRecovery = true;
                     ReplaceFileWithRecovery(temp, dst, replace);
                     keepRecovery = false;
                 }
-                else (renameFile ?? RenameFile)(temp, dst, 0);
+                else PublishNew(temp, dst, renameFile);
             }
             finally
             {
@@ -459,6 +515,19 @@ namespace KillerShot.Files
                     File.SetAttributes(temp, File.GetAttributes(temp) & ~FileAttributes.ReadOnly);
                     File.Delete(temp);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Publishes to a name that was absent a moment ago. The rename itself refuses an
+        /// existing target, so a writer that wins the race is reported, never overwritten.
+        /// </summary>
+        private static void PublishNew(string incoming, string destination, Action<string, string, uint>? renameFile)
+        {
+            try { (renameFile ?? RenameFile)(incoming, destination, 0); }
+            catch (IOException ex) when ((ex.HResult & 0xFFFF) is 80 or 183 && (File.Exists(destination) || Directory.Exists(destination)))
+            {
+                throw new PublicationCollisionException(destination, ex);
             }
         }
 
@@ -505,6 +574,7 @@ namespace KillerShot.Files
 
         private static void MoveFile(string src, string dst, ref FileOpProgress progress,
                                      Action<FileOpProgress> onProgress, CancellationToken ct,
+                                     Publication rule,
                                      Action<string, string, string?>? replace = null,
                                      Action<string, string, uint>? renameFile = null)
         {
@@ -519,6 +589,7 @@ namespace KillerShot.Files
                 {
                     if (File.Exists(dst))
                     {
+                        rule.RequireApprovedTarget(dst);
                         FileAttributes incomingAttributes = File.GetAttributes(src);
                         bool readOnly = (incomingAttributes & FileAttributes.ReadOnly) != 0;
                         bool published = false;
@@ -536,7 +607,7 @@ namespace KillerShot.Files
                             else if (readOnly && File.Exists(src)) File.SetAttributes(src, incomingAttributes);
                         }
                     }
-                    else (renameFile ?? RenameFile)(src, dst, 0);
+                    else PublishNew(src, dst, renameFile);
                     progress.BytesDone += size;
                     return;
                 }
@@ -549,7 +620,7 @@ namespace KillerShot.Files
                 }
             }
 
-            CopyFile(src, dst, ref progress, onProgress, ct, replace, renameFile);
+            CopyFile(src, dst, ref progress, onProgress, ct, rule, replace, renameFile);
             ct.ThrowIfCancellationRequested();
             // A read-only source (a camera card's photos) refuses deletion, so clear the flag for
             // the delete the same way the same-volume branch does, and put it back if it fails.

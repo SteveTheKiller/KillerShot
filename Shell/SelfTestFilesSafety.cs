@@ -74,10 +74,12 @@ internal static class SelfTestFilesSafety
                 await Case("cache-concurrency", path => CacheConcurrency(path, Check, report));
                 await Case("address-overflow", path => AddressOverflow(path, Check, report));
                 await Case("cache-workload-minimal", path => CacheWorkloadMinimal(path, Check, report));
-                string[] expectedCases = ["containment", "same-folder-paste", "folder-filter", "readonly-cross-volume", "sort-arrow", "failed-replace-temp", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal"];
+                await Case("late-collision", path => LateCollision(path, Check));
+                string[] expectedCases = ["containment", "same-folder-paste", "folder-filter", "readonly-cross-volume", "sort-arrow", "failed-replace-temp", "cache", "size", "orientation", "columns-focus", "columns-menu", "address-watcher", "cache-concurrency", "address-overflow", "cache-workload-minimal", "late-collision"];
                 Check(checks >= 108 && expectedCases.All(name => report.ToString().Contains("SCENARIO PASS: " + name, StringComparison.Ordinal)),
-                    "all fifteen isolated safety scenarios complete with every repair regression selected");
+                    "all sixteen isolated safety scenarios complete with every repair regression selected");
             }
+            else if (scenario == "late-collision") await LateCollision(folder, Check);
             else if (scenario == "sort-arrow") await SortArrow(folder, Check);
             else if (scenario == "failed-replace-temp") await FailedReplaceTemp(folder, Check);
             else if (scenario == "containment") await Containment(folder, Check);
@@ -125,6 +127,123 @@ internal static class SelfTestFilesSafety
             File.WriteAllText(Path.Combine(reportFolder, "files-safety-report.txt"), report.ToString());
             Application.Current.Shutdown(exit);
         }
+    }
+
+    /// <summary>
+    /// BF-002: a destination that appears after the conflict check is another writer's file. It
+    /// survives unless a fresh conflict answer says Replace. Driven through the public
+    /// FileOps.CopyOrMove seam with real files; the progress callback is the "other writer".
+    /// </summary>
+    private static Task LateCollision(string folder, Action<bool, string> check)
+    {
+        static string Sha(string path) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path)));
+        static string[] Staging(string dir) => Directory.GetFiles(dir, ".KillerShot-*");
+        int n = 0;
+        (string Source, string Target, string SourceHash) Fixture(string name, string content)
+        {
+            string root = Directory.CreateDirectory(Path.Combine(folder, name + (++n))).FullName;
+            string source = Path.Combine(root, "src", "photo.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+            File.WriteAllText(source, content);
+            return (source, Directory.CreateDirectory(Path.Combine(root, "dst")).FullName, Sha(source));
+        }
+        // Runs one copy or move; "intrude" fires once, from the first progress callback.
+        (FileOpResult Result, List<ConflictInfo> Asked) Run(string source, string target, bool move, Action intrude,
+            Func<int, ConflictChoice> answer, CancellationToken ct = default, Action<string, string, uint>? rename = null)
+        {
+            var asked = new List<ConflictInfo>();
+            bool fired = false;
+            Func<ConflictInfo, ConflictChoice> conflict = info => { asked.Add(info); return answer(asked.Count); };
+            Action<FileOpProgress> progress = _ => { if (!fired) { fired = true; intrude(); } };
+            // The public seam unless a test must simulate a cross-volume rename failure.
+            FileOpResult result = rename == null
+                ? FileOps.CopyOrMove([source], target, move, conflict, progress, ct)
+                : FileOps.CopyOrMove([source], target, move, conflict, progress, ct, File.Replace, renameFile: rename);
+            return (result, asked);
+        }
+
+        // 1. The reported defect: the file appears after collision checking, the answer would be Skip.
+        var f = Fixture("sentinel", "SOURCE");
+        string dst = Path.Combine(f.Target, "photo.txt");
+        var r = Run(f.Source, f.Target, false, () => File.WriteAllText(dst, "OTHER WRITER"), _ => ConflictChoice.Skip);
+        check(File.ReadAllText(dst) == "OTHER WRITER", "a destination created mid-copy is not silently replaced");
+        check(r.Asked.Count == 1 && r.Result is { Succeeded: 0, Skipped: 1, Canceled: false, Failed.Count: 0 },
+            $"a late collision is asked about and reported honestly (asked={r.Asked.Count}, succeeded={r.Result.Succeeded}, skipped={r.Result.Skipped}, failed={r.Result.Failed.Count})");
+        check(Sha(f.Source) == f.SourceHash && Staging(f.Target).Length == 0 && Directory.GetFiles(f.Target).Length == 1,
+            "a refused late collision keeps the source and leaves no staging file");
+
+        // 2. KeepBoth: the unique name is claimed mid-copy, so it is asked about again.
+        f = Fixture("keepboth", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        string second = Path.Combine(f.Target, "photo (2).txt"), third = Path.Combine(f.Target, "photo (3).txt");
+        File.WriteAllText(dst, "ORIGINAL");
+        r = Run(f.Source, f.Target, false, () => File.WriteAllText(second, "CLAIMED"), _ => ConflictChoice.KeepBoth);
+        check(File.ReadAllText(dst) == "ORIGINAL" && File.ReadAllText(second) == "CLAIMED" && File.Exists(third) && Sha(third) == f.SourceHash,
+            "a KeepBoth name claimed mid-copy is kept and the copy takes the next free name");
+        check(r.Asked.Count == 2 && r.Result is { Succeeded: 1, Failed.Count: 0 } && r.Result.SucceededTargets.SequenceEqual([third]) && Staging(f.Target).Length == 0,
+            $"the KeepBoth retry reports the real name and cleans staging (asked={r.Asked.Count})");
+
+        // 3. An explicit Replace still replaces, and leaves no backup behind.
+        f = Fixture("replace", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        File.WriteAllText(dst, "ORIGINAL");
+        FileOpResult plain = FileOps.CopyOrMove([f.Source], f.Target, false, _ => ConflictChoice.Replace, _ => { }, CancellationToken.None);
+        check(plain is { Succeeded: 1, Failed.Count: 0 } && Sha(dst) == f.SourceHash && Directory.GetFiles(f.Target).Length == 1,
+            "an explicit Replace still replaces and leaves neither backup nor staging");
+
+        // 4. The approved target is swapped for another file before publishing: not the file the user approved.
+        f = Fixture("swapped", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        File.WriteAllText(dst, "ORIGINAL");
+        r = Run(f.Source, f.Target, false, () => File.WriteAllText(dst, "SWAPPED IN BY SOMEONE ELSE, LONGER"),
+            count => count == 1 ? ConflictChoice.Replace : ConflictChoice.Skip);
+        check(File.ReadAllText(dst) == "SWAPPED IN BY SOMEONE ELSE, LONGER" && r.Asked.Count == 2 && r.Result is { Succeeded: 0, Skipped: 1 },
+            $"a swapped replacement target goes back to the user and survives a Skip (asked={r.Asked.Count})");
+        f = Fixture("swapped-replace", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        File.WriteAllText(dst, "ORIGINAL");
+        r = Run(f.Source, f.Target, false, () => File.WriteAllText(dst, "SWAPPED IN BY SOMEONE ELSE, LONGER"), _ => ConflictChoice.Replace);
+        check(r.Asked.Count == 2 && Sha(dst) == f.SourceHash && r.Result is { Succeeded: 1, Failed.Count: 0 } && Directory.GetFiles(f.Target).Length == 1,
+            "a second explicit Replace replaces the swapped file");
+
+        // 5. Cancellation: at the late-collision prompt, and while copying.
+        f = Fixture("cancel-prompt", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        r = Run(f.Source, f.Target, false, () => File.WriteAllText(dst, "OTHER WRITER"), _ => ConflictChoice.Cancel);
+        check(r.Result is { Canceled: true, Succeeded: 0 } && File.ReadAllText(dst) == "OTHER WRITER" && Sha(f.Source) == f.SourceHash && Staging(f.Target).Length == 0,
+            "cancelling at a late collision keeps the other file, the source, and leaves no staging");
+        f = Fixture("cancel-copy", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        using (var cts = new CancellationTokenSource())
+        {
+            r = Run(f.Source, f.Target, false, cts.Cancel, _ => ConflictChoice.Replace, cts.Token);
+            check(r.Result.Canceled && !File.Exists(dst) && Sha(f.Source) == f.SourceHash && Staging(f.Target).Length == 0,
+                "cancelling a copy publishes nothing and leaves no staging");
+        }
+
+        // 6. Moves: same volume (rename) and the cross-volume path (copy, then delete the source).
+        f = Fixture("move-same", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        r = Run(f.Source, f.Target, true, () => File.WriteAllText(dst, "OTHER WRITER"), _ => ConflictChoice.Skip);
+        check(File.ReadAllText(dst) == "OTHER WRITER" && Sha(f.Source) == f.SourceHash && r.Result is { Succeeded: 0, Skipped: 1, Failed.Count: 0 },
+            "a same-volume move refused at a late collision keeps both files");
+        f = Fixture("move-same-replace", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        r = Run(f.Source, f.Target, true, () => File.WriteAllText(dst, "OTHER WRITER"), _ => ConflictChoice.Replace);
+        check(r.Result is { Succeeded: 1, Failed.Count: 0 } && Sha(dst) == f.SourceHash && !File.Exists(f.Source) && r.Asked.Count == 1,
+            "a same-volume move replaces a late collision only after a fresh Replace");
+        f = Fixture("move-cross", "SOURCE");
+        dst = Path.Combine(f.Target, "photo.txt");
+        bool notSameDevice = true;
+        void CrossRename(string from, string to, uint flags)
+        {
+            if (notSameDevice) { notSameDevice = false; throw new IOException("Not the same device.", unchecked((int)0x80070011)); }
+            File.Move(from, to, overwrite: (flags & 1) != 0);
+        }
+        r = Run(f.Source, f.Target, true, () => File.WriteAllText(dst, "OTHER WRITER"), _ => ConflictChoice.Skip, rename: CrossRename);
+        check(File.ReadAllText(dst) == "OTHER WRITER" && Sha(f.Source) == f.SourceHash && Staging(f.Target).Length == 0 && r.Result is { Succeeded: 0, Skipped: 1, Failed.Count: 0 },
+            "a cross-volume move refused at a late collision keeps the source and the other file");
+        return Task.CompletedTask;
     }
 
     private static async Task CacheWorkloadMinimal(string folder, Action<bool, string> check, StringBuilder report)
