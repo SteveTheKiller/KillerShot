@@ -26,38 +26,44 @@ public partial class MainWindow
     /// <summary>How many times a scan reads the picture again when it keeps changing underneath.</summary>
     private const int RedactionScanAttempts = 3;
 
-    /// <summary>Boxes added to the document, or null when Windows cannot read text here. A document
-    /// that was replaced while the picture was being read gets nothing. Words belong to the exact
-    /// picture they were read from: when the picture is cropped, turned, resized, undone or marked
-    /// while Windows reads it, the scan reads the current picture again instead of placing old
-    /// positions on the new one, and gives up with nothing added if it never holds still.</summary>
-    internal async Task<int?> ScanForRedactionAsync(EditorDocument doc)
+    /// <summary>How a scan ended: boxes added, the picture read and holding nothing sensitive, the
+    /// picture or document changing so often that the scan gave up, or Windows unable to read text.</summary>
+    internal readonly record struct RedactionScan(RedactionOutcome Outcome, int Added = 0);
+
+    internal enum RedactionOutcome { Found, NothingFound, Changed, Unavailable }
+
+    /// <summary>What the scan did. A document that was replaced while the picture was being read
+    /// gets nothing and is reported as changed. Words belong to the exact picture they were read
+    /// from: when the picture is cropped, turned, resized, undone or marked while Windows reads
+    /// it, the scan reads the current picture again instead of placing old positions on the new
+    /// one, and gives up with nothing added, reported as changed, if it never holds still.</summary>
+    internal async Task<RedactionScan> ScanForRedactionAsync(EditorDocument doc)
     {
         var kinds = RedactSettings.Kinds;
-        if (kinds == RedactKinds.None) return 0;
+        if (kinds == RedactKinds.None) return new(RedactionOutcome.NothingFound);
         for (int attempt = 0; attempt < RedactionScanAttempts; attempt++)
         {
             var state = doc.State;
             // The picture as it will be saved: inserted pictures and text marks are read, and text
             // already under a redaction is not read twice.
             var lines = await ReadWordsAsync(EditorDocument.Render(state));
-            if (lines == null) return null;
-            if (!ReferenceEquals(doc, _doc)) return 0;
+            if (lines == null) return new(RedactionOutcome.Unavailable);
+            if (!ReferenceEquals(doc, _doc)) return new(RedactionOutcome.Changed);
             if (!ReferenceEquals(state, doc.State)) continue;
             int added = RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
             if (added > 0) Editor.InvalidateVisual();
-            return added;
+            return added > 0 ? new(RedactionOutcome.Found, added) : new(RedactionOutcome.NothingFound);
         }
-        return 0;
+        return new(RedactionOutcome.Changed);
     }
 
     /// <summary>Scan every capture: runs once on a new capture as it opens.</summary>
     private async void ScanNewCapture(EditorDocument doc)
     {
-        int? added;
-        try { added = await ScanForRedactionAsync(doc); }
+        RedactionScan scan;
+        try { scan = await ScanForRedactionAsync(doc); }
         catch (Exception error) when (error is InvalidOperationException or System.Runtime.InteropServices.COMException) { return; }
-        if (added is > 0 && ReferenceEquals(doc, _doc)) ShowRedactionResult(added.Value);
+        if (scan.Added > 0 && ReferenceEquals(doc, _doc)) ShowRedactionResult(scan.Added);
     }
 
     private void ShowRedactionResult(int added) =>

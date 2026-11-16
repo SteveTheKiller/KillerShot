@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">扫描每个新截图</sys:String>
     <sys:String x:Key="Str_Redact_Find">查找</sys:String>
     <sys:String x:Key="Str_Redact_None">未找到敏感文字。</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">扫描期间图片发生了变化。请重新扫描。</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">自动涂黑添加了 1 个方框。请在保存前检查。</sys:String>
     <sys:String x:Key="Str_Redact_Found">自动涂黑添加了 {0} 个方框。请在保存前检查。</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">创建 PDF</sys:String>

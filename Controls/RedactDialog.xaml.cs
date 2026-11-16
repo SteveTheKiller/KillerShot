@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using KillerShot.Services;
+using KillerShot.Shell;
 
 namespace KillerShot.Controls
 {
@@ -10,19 +11,20 @@ namespace KillerShot.Controls
     /// The Redact settings: which kinds of sensitive text auto redact looks for, the color and
     /// feather of every redaction box, and whether new captures are scanned when they open. Every
     /// change is saved as it is made. Find runs the scan through the editor's callback, which
-    /// returns how many boxes it added, or null when Windows cannot read text here. The dialog
-    /// closes once boxes are added and stays open to explain when none were.
+    /// says how it ended: boxes added, nothing found, the picture changing under the scan, or Windows
+    /// unable to read text here. The dialog closes once boxes are added and stays open to explain
+    /// when none were.
     /// </summary>
     public partial class RedactDialog : Window
     {
-        private readonly Func<Task<int?>> _scan;
+        private readonly Func<Task<MainWindow.RedactionScan>> _scan;
         private readonly (CheckBox Box, RedactKinds Kind)[] _kinds;
         private bool _loading = true;
 
         /// <summary>How many boxes the last Find added.</summary>
         public int Added { get; private set; }
 
-        internal RedactDialog(Window? owner, Func<Task<int?>> scan)
+        internal RedactDialog(Window? owner, Func<Task<MainWindow.RedactionScan>> scan)
         {
             InitializeComponent();
             Owner = owner;
@@ -84,8 +86,8 @@ namespace KillerShot.Controls
         {
             FindButton.IsEnabled = false;
             ShowStatus(LocaleManager.Loc("Str_Ocr_Reading"));
-            int? added;
-            try { added = await _scan(); }
+            MainWindow.RedactionScan scan;
+            try { scan = await _scan(); }
             catch (Exception error) when (error is InvalidOperationException or System.Runtime.InteropServices.COMException)
             {
                 ShowStatus(error.Message);
@@ -93,13 +95,18 @@ namespace KillerShot.Controls
                 return;
             }
             if (!IsLoaded) return;
-            if (added is > 0)
+            if (scan.Added > 0)
             {
-                Added = added.Value;
+                Added = scan.Added;
                 Close();
                 return;
             }
-            ShowStatus(LocaleManager.Loc(added == null ? "Str_Ocr_Unavailable" : "Str_Redact_None"));
+            ShowStatus(LocaleManager.Loc(scan.Outcome switch
+            {
+                MainWindow.RedactionOutcome.Unavailable => "Str_Ocr_Unavailable",
+                MainWindow.RedactionOutcome.Changed => "Str_Redact_Changed",
+                _ => "Str_Redact_None",
+            }));
             SyncFind();
         }
 

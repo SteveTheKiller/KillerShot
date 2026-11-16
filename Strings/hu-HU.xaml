@@ -274,6 +274,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Minden új felvétel átvizsgálása</sys:String>
     <sys:String x:Key="Str_Redact_Find">Keresés</sys:String>
     <sys:String x:Key="Str_Redact_None">Nem található bizalmas szöveg.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">A kép megváltozott a keresés közben. Keresse újra.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Az automatikus kitakarás 1 dobozt adott hozzá. Mentés előtt ellenőrizze.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Az automatikus kitakarás {0} dobozt adott hozzá. Mentés előtt ellenőrizze őket.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">PDF készítése</sys:String>

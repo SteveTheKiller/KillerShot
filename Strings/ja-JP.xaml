@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">新しいキャプチャをすべてスキャン</sys:String>
     <sys:String x:Key="Str_Redact_Find">検索</sys:String>
     <sys:String x:Key="Str_Redact_None">機密情報は見つかりませんでした。</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">スキャン中に画像が変わりました。もう一度スキャンしてください。</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">自動黒塗りでボックスを 1 個追加しました。保存する前に確認してください。</sys:String>
     <sys:String x:Key="Str_Redact_Found">自動黒塗りでボックスを {0} 個追加しました。保存する前に確認してください。</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">PDF を作成</sys:String>

@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Перевіряти кожен новий знімок</sys:String>
     <sys:String x:Key="Str_Redact_Find">Знайти</sys:String>
     <sys:String x:Key="Str_Redact_None">Конфіденційний текст не знайдено.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Зображення змінилося під час сканування. Скануйте ще раз.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Автозафарбовування додало 1 прямокутник. Перевірте його перед збереженням.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Автозафарбовування додало прямокутників: {0}. Перевірте їх перед збереженням.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Створити PDF</sys:String>

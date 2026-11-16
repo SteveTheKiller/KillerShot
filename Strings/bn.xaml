@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">প্রতিটি নতুন ক্যাপচার স্ক্যান করুন</sys:String>
     <sys:String x:Key="Str_Redact_Find">খুঁজুন</sys:String>
     <sys:String x:Key="Str_Redact_None">কোনো সংবেদনশীল লেখা পাওয়া যায়নি।</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">ছবিটি স্ক্যানের সময় বদলে গেছে। আবার স্ক্যান করুন।</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">স্বয়ংক্রিয় ঢাকা ১টি বাক্স যোগ করেছে। সংরক্ষণের আগে দেখে নিন।</sys:String>
     <sys:String x:Key="Str_Redact_Found">স্বয়ংক্রিয় ঢাকা {0}টি বাক্স যোগ করেছে। সংরক্ষণের আগে দেখে নিন।</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">PDF তৈরি করুন</sys:String>

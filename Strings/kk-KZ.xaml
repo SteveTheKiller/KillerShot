@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Әр жаңа түсірілімді тексеру</sys:String>
     <sys:String x:Key="Str_Redact_Find">Табу</sys:String>
     <sys:String x:Key="Str_Redact_None">Құпия мәтін табылмады.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Сканерлеу кезінде сурет өзгерді. Қайта сканерлеңіз.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Автоматты жасыру 1 тіктөртбұрыш қосты. Сақтамас бұрын тексеріңіз.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Автоматты жасыру {0} тіктөртбұрыш қосты. Сақтамас бұрын тексеріңіз.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">PDF жасау</sys:String>

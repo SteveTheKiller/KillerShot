@@ -271,6 +271,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Preglej vsak nov posnetek</sys:String>
     <sys:String x:Key="Str_Redact_Find">Najdi</sys:String>
     <sys:String x:Key="Str_Redact_None">Občutljivega besedila ni bilo mogoče najti.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Slika se je med iskanjem spremenila. Iščite znova.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Samodejno prekrivanje je dodalo 1 pravokotnik. Pred shranjevanjem ga preverite.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Samodejno prekrivanje je dodalo pravokotnike: {0}. Pred shranjevanjem jih preverite.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Ustvari PDF</sys:String>

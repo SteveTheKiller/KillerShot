@@ -108,6 +108,68 @@ internal static class SelfTestAutoRedact
         }
     }
 
+    /// <summary>Find in the Redact dialog says why nothing was added: "no sensitive text" only when
+    /// the picture was read and held nothing. A picture that kept changing, or a document that was
+    /// replaced, is a different answer, because telling the user nothing was found there would be
+    /// false.</summary>
+    private static async Task DialogOutcomeChecks(MainWindow window, List<string> report)
+    {
+        var real = window.ReadWordsAsync;
+        var kinds = RedactSettings.Kinds;
+        RedactSettings.Kinds = RedactKinds.Email;
+        App.Instance.PresentDocumentReplacement = _ => true;
+        var cases = new (string Name, string Key, Func<EditorDocument, Func<BitmapSource, Task<IReadOnlyList<IReadOnlyList<OcrWord>>?>>> Reader)[]
+        {
+            ("nothing found", "Str_Redact_None", d => _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([])),
+            ("picture keeps changing", "Str_Redact_Changed", d => _ =>
+            {
+                d.Rotate(true);
+                return Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>(EmailAt(OldEmail));
+            }),
+            ("document replaced", "Str_Redact_Changed", d => _ =>
+            {
+                App.Instance.SetDocument(new EditorDocument(Picture()));
+                return Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>(EmailAt(OldEmail));
+            }),
+        };
+        try
+        {
+            foreach (var (name, key, reader) in cases)
+            {
+                var doc = new EditorDocument(Picture());
+                App.Instance.SetDocument(doc);
+                await Task.Delay(50);
+                window.ReadWordsAsync = reader(doc);
+                var done = new TaskCompletionSource<string>();
+                _ = window.Dispatcher.BeginInvoke(async () =>
+                {
+                    try
+                    {
+                        RedactDialog? dialog = null;
+                        for (int i = 0; i < 200 && (dialog = Application.Current.Windows.OfType<RedactDialog>().FirstOrDefault(w => w.IsLoaded)) == null; i++) await Task.Delay(10);
+                        if (dialog == null) throw new InvalidOperationException("Auto redact did not open the Redact dialog.");
+                        dialog.FindButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        for (int i = 0; i < 1000 && (!dialog.FindButton.IsEnabled || dialog.StatusText.Text == LocaleManager.Loc("Str_Ocr_Reading")); i++) await Task.Delay(10);
+                        done.TrySetResult(dialog.StatusText.Text);
+                        dialog.Close();
+                    }
+                    catch (Exception error) { done.TrySetException(error); }
+                });
+                window.AutoRedactBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                string text = await done.Task;
+                string expected = LocaleManager.Loc(key);
+                if (text != expected)
+                    throw new InvalidOperationException($"dialog outcome {name}: Find said \"{text}\", expected {key} \"{expected}\".");
+                report.Add($"dialog outcome {name}: Find says {key} PASS");
+            }
+        }
+        finally
+        {
+            window.ReadWordsAsync = real;
+            RedactSettings.Kinds = kinds;
+        }
+    }
+
     /// <summary>Auto redact reads the picture that will be saved: a filled mark drawn over a white
     /// capture must reach recognition, and text under an existing redaction must not.</summary>
     private static async Task MarksAreReadChecks(MainWindow window, List<string> report)
@@ -180,6 +242,7 @@ internal static class SelfTestAutoRedact
             report.Add("toolbar: Auto redact shows beside Redact with a 1.1.1 saved layout PASS");
 
             await StaleScanChecks(window, report);
+            await DialogOutcomeChecks(window, report);
             await MarksAreReadChecks(window, report);
             if (!canRecognize)
             {

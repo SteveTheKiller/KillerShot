@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analisar cada nova captura</sys:String>
     <sys:String x:Key="Str_Redact_Find">Procurar</sys:String>
     <sys:String x:Key="Str_Redact_None">Nenhum texto confidencial encontrado.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">A imagem mudou durante a verificação. Verifique novamente.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Ocultar automaticamente adicionou 1 caixa. Confira antes de salvar.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Ocultar automaticamente adicionou {0} caixas. Confira antes de salvar.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Criar PDF</sys:String>

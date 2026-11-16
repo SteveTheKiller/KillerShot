@@ -285,6 +285,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Scan every new capture</sys:String>
     <sys:String x:Key="Str_Redact_Find">Find</sys:String>
     <sys:String x:Key="Str_Redact_None">No sensitive text was found.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">The picture changed during the scan. Scan again.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Auto redact added 1 box. Check it before you save.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Auto redact added {0} boxes. Check them before you save.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Make PDF</sys:String>

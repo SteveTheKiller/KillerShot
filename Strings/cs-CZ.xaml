@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Prohledat každý nový snímek</sys:String>
     <sys:String x:Key="Str_Redact_Find">Najít</sys:String>
     <sys:String x:Key="Str_Redact_None">Nebyl nalezen žádný citlivý text.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Obrázek se během skenování změnil. Skenujte znovu.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatické začernění přidalo 1 rámeček. Před uložením ho zkontrolujte.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatické začernění přidalo rámečky: {0}. Před uložením je zkontrolujte.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Vytvořit PDF</sys:String>

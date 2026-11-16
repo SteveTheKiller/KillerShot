@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analizza ogni nuova cattura</sys:String>
     <sys:String x:Key="Str_Redact_Find">Trova</sys:String>
     <sys:String x:Key="Str_Redact_None">Nessun testo sensibile trovato.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">L’immagine è cambiata durante la scansione. Esegui di nuovo la scansione.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">L’oscuramento automatico ha aggiunto 1 riquadro. Controllalo prima di salvare.</sys:String>
     <sys:String x:Key="Str_Redact_Found">L’oscuramento automatico ha aggiunto {0} riquadri. Controllali prima di salvare.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Crea PDF</sys:String>

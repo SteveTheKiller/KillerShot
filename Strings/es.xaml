@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analizar cada captura nueva</sys:String>
     <sys:String x:Key="Str_Redact_Find">Buscar</sys:String>
     <sys:String x:Key="Str_Redact_None">No se encontró texto confidencial.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">La imagen cambió durante el análisis. Vuelve a analizar.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">El tachado automático añadió 1 recuadro. Revísalo antes de guardar.</sys:String>
     <sys:String x:Key="Str_Redact_Found">El tachado automático añadió {0} recuadros. Revísalos antes de guardar.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Crear PDF</sys:String>

@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Her yeni yakalamayı tara</sys:String>
     <sys:String x:Key="Str_Redact_Find">Bul</sys:String>
     <sys:String x:Key="Str_Redact_None">Hassas metin bulunamadı.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Tarama sırasında resim değişti. Yeniden tarayın.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Otomatik karartma 1 kutu ekledi. Kaydetmeden önce kontrol edin.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Otomatik karartma {0} kutu ekledi. Kaydetmeden önce kontrol edin.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">PDF oluştur</sys:String>

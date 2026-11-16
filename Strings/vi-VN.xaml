@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Quét mọi ảnh chụp mới</sys:String>
     <sys:String x:Key="Str_Redact_Find">Tìm</sys:String>
     <sys:String x:Key="Str_Redact_None">Không tìm thấy văn bản nhạy cảm.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Hình ảnh đã thay đổi trong lúc quét. Hãy quét lại.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Tự động che đã thêm 1 ô. Hãy kiểm tra trước khi lưu.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Tự động che đã thêm {0} ô. Hãy kiểm tra trước khi lưu.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Tạo PDF</sys:String>

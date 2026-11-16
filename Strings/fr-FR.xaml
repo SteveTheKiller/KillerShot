@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analyser chaque nouvelle capture</sys:String>
     <sys:String x:Key="Str_Redact_Find">Rechercher</sys:String>
     <sys:String x:Key="Str_Redact_None">Aucun texte sensible trouvé.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">L’image a changé pendant l’analyse. Relancez l’analyse.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Le masquage automatique a ajouté 1 cadre. Vérifiez-le avant d’enregistrer.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Le masquage automatique a ajouté {0} cadres. Vérifiez-les avant d’enregistrer.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Créer un PDF</sys:String>

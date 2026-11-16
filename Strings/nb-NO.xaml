@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Skann hvert nytt skjermbilde</sys:String>
     <sys:String x:Key="Str_Redact_Find">Finn</sys:String>
     <sys:String x:Key="Str_Redact_None">Fant ingen sensitiv tekst.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Bildet endret seg under skanningen. Skann på nytt.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatisk sladding la til 1 boks. Sjekk den før du lagrer.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatisk sladding la til {0} bokser. Sjekk dem før du lagrer.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Lag PDF</sys:String>

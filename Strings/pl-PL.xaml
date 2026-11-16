@@ -275,6 +275,7 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Skanuj każdy nowy zrzut</sys:String>
     <sys:String x:Key="Str_Redact_Find">Znajdź</sys:String>
     <sys:String x:Key="Str_Redact_None">Nie znaleziono poufnego tekstu.</sys:String>
+    <sys:String x:Key="Str_Redact_Changed">Obraz zmienił się podczas skanowania. Zeskanuj ponownie.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatyczne maskowanie dodało 1 ramkę. Sprawdź ją przed zapisaniem.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatyczne maskowanie dodało ramki: {0}. Sprawdź je przed zapisaniem.</sys:String>
     <sys:String x:Key="Str_Menu_MakePdf">Utwórz PDF</sys:String>
