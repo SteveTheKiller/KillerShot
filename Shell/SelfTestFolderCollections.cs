@@ -112,8 +112,15 @@ internal static partial class SelfTestLibrary
             long storedCollection = CaptureLibrary.CreateCollection("Stored collection", [stored]);
             async Task Listed()
             {
-                await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
-                await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
+                // A listing can queue another (a retargeted tab, a coalesced reload), so wait until
+                // the latest one has been applied and no newer one started.
+                Task seen;
+                do
+                {
+                    seen = library.ListingTask;
+                    await seen.WaitAsync(TimeSpan.FromSeconds(10));
+                    await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+                } while (!ReferenceEquals(seen, library.ListingTask));
             }
             library.SetGroup("collection");
             navigation.SetSource("all");

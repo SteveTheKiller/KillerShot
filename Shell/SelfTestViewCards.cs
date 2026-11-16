@@ -147,6 +147,19 @@ internal static class SelfTestViewCards
 
     private static int RenderStock(FrameworkElement element, string path)
     {
+        // The strip loads its pictures asynchronously, so on a slow machine it can still be
+        // unmeasured here; let layout finish before rendering instead of rendering 0 pixels tall.
+        var waited = System.Diagnostics.Stopwatch.StartNew();
+        while ((element.ActualWidth < 1 || element.ActualHeight < 1) && waited.ElapsedMilliseconds < 5000)
+        {
+            var frame = new System.Windows.Threading.DispatcherFrame();
+            element.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle, () => frame.Continue = false);
+            System.Windows.Threading.Dispatcher.PushFrame(frame);
+            element.UpdateLayout();
+            if (element.ActualHeight < 1) Thread.Sleep(20);
+        }
+        if (element.ActualWidth < 1 || element.ActualHeight < 1)
+            throw new InvalidOperationException($"{element.Name} never got a size to render ({element.ActualWidth}x{element.ActualHeight}).");
         var bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth), (int)Math.Ceiling(element.ActualHeight), 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(element);
         ImageOutput.SavePng(bitmap, path);
