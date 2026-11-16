@@ -171,9 +171,15 @@ internal static class SelfTestServiceFixes
         File.WriteAllBytes(Path.Combine(folder, "Retiring.key.retire"), [1]);
         File.WriteAllBytes(Path.Combine(folder, "Creating.kshot"), [1]);
         File.WriteAllBytes(Path.Combine(folder, "Creating.key.creating"), [1]);
+        // A retired key beside a backup means the password swap already happened, so the album
+        // holds the new password and the retired key only opens the backup.
+        File.WriteAllBytes(Path.Combine(folder, "Swapped.kshot"), [1]);
+        File.WriteAllBytes(Path.Combine(folder, "Swapped.key.retire"), [1]);
+        File.WriteAllBytes(Path.Combine(folder, "Swapped.kshot.bak"), [1]);
         var albums = CaptureLibrary.Albums();
         foreach (string name in new[] { "Retiring", "Creating" })
             Require(albums.Single(a => a.Name == name) is { PasswordProtected: false }, $"{name} listed as password protected.");
+        Require(albums.Single(a => a.Name == "Swapped") is { PasswordProtected: true }, "Swapped listed as unprotected beside a retired key and its backup.");
     }
 
     // ---- SX-003: a stored recording obeys the history limit ----

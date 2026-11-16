@@ -16,12 +16,20 @@ internal static partial class CaptureLibrary
                 .Select(file => new AlbumInfo(file.FullName, Path.GetFileNameWithoutExtension(file.Name), file.Length,
                     file.LastWriteTime, string.Equals(file.FullName, FilePath, StringComparison.OrdinalIgnoreCase),
                     // Any account key, including one left by an interrupted password change or creation.
-                    !AccountKeySidecars.Any(ext => File.Exists(Path.ChangeExtension(file.FullName, ext)))))
+                    !HasAccountKey(file.FullName)))
                 .OrderByDescending(album => album.Active).ThenBy(album => album.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
         }
     }
 
-    private static readonly string[] AccountKeySidecars = [".key", ".key.next", ".key.retire", ".key.creating"];
+    private static readonly string[] AccountKeySidecars = [".key", ".key.next", ".key.creating"];
+
+    /// <summary>True when an account key sits beside the album. A retired key counts only when no
+    /// backup exists: a password change retires the key before the swap, and the swap leaves the
+    /// backup, so a retired key beside a backup opens the old copy while the album itself now
+    /// holds the new password. A retired key with no backup is a change that stopped before the swap.</summary>
+    private static bool HasAccountKey(string album) =>
+        AccountKeySidecars.Any(ext => File.Exists(Path.ChangeExtension(album, ext)))
+        || (File.Exists(Path.ChangeExtension(album, ".key.retire")) && !File.Exists(album + ".bak"));
 
     private sealed record RenameJournal(string OldName, string NewName, bool Active, string[] Sidecars, bool Committed = false);
     // .kshot-wal and .kshot-shm: SQLite's write-ahead log beside an album. Closing checkpoints and
