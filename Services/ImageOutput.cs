@@ -144,6 +144,55 @@ internal static class ImageOutput
         return Decode(stream, MaxPixels);
     }
 
+    /// <summary>The largest encoded file an import admits: the size of the biggest image it may
+    /// decode (<see cref="MaxPixels"/>) held as uncompressed BGRA. No supported encoding needs more
+    /// bytes than that, so a larger file is padding or damage.</summary>
+    public const long MaxEncodedBytes = MaxPixels * 4;
+
+    /// <summary>Loads an image file through the same guarded decoder, streaming from disk. The file
+    /// is refused when it is larger than <see cref="MaxEncodedBytes"/>, and bytes written after it
+    /// was admitted are never read, so a growing file cannot pass the limit.</summary>
+    public static BitmapSource LoadAdmitted(string path)
+    {
+        using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 81920);
+        long length = file.Length;
+        if (length > MaxEncodedBytes) throw new EncodedImageTooLargeException(length);
+        using var bounded = new AdmittedStream(file, length);
+        return Decode(bounded, MaxPixels);
+    }
+
+    /// <summary>A read-only view of a file's first <c>length</c> bytes, fixed when it was admitted.</summary>
+    private sealed class AdmittedStream(Stream inner, long length) : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => length;
+        public override long Position { get => inner.Position; set => Seek(value, SeekOrigin.Begin); }
+        public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
+        public override int Read(Span<byte> buffer)
+        {
+            long left = length - inner.Position;
+            if (left <= 0) return 0;
+            if (buffer.Length > left) buffer = buffer[..(int)left];
+            return inner.Read(buffer);
+        }
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            long target = origin switch
+            {
+                SeekOrigin.Begin => offset,
+                SeekOrigin.Current => inner.Position + offset,
+                _ => length + offset,
+            };
+            if (target < 0) throw new IOException("Seek before the start of the image.");
+            return inner.Seek(target, SeekOrigin.Begin);
+        }
+        public override void Flush() { }
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
+
     /// <summary>The same guarded decoder for album blobs and inserted marks. No pixels are
     /// requested until the header has passed the caller's admission limit.</summary>
     public static BitmapSource Load(byte[] encoded, long pixelLimit = MaxPixels)
@@ -229,4 +278,11 @@ internal sealed class ImageTooLargeException(int width, int height, long pixelLi
 {
     public int Width { get; } = width;
     public int Height { get; } = height;
+}
+
+/// <summary>An encoded image file larger than any image an import may decode.</summary>
+internal sealed class EncodedImageTooLargeException(long length)
+    : IOException($"The image file is {length:N0} bytes, larger than the {ImageOutput.MaxEncodedBytes:N0} bytes KillerShot can open.")
+{
+    public long Length { get; } = length;
 }

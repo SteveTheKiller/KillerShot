@@ -12,6 +12,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recording
 - The Print Screen helper is compiled to native code and no longer starts the .NET runtime, so another program running as you cannot use .NET environment variables to load its own code into the helper's elevated window access.
 
 ### Fixed
+- `killershot qr` reads a picture file only up to 400 MB and stops at the size it had when opened, so a huge, padded or growing file is refused instead of being loaded whole into memory.
 - Stored recordings import, export, play and prepare for dragging in the background, album mutations pause during recording work, and playback copies are reused.
 - Library searches, collection strips, color lookups and thumbnail arrivals do less work on the UI thread, and shelf scrolling works normally.
 - Album switching, unlocking, capture references and edited previews preserve capture identity and release unused files. Image decoding and failed recognition jobs no longer stall other library work.

@@ -127,7 +127,8 @@ public static class Program
         {
             string path = Path.GetFullPath(options.Positionals[0]);
             if (!File.Exists(path)) throw new CliException("The image file does not exist.", ExitFailed);
-            image = QrImages.Load(await File.ReadAllBytesAsync(path));
+            try { image = QrImages.Load(path); }
+            catch (EncodedImageTooLargeException error) { throw new CliException(error.Message, ExitFailed); }
         }
         var codes = await Task.Run(() => QrImages.Read(image));
         if (options.Has("json"))

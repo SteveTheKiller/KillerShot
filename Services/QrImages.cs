@@ -25,4 +25,7 @@ internal static class QrImages
     }
 
     public static BitmapSource Load(byte[] encoded) => ImageOutput.Load(encoded);
+
+    /// <summary>Streams an image file, refusing one larger than an import admits.</summary>
+    public static BitmapSource Load(string path) => ImageOutput.LoadAdmitted(path);
 }
