@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Có bản cập nhật: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Bản cập nhật được cung cấp qua Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Không thể lưu album trong thư mục mạng. Hãy chọn một thư mục trên máy tính này.</sys:String>
+    <sys:String x:Key="Str_Album_NewerSchema">Album này được tạo bằng phiên bản KillerShot mới hơn. Hãy cập nhật KillerShot để mở album.</sys:String>
     <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Ứng dụng sẽ tự động đóng và mở lại.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Tải xuống và cài đặt {0} {1}?</sys:String>

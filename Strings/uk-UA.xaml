@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Доступне оновлення: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Оновлення надходять через Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Альбоми не можна зберігати в мережевій папці. Виберіть папку на цьому комп'ютері.</sys:String>
+    <sys:String x:Key="Str_Album_NewerSchema">Цей альбом створено новішою версією KillerShot. Оновіть KillerShot, щоб відкрити його.</sys:String>
     <sys:String x:Key="Str_Size_Kb">{0} КБ</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Застосунок закриється та відкриється знову автоматично.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Завантажити й установити {0} {1}?</sys:String>

@@ -183,8 +183,11 @@ public sealed partial class Browser
                 renamed = true;
             }
             existing.Remove(pair.OldPath);
-            observed.Remove(pair.OldPath);
-            observed.Remove(pair.NewPath);
+            // Both names keep their observed state, which is what is on disk now, so the loop below
+            // reconciles them. In a safe save (A to A.bak, tmp to A, then A.bak deleted, all in one
+            // batch) A exists again, and dropping it here made the saved file vanish from the list.
+            // The old name is settled only when it is really gone.
+            if (observed.TryGetValue(pair.OldPath, out var old) && old == null) observed.Remove(pair.OldPath);
         }
         foreach (var pair in observed)
         {

@@ -383,7 +383,11 @@ internal static partial class CaptureLibrary
         return true;
     }
 
-    public static void Close()
+    public static void Close() => Close(retirePlayback: true);
+
+    /// <param name="retirePlayback">False when the same album reopens under the same session, as
+    /// a rename does, so its decrypted playback copies stay usable.</param>
+    internal static void Close(bool retirePlayback)
     {
         lock (_gate)
         {
@@ -391,11 +395,14 @@ internal static partial class CaptureLibrary
             _externalChanges = null;
             if (_db != null)
             {
-                // Album switch, password change and close retire this session; its decrypted
-                // playback copies go too. Queued, since callers hold this gate and playback takes
-                // its own lock before this one.
-                long closing = _session;
-                _ = Task.Run(() => VideoCaptures.ForgetPlayback(closing));
+                // Album switch and close retire this session; its decrypted playback copies go
+                // too. Queued, since callers hold this gate and playback takes its own lock
+                // before this one.
+                if (retirePlayback)
+                {
+                    long closing = _session;
+                    _ = Task.Run(() => VideoCaptures.ForgetPlayback(closing));
+                }
                 // Fold the write-ahead log into the album file, so a rename, copy, backup or
                 // password swap that follows moves one complete file.
                 try { Exec(_db, "PRAGMA wal_checkpoint(TRUNCATE)"); }
@@ -1132,9 +1139,9 @@ internal static partial class CaptureLibrary
             }
             tx.Commit();
         }
-        // A deleted recording's decrypted playback copy goes with it. Outside the gate: playback
-        // takes its own lock before this one.
-        foreach (long id in deleted) VideoCaptures.ForgetPlayback(session, id);
+        // A deleted recording's decrypted playback copy goes with it. Queued, since a caller may
+        // still hold this gate and playback takes its own lock before this one.
+        _ = Task.Run(() => { foreach (long id in deleted) VideoCaptures.ForgetPlayback(session, id); });
         RaiseChanged();
     }
 

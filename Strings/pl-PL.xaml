@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">Dostępna aktualizacja: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">Aktualizacje są dostarczane przez Microsoft Store</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">Albumów nie można przechowywać w folderze sieciowym. Wybierz folder na tym komputerze.</sys:String>
+    <sys:String x:Key="Str_Album_NewerSchema">Ten album utworzyła nowsza wersja KillerShot. Zaktualizuj KillerShot, aby go otworzyć.</sys:String>
     <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">Aplikacja zamknie się i uruchomi ponownie automatycznie.</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">Pobrać i zainstalować {0} {1}?</sys:String>

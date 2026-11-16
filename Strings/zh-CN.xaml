@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">有可用更新：{0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">更新通过 Microsoft Store 提供</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">相册不能放在网络文件夹中。请选择此电脑上的文件夹。</sys:String>
+    <sys:String x:Key="Str_Album_NewerSchema">此相册由较新版本的 KillerShot 创建。请更新 KillerShot 以打开它。</sys:String>
     <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">应用将关闭并自动重新打开。</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">下载并安装 {0} {1}？</sys:String>

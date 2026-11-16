@@ -100,7 +100,7 @@ internal static partial class CaptureLibrary
                 try
                 {
                     foreach (string ext in entry.Sidecars) File.Copy(Sidecar(path, ext), Sidecar(destination, ext));
-                    if (active) Close();
+                    if (active) Close(retirePlayback: false);
                     File.Move(path, destination);
                     moved = true;
                     SqliteConnection? reopened = key != null ? OpenAlbumConnection(destination, key) : null;

@@ -29,7 +29,10 @@ namespace KillerShot
         }
 
         private static Dictionary<string, string>? _cache;
-        private static readonly Dictionary<string, string> Pending = [];
+        // A choice that could not be written yet, with the value the file held when it was made.
+        // It is replayed only while the file still holds that value, so a newer write from
+        // another process wins over an older choice that failed.
+        private static readonly Dictionary<string, (string Value, string? Base)> Pending = [];
 
         private static Dictionary<string, string> Load()
         {
@@ -58,9 +61,26 @@ namespace KillerShot
             catch (DirectoryNotFoundException) { return []; }
             catch (JsonException)
             {
-                if (preserveCorrupt) File.Copy(FilePath, FilePath + ".corrupt-" + DateTime.UtcNow.Ticks);
+                if (preserveCorrupt) PreserveCorrupt();
                 return [];
             }
+        }
+
+        /// <summary>Keeps one copy of a damaged settings file. A write that keeps failing would
+        /// otherwise leave a new copy on every attempt, and a failed copy never blocks the write.</summary>
+        private static void PreserveCorrupt()
+        {
+            try
+            {
+                byte[] damaged = File.ReadAllBytes(FilePath);
+                foreach (string copy in Directory.EnumerateFiles(Dir, "settings.json.corrupt-*"))
+                {
+                    try { if (new FileInfo(copy).Length == damaged.Length && File.ReadAllBytes(copy).AsSpan().SequenceEqual(damaged)) return; }
+                    catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+                }
+                File.WriteAllBytes(FilePath + ".corrupt-" + DateTime.UtcNow.Ticks, damaged);
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
         }
 
         private static FileStream AcquireWriteLock()
@@ -76,7 +96,7 @@ namespace KillerShot
 
         internal static string? Get(string key)
         {
-            lock (Gate) return Pending.TryGetValue(key, out var pending) ? pending : Load().TryGetValue(key, out var v) ? v : null;
+            lock (Gate) return Pending.TryGetValue(key, out var pending) ? pending.Value : Load().TryGetValue(key, out var v) ? v : null;
         }
 
         internal static void Set(string key, string value)
@@ -86,8 +106,13 @@ namespace KillerShot
             {
                 lock (Gate)
                 {
-                    Load()[key] = value;
-                    Pending[key] = value;
+                    var cache = Load();
+                    // An earlier failed choice for the same key keeps its base: the file has not
+                    // moved on since then as far as this process knows.
+                    string? baseValue = Pending.TryGetValue(key, out var earlier) ? earlier.Base
+                        : cache.TryGetValue(key, out var known) ? known : null;
+                    cache[key] = value;
+                    Pending[key] = (value, baseValue);
                 }
             }
         }
@@ -104,7 +129,11 @@ namespace KillerShot
                 // Re-read while locked so another process's settings survive this write.
                 var current = ReadCurrent(preserveCorrupt: true);
                 bool hasPending = Pending.Count != 0;
-                foreach (var pending in Pending) current[pending.Key] = pending.Value;
+                foreach (var pending in Pending)
+                {
+                    string? onDisk = current.TryGetValue(pending.Key, out var disk) ? disk : null;
+                    if (onDisk == pending.Value.Base) current[pending.Key] = pending.Value.Value;
+                }
                 if (!hasPending && (value == null ? !current.ContainsKey(key) : current.TryGetValue(key, out var old) && old == value))
                 {
                     _cache = current;

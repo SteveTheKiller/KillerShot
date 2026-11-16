@@ -9,11 +9,13 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>false</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
+    <!-- Compiled to native code. A UI Access process must never start the .NET host, which reads
+         DOTNET_ROOT, DOTNET_STARTUP_HOOKS and the profiler variables that any program running as
+         the user can set, and would load whatever code they name with UI Access rights. A native
+         file has no host and no runtime to redirect. -->
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <!-- A UI Access process must not load code named by DOTNET_STARTUP_HOOKS, which any program
-         running as the user can set (Program.cs also refuses the .NET override variables). -->
     <StartupHookSupport>false</StartupHookSupport>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
@@ -33,10 +35,35 @@
          Program Files with a trusted signature, and a test copy has neither. -->
     <ApplicationManifest Condition="'$(PrintScreenUiAccess)' != 'false'">uiaccess.manifest</ApplicationManifest>
     <ApplicationManifest Condition="'$(PrintScreenUiAccess)' == 'false'">test.manifest</ApplicationManifest>
+    <!-- The native link does not count the manifest as an input, so the two variants build in
+         separate folders. Sharing one let a test build reuse the UI Access link, and the reverse
+         would put a test manifest in a release. -->
+    <IntermediateOutputPath Condition="'$(PrintScreenUiAccess)' == 'false'">obj\test\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath Condition="'$(PrintScreenUiAccess)' == 'false'">bin\test\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\Native\PrintScreenHook.cs" Link="PrintScreenHook.cs" />
   </ItemGroup>
+
+  <!-- The native build finds the MSVC linker through vcvarsall.bat. The Visual Studio 18 Build
+       Tools copy calls vswhere.exe by bare name, and when the Installer folder is not on PATH the
+       "not recognized" error lands in the captured output and corrupts the linker path. This runs
+       the same finder with that folder on PATH and hands its result to the native targets. -->
+  <Target Name="FindLinkerWithInstallerOnPath" BeforeTargets="SetupOSSpecificProps" Condition="'$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <_PrintScreenVsInstaller>$([System.Environment]::GetFolderPath(SpecialFolder.ProgramFilesX86))\Microsoft Visual Studio\Installer</_PrintScreenVsInstaller>
+      <_PrintScreenFindVcVars>$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName('$(IlcBuildTasksPath)'))\..\..\build\findvcvarsall.bat'))</_PrintScreenFindVcVars>
+    </PropertyGroup>
+    <Exec Condition="Exists('$(_PrintScreenFindVcVars)')" Command="&quot;$(_PrintScreenFindVcVars)&quot; x64 2&gt;nul"
+          EnvironmentVariables="PATH=$(_PrintScreenVsInstaller)%3B$(PATH.Replace(';', '%3B'))"
+          IgnoreExitCode="true" ConsoleToMSBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_FindVCVarsallOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="_VCVarsAllFound" />
+    </Exec>
+    <PropertyGroup Condition="'$(_VCVarsAllFound)' == '0'">
+      <IlcUseEnvironmentalTools>true</IlcUseEnvironmentalTools>
+    </PropertyGroup>
+  </Target>
 
 </Project>

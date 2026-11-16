@@ -54,20 +54,26 @@ internal static class SelfTestPrintScreenHelper
             report.Add($"Carried helper: {new FileInfo(extracted).Length} bytes, UI Access manifest={uiAccess}");
             Check(uiAccess, "KillerShot.exe must carry the UI Access build of the helper.");
 
-            // A UI Access process must not run code a user-level program hands it: the runtime
-            // ignores startup hooks, and the helper refuses to run with .NET overrides set.
+            // A UI Access process must not run code a user-level program hands it. The helper is
+            // compiled ahead of time, so there is no .NET host to point at another runtime
+            // (DOTNET_ROOT), no profiler and no startup hook, and it starts the same whatever
+            // .NET variables are set.
             string carried = File.ReadAllText(extracted);
-            int hookSetting = carried.IndexOf("\"System.StartupHookProvider.IsSupported\"", StringComparison.Ordinal);
-            bool hooksOff = hookSetting >= 0 && carried.AsSpan(hookSetting, Math.Min(80, carried.Length - hookSetting)).Contains("false", StringComparison.Ordinal);
-            report.Add($"Carried helper startup hooks disabled: {hooksOff}");
-            Check(hooksOff, "The carried helper must be built with startup hooks disabled.");
+            bool hosted = carried.Contains("hostfxr", StringComparison.OrdinalIgnoreCase);
+            report.Add($"Carried helper uses the .NET host: {hosted}");
+            Check(!hosted, "The carried helper must be native, with no .NET host to redirect.");
             var hooked = new ProcessStartInfo(helper) { UseShellExecute = false, CreateNoWindow = true };
+            string fakeRoot = Directory.CreateDirectory(Path.Combine(folder, "fake-dotnet-root")).FullName;
             hooked.Environment["DOTNET_STARTUP_HOOKS"] = Path.Combine(folder, "missing-hook.dll");
-            using (var refused = Process.Start(hooked) ?? throw new InvalidOperationException("The helper did not start."))
+            hooked.Environment["DOTNET_ROOT"] = fakeRoot;
+            hooked.Environment["DOTNET_ROOT_X64"] = fakeRoot;
+            hooked.Environment["CORECLR_ENABLE_PROFILING"] = "1";
+            hooked.Environment["CORECLR_PROFILER_PATH"] = Path.Combine(folder, "missing-profiler.dll");
+            using (var started = Process.Start(hooked) ?? throw new InvalidOperationException("The helper did not start."))
             {
-                if (!refused.WaitForExit(10000)) { refused.Kill(); throw new InvalidOperationException("The hooked helper did not exit."); }
-                report.Add($"Helper with DOTNET_STARTUP_HOOKS exit: {refused.ExitCode}");
-                Check(refused.ExitCode == 4, "The helper must refuse to run with a startup hook set.");
+                if (!started.WaitForExit(10000)) { started.Kill(); throw new InvalidOperationException("The helper with .NET variables did not exit."); }
+                report.Add($"Helper with .NET variables and no arguments exit: {started.ExitCode}");
+                Check(started.ExitCode == 2, "The helper must ignore .NET variables and reach its own argument check (exit 2).");
             }
 
             PrintScreenHelper.PathOverride = helper;

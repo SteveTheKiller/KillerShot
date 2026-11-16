@@ -13,6 +13,7 @@
     <sys:String x:Key="Str_About_UpdateAvailable">আপডেট উপলব্ধ: {0}</sys:String>
     <sys:String x:Key="Str_Update_StoreChannel">আপডেট Microsoft Store-এর মাধ্যমে আসে</sys:String>
     <sys:String x:Key="Str_Album_NetworkFolder">অ্যালবাম নেটওয়ার্ক ফোল্ডারে রাখা যায় না। এই পিসির একটি ফোল্ডার বেছে নিন।</sys:String>
+    <sys:String x:Key="Str_Album_NewerSchema">এই অ্যালবামটি KillerShot-এর নতুন সংস্করণে তৈরি। এটি খুলতে KillerShot আপডেট করুন।</sys:String>
     <sys:String x:Key="Str_Size_Kb">{0} KB</sys:String>
     <sys:String x:Key="Str_About_UpdateDetail">অ্যাপটি বন্ধ হয়ে স্বয়ংক্রিয়ভাবে আবার চালু হবে।</sys:String>
     <sys:String x:Key="Str_About_UpdateHeading">{0} {1} ডাউনলোড করে ইনস্টল করবেন?</sys:String>

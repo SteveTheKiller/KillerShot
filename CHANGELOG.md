@@ -7,9 +7,9 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 ### Security
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
 - Recording exports stay tied to their album, and failed cleanup identifies the original unencrypted file that remains.
-- Deleting a recording, switching albums, changing the album password or closing the album removes the decrypted copies made for playing its recordings. They used to stay unencrypted on disk until KillerShot exited.
+- Deleting a recording, switching albums, changing the album password or closing the album removes the decrypted copies made for playing its recordings. They used to stay unencrypted on disk until KillerShot exited. Renaming the open album keeps them, so a recording that is playing keeps playing.
 - Setting an album password retires the album's account key before the album file is swapped, so an album that fails to reopen afterwards is shown as password protected instead of unprotected, and the old key is removed with the backup once the album opens with its password.
-- The Print Screen helper ignores .NET startup hooks and refuses to run when .NET override variables are set, so another program running as you cannot load its own code into the helper's elevated window access.
+- The Print Screen helper is compiled to native code and no longer starts the .NET runtime, so another program running as you cannot use .NET environment variables to load its own code into the helper's elevated window access.
 
 ### Fixed
 - Stored recordings import, export, play and prepare for dragging in the background, album mutations pause during recording work, and playback copies are reused.
@@ -27,6 +27,10 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Error warnings use the right color, scrollbar controls have localized names, and promoted touch presses no longer crash dialogs. Recent loads when opened, hidden windows stop polling, and resize presets commit pending text.
 - The file picker loads icons and picture previews in the background, refreshes overwritten previews, and restores its position on any monitor. A second Enter in the file name box while a slow folder is still being checked no longer starts a second check.
 - On 98SE, the window and dialog close buttons draw the Windows 98 pixel X instead of a smoothed font glyph.
+- An album made by a newer KillerShot shows a translated message saying to update, in every app language. The message was missing, so the raw string key was shown.
+- A file saved by an editor that writes a temporary copy and swaps it in stays listed in Files and linked folders. It could vanish from the list until the next refresh.
+- A settings file that is damaged and held open by another program is backed up once. Every failed save used to add another copy.
+- A setting that failed to save no longer overwrites a newer value another KillerShot copy wrote in the meantime.
 - Files keeps folder updates live while opening typed paths, stays responsive on unavailable network paths, and shares background thumbnail work. Thumbnails use bounded memory and honor image orientation, paste rejects recursive folder copies, and detail columns support keyboard and accessibility tools. Windows shell menus initialize submenus and handle keyboard selection correctly.
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
 - An all-users update reopens KillerShot for the signed-in user at normal rights, whether it finishes or stops early. Windows was refusing that relaunch, so the app stayed closed. Files left behind by earlier failed updates are cleared when the next update is staged.

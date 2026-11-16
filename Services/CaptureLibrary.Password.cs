@@ -95,6 +95,11 @@ internal static partial class CaptureLibrary
             string stagedKey = KeyPath + ".next";
             if (newPassword == null) WriteSealedKey(newKey, stagedKey);
 
+            // The password change retires this session's decrypted playback copies, which were
+            // made under the old key. Queued, since this gate is held and playback takes its own
+            // lock before this one.
+            long oldKeySession = _session;
+            _ = Task.Run(() => VideoCaptures.ForgetPlayback(oldKeySession));
             _db.Dispose();
             _db = null;
             ClearThumbCache();

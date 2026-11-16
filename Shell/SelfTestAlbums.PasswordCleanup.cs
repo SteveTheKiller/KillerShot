@@ -60,8 +60,10 @@ internal static partial class SelfTestAlbums
         Check(!CaptureLibrary.Unlock("wrong password") && artifacts.All(File.Exists), "Wrong Unlock must preserve recovery artifacts.");
         using (var held = new FileStream(original + ".bak", FileMode.Open, FileAccess.Read, FileShare.None))
         {
+            // Unlock reports a failure it cannot recover from as false with a reason, which the
+            // unlock screen shows, rather than throwing.
             bool rejected = false;
-            try { CaptureLibrary.Unlock("cleanup fixture password"); }
+            try { rejected = !CaptureLibrary.Unlock("cleanup fixture password") && CaptureLibrary.LoadError != null; }
             catch (IOException) { rejected = true; }
             Check(rejected && !CaptureLibrary.IsOpen, "Unlock cleanup failure must not publish an open album.");
         }
