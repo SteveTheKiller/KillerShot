@@ -211,7 +211,15 @@ internal static class SelfTestFilesView
                 throw new InvalidOperationException("CSV export is missing its header or rows.");
             if (!htmlText.Contains("alpha.txt", StringComparison.Ordinal) || !htmlText.Contains("killershot.net", StringComparison.Ordinal) || htmlText.Contains("killershell", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("HTML export is missing rows or carries the wrong app's branding.");
-            checks += 3;
+            // Opening a shared export must not ping any host: no resource may load from the network. Plain links stay.
+            var external = System.Text.RegularExpressions.Regex.Matches(htmlText,
+                @"url\(\s*['""]?\s*(https?:)?//|@import|<(img|script|link|iframe|source|video|audio|embed|object)\b[^>]*\b(src|href|data)\s*=\s*['""]?\s*(https?:)?//",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (external.Count > 0)
+                throw new InvalidOperationException($"HTML export loads external resources: {string.Join(" | ", external.Select(m => m.Value))}");
+            if (!htmlText.Contains("<a href='https://killershot.net'", StringComparison.Ordinal))
+                throw new InvalidOperationException("HTML export lost its plain KillerShot link.");
+            checks += 5;
             detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             await Idle();
             window.UpdateLayout();

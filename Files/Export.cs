@@ -123,7 +123,6 @@ internal static class ListingCsv
 internal static class ListingHtml
 {
     private const string SiteUrl = "https://killershot.net";
-    private const string GrainUrl = "https://killershot.net/grain.png";
 
     private static readonly (string Key, string Label, string File)[] ThemeFiles =
     [
@@ -203,7 +202,6 @@ internal static class ListingHtml
         sb.AppendLine(".meta{color:var(--muted);font-size:13px;margin:0 0 6px}.meta b{color:var(--text)}");
         sb.AppendLine(".query{color:var(--muted);font-size:14px;margin:0 0 18px}.query b{color:var(--accent);font-weight:600}");
         sb.AppendLine(".tablewrap{position:relative;overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--pane);box-shadow:0 10px 30px rgba(0,0,0,.45)}");
-        sb.AppendLine($".tablewrap::before{{content:'';position:absolute;inset:0;background:url('{GrainUrl}');opacity:.24;pointer-events:none;z-index:0}}");
         sb.AppendLine("table{position:relative;z-index:1;border-collapse:collapse;width:100%;min-width:720px}");
         sb.AppendLine("th{background:var(--surface);color:var(--muted);text-align:left;padding:10px 14px;font-size:12px;font-weight:600;font-family:Consolas,monospace;letter-spacing:.3px;position:sticky;top:0;white-space:nowrap;user-select:none}");
         sb.AppendLine("th:hover{color:var(--text)}th .arrow{display:inline-block;width:10px;font-size:10px;opacity:.7}");
