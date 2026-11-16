@@ -99,6 +99,11 @@ namespace KillerShot.Shell
             if (_doc != null) _doc.Changed += RefreshDocumentUi;
             RefreshDocumentUi();
             if (changed && doc?.Recovery == AlbumRecovery.Flattened) StatusText.Text = Loc("Str_Marks_Recovery");
+            if (changed && doc is { ScanForRedaction: true })
+            {
+                doc.ScanForRedaction = false;
+                ScanNewCapture(doc);
+            }
             if (changed) _strip?.Follow(App.Instance.CurrentItem, doc?.FilePath);
         }
 
@@ -429,7 +434,7 @@ namespace KillerShot.Shell
         private void SyncEditorCommands()
         {
             foreach (var b in new[] { SaveBtn, SaveAsBtn, CopyBtn, CopyTextBtn, PrintBtn, ToolSelectBtn, ToolPenBtn, ToolHighlighterBtn, ToolArrowBtn, ToolLineBtn,
-                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, ToolCropBtn, ImageBtn,
+                                      ToolRectangleBtn, ToolEllipseBtn, FillBtn, ToolTextBtn, ToolStepBtn, ToolCalloutBtn, ToolRedactBtn, AutoRedactBtn, ToolCropBtn, ImageBtn,
                                       ColorBtn, WidthBtn, FitBtn, ActualSizeBtn })
                 b.IsEnabled = EditorWorkspaceActive;
             UndoBtn.IsEnabled = EditorWorkspaceActive && _doc.CanUndo;

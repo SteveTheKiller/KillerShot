@@ -2,7 +2,7 @@
 
 ## [1.2.0] - Unreleased
 
-KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
+KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
 
 ### Security
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
@@ -105,6 +105,8 @@ KillerShot 1.2.0 adds folder browsing, makes recordings and large libraries more
 - Right-click menus on captures, collections, linked folders, files and the editor picture are cards with a title, a row of quick actions and the rest of the commands below, each with its shortcut. The carousel and album area menus are cards too, headed with the carousel's collection or the view on screen.
 - Screen recordings show up in the library. After your first recording, KillerShot asks once whether to keep recordings as plain video files, shown as a collection of your recording folder, or move them into the encrypted library's Recordings collection. Video settings can change the answer later. A recording opens in your own video player, and an encrypted one plays from a temporary copy that's deleted when KillerShot closes. Dragging a recording out of the library drops the video file itself.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
+- Auto redact on the editor toolbar finds email addresses, credit card numbers, phone numbers, US Social Security numbers, IP addresses, and keys and passwords with Windows text recognition, and covers each one with a redaction box you can remove before saving. Its settings choose which kinds to look for, the box color, an outward feather and whether every new capture is scanned on arrival. The color and feather apply to hand-drawn redactions too, and the boxes are burned into the pixels when the picture is saved.
+- Make PDF on the right-click card of a folder in Files, of the open folder's background and of a linked-folder collection opens that folder's pictures in KillerPDF as one new document. It appears only when KillerPDF is installed.
 
 ## [1.1.1] - 2026-10-28
 

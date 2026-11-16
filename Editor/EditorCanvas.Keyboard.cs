@@ -169,6 +169,7 @@ public sealed partial class EditorCanvas
             ToolKind.Pen or ToolKind.Highlighter => new StrokeAnnotation([new Point(a.X, c.Y), new Point(b.X, c.Y)], Color,
                 Tool == ToolKind.Highlighter ? HighlighterWidth : StrokeWidth, Tool == ToolKind.Highlighter),
             ToolKind.Line => new ShapeAnnotation(ShapeKind.Line, new Point(a.X, b.Y), new Point(b.X, a.Y), Color, StrokeWidth),
+            ToolKind.Redact => RedactBoxes.Box(a, b, Color, StrokeWidth),
             _ => new ShapeAnnotation(ShapeFor(Tool)!.Value, a, b, Color, StrokeWidth, Filled && Tool is ToolKind.Rectangle or ToolKind.Ellipse),
         };
         _doc.Add(mark);

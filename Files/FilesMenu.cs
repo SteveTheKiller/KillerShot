@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using KillerShot.Services;
 
 namespace KillerShot.Files;
 
@@ -63,11 +64,18 @@ public partial class FilesView
                 if (SelectedPaths.FirstOrDefault() is { } path)
                     Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, Arguments = "/select,\"" + path + "\"" });
             }, glyph: "");
+            if (count == 1 && ResultsList.SelectedItem is FileEntry { IsDirectory: true } folderEntry && KillerPdfHandoff.IsInstalled)
+                Add("makepdf", "Str_Menu_MakePdf", () => MakePdf(folderEntry.FilePath), glyph: "");
         }
         else
         {
             menu.Items.Add(KillerFamily.Controls.CardBuilder.Header(Path.GetFileName(Navigation.CurrentFolder.TrimEnd('\\')) is { Length: > 0 } name ? name : Navigation.CurrentFolder, Navigation.CurrentFolder));
             Add("paste", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste, "");
+            if (KillerPdfHandoff.IsInstalled)
+            {
+                string here = Navigation.CurrentFolder;
+                Add("makepdf", "Str_Menu_MakePdf", () => MakePdf(here), glyph: "");
+            }
         }
         Add("newfolder", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste, "");
         if (onItem)
@@ -104,6 +112,13 @@ public partial class FilesView
             item.Tag = tag;
             menu.Items.Add(item);
         }
+    }
+
+    /// <summary>Make PDF: KillerPDF opens the folder's pictures as one new document.</summary>
+    private void MakePdf(string folder)
+    {
+        string? problem = KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(folder));
+        if (problem != null) SetCommandError(Loc(problem));
     }
 
     /// <summary>The quick buttons on a card strip, in order.</summary>

@@ -1,0 +1,143 @@
+<!-- Auto redact: what to look for, how the boxes look, and whether new captures are scanned.
+     The frame is ConfirmDialog's (surface, grain, shadow, bevel, wordmark caption); only the
+     body differs. -->
+<Window x:Class="KillerShot.Controls.RedactDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:theme="clr-namespace:KillerFamily.Theming"
+        xmlns:local="clr-namespace:KillerShot.Controls"
+        Title="KillerShot"
+        Width="430" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        ShowInTaskbar="False">
+
+    <local:PickerBorder x:Name="RootBorder" Opacity="0"
+            Background="{DynamicResource BackgroundBrush}"
+            BorderBrush="{DynamicResource CardBorderBrush}"
+            BorderThickness="{DynamicResource DialogOuterBorderThickness}"
+            CornerRadius="{DynamicResource PanelCornerRadius}"
+            Margin="{DynamicResource DialogHaloMargin}">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="18" ShadowDepth="3" Direction="270"
+                              Opacity="{DynamicResource FlyoutShadowOpacity}"/>
+        </Border.Effect>
+        <Grid>
+            <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
+                    Opacity="{DynamicResource GrainOpacity}"
+                    Background="{DynamicResource GrainTileBrush}"/>
+            <Border IsHitTestVisible="False" Panel.ZIndex="6"
+                    BorderBrush="{DynamicResource FrameOuterLightBrush}" BorderThickness="{DynamicResource FrameOuterLightThickness}"/>
+            <Border IsHitTestVisible="False" Panel.ZIndex="6"
+                    BorderBrush="{DynamicResource FrameOuterDarkBrush}"  BorderThickness="{DynamicResource FrameOuterDarkThickness}"/>
+            <Border IsHitTestVisible="False" Panel.ZIndex="6" Margin="{DynamicResource FrameInnerMargin}"
+                    BorderBrush="{DynamicResource FrameInnerLightBrush}" BorderThickness="{DynamicResource FrameInnerLightThickness}"/>
+            <Border IsHitTestVisible="False" Panel.ZIndex="6" Margin="{DynamicResource FrameInnerMargin}"
+                    BorderBrush="{DynamicResource FrameInnerDarkBrush}" BorderThickness="{DynamicResource FrameInnerDarkThickness}"/>
+
+            <Grid Margin="{DynamicResource DialogContentMargin}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{DynamicResource DialogTitleBarRowHeight}"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="{DynamicResource DialogTitleBarBrush}"
+                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Panel.ZIndex="1">
+                    <Grid Margin="{DynamicResource DialogTitleBarPadding}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <local:AppIcon x:Name="TitleIcon" VerticalAlignment="Center"
+                                   Width="{DynamicResource TitleIconSize}" Height="{DynamicResource TitleIconSize}"
+                                   Margin="{DynamicResource TitleIconMargin}"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                            <Grid VerticalAlignment="Center" Margin="0,-18,0,-22">
+                                <Grid.RenderTransform><TranslateTransform Y="-5"/></Grid.RenderTransform>
+                                <StackPanel Orientation="Horizontal" Margin="1,2,0,0"
+                                            Visibility="{DynamicResource DialogWordmarkVisibility}"
+                                            Opacity="{DynamicResource WordmarkShadowOpacity}">
+                                    <StackPanel.Effect><BlurEffect Radius="3"/></StackPanel.Effect>
+                                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"><Run Text="Killer" Foreground="#D8000000"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#D8000000"/></TextBlock>
+                                </StackPanel>
+                                <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
+                                           Visibility="{DynamicResource DialogWordmarkVisibility}" Margin="1,2,0,0" IsHitTestVisible="False" Opacity="{DynamicResource WordmarkAccentShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect><Run Text="Killer" Foreground="Transparent"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="#D8000000"/></TextBlock>
+                                <TextBlock theme:Bevel.Enabled="True" FontFamily="{DynamicResource WordmarkFont}" FontSize="{DynamicResource TitleWordmarkSize}"
+                                           Visibility="{DynamicResource DialogWordmarkVisibility}"><Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run FontFamily="{DynamicResource WordmarkAccentFont}" Text="Shot" FontSize="{DynamicResource TitleWordmarkBoldSize}" Foreground="{DynamicResource AccentLogo}"/></TextBlock>
+                            </Grid>
+                            <TextBlock Text="KillerShot" FontFamily="{DynamicResource ChromeFontFamily}" VerticalAlignment="Center"
+                                       FontSize="11" FontWeight="Bold" Foreground="{DynamicResource ChromeTextBrush}"
+                                       Visibility="{DynamicResource DialogPlainTitleVisibility}"/>
+                        </StackPanel>
+                        <Button Content="{DynamicResource AboutCloseGlyph}" Click="Close_Click"
+                                ToolTip="{DynamicResource Str_Sys_Close}"
+                                AutomationProperties.Name="{DynamicResource Str_Sys_Close}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Width="{DynamicResource AboutCloseWidth}" Height="{DynamicResource AboutCloseHeight}"
+                                Style="{StaticResource OverlayCloseButton}"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="1" Margin="24,16,24,6">
+                    <TextBlock Text="{DynamicResource Str_Redact_Title}" Foreground="{DynamicResource TextBrush}"
+                               FontFamily="{DynamicResource HeadingFont}" FontSize="18"
+                               TextOptions.TextFormattingMode="Ideal" TextWrapping="Wrap"/>
+                    <TextBlock Text="{DynamicResource Str_Redact_Intro}" Foreground="{DynamicResource MutedTextBrush}"
+                               FontSize="12" LineHeight="18" TextWrapping="Wrap" Margin="0,3,0,12"/>
+
+                    <CheckBox x:Name="EmailCheck" Content="{DynamicResource Str_Redact_Emails}" Margin="0,4,0,0" FontSize="13"/>
+                    <CheckBox x:Name="CardCheck" Content="{DynamicResource Str_Redact_Cards}" Margin="0,8,0,0" FontSize="13"/>
+                    <CheckBox x:Name="PhoneCheck" Content="{DynamicResource Str_Redact_Phones}" Margin="0,8,0,0" FontSize="13"/>
+                    <CheckBox x:Name="SsnCheck" Content="{DynamicResource Str_Redact_Ssns}" Margin="0,8,0,0" FontSize="13"/>
+                    <CheckBox x:Name="IpCheck" Content="{DynamicResource Str_Redact_Ips}" Margin="0,8,0,0" FontSize="13"/>
+                    <CheckBox x:Name="SecretCheck" Content="{DynamicResource Str_Redact_Secrets}" Margin="0,8,0,0" FontSize="13"/>
+
+                    <Grid Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{DynamicResource Str_Redact_Color}" Foreground="{DynamicResource TextBrush}" FontSize="13"
+                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Button x:Name="ColorButton" Grid.Column="1" Click="Color_Click" Style="{StaticResource SurfaceButton}"
+                                Width="44" Height="28" Padding="5"
+                                ToolTip="{DynamicResource Str_Redact_Color}"
+                                AutomationProperties.Name="{DynamicResource Str_Redact_Color}">
+                            <Border x:Name="ColorSwatch" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+                                    CornerRadius="{DynamicResource SmallCornerRadius}" Width="30" Height="16"/>
+                        </Button>
+                        <TextBlock Grid.Column="2" Text="{DynamicResource Str_Redact_Feather}" Foreground="{DynamicResource TextBrush}" FontSize="13"
+                                   VerticalAlignment="Center" Margin="22,0,10,0"/>
+                        <Slider x:Name="FeatherSlider" Grid.Column="3" Minimum="0" Maximum="24" TickFrequency="1"
+                                IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                AutomationProperties.Name="{DynamicResource Str_Redact_Feather}"/>
+                        <TextBlock x:Name="FeatherValue" Grid.Column="4" Foreground="{DynamicResource MutedTextBrush}" FontSize="12"
+                                   VerticalAlignment="Center" MinWidth="34" TextAlignment="Right"/>
+                    </Grid>
+
+                    <CheckBox x:Name="EveryCaptureCheck" Content="{DynamicResource Str_Redact_EveryCapture}" Margin="0,18,0,0" FontSize="13"/>
+
+                    <TextBlock x:Name="StatusText" Foreground="{DynamicResource MutedTextBrush}" FontSize="12" TextWrapping="Wrap"
+                               Margin="0,12,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="24,14,24,20">
+                    <Button Content="{DynamicResource Str_Btn_Cancel}" Click="Close_Click" IsCancel="True"
+                            Style="{StaticResource SurfaceButton}"
+                            Height="28" MinWidth="80" Padding="12,2" Margin="0,0,8,0"/>
+                    <Button x:Name="FindButton" Content="{DynamicResource Str_Redact_Find}" Click="Find_Click" IsDefault="True"
+                            Style="{StaticResource OutlineButton}"
+                            Height="28" MinWidth="80" Padding="12,2"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </local:PickerBorder>
+</Window>

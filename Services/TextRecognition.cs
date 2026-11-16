@@ -145,6 +145,106 @@ internal static class TextRecognition
         return await recognize(ImageOutput.EncodePng(image));
     }
 
+    /// <summary>The words in a picture, line by line, with boxes in the picture's pixels; null when
+    /// Windows cannot recognize text here.</summary>
+    public static async Task<IReadOnlyList<IReadOnlyList<OcrWord>>?> ReadWordsAsync(BitmapSource image)
+    {
+        IntPtr statics = IntPtr.Zero, created = IntPtr.Zero;
+        Engine owner;
+        try
+        {
+            statics = OcrStatics();
+            if (LanguageTag is { } tag) created = TryCreateForLanguage(statics, tag);
+            if (created == IntPtr.Zero) CreateFromProfile(statics, out created);
+            if (created == IntPtr.Zero) return null;
+            owner = new Engine(created, MaxDimension(statics));
+            created = IntPtr.Zero;
+        }
+        catch (Exception error) when (error is COMException or ArgumentException or InvalidOperationException) { return null; }
+        finally
+        {
+            WinRt.Release(ref created);
+            WinRt.Release(ref statics);
+        }
+
+        var (pixels, width, height) = Decode(ImageOutput.EncodePng(image), owner.MaxDimension);
+        // Boxes come back in the scaled picture's pixels when the engine needed it smaller.
+        double sx = (double)image.PixelWidth / width, sy = (double)image.PixelHeight / height;
+        IntPtr bitmap = CreateSoftwareBitmap(pixels, width, height), operation = IntPtr.Zero, result = IntPtr.Zero;
+        try
+        {
+            operation = StartRecognize(owner.Pointer, bitmap);
+            await WinRt.WaitAsync(operation);
+            result = WinRt.GetResults(operation);
+            GC.KeepAlive(owner);
+            return Words(result, sx, sy);
+        }
+        finally
+        {
+            WinRt.Release(ref result);
+            WinRt.Release(ref operation);
+            WinRt.Close(ref bitmap);
+        }
+    }
+
+    private static unsafe void CreateFromProfile(IntPtr statics, out IntPtr engine)
+    {
+        IntPtr made;
+        Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)WinRt.Slot(statics, 10))(statics, &made));
+        engine = made;
+    }
+
+    private static unsafe uint MaxDimension(IntPtr statics)
+    {
+        uint max;
+        Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, uint*, int>)WinRt.Slot(statics, 6))(statics, &max));
+        return max;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WinRtRect { public float X, Y, Width, Height; }
+
+    // IOcrLine: Words = 6. IOcrWord: BoundingRect = 6, Text = 7.
+    private static unsafe List<IReadOnlyList<OcrWord>> Words(IntPtr result, double sx, double sy)
+    {
+        IntPtr lines;
+        Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)WinRt.Slot(result, 6))(result, &lines));
+        try
+        {
+            var all = new List<IReadOnlyList<OcrWord>>();
+            uint lineCount = WinRt.VectorSize(lines);
+            for (uint i = 0; i < lineCount; i++)
+            {
+                IntPtr line = WinRt.VectorAt(lines, i), words = IntPtr.Zero;
+                try
+                {
+                    Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)WinRt.Slot(line, 6))(line, &words));
+                    var list = new List<OcrWord>();
+                    uint wordCount = WinRt.VectorSize(words);
+                    for (uint j = 0; j < wordCount; j++)
+                    {
+                        IntPtr word = WinRt.VectorAt(words, j);
+                        try
+                        {
+                            WinRtRect r;
+                            Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<IntPtr, WinRtRect*, int>)WinRt.Slot(word, 6))(word, &r));
+                            list.Add(new OcrWord(WinRt.GetString(word, 7), new Rect(r.X * sx, r.Y * sy, r.Width * sx, r.Height * sy)));
+                        }
+                        finally { Marshal.Release(word); }
+                    }
+                    all.Add(list);
+                }
+                finally
+                {
+                    WinRt.Release(ref words);
+                    Marshal.Release(line);
+                }
+            }
+            return all;
+        }
+        finally { Marshal.Release(lines); }
+    }
+
     private static async Task<string> RecognizeAsync(Engine engine, byte[] png)
     {
         var (pixels, width, height) = Decode(png, engine.MaxDimension);

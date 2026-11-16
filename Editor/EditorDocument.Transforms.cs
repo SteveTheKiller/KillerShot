@@ -67,7 +67,7 @@ public sealed partial class EditorDocument
             using (var dc = covered.RenderOpen())
             {
                 dc.DrawImage(State.Image, new Rect(0, 0, w, h));
-                foreach (var r in redactions) dc.DrawRectangle(Brushes.Black, null, r.PixelCells);
+                foreach (var r in redactions) dc.DrawRectangle(new SolidColorBrush(r.CoverColor), null, r.PixelCells);
             }
             var flat = new RenderTargetBitmap(w, h, 96, 96, PixelFormats.Pbgra32);
             flat.Render(covered);

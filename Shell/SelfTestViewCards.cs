@@ -58,6 +58,9 @@ internal static class SelfTestViewCards
             library.SetView("flow");
             window.UpdateLayout();
             var flow = (CoverFlow)library.FindName("BigFlow");
+            // The carousel lays out after the view switch settles; rendering it at zero width throws.
+            for (int i = 0; i < 100 && flow.ActualWidth < 1; i++) { await Task.Delay(20); window.UpdateLayout(); }
+            Check(flow.ActualWidth >= 1, "The carousel never laid out.");
             long? selected = flow.SelectedItem?.Id;
             int plain = RenderStock(flow, Path.Combine(folder, "carousel-plain.png"));
             Check(plain == 0, "Carousel defaults must preserve image-only rendering.");

@@ -23,6 +23,10 @@ public sealed partial class EditorDocument
     public DateTime Taken { get; }
     public bool Dirty { get; private set; }
     public bool ReadQr { get; init; }
+
+    /// <summary>Set on a new capture when Scan every capture is on; the editor runs auto redact once
+    /// as the capture opens and clears it.</summary>
+    public bool ScanForRedaction { get; set; }
     /// <summary>A separate recovery copy whose album metadata must remain untouched.</summary>
     public AlbumRecovery Recovery { get; init; }
 

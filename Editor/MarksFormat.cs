@@ -57,6 +57,7 @@ public static class MarksFormat
         {
             ["t"] = "shape", ["k"] = s.Kind.ToString(), ["ax"] = s.A.X, ["ay"] = s.A.Y, ["bx"] = s.B.X, ["by"] = s.B.Y,
             ["c"] = Hex(s.Color), ["w"] = s.Width, ["f"] = s.Filled,
+            ["rf"] = s.RedactFill is { } fill ? Hex(fill) : null, ["fe"] = s.Feather > 0 ? s.Feather : null,
         },
         TextAnnotation s => new JsonObject { ["t"] = "text", ["x"] = s.Origin.X, ["y"] = s.Origin.Y, ["s"] = s.Text, ["c"] = Hex(s.Color), ["w"] = s.Width },
         StepAnnotation s => new JsonObject { ["t"] = "step", ["x"] = s.Center.X, ["y"] = s.Center.Y, ["n"] = s.Number, ["c"] = Hex(s.Color), ["w"] = s.Width },
@@ -95,7 +96,11 @@ public static class MarksFormat
                 return new StrokeAnnotation(points, c, w, o["hl"]?.GetValue<bool>() == true);
             case "shape":
                 if (!Enum.TryParse<ShapeKind>(o["k"]?.GetValue<string>(), out var kind) || !Enum.IsDefined(kind)) return null;
-                return new ShapeAnnotation(kind, new Point(D("ax"), D("ay")), new Point(D("bx"), D("by")), c, w, o["f"]?.GetValue<bool>() == true);
+                Color? fill = o["rf"]?.GetValue<string>() is { } rf ? ParseColor(rf) : null;
+                double feather = o["fe"] is { } fe ? fe.GetValue<double>() : 0;
+                if (!double.IsFinite(feather) || feather < 0) feather = 0;
+                return new ShapeAnnotation(kind, new Point(D("ax"), D("ay")), new Point(D("bx"), D("by")), c, w, o["f"]?.GetValue<bool>() == true,
+                    fill, Math.Min(feather, ShapeAnnotation.MaxFeather));
             case "text":
                 return new TextAnnotation(new Point(D("x"), D("y")), o["s"]!.GetValue<string>(), c, w);
             case "step":

@@ -111,6 +111,9 @@ public partial class App : Application
         if (SelfTestFilesWatchRefresh.TryRun(e.Args)) return;
         if (SelfTestReview120.TryRun(e.Args)) return;
         if (SelfTestCaptureLatency.TryRun(e.Args)) return;
+        if (SelfTestRedactionFinder.TryRun(e.Args)) return;
+        if (SelfTestAutoRedact.TryRun(e.Args)) return;
+        if (SelfTestMakePdf.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;
@@ -426,14 +429,18 @@ public partial class App : Application
     private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath, bool readQr)
     {
         // A capture saved to the folder opens as that file, so Save in the editor updates it.
-        SetDocument(new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr });
+        SetDocument(new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr, ScanForRedaction = !readQr && RedactSettings.ScanEveryCapture });
         if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }
 
     /// <summary>Review first: the capture opens in the editor and waits there to be accepted.</summary>
     private void OnReviewRequested(BitmapSource bmp, DateTime taken, KillerShot.Capture.CaptureMode mode)
     {
-        var doc = new EditorDocument(bmp, null, taken) { ReadQr = mode == KillerShot.Capture.CaptureMode.Qr };
+        var doc = new EditorDocument(bmp, null, taken)
+        {
+            ReadQr = mode == KillerShot.Capture.CaptureMode.Qr,
+            ScanForRedaction = mode != KillerShot.Capture.CaptureMode.Qr && RedactSettings.ScanEveryCapture,
+        };
         if (!SetDocument(doc)) return;
         ShowEditor();
         _editor?.BeginReview(doc, taken, mode);

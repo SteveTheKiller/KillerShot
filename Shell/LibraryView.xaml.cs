@@ -577,6 +577,12 @@ namespace KillerShot.Shell
                     new("", Loc("Str_Tab_Browse"), Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))),
                     new("", Loc("Str_Tab_Explorer"), Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)),
                 ]));
+                if (KillerPdfHandoff.IsInstalled)
+                    line.ContextMenu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", () =>
+                    {
+                        if (KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(FolderCaptures.PathForSource(folderSource))) is { } problem)
+                            ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
+                    }, true));
                 line.ToolTip = FolderCaptures.PathForSource(row.Key);
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }

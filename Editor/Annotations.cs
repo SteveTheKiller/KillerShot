@@ -116,10 +116,19 @@ public sealed record StrokeAnnotation(ImmutableArray<Point> Points, Color Color,
 public enum ShapeKind { Arrow, Rectangle, Ellipse, Redact, Line }
 
 /// <summary>Arrow, line, rectangle, ellipse or redaction box between two points. Rectangles and
-/// ellipses can be filled with their color.</summary>
-public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Color, double Width, bool Filled = false)
+/// ellipses can be filled with their color. A redaction box has its own opaque fill (black when
+/// none was chosen) and an optional feather, in pixels, that fades outward past the box.</summary>
+public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Color, double Width, bool Filled = false,
+    Color? RedactFill = null, double Feather = 0)
     : Annotation(Color, Width)
 {
+    public const int MaxFeather = 24;
+
+    /// <summary>The redaction fill, always fully opaque so nothing under it shows through.</summary>
+    public Color CoverColor => RedactFill is { } f ? Color.FromRgb(f.R, f.G, f.B) : Colors.Black;
+
+    private int FeatherPixels => (int)Math.Clamp(Math.Round(Feather), 0, MaxFeather);
+
     public Rect Box => new(A, B);
 
     /// <summary>The box expanded outward to the image pixel grid.</summary>
@@ -150,7 +159,20 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
             case ShapeKind.Redact:
                 // Fully opaque and grown out to whole pixels, so every pixel the box touches is
                 // replaced, never blended at a fractional edge.
-                dc.DrawRectangle(Frozen(new SolidColorBrush(Colors.Black)), null, PixelCells);
+                var cover = CoverColor;
+                var cells = PixelCells;
+                // The feather is one-pixel rings outside the opaque box, each fainter than the
+                // last, so the box itself is never softened.
+                for (int ring = FeatherPixels; ring >= 1; ring--)
+                {
+                    byte alpha = (byte)Math.Round(255.0 * (FeatherPixels + 1 - ring) / (FeatherPixels + 1));
+                    var r = cells;
+                    r.Inflate(ring - 0.5, ring - 0.5);
+                    var ringPen = new Pen(Frozen(new SolidColorBrush(Color.FromArgb(alpha, cover.R, cover.G, cover.B))), 1);
+                    ringPen.Freeze();
+                    dc.DrawRectangle(null, ringPen, r);
+                }
+                dc.DrawRectangle(Frozen(new SolidColorBrush(cover)), null, cells);
                 break;
             default:
                 dc.DrawGeometry(Frozen(new SolidColorBrush(Color)), MakePen(Color, Width), ArrowGeometry());
@@ -191,9 +213,8 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
     {
         get
         {
-            var r = Kind == ShapeKind.Redact ? PixelCells : Box;
-            if (Kind != ShapeKind.Redact) r = Inflate(r, Kind == ShapeKind.Arrow ? Math.Max(10, Width * 4) : Width / 2);
-            return r;
+            if (Kind == ShapeKind.Redact) return Inflate(PixelCells, FeatherPixels);
+            return Inflate(Box, Kind == ShapeKind.Arrow ? Math.Max(10, Width * 4) : Width / 2);
         }
     }
 
@@ -205,7 +226,7 @@ public sealed record ShapeAnnotation(ShapeKind Kind, Point A, Point B, Color Col
         if (Kind is ShapeKind.Arrow or ShapeKind.Line) return this with { A = a, B = b, Width = Width * scale };
         // Boxes stay axis-aligned: normalize the corners after a turn or a mirror.
         var box = new Rect(a, b);
-        return this with { A = box.TopLeft, B = box.BottomRight, Width = Width * scale };
+        return this with { A = box.TopLeft, B = box.BottomRight, Width = Width * scale, Feather = Feather * scale };
     }
 
     public override Annotation Resize(Vector d)

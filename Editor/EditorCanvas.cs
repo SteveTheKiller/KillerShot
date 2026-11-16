@@ -237,6 +237,7 @@ public sealed partial class EditorCanvas : Canvas
         if (_box is { } b && ShapeFor(Tool) is { } kind)
             return kind is ShapeKind.Arrow or ShapeKind.Line
                 ? new ShapeAnnotation(kind, _start, _arrowEnd, Color, StrokeWidth)
+                : kind == ShapeKind.Redact ? RedactBoxes.Box(b.TopLeft, b.BottomRight, Color, StrokeWidth)
                 : new ShapeAnnotation(kind, b.TopLeft, b.BottomRight, Color, StrokeWidth, Filled && kind is ShapeKind.Rectangle or ShapeKind.Ellipse);
         return null;
     }
