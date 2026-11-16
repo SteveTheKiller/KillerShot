@@ -52,9 +52,12 @@ internal static class SelfTestSidebarSelection
                 // change syncs the album back to it.
                 window.TestNavigationStrip!.SetSource(source);
                 library.TestSet("shelves", "collection", "");
+                await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));   // the library lists off the UI thread
                 await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
                 bool folderHeader = Descendants<TextBlock>(library).Any(text => text.IsVisible && text.Text == FolderCaptures.Name);
-                if (folderHeader != (source != "c" + collection))
+                // Only All lists the Screenshots folder as a collection group. Inside one collection or
+                // folder the carousels group by day (bf2bb1d), so no folder-named heading is expected there.
+                if (folderHeader != (source == "all"))
                     throw new InvalidOperationException("Screenshots group visibility ignores the selected collection: " + source);
                 report.Add(source + ": Screenshots heading follows collection filter PASS");
             }

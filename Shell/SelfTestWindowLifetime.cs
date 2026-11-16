@@ -51,7 +51,20 @@ internal static class SelfTestWindowLifetime
             App.Instance.SetDocument(document);
             App.Instance.ShowEditor();
             await Task.Delay(300);
+            // Close to system tray (on here) hides the editor instead of destroying it, so closing
+            // keeps the same window, its document and its album as they were.
+            var hidden = App.Instance.EditorWindow!;
             var retired = CloseEditor();
+            await Task.Delay(600);
+            Check(ReferenceEquals(App.Instance.EditorWindow, hidden) && !hidden.IsVisible,
+                "Closing to the tray keeps the editor window alive and out of sight.");
+            Check(ReferenceEquals(App.Instance.Document, document), "Hiding to the tray must preserve the document.");
+            // Exit and shutdown close it for real; that is the close whose retention this test measures.
+            SetExiting(true);
+            hidden.Close();
+            await Task.Delay(300);
+            SetExiting(false);
+            hidden = null!;
             Check(App.Instance.EditorWindow == null, "The closed editor is no longer the active window.");
             App.Instance.ShowEditor();
             await Task.Delay(500);
@@ -104,6 +117,10 @@ internal static class SelfTestWindowLifetime
             App.Instance.Shutdown(code);
         }
     }
+
+    private static void SetExiting(bool value) => typeof(App).GetProperty(nameof(App.IsExiting),
+        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!
+        .GetSetMethod(nonPublic: true)!.Invoke(App.Instance, [value]);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference CloseEditor()
