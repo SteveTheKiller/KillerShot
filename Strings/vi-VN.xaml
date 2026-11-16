@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Đóng tab  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">chuyển đến tab tiếp theo (Shift: tab trước)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Tất cả các tab</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Chi tiết ở dưới / Chi tiết bên phải / Ẩn chi tiết (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Chưa chọn mục nào</sys:String>
+    <sys:String x:Key="Str_Details_Created">ngày tạo</sys:String>
+    <sys:String x:Key="Str_Details_Type">loại</sys:String>
+    <sys:String x:Key="Str_Details_Path">đường dẫn</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Thư mục</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Tệp</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Tệp {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">kích thước</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Đã chọn {0} mục</sys:String>
 </ResourceDictionary>

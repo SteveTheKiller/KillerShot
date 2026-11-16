@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Закрити вкладку  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">наступна вкладка (Shift: попередня)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Усі вкладки</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Відомості внизу / Відомості праворуч / Приховати відомості (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Нічого не вибрано</sys:String>
+    <sys:String x:Key="Str_Details_Created">створено</sys:String>
+    <sys:String x:Key="Str_Details_Type">тип</sys:String>
+    <sys:String x:Key="Str_Details_Path">шлях</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Папка з файлами</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Файл</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Файл {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">розміри</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Вибрано елементів: {0}</sys:String>
 </ResourceDictionary>

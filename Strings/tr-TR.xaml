@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Sekmeyi kapat  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">sonraki sekme (Shift: önceki)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Tüm sekmeler</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Ayrıntılar altta / Ayrıntılar sağda / Ayrıntıları gizle (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Öğe seçilmedi</sys:String>
+    <sys:String x:Key="Str_Details_Created">oluşturulma</sys:String>
+    <sys:String x:Key="Str_Details_Type">tür</sys:String>
+    <sys:String x:Key="Str_Details_Path">yol</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Dosya klasörü</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Dosya</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} Dosyası</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">boyutlar</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} öğe seçildi</sys:String>
 </ResourceDictionary>

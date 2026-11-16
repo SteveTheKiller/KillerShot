@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">關閉分頁  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">下一個分頁（Shift：上一個）</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">所有分頁</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">在底部顯示詳細資料 / 在右側顯示詳細資料 / 隱藏詳細資料 (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">未選取任何項目</sys:String>
+    <sys:String x:Key="Str_Details_Created">建立時間</sys:String>
+    <sys:String x:Key="Str_Details_Type">類型</sys:String>
+    <sys:String x:Key="Str_Details_Path">路徑</sys:String>
+    <sys:String x:Key="Str_Details_Folder">檔案資料夾</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">檔案</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} 檔案</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">尺寸</sys:String>
+    <sys:String x:Key="Str_Status_Selected">已選取 {0} 項</sys:String>
 </ResourceDictionary>

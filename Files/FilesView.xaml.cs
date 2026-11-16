@@ -35,6 +35,7 @@ public partial class FilesView : UserControl, IDisposable
         InitAddress();
         InitInteraction();
         InitFilesMenu();
+        InitDetailsPane();
         Loaded += (_, _) =>
         {
             Services.ThemeManager.ThemeChanged -= RefreshArt;

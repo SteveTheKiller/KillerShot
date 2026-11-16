@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Lap bezárása (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">következő lap (Shift: előző)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Minden lap</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Részletek alul / Részletek jobb oldalon / Részletek kikapcsolása (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Nincs kiválasztva elem</sys:String>
+    <sys:String x:Key="Str_Details_Created">létre</sys:String>
+    <sys:String x:Key="Str_Details_Type">típus</sys:String>
+    <sys:String x:Key="Str_Details_Path">útvonalat</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Fájlmappa</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Fájl</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} Fájl</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">méretek</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} elem kiválasztva</sys:String>
 </ResourceDictionary>

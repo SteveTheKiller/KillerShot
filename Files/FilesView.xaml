@@ -101,6 +101,86 @@
                 <Button x:Name="CancelOperationButton" DockPanel.Dock="Right" Visibility="Collapsed" Content="{DynamicResource Str_Btn_Cancel}" Style="{StaticResource SurfaceButton}" Click="CancelOperation_Click" />
                 <TextBlock x:Name="CommandStatus" FontFamily="{DynamicResource UiFont}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="8,2" />
             </DockPanel>
+            <!-- KillerShell's details pane (FilePane.xaml DetailsPane): docked at the bottom or on the
+                 right, off by default. Files/DetailsPane.cs owns its position, size and contents. -->
+            <Border x:Name="DetailsPane" DockPanel.Dock="Bottom" Height="160" Visibility="Collapsed" ClipToBounds="True" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="{DynamicResource DetailsPaneBorderThickness}">
+                <Grid>
+                    <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
+                    <ScrollViewer x:Name="DetailsScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+                        <Grid x:Name="DetailsPaneContent" Margin="14,10,14,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="0" />
+                                <RowDefinition Height="0" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition x:Name="DetailsPreviewCol" Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DetailsEmptyText" Grid.Column="0" Text="{DynamicResource Str_Details_Empty}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center" Visibility="Collapsed" />
+                            <StackPanel x:Name="DetailsFieldsGrid" Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock x:Name="DetailsNameText" Margin="0,0,0,9" FontFamily="{DynamicResource WordmarkAccentFont}" FontSize="20" FontWeight="Normal" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                <Grid Margin="0,0,0,3">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Str_Col_Size}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />
+                                    <TextBlock x:Name="DetailsSizeText" Grid.Column="1" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" />
+                                </Grid>
+                                <Grid Margin="0,0,0,3">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Str_Col_Modified}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />
+                                    <TextBlock x:Name="DetailsModifiedText" Grid.Column="1" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" />
+                                </Grid>
+                                <Grid Margin="0,0,0,3">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Str_Details_Created}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />
+                                    <TextBlock x:Name="DetailsCreatedText" Grid.Column="1" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" />
+                                </Grid>
+                                <Grid Margin="0,0,0,3">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Str_Details_Type}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />
+                                    <TextBlock x:Name="DetailsTypeText" Grid.Column="1" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                                <StackPanel x:Name="DetailsMetadataRows" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="86" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Str_Details_Path}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" />
+                                    <TextBlock x:Name="DetailsPathText" Grid.Column="1" Foreground="{DynamicResource TextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" TextWrapping="Wrap" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                </Grid>
+                            </StackPanel>
+                            <Border x:Name="DetailsDivider" Grid.Column="1" Width="{DynamicResource DetailsDividerWidth}" HorizontalAlignment="Center" Margin="0,2" Background="{DynamicResource PaneBorderBrush}" />
+                            <Grid x:Name="DetailsPreviewHost" Grid.Column="2">
+                                <Image x:Name="DetailsPreviewImage" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" SnapsToDevicePixels="True" />
+                                <Image x:Name="DetailsPreviewIcon" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" SnapsToDevicePixels="True" />
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+                    <Thumb x:Name="DetailsPaneGrip" Height="5" VerticalAlignment="Top" Panel.ZIndex="60" Cursor="SizeNS" DragDelta="DetailsPaneGrip_DragDelta" DragCompleted="DetailsPaneGrip_DragCompleted">
+                        <Thumb.Template>
+                            <ControlTemplate TargetType="Thumb">
+                                <Border Background="Transparent">
+                                    <Rectangle x:Name="hint" Height="1" VerticalAlignment="Top" Fill="{DynamicResource PaneBorderBrush}" Opacity="0" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Tag" Value="right">
+                                        <Setter TargetName="hint" Property="Width" Value="1" />
+                                        <Setter TargetName="hint" Property="Height" Value="Auto" />
+                                        <Setter TargetName="hint" Property="HorizontalAlignment" Value="Left" />
+                                        <Setter TargetName="hint" Property="VerticalAlignment" Value="Stretch" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="hint" Property="Opacity" Value="1" />
+                                    </Trigger>
+                                    <Trigger Property="IsDragging" Value="True">
+                                        <Setter TargetName="hint" Property="Opacity" Value="1" />
+                                        <Setter TargetName="hint" Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Thumb.Template>
+                    </Thumb>
+                </Grid>
+            </Border>
             <!-- KillerShell's location row (FilePane.xaml LocationRow): back, forward, up and the
                  address on the left, the tool strip right-aligned in the same row. -->
             <Grid x:Name="MenuBars" DockPanel.Dock="Top" MinHeight="32" Background="{DynamicResource MenuBackgroundBrush}">
@@ -152,6 +232,9 @@
                     <Button x:Name="ShowHiddenBtn" Style="{StaticResource PaneViewButton}" Content="&#xE7B3;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_ShowHidden}" Click="Hidden_Click" />
                     <Button x:Name="FoldersTopBtn" Style="{StaticResource PaneViewButton}" Content="&#xE8B7;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_FoldersTop}" Click="Folders_Click" />
                     <Button Style="{StaticResource PaneViewButton}" Content="&#xE72C;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_Btn_Reload}" Click="Refresh_Click" />
+                    <Button x:Name="DetailsPaneBtn" Style="{StaticResource PaneViewButton}" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_DetailsPane}" Click="DetailsPane_Click">
+                        <Path x:Name="DetailsPaneGlyph" Width="15" Height="15" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" Data="M0,0 H14 V14 H0 Z M2,2 L12,12" />
+                    </Button>
                     <ComboBox x:Name="PlacesBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" MinWidth="110" MaxWidth="220" Height="24" FontSize="11" Margin="4,0,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Label" SelectionChanged="Place_Changed" />
                 </StackPanel>
             </Grid>

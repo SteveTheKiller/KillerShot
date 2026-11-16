@@ -741,4 +741,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Zapri zavihek  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">naslednji zavihek (Shift: prejšnji)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Vsi zavihki</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Podrobnosti spodaj / Podrobnosti desno / Izklopi podrobnosti (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Noben element ni izbran</sys:String>
+    <sys:String x:Key="Str_Details_Created">ustvarjeno</sys:String>
+    <sys:String x:Key="Str_Details_Type">vrsta</sys:String>
+    <sys:String x:Key="Str_Details_Path">pot</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Mapa z datotekami</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Datoteka</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Datoteka {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">mere</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Izbranih elementov: {0}</sys:String>
 </ResourceDictionary>

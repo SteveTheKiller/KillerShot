@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Chiudi scheda  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">scheda successiva (Shift: precedente)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Tutte le schede</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Dettagli in basso / Dettagli a destra / Nascondi dettagli (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Nessun elemento selezionato</sys:String>
+    <sys:String x:Key="Str_Details_Created">creato</sys:String>
+    <sys:String x:Key="Str_Details_Type">tipo</sys:String>
+    <sys:String x:Key="Str_Details_Path">percorso</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Cartella di file</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">File</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">File {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">dimensioni</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} elementi selezionati</sys:String>
 </ResourceDictionary>

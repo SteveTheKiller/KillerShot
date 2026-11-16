@@ -129,6 +129,7 @@ public partial class FilesView
             e.Handled = true;
             if (e.Key == Key.D4) SetDensity((ViewState.Density + 1) % 5); else SetView(e.Key - Key.D1);
         }
+        else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.P) { CycleDetailsPane(); e.Handled = true; }
         else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.O) { SetFoldersFirst(!Navigation.FoldersOnTop); e.Handled = true; }
         else if (modifiers == ModifierKeys.Alt && e.SystemKey == Key.S) { SortBox.IsDropDownOpen = true; e.Handled = true; }
         else if (modifiers == (ModifierKeys.Alt | ModifierKeys.Shift) && e.SystemKey == Key.S) { SetSort(Navigation.SortIndex, !Navigation.SortAsc); e.Handled = true; }

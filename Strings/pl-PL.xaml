@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Zamknij kartę  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">następna karta (Shift: poprzednia)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Wszystkie karty</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Szczegóły na dole / Szczegóły po prawej / Ukryj szczegóły (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Nie wybrano elementu</sys:String>
+    <sys:String x:Key="Str_Details_Created">utworzono</sys:String>
+    <sys:String x:Key="Str_Details_Type">typ</sys:String>
+    <sys:String x:Key="Str_Details_Path">ścieżka</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Folder plików</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Plik</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Plik {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">wymiary</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Zaznaczono elementów: {0}</sys:String>
 </ResourceDictionary>

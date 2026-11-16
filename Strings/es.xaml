@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Cerrar pestaña  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">pestaña siguiente (Shift: anterior)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Todas las pestañas</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Detalles abajo / Detalles a la derecha / Ocultar detalles (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">No hay ningún elemento seleccionado</sys:String>
+    <sys:String x:Key="Str_Details_Created">creado</sys:String>
+    <sys:String x:Key="Str_Details_Type">tipo</sys:String>
+    <sys:String x:Key="Str_Details_Path">ruta</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Carpeta de archivos</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Archivo</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Archivo {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">dimensiones</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} elementos seleccionados</sys:String>
 </ResourceDictionary>

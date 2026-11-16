@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Fermer l'onglet  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">onglet suivant (Shift : précédent)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Tous les onglets</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Détails en bas / Détails à droite / Masquer les détails (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Aucun élément sélectionné</sys:String>
+    <sys:String x:Key="Str_Details_Created">créé</sys:String>
+    <sys:String x:Key="Str_Details_Type">type</sys:String>
+    <sys:String x:Key="Str_Details_Path">chemin</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Dossier de fichiers</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Fichier</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Fichier {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">dimensions</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} éléments sélectionnés</sys:String>
 </ResourceDictionary>

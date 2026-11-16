@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">タブを閉じる  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">次のタブ (Shift: 前へ)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">すべてのタブ</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">詳細を下に表示 / 詳細を右に表示 / 詳細を非表示 (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">項目が選択されていません</sys:String>
+    <sys:String x:Key="Str_Details_Created">作成日時</sys:String>
+    <sys:String x:Key="Str_Details_Type">種類</sys:String>
+    <sys:String x:Key="Str_Details_Path">パス</sys:String>
+    <sys:String x:Key="Str_Details_Folder">ファイル フォルダー</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">ファイル</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} ファイル</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">画像サイズ</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} 件を選択中</sys:String>
 </ResourceDictionary>

@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">关闭标签页  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">下一个标签页（Shift：上一个）</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">所有标签页</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">在底部显示详细信息 / 在右侧显示详细信息 / 隐藏详细信息 (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">未选择任何项目</sys:String>
+    <sys:String x:Key="Str_Details_Created">创建时间</sys:String>
+    <sys:String x:Key="Str_Details_Type">类型</sys:String>
+    <sys:String x:Key="Str_Details_Path">路径</sys:String>
+    <sys:String x:Key="Str_Details_Folder">文件夹</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">文件</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} 文件</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">尺寸</sys:String>
+    <sys:String x:Key="Str_Status_Selected">已选择 {0} 项</sys:String>
 </ResourceDictionary>

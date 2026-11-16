@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Қойындыны жабу  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">келесі қойынды (Shift: алдыңғы)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Барлық қойындылар</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Мәліметтер төменде / Мәліметтер оң жақта / Мәліметтерді жасыру (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Ешнәрсе таңдалмаған</sys:String>
+    <sys:String x:Key="Str_Details_Created">жасалған</sys:String>
+    <sys:String x:Key="Str_Details_Type">түрі</sys:String>
+    <sys:String x:Key="Str_Details_Path">жол</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Файл қалтасы</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Файл</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} файлы</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">өлшемдері</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Таңдалған элементтер: {0}</sys:String>
 </ResourceDictionary>

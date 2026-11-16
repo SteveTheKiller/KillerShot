@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">ট্যাব বন্ধ করুন  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">পরের ট্যাব (Shift: আগেরটি)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">সব ট্যাব</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">নিচে বিবরণ / ডান দিকে বিবরণ / বিবরণ বন্ধ (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">কোনো আইটেম নির্বাচিত নয়</sys:String>
+    <sys:String x:Key="Str_Details_Created">তৈরি</sys:String>
+    <sys:String x:Key="Str_Details_Type">ধরন</sys:String>
+    <sys:String x:Key="Str_Details_Path">পাথ</sys:String>
+    <sys:String x:Key="Str_Details_Folder">ফাইল ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">ফাইল</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0} ফাইল</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">মাত্রা</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} টি আইটেম নির্বাচিত</sys:String>
 </ResourceDictionary>

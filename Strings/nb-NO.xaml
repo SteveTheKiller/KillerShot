@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Lukk fane  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">neste fane (Shift: forrige)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Alle faner</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Detaljer nederst / Detaljer til høyre / Skjul detaljer (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Ingen element valgt</sys:String>
+    <sys:String x:Key="Str_Details_Created">opprettet</sys:String>
+    <sys:String x:Key="Str_Details_Type">type</sys:String>
+    <sys:String x:Key="Str_Details_Path">sti</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Filmappe</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Fil</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0}-fil</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">dimensjoner</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} elementer valgt</sys:String>
 </ResourceDictionary>

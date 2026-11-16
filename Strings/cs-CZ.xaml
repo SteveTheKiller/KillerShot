@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Zavřít kartu  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">další karta (Shift: předchozí)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Všechny karty</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Podrobnosti dole / Podrobnosti vpravo / Vypnout podrobnosti (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Není vybrána žádná položka</sys:String>
+    <sys:String x:Key="Str_Details_Created">vytvořeno</sys:String>
+    <sys:String x:Key="Str_Details_Type">typ</sys:String>
+    <sys:String x:Key="Str_Details_Path">cesta</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Složka se soubory</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Soubor</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Soubor {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">rozměry</sys:String>
+    <sys:String x:Key="Str_Status_Selected">Vybráno {0} položek</sys:String>
 </ResourceDictionary>

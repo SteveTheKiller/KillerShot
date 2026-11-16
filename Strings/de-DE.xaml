@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Tab schließen  (Strg+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">nächster Tab (Shift: voriger)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Alle Tabs</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Details unten / Details rechts / Details aus (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Kein Element ausgewählt</sys:String>
+    <sys:String x:Key="Str_Details_Created">erstellt</sys:String>
+    <sys:String x:Key="Str_Details_Type">Typ</sys:String>
+    <sys:String x:Key="Str_Details_Path">Pfad</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Dateiordner</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Datei</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">{0}-Datei</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">Abmessungen</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} Elemente ausgewählt</sys:String>
 </ResourceDictionary>

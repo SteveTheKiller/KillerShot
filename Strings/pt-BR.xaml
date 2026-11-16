@@ -748,4 +748,14 @@
     <sys:String x:Key="Str_TT_CloseTab">Fechar guia  (Ctrl+W)</sys:String>
     <sys:String x:Key="Str_Ks_NextTab">próxima guia (Shift: anterior)</sys:String>
     <sys:String x:Key="Str_TT_TabOverflow">Todas as guias</sys:String>
+    <sys:String x:Key="Str_TT_DetailsPane">Detalhes embaixo / Detalhes à direita / Ocultar detalhes (Alt+P)</sys:String>
+    <sys:String x:Key="Str_Details_Empty">Nenhum item selecionado</sys:String>
+    <sys:String x:Key="Str_Details_Created">criado</sys:String>
+    <sys:String x:Key="Str_Details_Type">tipo</sys:String>
+    <sys:String x:Key="Str_Details_Path">caminho</sys:String>
+    <sys:String x:Key="Str_Details_Folder">Pasta de arquivos</sys:String>
+    <sys:String x:Key="Str_Details_NoExt">Arquivo</sys:String>
+    <sys:String x:Key="Str_Details_ExtFile">Arquivo {0}</sys:String>
+    <sys:String x:Key="Str_Details_Dimensions">dimensões</sys:String>
+    <sys:String x:Key="Str_Status_Selected">{0} itens selecionados</sys:String>
 </ResourceDictionary>

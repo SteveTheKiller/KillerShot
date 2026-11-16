@@ -111,6 +111,34 @@ internal static class SelfTestFilesView
             checks += 2;
             if (view.ResultsList.Items[0] is not FileEntry { IsDirectory: true }) throw new InvalidOperationException("Folders-first sort did not order actual rows.");
             checks++;
+            // KillerShell's details pane: the toolbar button cycles bottom, right, off, and the pane
+            // describes the real selection. Driven through the visible button and list.
+            if (view.FindName("DetailsPaneBtn") is not Button detailsBtn || view.FindName("DetailsPane") is not Border detailsPane
+                || view.FindName("DetailsNameText") is not TextBlock detailsName)
+                throw new InvalidOperationException("Files view has no details pane or details toolbar button.");
+            if (detailsPane.IsVisible) throw new InvalidOperationException("Details pane is open before the user asked for it.");
+            detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            window.UpdateLayout();
+            if (!detailsPane.IsVisible || DockPanel.GetDock(detailsPane) != Dock.Bottom || Settings.Get("Files.DetailsPane") != "1")
+                throw new InvalidOperationException("First details click did not open the pane at the bottom.");
+            checks++;
+            view.ResultsList.SelectedItem = view.ResultsList.Items.OfType<FileEntry>().First(e => e.FileName == "alpha.txt");
+            await Idle();
+            if (detailsName.Text != "alpha.txt") throw new InvalidOperationException($"Details pane shows '{detailsName.Text}' for alpha.txt.");
+            checks++;
+            detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            window.UpdateLayout();
+            if (!detailsPane.IsVisible || DockPanel.GetDock(detailsPane) != Dock.Right || Settings.Get("Files.DetailsPane") != "2")
+                throw new InvalidOperationException("Second details click did not move the pane to the right.");
+            checks++;
+            detailsBtn.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            await Idle();
+            if (detailsPane.IsVisible || Settings.Get("Files.DetailsPane") != "0")
+                throw new InvalidOperationException("Third details click did not turn the pane off.");
+            checks++;
+            view.ResultsList.SelectedItem = null;
             view.SetView(1);
             using (var restored = new FilesView())
             {
