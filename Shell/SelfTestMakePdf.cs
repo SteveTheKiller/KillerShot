@@ -52,6 +52,12 @@ internal static partial class SelfTestMakePdf
             Directory.CreateDirectory(empty);
             Check(KillerPdfHandoff.MakePdf(empty) == KillerPdfHandoff.Result.NoImages, "empty folder says so");
 
+            string pages = Path.Combine(folder, "pages");
+            Directory.CreateDirectory(pages);
+            foreach (var n in new[] { "page 10.png", "page 2.png", "Page 1.png" }) File.WriteAllBytes(Path.Combine(pages, n), [0]);
+            var ordered = KillerPdfHandoff.ImagesIn(pages).Select(Path.GetFileName).ToList();
+            Check(ordered.SequenceEqual(["Page 1.png", "page 2.png", "page 10.png"]), "pages follow Explorer's name order, numbers counted as numbers: " + string.Join(", ", ordered));
+
             string crowd = Path.Combine(folder, "crowd");
             Directory.CreateDirectory(crowd);
             for (int i = 0; i < 1200; i++) File.WriteAllBytes(Path.Combine(crowd, $"capture-{i:D5}-long-name-padding.png"), [0]);

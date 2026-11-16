@@ -44,17 +44,24 @@ internal static class KillerPdfHandoff
 
     internal static bool IsInstalled => FindKillerPdf() != null;
 
-    /// <summary>The folder's own pictures, not its subfolders'.</summary>
+    /// <summary>The folder's own pictures, not its subfolders', in Explorer's name order so the PDF's
+    /// pages match what the user sees. Enumeration order alone is alphabetical on NTFS ("page 10"
+    /// before "page 2") and creation order on FAT and exFAT cards.</summary>
     internal static List<string> ImagesIn(string folder)
     {
         try
         {
-            return Directory.EnumerateFiles(folder)
+            var images = Directory.EnumerateFiles(folder)
                 .Where(f => ImageExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
+            images.Sort((a, b) => StrCmpLogicalW(Path.GetFileName(a), Path.GetFileName(b)));
+            return images;
         }
         catch (Exception) { return []; }
     }
+
+    [System.Runtime.InteropServices.DllImport("shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int StrCmpLogicalW(string a, string b);
 
     internal enum Result { Started, NotInstalled, NoImages, TooMany, Failed, AlbumChanged }
 
