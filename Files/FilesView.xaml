@@ -101,9 +101,16 @@
                 <Button x:Name="CancelOperationButton" DockPanel.Dock="Right" Visibility="Collapsed" Content="{DynamicResource Str_Btn_Cancel}" Style="{StaticResource SurfaceButton}" Click="CancelOperation_Click" />
                 <TextBlock x:Name="CommandStatus" FontFamily="{DynamicResource UiFont}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="8,2" />
             </DockPanel>
-            <DockPanel x:Name="MenuBars" DockPanel.Dock="Top" Background="{DynamicResource MenuBackgroundBrush}">
-                <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="{DynamicResource MenuBackgroundBrush}">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0">
+            <!-- KillerShell's location row (FilePane.xaml LocationRow): back, forward, up and the
+                 address on the left, the tool strip right-aligned in the same row. -->
+            <Grid x:Name="MenuBars" DockPanel.Dock="Top" MinHeight="32" Background="{DynamicResource MenuBackgroundBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.ColumnSpan="2" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
+                <DockPanel Grid.Column="0" LastChildFill="True" VerticalAlignment="Center">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="4,0,0,0" VerticalAlignment="Center" TextOptions.TextRenderingMode="Grayscale">
                         <Button x:Name="NavBackBtn" Style="{StaticResource PaneViewButton}" ToolTip="{DynamicResource Str_TT_Back}" Click="Back_Click">
                             <Path Data="M7,1 L0,8 L7,15 M0,8 H16" Width="16" Height="16" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" />
                         </Button>
@@ -114,28 +121,26 @@
                             <Path Data="M1,7 L8,0 L15,7 M8,0 V16" Width="16" Height="16" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" />
                         </Button>
                     </StackPanel>
-                    <Border Padding="6,6,8,4" MinHeight="22" Background="Transparent">
+                    <Border Padding="6,6,8,4" MinHeight="22" Background="Transparent" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{DynamicResource Str_Lbl_In}" FontFamily="{DynamicResource MonoFont}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,8,0" />
-                            <TextBlock x:Name="ScopePathLabel" Grid.Column="1" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" MouseLeftButtonDown="ScopeBar_Click" />
-                            <TextBox x:Name="AddressBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" Grid.Column="1" Visibility="Collapsed" Background="{DynamicResource SearchFieldBrush}" Foreground="{DynamicResource TextBrush}" CaretBrush="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" FontFamily="{DynamicResource MonoFont}" FontSize="12" Padding="4,1" KeyDown="AddressBox_KeyDown" LostKeyboardFocus="AddressBox_LostKeyboardFocus" />
+                            <TextBlock Text="{DynamicResource Str_Lbl_In}" FontFamily="{DynamicResource MonoFont}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock x:Name="ScopePathLabel" Grid.Column="1" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" MouseLeftButtonDown="ScopeBar_Click" />
+                            <TextBox x:Name="AddressBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" Grid.Column="1" Visibility="Collapsed" Height="22" VerticalAlignment="Center" VerticalContentAlignment="Center" Background="{DynamicResource SearchFieldBrush}" Foreground="{DynamicResource TextBrush}" CaretBrush="{DynamicResource PrimaryBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" FontFamily="{DynamicResource MonoFont}" FontSize="12" Padding="4,1" KeyDown="AddressBox_KeyDown" LostKeyboardFocus="AddressBox_LostKeyboardFocus" />
                         </Grid>
                     </Border>
                 </DockPanel>
-                <WrapPanel DockPanel.Dock="Top" Margin="4,0">
-                    <Button x:Name="ViewListBtn" Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_TT_ViewList}" Tag="0" Click="View_Click" />
-                    <Button x:Name="ViewIconsBtn" Style="{StaticResource PaneViewButton}" Content="" Margin="2,0" ToolTip="{DynamicResource Str_TT_ViewIcons}" Tag="1" Click="View_Click" />
-                    <Button x:Name="ViewDetailsBtn" Style="{StaticResource PaneViewButton}" Content="" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_ViewDetails}" Tag="2" Click="View_Click" />
-                    <Button x:Name="FileDensityBtn" Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_TT_Density}" Click="Density_Click" PreviewMouseWheel="Density_Wheel" />
-                    <Button x:Name="ShowHiddenBtn" Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_TT_ShowHidden}" Click="Hidden_Click" />
-                    <Button x:Name="FoldersTopBtn" Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_TT_FoldersTop}" Click="Folders_Click" />
-                    <Button Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_Btn_Reload}" Click="Refresh_Click" />
-                    <ComboBox x:Name="PlacesBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" MinWidth="110" MaxWidth="220" Margin="6,0" DisplayMemberPath="Label" SelectionChanged="Place_Changed" />
-                    <ComboBox x:Name="SortBox" AutomationProperties.Name="{DynamicResource Str_TT_Sort}" ToolTip="{DynamicResource Str_TT_Sort}" MinWidth="100" Margin="6,0" SelectionChanged="Sort_Changed">
+                <StackPanel x:Name="ToolStrip" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4,8,2" TextOptions.TextRenderingMode="Grayscale">
+                    <Button x:Name="ViewListBtn" Style="{StaticResource PaneViewButton}" Content="&#xE8FD;" ToolTip="{DynamicResource Str_TT_ViewList}" Tag="0" Click="View_Click" />
+                    <Button x:Name="ViewIconsBtn" Style="{StaticResource PaneViewButton}" Content="&#xE80A;" Margin="2,0" ToolTip="{DynamicResource Str_TT_ViewIcons}" Tag="1" Click="View_Click" />
+                    <Button x:Name="ViewDetailsBtn" Style="{StaticResource PaneViewButton}" Content="&#xE700;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_ViewDetails}" Tag="2" Click="View_Click" />
+                    <Button x:Name="FileDensityBtn" Style="{StaticResource PaneViewButton}" Content="&#xE8A1;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_Density}" Click="Density_Click" PreviewMouseWheel="Density_Wheel" />
+                    <!-- KillerShell's one group separator, between the view modes and the sort controls. -->
+                    <Border x:Name="ViewSortSeparator" Width="{DynamicResource BarSepWidth}" Margin="2,3,4,3" Background="{DynamicResource BarSepBrush}" />
+                    <ComboBox x:Name="SortBox" AutomationProperties.Name="{DynamicResource Str_TT_Sort}" ToolTip="{DynamicResource Str_TT_Sort}" Width="112" Height="24" FontSize="11" Margin="0,0,2,0" VerticalContentAlignment="Center" SelectionChanged="Sort_Changed">
                         <ComboBoxItem Tag="1" Content="{DynamicResource Str_Col_Name}" />
                         <ComboBoxItem Tag="2" Content="{DynamicResource Str_Col_Folder}" />
                         <ComboBoxItem Tag="3" Content="{DynamicResource Str_Col_Size}" />
@@ -143,9 +148,13 @@
                         <ComboBoxItem Tag="5" Content="{DynamicResource Str_Col_Type}" />
                         <ComboBoxItem Tag="6" Content="{DynamicResource Str_Col_Created}" />
                     </ComboBox>
-                    <Button x:Name="SortDirectionBtn" Style="{StaticResource PaneViewButton}" Content="" ToolTip="{DynamicResource Str_TT_SortDir}" Click="SortDirection_Click" />
-                </WrapPanel>
-            </DockPanel>
+                    <Button x:Name="SortDirectionBtn" Style="{StaticResource PaneViewButton}" Content="&#xE74A;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_SortDir}" Click="SortDirection_Click" />
+                    <Button x:Name="ShowHiddenBtn" Style="{StaticResource PaneViewButton}" Content="&#xE7B3;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_ShowHidden}" Click="Hidden_Click" />
+                    <Button x:Name="FoldersTopBtn" Style="{StaticResource PaneViewButton}" Content="&#xE8B7;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_TT_FoldersTop}" Click="Folders_Click" />
+                    <Button Style="{StaticResource PaneViewButton}" Content="&#xE72C;" Margin="0,0,2,0" ToolTip="{DynamicResource Str_Btn_Reload}" Click="Refresh_Click" />
+                    <ComboBox x:Name="PlacesBox" AutomationProperties.Name="{DynamicResource Str_Col_Folder}" MinWidth="110" MaxWidth="220" Height="24" FontSize="11" Margin="4,0,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Label" SelectionChanged="Place_Changed" />
+                </StackPanel>
+            </Grid>
             <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed" Background="{DynamicResource TableHeaderBrush}" BorderBrush="{DynamicResource HeaderLineBrush}" BorderThickness="0,0,0,1" ContextMenuOpening="DetailsHeader_ContextMenuOpening">
                 <Border.ContextMenu>
                     <ContextMenu Placement="Bottom" />

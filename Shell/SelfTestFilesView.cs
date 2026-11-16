@@ -57,6 +57,17 @@ internal static class SelfTestFilesView
             if (view.FindName("AddressBox") is not System.Windows.Controls.TextBox || view.FindName("NavBackBtn") is not System.Windows.Controls.Button)
                 throw new InvalidOperationException("Files view has no editable address and navigation controls.");
             checks++;
+            // KillerShell's pane carries navigation, the address and the view tools in ONE row,
+            // with the tool strip right-aligned after the address. Measured on the real controls.
+            double Middle(FrameworkElement element) => element.TranslatePoint(new Point(0, element.ActualHeight / 2), view).Y;
+            double LeftEdge(FrameworkElement element) => element.TranslatePoint(new Point(0, 0), view).X;
+            if (view.FindName("ToolStrip") is not StackPanel toolStrip || !toolStrip.IsVisible
+                || Math.Abs(Middle(view.NavBackBtn) - Middle(view.ViewListBtn)) > 4
+                || Math.Abs(Middle(view.NavBackBtn) - Middle(view.ScopePathLabel)) > 4
+                || LeftEdge(view.ViewListBtn) <= LeftEdge(view.ScopePathLabel) + 40
+                || LeftEdge(toolStrip) + toolStrip.ActualWidth < view.ActualWidth - 40)
+                throw new InvalidOperationException($"Files toolbar is not KillerShell's single location row (back y {Middle(view.NavBackBtn):0}, view buttons y {Middle(view.ViewListBtn):0}).");
+            checks++;
             double columns = view.ViewState.NameWidth.Value + view.ViewState.LocationWidth.Value
                 + view.ViewState.SizeWidth.Value + view.ViewState.ModifiedWidth.Value
                 + view.ViewState.TypeWidth.Value + view.ViewState.CreatedWidth.Value
