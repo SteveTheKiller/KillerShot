@@ -1145,6 +1145,12 @@ namespace KillerShot.Shell
             if (CardColors.Collection(id) != null)
                 menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_CollectionColorNone"), null, "",
                     () => TryChangeAlbum(() => CardColors.SetCollection(id, null, session))));
+            if (KillerPdfHandoff.IsInstalled)
+                menu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", async () =>
+                {
+                    if (KillerPdfHandoff.MessageKey(await KillerPdfHandoff.MakePdfFromCollectionAsync(id, session)) is { } problem)
+                        ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
+                }, true));
             menu.Items.Add(new Separator());
             menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_DeleteCollection"), null, "", () =>
             {

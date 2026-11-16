@@ -210,6 +210,7 @@ internal static class VideoCaptures
                 if (!TryDelete(path)) RetryLater(path);
             }
         }
+        if (id == null) KillerPdfHandoff.ForgetCopies(session);
     }
 
     /// <summary>Deletes every decrypted playback copy. A copy a player still holds open stays
@@ -228,6 +229,7 @@ internal static class VideoCaptures
             }
             catch { }
         }
+        KillerPdfHandoff.WipeCopies();
     }
 
     /// <summary>Text for a clip's length, like 0:12 or 1:02:03.</summary>

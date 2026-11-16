@@ -16,7 +16,12 @@ internal static class SelfTestMakePdf
     internal static bool TryRun(string[] args)
     {
         if (args is not ["--selftest-make-pdf", var target]) return false;
-        string folder = Path.GetFullPath(target);
+        _ = RunAsync(Path.GetFullPath(target));
+        return true;
+    }
+
+    private static async Task RunAsync(string folder)
+    {
         var report = new List<string>();
         int failures = 0;
         void Check(bool pass, string name) { if (!pass) failures++; report.Add((pass ? "PASS " : "FAIL ") + name); }
@@ -56,6 +61,39 @@ internal static class SelfTestMakePdf
             foreach (var r in Enum.GetValues<KillerPdfHandoff.Result>())
                 if (KillerPdfHandoff.MessageKey(r) is { } key)
                     Check(Application.Current.TryFindResource(key) is string { Length: > 0 }, "string " + key);
+
+            // A library collection: the encrypted pictures are decrypted into a numbered temp
+            // folder in capture order, and closing the album deletes it.
+            Settings.UseFolder(Path.Combine(folder, "settings"));
+            SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
+            CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
+            CaptureLibrary.BackgroundWork = false;
+            VideoCaptures.UsePlaybackFolder(Path.Combine(folder, "playback"));
+            App.InitializeKit();
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The scratch library did not open.");
+            var shot = SelfTestAutoRedact.Picture();
+            long newer = CaptureLibrary.AddNow(shot, new DateTime(2026, 11, 2), "region", "newer", null);
+            long older = CaptureLibrary.AddNow(shot, new DateTime(2026, 11, 1), "region", "older", null);
+            CaptureLibrary.AddNow(shot, new DateTime(2026, 11, 3), "region", "outside", null);
+            long session = CaptureLibrary.Session;
+            long collection = CaptureLibrary.CreateCollection("Pictures", [newer, older], session);
+            started = null;
+            var made = await KillerPdfHandoff.MakePdfFromCollectionAsync(collection, session);
+            string copies = started?.WorkingDirectory ?? "";
+            var copied = started?.ArgumentList.ToArray() ?? [];
+            report.Add($"collection: {made} {copies} {string.Join(" | ", copied)}");
+            Check(made == KillerPdfHandoff.Result.Started && copied.SequenceEqual(["0001.png", "0002.png"]), "collection hands over its two pictures, numbered");
+            Check(copies.StartsWith(Path.Combine(folder, "playback"), StringComparison.OrdinalIgnoreCase)
+                && File.ReadAllBytes(Path.Combine(copies, "0001.png")).SequenceEqual(CaptureLibrary.LoadOutputPng(older)), "oldest capture comes first, decrypted");
+            long emptyCollection = CaptureLibrary.CreateCollection("Empty", null, session);
+            Check(await KillerPdfHandoff.MakePdfFromCollectionAsync(emptyCollection, session) == KillerPdfHandoff.Result.NoImages, "empty collection says so");
+            Check(await KillerPdfHandoff.MakePdfFromCollectionAsync(collection, session + 1) == KillerPdfHandoff.Result.AlbumChanged, "a stale album session is refused");
+            CaptureLibrary.Close();
+            for (int i = 0; i < 100 && Directory.Exists(copies); i++) await Task.Delay(20);
+            Check(copies.Length > 0 && !Directory.Exists(copies), "closing the album deletes the decrypted copies");
+            Directory.CreateDirectory(Path.Combine(folder, "playback", "PDF leftover"));
+            VideoCaptures.WipePlayback();
+            Check(!Directory.Exists(Path.Combine(folder, "playback", "PDF leftover")), "exit wipe deletes leftover copies");
         }
         catch (Exception error) { failures++; report.Add(error.ToString()); }
         finally
@@ -67,6 +105,5 @@ internal static class SelfTestMakePdf
         Directory.CreateDirectory(folder);
         File.WriteAllLines(Path.Combine(folder, "report.txt"), report);
         App.Instance.Shutdown(failures == 0 ? 0 : 1);
-        return true;
     }
 }
