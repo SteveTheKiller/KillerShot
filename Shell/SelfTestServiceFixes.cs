@@ -72,7 +72,8 @@ internal static class SelfTestServiceFixes
         await Check("SX-001", () => Task.Run(() => PrunedRecordingLosesPlayback(dir)));
         await Check("SV-006", () => Task.Run(() => HeldPlaybackCopyGoesWhenReleased(dir)));
         await Check("AL-001", () => Task.Run(() => VideoImportLeavesAlbumWritable(dir)));
-        await Check("AL-007", () => Task.Run(StaleOcrIsDropped));
+        await Check("AL-010", () => Task.Run(() => VideoImportIsLinear(dir)));
+        await Check("AL-007",() => Task.Run(StaleOcrIsDropped));
         await Check("AL-006", () => Sync(RenameRollbackKeepsAlbum));
         await Check("AL-009", () => Task.Run(() => ImportCopiesOutsideGate(dir)));
         await Check("AL-004", () => Task.Run(SwitchAsksWithoutLocks));
@@ -264,6 +265,33 @@ internal static class SelfTestServiceFixes
         Require(File.ReadAllBytes(back).AsSpan().SequenceEqual(File.ReadAllBytes(Path.Combine(dir, "clips", "long.mp4"))),
             "The imported recording's bytes differ from the source.");
         File.Delete(back);
+    }
+
+    // ---- AL-010: importing a recording costs the same per byte at the end as at the start ----
+
+    private static void VideoImportIsLinear(string dir)
+    {
+        Open();
+        const int size = 200 << 20;
+        string source = FakeClip(dir, "linear", size);
+        var stamps = new List<(long Written, long Ticks)>();
+        var clock = Stopwatch.StartNew();
+        CaptureLibrary.VideoChunkWrittenForSelfTest = written => stamps.Add((written, clock.ElapsedTicks));
+        long video = CaptureLibrary.AddVideo(source, DateTime.Now.AddMinutes(-4), "linear");
+        CaptureLibrary.VideoChunkWrittenForSelfTest = null;
+        Require(stamps.Count >= 4, $"The import reported {stamps.Count} written pieces.");
+        // Cost per megabyte of the second piece (the first one warms the connection) against the last.
+        double Rate(int at) => (stamps[at].Ticks - stamps[at - 1].Ticks) * 1000.0 / Stopwatch.Frequency
+            / ((stamps[at].Written - stamps[at - 1].Written) / 1048576.0);
+        double first = Rate(1), last = Rate(stamps.Count - 1);
+        File.AppendAllText(Path.Combine(dir, "linear-import.txt"),
+            $"pieces={stamps.Count} second_ms_per_mb={first:F2} last_ms_per_mb={last:F2} ratio={last / first:F2}{Environment.NewLine}");
+        Require(last < first * 3, $"The last piece of a 200 MB import cost {last:F2} ms/MB against {first:F2} ms/MB for the second, so import time grows with what is stored.");
+        string back = Path.Combine(dir, "linear-back.mp4");
+        CaptureLibrary.ExportVideo(video, back);
+        Require(new FileInfo(back).Length == size, "The imported 200 MB recording came back a different size.");
+        File.Delete(back);
+        File.Delete(source);
     }
 
     // ---- AL-007: text read before a reindex is not stored after it ----

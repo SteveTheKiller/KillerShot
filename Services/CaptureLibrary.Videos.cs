@@ -20,10 +20,12 @@ internal sealed class VideoTooLargeException(long size, long limit)
 
 /// <summary>
 /// Recordings kept in the encrypted library. The captures row holds a poster frame as its image
-/// and thumbnail, so every view draws it like a screenshot; the clip itself is in
-/// capture_videos, written and read through SQLite's incremental blob I/O so a long recording is
-/// never held in memory whole. One value is capped by SQLITE_MAX_LENGTH, which MaxVideoBytes
-/// reads from the open connection rather than assuming the stock default.
+/// and thumbnail, so every view draws it like a screenshot; capture_videos holds the clip's
+/// extension and length, and the clip itself is ordered rows of at most VideoChunkBytes in
+/// capture_video_chunks, so a long recording is never held in memory whole and reaching the end of
+/// it costs no more than the start. Albums made before chunking hold a clip in capture_videos.data
+/// instead, which is still read when a clip has no chunk rows. MaxVideoBytes stays the cap on a
+/// clip, read from the open connection's SQLITE_LIMIT_LENGTH rather than assuming the stock default.
 /// </summary>
 internal static partial class CaptureLibrary
 {
@@ -33,6 +35,11 @@ internal static partial class CaptureLibrary
             ext TEXT NOT NULL,
             duration_ticks INTEGER NOT NULL,
             data BLOB NOT NULL);
+        CREATE TABLE IF NOT EXISTS capture_video_chunks(
+            capture_id INTEGER NOT NULL REFERENCES capture_videos(capture_id) ON DELETE CASCADE,
+            seq INTEGER NOT NULL,
+            data BLOB NOT NULL,
+            PRIMARY KEY(capture_id, seq));
         """;
 
     private const int PosterLongSide = 1920;
@@ -52,7 +59,7 @@ internal static partial class CaptureLibrary
     /// <summary>For the self-test: a smaller cap, so the over-limit path runs without a 1 GB file.</summary>
     internal static long? MaxVideoBytesOverride { get; set; }
 
-    /// <summary>The largest clip one row can hold: SQLITE_LIMIT_LENGTH on the open library.</summary>
+    /// <summary>The largest clip the library takes: SQLITE_LIMIT_LENGTH on the open library.</summary>
     public static long MaxVideoBytes
     {
         get
@@ -84,9 +91,10 @@ internal static partial class CaptureLibrary
             // The clip can be a gigabyte, so it is written through its own connection, outside the
             // gate every listing and edit takes, and in pieces that each commit on their own, so
             // no write transaction stays open while the file is copied and notes, marks and OCR
-            // keep saving meanwhile. The clip row is written first with no captures row, which no
-            // listing reads; the captures row that makes the recording visible commits last, so it
-            // appears whole or not at all. A clip row left by a crash is removed after the next open.
+            // keep saving meanwhile. The clip row and its chunk rows are written first with no
+            // captures row, which no listing reads; the captures row that makes the recording
+            // visible commits last, so it appears whole or not at all. Clip rows left by a crash
+            // are removed after the next open.
             string connectionString;
             lock (_gate)
             {
@@ -104,11 +112,10 @@ internal static partial class CaptureLibrary
                 id = AllocateCaptureId(album, reserve);
                 using var cmd = album.CreateCommand();
                 cmd.Transaction = reserve;
-                cmd.CommandText = "INSERT INTO capture_videos(capture_id, ext, duration_ticks, data) VALUES ($id, $ext, $d, zeroblob($n))";
+                cmd.CommandText = "INSERT INTO capture_videos(capture_id, ext, duration_ticks, data) VALUES ($id, $ext, $d, x'')";
                 cmd.Parameters.AddWithValue("$id", id);
                 cmd.Parameters.AddWithValue("$ext", Path.GetExtension(path).ToLowerInvariant());
                 cmd.Parameters.AddWithValue("$d", duration.Ticks);
-                cmd.Parameters.AddWithValue("$n", size);
                 cmd.ExecuteNonQuery();
                 reserve.Commit();
             }
@@ -118,29 +125,25 @@ internal static partial class CaptureLibrary
                 {
                     var buffer = new byte[VideoChunkBytes];
                     long written = 0;
-                    while (written < size)
+                    // Each chunk is its own row and its own short transaction. Inserting a row never
+                    // walks the rows before it, so the cost per chunk is the same at the end of a
+                    // gigabyte as at the start, and other writes interleave between chunks.
+                    for (long seq = 0; written < size; seq++)
                     {
-                        // Reaching an offset in a blob walks every overflow page before it, so a
-                        // piece costs time in proportion to what is already stored. Pieces that
-                        // grow with the stored length keep the whole import linear; the cap keeps
-                        // any one write transaction short.
-                        long end = written + Math.Min(size - written, Math.Clamp(written, VideoChunkBytes, VideoPieceMaxBytes));
+                        int want = (int)Math.Min(buffer.Length, size - written);
+                        source.ReadExactly(buffer, 0, want);
                         using (var piece = album.BeginTransaction())
                         {
-                            using (var blob = new SqliteBlob(album, "capture_videos", "data", id))
-                            {
-                                blob.Position = written;
-                                for (long at = written; at < end;)
-                                {
-                                    int want = (int)Math.Min(buffer.Length, end - at);
-                                    int read = source.ReadAtLeast(buffer.AsSpan(0, want), want, throwOnEndOfStream: true);
-                                    blob.Write(buffer, 0, read);
-                                    at += read;
-                                }
-                            }
+                            using var cmd = album.CreateCommand();
+                            cmd.Transaction = piece;
+                            cmd.CommandText = "INSERT INTO capture_video_chunks(capture_id, seq, data) VALUES ($id, $seq, $data)";
+                            cmd.Parameters.AddWithValue("$id", id);
+                            cmd.Parameters.AddWithValue("$seq", seq);
+                            cmd.Parameters.AddWithValue("$data", want == buffer.Length ? buffer : buffer[..want]);
+                            cmd.ExecuteNonQuery();
                             piece.Commit();
                         }
-                        written = end;
+                        written += want;
                         VideoChunkWrittenForSelfTest?.Invoke(written);
                     }
                 }
@@ -198,16 +201,16 @@ internal static partial class CaptureLibrary
         }
     }
 
-    /// <summary>How much of a recording one import transaction writes.</summary>
+    /// <summary>The most of a recording one chunk row, and one import transaction, holds.</summary>
     private const int VideoChunkBytes = 4 << 20;
-
-    /// <summary>The most one import transaction writes once the clip is large.</summary>
-    private const int VideoPieceMaxBytes = 64 << 20;
 
     private static void DeleteVideoRow(SqliteConnection album, long id)
     {
         using var cmd = album.CreateCommand();
-        cmd.CommandText = "DELETE FROM capture_videos WHERE capture_id = $id AND NOT EXISTS(SELECT 1 FROM captures WHERE id = $id)";
+        cmd.CommandText = """
+            DELETE FROM capture_video_chunks WHERE capture_id = $id AND NOT EXISTS(SELECT 1 FROM captures WHERE id = $id);
+            DELETE FROM capture_videos WHERE capture_id = $id AND NOT EXISTS(SELECT 1 FROM captures WHERE id = $id);
+            """;
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
     }
@@ -220,7 +223,10 @@ internal static partial class CaptureLibrary
         lock (_gate)
         {
             if (_db == null || !ReferenceEquals(_db, database)) return;
-            Exec(_db, "DELETE FROM capture_videos WHERE capture_id NOT IN (SELECT id FROM captures)");
+            Exec(_db, """
+                DELETE FROM capture_video_chunks WHERE capture_id NOT IN (SELECT id FROM captures);
+                DELETE FROM capture_videos WHERE capture_id NOT IN (SELECT id FROM captures);
+                """);
         }
     }
 
@@ -243,9 +249,28 @@ internal static partial class CaptureLibrary
                 }
                 using var album = new SqliteConnection(connectionString);
                 album.Open();
-                using var blob = new SqliteBlob(album, "capture_videos", "data", id, readOnly: true);
                 using var target = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-                blob.CopyTo(target, 1 << 20);
+                using (var chunks = album.CreateCommand())
+                {
+                    chunks.CommandText = "SELECT data FROM capture_video_chunks WHERE capture_id = $id ORDER BY seq";
+                    chunks.Parameters.AddWithValue("$id", id);
+                    bool any = false;
+                    using (var reader = chunks.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            any = true;
+                            using var chunk = reader.GetStream(0);
+                            chunk.CopyTo(target, 1 << 20);
+                        }
+                    }
+                    if (!any)
+                    {
+                        // A clip stored before chunking, or an empty one, is one value in capture_videos.
+                        using var blob = new SqliteBlob(album, "capture_videos", "data", id, readOnly: true);
+                        blob.CopyTo(target, 1 << 20);
+                    }
+                }
                 target.Flush(true);
             }
             File.Move(temp, destination, true);
