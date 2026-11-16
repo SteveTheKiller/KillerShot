@@ -41,18 +41,24 @@ internal static class SelfTestCarouselPerspective
             CheckShallowDepth(folder, report, false);
             CheckShallowDepth(folder, report, true);
             CheckAlbumHosts(report);
-            var main = (CoverFlow)new LibraryView().FindName("BigFlow");
+            var mainLibrary = new LibraryView();
+            var main = (CoverFlow)mainLibrary.FindName("BigFlow");
             main.ThumbnailSource = item => Thumbnail((int)item.Id);
             main.DeferHiddenLoading = false;
             main.Items = Enumerable.Range(0, 9).Select(i => new CaptureItem(i, DateTime.Today, 180, 120,
                 "region", "Large photo " + i, null, null, null)).ToArray();
             main.SelectedIndex = 4;
             main.Items = main.Items;
+            // A view that was never laid out leaves its carousel at zero size, so it gets laid out as the album does.
+            mainLibrary.Measure(new Size(1000, 700));
+            mainLibrary.Arrange(new Rect(0, 0, 1000, 700));
+            mainLibrary.UpdateLayout();
             main.Measure(new Size(1000, 700));
             main.Arrange(new Rect(0, 0, 1000, 700));
             var large = Bounds(main).Center;
             Check(large.Width >= 550 && large.Width <= 700,
-                "The main carousel's landscape photo must occupy 55 to 70 percent of the pane when height permits.");
+                $"The main carousel's landscape photo must occupy 55 to 70 percent of the pane when height permits; it is {large.Width:0} of 1000 wide.");
+            report.Add($"Main carousel landscape photo is {large.Width:0} of 1000 wide PASS");
             Render(main, Path.Combine(folder, "main-large-photo.png"));
             for (int i = 0; i < 100; i++) main.HandleWheel(120, ModifierKeys.Control);
             large = Bounds(main).Center;
@@ -237,6 +243,10 @@ internal static class SelfTestCarouselPerspective
         var big = (CoverFlow)library.FindName("BigFlow");
         Check(big.PerspectiveZoomEnabled, "The album's full carousel did not enable perspective zoom.");
         library.TestSet("shelves", "date", "");
+        // The library lists off the UI thread, so the shelves exist only once the listing lands.
+        var listed = new System.Windows.Threading.DispatcherFrame();
+        library.ListingTask.ContinueWith(_ => listed.Continue = false, TaskScheduler.Default);
+        System.Windows.Threading.Dispatcher.PushFrame(listed);
         library.Measure(new Size(1000, 600));
         library.Arrange(new Rect(0, 0, 1000, 600));
         library.UpdateLayout();
