@@ -665,6 +665,17 @@ internal static partial class CaptureLibrary
 
     private static SqliteConnection Db => _db ?? throw new InvalidOperationException(Loc("Str_Lib_NotOpen"));
 
+    /// <summary>The SQLCipher version the open album runs on, for the engine compatibility self-test.</summary>
+    internal static string CipherVersion()
+    {
+        lock (_gate)
+        {
+            using var cmd = Db.CreateCommand();
+            cmd.CommandText = "PRAGMA cipher_version";
+            return cmd.ExecuteScalar() as string ?? "";
+        }
+    }
+
     private static string Loc(string key) => LocaleManager.Loc(key);
 
     // ============================================================

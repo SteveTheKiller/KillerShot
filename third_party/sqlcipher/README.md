@@ -15,19 +15,35 @@ also use this DLL; their copies match the unsigned build until they are signed t
 
 | | |
 |---|---|
-| SQLCipher | 4.19.0 community (SQLite 3.53.4) |
+| SQLCipher | 4.20.0 community (SQLite 3.54.1) |
 | LibTomCrypt | 1.18.2 |
 | Toolchain | llvm-mingw 20260616 (clang 22.1.8), ucrt |
-| e_sqlcipher.dll sha256 | `9084585bab8eca1abe5710030dcc20c037a7b8fe78413b040f99487911a49e99` (signed); unsigned build `ec67d36a1e01d9e68726319d88e6d3a9b294fa3ad52e71555c2a120f6c234a4a` |
-| Signature | Authenticode, Open Source Developer Stephen Riley (E478E4940DFD3547DAF2199494B399214FB3E0FD), DigiCert timestamp, signed 2026-10-27 for 1.0.0 |
+| e_sqlcipher.dll sha256 | unsigned build `c7aef1d1588adb83bf3b8a58eefb22baddf66ffdc81ff22cd06e683bf4f8b3be`; signed hash recorded when signed |
+| Signature | Not yet signed. Sign with the Open Source Developer certificate before a real release (the 4.19.0 build was signed 2026-10-27). |
 
 Source tarballs (verify before building):
 
 | Tarball | URL | sha256 |
 |---|---|---|
-| sqlcipher v4.19.0 | github.com/sqlcipher/sqlcipher/archive/refs/tags/v4.19.0.tar.gz | `7075f96cbabe45b4ecfc2e6b1745a625f856f695b0827a5506ce9ed85b906aa0` |
+| sqlcipher v4.20.0 | github.com/sqlcipher/sqlcipher/archive/refs/tags/v4.20.0.tar.gz | `38705f51b61ac0636a5fd064f9a77fafabc7227b2aa2513f1b14c8bb1102affc` |
 | libtomcrypt 1.18.2 | github.com/libtom/libtomcrypt/releases/download/v1.18.2/crypt-1.18.2.tar.xz | `96ad4c3b8336050993c5bc2cf6c057484f2b0f9f763448151567fbab5e767b84` |
 | llvm-mingw 20260616 | github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-ubuntu-22.04-x86_64.tar.xz | `534b92e067b22a6b4441f48ae9240a3341b17825d04d577eab0cf85c44b4deda` |
+
+## Dependency verification, November 16, 2026 (4.20.0)
+
+[SQLCipher 4.20.0](https://www.zetetic.net/blog/2026/10/27/sqlcipher-4.20.0-release/) is a
+maintenance release: SQLite 3.54.1, a deferred-error fix when `PRAGMA cipher_migrate` fails
+(KillerShot never calls it) and a WebAssembly-only change. `PBKDF2_ITER` is still 256000
+(src/sqlcipher.c line 111). The LibTomCrypt and llvm-mingw tarballs matched the hashes above.
+The rebuilt DLL is PE32+ x64 and reports `4.20.0 community`.
+
+`--selftest-sqlcipher-compat <folder> create` run on the 4.19.0 build made an account album and
+a password album; `open 4.20.0` on the 4.20.0 build opened both, returned identical picture bytes,
+found the note through search, refused a wrong password and changed the password. Album, storage
+and library self-tests were rerun on the 4.20.0 build. Repeat the compat pair on every bump.
+
+Build note: copying a DLL in keeps its old timestamp, and MSBuild then keeps embedding the
+previous one. Touch the file (or rebuild clean) after replacing it.
 
 ## Dependency verification, October 20, 2026
 
@@ -55,7 +71,7 @@ Extract the three tarballs into one folder. Generate the amalgamation first
 (needs tclsh):
 
 ```sh
-cd sqlcipher-4.19.0 && ./configure --with-tempstore=yes && make sqlite3.c && cd ..
+cd sqlcipher-4.20.0 && ./configure --with-tempstore=yes && make sqlite3.c && cd ..
 ```
 
 Then run `build-e_sqlcipher.sh` (in this folder). It compiles the amalgamation plus the

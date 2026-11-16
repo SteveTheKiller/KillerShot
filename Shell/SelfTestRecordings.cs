@@ -37,6 +37,7 @@ internal static class SelfTestRecordings
             Settings.UseFolder(Path.Combine(folder, "settings"));
             if (theme != null) Settings.Set("Theme", theme);
             if (locale != null) Settings.Set("Locale", locale);
+            SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(folder, "native"));
             App.InitializeKit();
             CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
             CaptureLibrary.BackgroundWork = false;

@@ -114,6 +114,7 @@ public partial class App : Application
         if (SelfTestRedactionFinder.TryRun(e.Args)) return;
         if (SelfTestAutoRedact.TryRun(e.Args)) return;
         if (SelfTestMakePdf.TryRun(e.Args)) return;
+        if (SelfTestSqlCipherCompat.TryRun(e.Args)) return;
         if (SelfTest.TryRun(e.Args, out int code)) { Shutdown(code); return; }
         if (SelfTestPrivacyRecovery.TryRun(e.Args)) return;
         if (SelfTestRecognitionPrivacy.TryRun(e.Args)) return;

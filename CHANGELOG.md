@@ -98,6 +98,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recording
 ### Changed
 
 - Updated SQLite bindings to 11.0.0.
+- Updated the encrypted album engine to SQLCipher 4.20.0 (SQLite 3.54.1). Existing albums open unchanged.
 - Single-line text fields are as tall as the dropdowns beside them, so form rows line up instead of the text boxes standing oversized.
 - The copyright at the right end of the footer ends 8 px before the corner grip, the same gap in every Killer app.
 - Multiple carousels with one collection picked in the sidebar shows a carousel per day. Grouping by collection there gave a single carousel, the same as Single carousel.
