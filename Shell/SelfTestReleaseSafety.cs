@@ -93,6 +93,8 @@ internal static class SelfTestReleaseSafety
             report.Add("saved_undo_history_does_not_prompt=True");
             for (int n = 0; n < 120; n++) CaptureLibrary.AddNow(image, DateTime.Now.AddSeconds(n), "region", "Retention " + n, null);
             var window = App.Instance.EditorWindow!;
+            // The settings button opens the album manager as a modal dialog; the test drives it modelessly.
+            window.TestUseModelessAlbums();
             ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var keep = (ComboBox)window.FindName("LibraryKeepCombo");
             keep.SelectedIndex = 1;
@@ -100,7 +102,7 @@ internal static class SelfTestReleaseSafety
             Check(CaptureLibrary.Keep == "all" && CaptureLibrary.Count == 120,
                 "Browsing retention choices must not change the saved policy or delete captures.");
             report.Add("retention_browse_preserves_captures=True");
-            ((System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup")).IsOpen = false;
+            window.TestCloseAlbums();
             ((Button)window.FindName("LibrarySettingsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(keep.SelectedIndex == 0, "Closing the settings card cancels an unapplied retention choice.");
             keep.SelectedIndex = 1;
@@ -109,9 +111,8 @@ internal static class SelfTestReleaseSafety
             Check(CaptureLibrary.Keep == "count:100" && CaptureLibrary.Count == 100,
                 "Saving the selected retention choice applies that exact limit.");
             report.Add("retention_save_applies_selected_limit=True");
-            Render((FrameworkElement)((System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup")).Child,
-                Path.Combine(folder, "retention-settings.png"));
-            ((System.Windows.Controls.Primitives.Popup)window.FindName("LibrarySettingsPopup")).IsOpen = false;
+            Render(window.TestAlbumsCard!, Path.Combine(folder, "retention-settings.png"));
+            window.TestCloseAlbums();
             long target = CaptureLibrary.CreateCollection("Move target");
             var item = CaptureLibrary.Items().First();
             string key = Encoding.UTF8.GetString(ProtectedData.Unprotect(
@@ -125,6 +126,9 @@ internal static class SelfTestReleaseSafety
             var view = window.TestLibrary;
             string? error = null;
             view.StatusMessage += message => error = message;
+            // The view lists its albums off the UI thread, so it must finish before the menu offers the new one.
+            view.Reload();
+            await view.ListingTask;
             view.ShowItemMenu(item, (FrameworkElement)window.FindName("LibrarySettingsButton"), null, "");
             await Task.Delay(50);
             var menu = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)

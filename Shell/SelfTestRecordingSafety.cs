@@ -295,17 +295,26 @@ internal static class SelfTestRecordingSafety
         int code = 1;
         var report = new List<string>();
         using var tray = new TrayHost();
-        var controller = new VideoController(tray);
+        // Synthetic frames and a synthetic desktop: the test checks restoration, not this machine's
+        // display or screen-capture stack, which a VM without a GPU or a hidden desktop cannot supply.
+        var controller = new VideoController(tray, grabberFactory: () => new SyntheticVideoFrames())
+        {
+            // The first finished recording asks where recordings go, in a modal dialog nobody can answer here.
+            AskStorage = _ => (RecordingStorage.Folder, false)
+        };
         try
         {
             VideoSettings.OutputFolder = Path.Combine(dir, "videos");
             VideoSettings.Format = "gif";
+            VideoSettings.Sound = SoundSource.None;
             VideoSettings.Countdown = VideoSettings.CopyFile = VideoSettings.Notify = false;
             CaptureSettings.DelaySeconds = 0;
             int restored = 0;
+            var area = new Win32.RECT(0, 0, 64, 64);
             var capture = new CaptureController(tray, controller)
             {
-                HideEditor = () => Task.FromResult<Action?>(() => restored++)
+                HideEditor = () => Task.FromResult<Action?>(() => restored++),
+                Freeze = _ => new FrozenDesktop(area, new byte[64 * 64 * 4], [new MonitorBounds(IntPtr.Zero, area, true)], [])
             };
             Task picking = capture.StartVideo(false);
             for (int i = 0; i < 100 && !Application.Current.Windows.OfType<CaptureBar>().Any(); i++) await Task.Delay(20);

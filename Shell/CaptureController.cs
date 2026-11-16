@@ -26,6 +26,10 @@ internal sealed partial class CaptureController
     /// <summary>Hides the editor before the desktop is frozen; returns how to bring it back.</summary>
     public Func<Task<Action?>>? HideEditor { get; set; }
 
+    /// <summary>How the desktop is frozen for a selection. Self-tests supply a synthetic desktop
+    /// so they do not depend on the machine's display or its screen-capture stack.</summary>
+    internal Func<bool, FrozenDesktop> Freeze { get; set; } = FrozenDesktop.Capture;
+
     private static string Loc(string key) => LocaleManager.Loc(key);
 
     public CaptureController(TrayHost tray, VideoController? video = null)
@@ -78,7 +82,7 @@ internal sealed partial class CaptureController
             if (action == null && !interval && HideEditor != null) restore = await HideEditor();
             int delay = interval ? 0 : CaptureSettings.DelaySeconds;
             if (delay > 0) await Task.Delay(delay * 1000);
-            var frozen = FrozenDesktop.Capture(CaptureSettings.IncludeCursor);
+            var frozen = Freeze(CaptureSettings.IncludeCursor);
             BitmapSource? result;
             // The window the picture came from, for the library's search: the picked or active
             // window, or the topmost window under the middle of a region or under the pointer.
