@@ -76,6 +76,7 @@ public partial class MainWindow
     {
         if (!CanDropCapture(item, over, out long? collection)) return false;
         CaptureLibrary.Move([item.Id], collection, item.Session);
+        ImageDrag.MarkHandledInApp();
         return true;
     }
 

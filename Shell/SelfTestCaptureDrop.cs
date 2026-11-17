@@ -75,7 +75,11 @@ internal static class SelfTestCaptureDrop
             Check(!window.CanDropCapture(folderFile, targetRow, out _), "a folder file refuses a collection drop");
             Check(!window.CanDropCapture(null, targetRow, out _), "no capture drag means no capture drop");
 
+            ImageDrag.BeginDropTracking();
+            Check(ImageDrag.KeepExport((int)DragDropEffects.Copy), "a copy to another program keeps its exported file");
             Check(window.DropCapture(Item(loose), targetText) && Item(loose).CollectionId == target, "dropping on a collection row moves the capture there");
+            Check(!ImageDrag.KeepExport((int)DragDropEffects.Copy), "a drop handled inside KillerShot deletes the decrypted drag file");
+            ImageDrag.BeginDropTracking();
             Check(window.DropCapture(Item(kept), targetRow) && Item(kept).CollectionId == target, "dropping moves a capture between collections");
             Check(MainWindow.TryCollectionTarget("c0", out long? unfiled) && unfiled == null, "the Unfiled row takes a capture out of its collection");
             Check(!MainWindow.TryCollectionTarget("folder", out _) && !MainWindow.TryCollectionTarget("all", out _),

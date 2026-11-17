@@ -17,6 +17,14 @@ internal static class ImageDrag
     internal static bool Active { get; private set; }
     /// <summary>The album capture being dragged, so a drop on a sidebar collection can move it.</summary>
     internal static CaptureItem? DraggedCapture { get; private set; }
+    private static bool _handledInApp;
+
+    internal static void BeginDropTracking() => _handledInApp = false;
+    /// <summary>KillerShot took the drop itself (a move onto a collection), so nothing reads the
+    /// exported file and the decrypted copy is deleted at once.</summary>
+    internal static void MarkHandledInApp() => _handledInApp = true;
+    /// <summary>Keeps the exported file only when another program accepted a copy.</summary>
+    internal static bool KeepExport(int effect) => effect == (int)DragDropEffects.Copy && !_handledInApp;
 
     internal static void Initialize(string? root = null)
     {
@@ -101,8 +109,9 @@ internal static class ImageDrag
             Active = true;
             Mouse.Capture(null);
             Mouse.OverrideCursor = DragCursors.Closed;
+            BeginDropTracking();
             NativeDoDragDrop(transfer.Data, new ImageDropSource(), (int)DragDropEffects.Copy, out effect);
-            transfer.Completed = effect == (int)DragDropEffects.Copy;
+            transfer.Completed = KeepExport(effect);
         }
         finally
         {
