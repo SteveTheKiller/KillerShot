@@ -42,6 +42,7 @@ internal static class SelfTestNovemberStorage
             else if (scenario == "folder-linked-watch") await LinkedFolderWatch(folder);
             else if (scenario == "folder-linked-spacing") await LinkedFolderSpacing(folder);
             else if (scenario == "folder-linked-recreated") await LinkedFolderRecreated(folder);
+            else if (scenario == "folder-linked-silent-watcher") await LinkedFolderSilentWatcher(folder);
             else if (scenario == "album-video-drag-responsive") await VideoDragResponsive(folder, log);
             else if (scenario == "folder-linked-initial-arrival") await LinkedInitialArrival(folder);
             else if (scenario == "folder-network-backoff") await NetworkFolderBackoff(folder);
@@ -582,9 +583,11 @@ internal static class SelfTestNovemberStorage
         public int Reads;
         public Action? AfterRead;
         public int DelayMs;
+        public int FailNext;
         public IEnumerable<FileInfo> EnumerateFiles(DirectoryInfo directory, EnumerationOptions options)
         {
             Interlocked.Increment(ref Reads);
+            if (Interlocked.Exchange(ref FailNext, 0) == 1) throw new IOException("The folder could not be read.");
             if (DelayMs > 0) Thread.Sleep(DelayMs);
             foreach (var file in directory.EnumerateFiles("*", options)) yield return file;
             Interlocked.Exchange(ref AfterRead, null)?.Invoke();
@@ -700,6 +703,38 @@ internal static class SelfTestNovemberStorage
         FolderCaptures.RemoveFolder(source);
         if (seconds > 10)
             throw new InvalidOperationException($"A linked folder that was deleted and made again showed its new picture after {seconds:F0} seconds (90 means never).");
+    }
+
+    /// <summary>A watcher can stay silent after its folder is deleted, so a failed scan must drop
+    /// the folder's watcher. Otherwise the folder keeps the dead one once it is back, stops
+    /// polling and never sees another change.</summary>
+    private static async Task LinkedFolderSilentWatcher(string folder)
+    {
+        Settings.UseFolder(folder);
+        string photos = Path.Combine(folder, "photos");
+        Directory.CreateDirectory(photos);
+        ImageOutput.SavePng(Pixel(), Path.Combine(photos, "first.png"));
+        var reader = new CountingDirectoryReader();
+        var made = new List<FileSystemWatcher>();
+        FolderCaptures.WatcherFactory = path => { var watcher = new FileSystemWatcher(path); made.Add(watcher); return watcher; };
+        FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"), reader);
+        string source = FolderCaptures.AddFolder(photos);
+        await FolderCaptures.RefreshFolderAsync(source);
+        if (made.Count != 1) throw new InvalidOperationException("The linked folder was not watched after its first scan.");
+        reader.FailNext = 1;
+        await FolderCaptures.RefreshFolderAsync(source);
+        await FolderCaptures.RefreshFolderAsync(source);
+        if (made.Count != 2)
+            throw new InvalidOperationException($"A failed scan kept the folder's old watcher ({made.Count} watchers made), so a folder that comes back is never watched again.");
+        // A failure before the scan starts (the drive cannot be read) takes the other path.
+        var drives = FolderCaptures.DriveTypeReader;
+        FolderCaptures.DriveTypeReader = _ => throw new ArgumentException("The drive is unavailable.");
+        await FolderCaptures.RefreshFolderAsync(source);
+        FolderCaptures.DriveTypeReader = drives;
+        await FolderCaptures.RefreshFolderAsync(source);
+        FolderCaptures.RemoveFolder(source);
+        if (made.Count != 3)
+            throw new InvalidOperationException($"A failure before the scan kept the folder's old watcher ({made.Count} watchers made), so a folder that comes back is never watched again.");
     }
 
     private sealed class OverflowWatcher(string folder) : FileSystemWatcher(folder)

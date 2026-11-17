@@ -280,6 +280,10 @@ internal static partial class FolderCaptures
                 {
                     lock (LinkedGate)
                     {
+                        // A watcher can stay silent after its folder goes away. Drop it, or the
+                        // folder keeps the dead one when it comes back and stops polling.
+                        folder.Watcher?.Dispose();
+                        folder.Watcher = null;
                         folder.Available = false;
                         folder.Initialized = true;
                         folder.PollSeconds = MissingPollSeconds(folder);
