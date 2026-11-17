@@ -1,3 +1,5 @@
+using System;
+
 namespace KillerShot.Services
 {
     /// <summary>
