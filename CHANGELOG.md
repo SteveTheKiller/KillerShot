@@ -2,7 +2,7 @@
 
 ## [1.2.0] - Unreleased
 
-KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
+KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka theme, makes recordings and large libraries more responsive, remembers the capture mode, and hardens installation and updates.
 
 ### Security
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
@@ -104,6 +104,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact and Make PDF, makes recording
 - Multiple carousels with one collection picked in the sidebar shows a carousel per day. Grouping by collection there gave a single carousel, the same as Single carousel.
 
 ### Added
+- Trash Polka, a new theme under 98SE: black with a tattoo-style ink background in your accent color, from eight accents with Blood red as the default. Under a Windows high contrast theme the ink steps aside for the system colors.
 - The library opens in tabs, the way KillerShell and KillerPDF do. Each tab holds a collection or a folder, Ctrl+T opens another, and the tabs, their order and each one's place are kept across restarts. A collection can open in a new tab from its right-click card, and a linked folder can also open as a Files tab.
 - Files (F9) is a folder tab with list, icons and details views, file commands, rename, clipboard and drag and drop. Images open in the editor. Ctrl+wheel over the files, or Ctrl+= and Ctrl+-, steps through larger list icons, then details, then icon tiles, the way KillerShell zooms.
 - The Files location row matches KillerShell's file pane. A star saves the open folder to your places (Ctrl+D), the clock button lists the last 15 folders you visited (Alt+R), and Export saves the listing as CSV (Ctrl+Alt+Shift+E) or as a themed HTML page (Ctrl+Alt+E). The details pane (Alt+P) docks at the bottom or the right, and when the window gets narrow the secondary tools fold into a "more" menu so the path stays readable.

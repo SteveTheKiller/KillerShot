@@ -29,7 +29,7 @@
 - Local QR reading that shows a link's real destination before you open it
 - Screen recording to MP4 or GIF with system audio and microphone
 - A command line for capture, recording, editing, text, QR and the album
-- Thirteen themes and twenty languages, switchable without a restart
+- Fourteen themes and twenty languages, switchable without a restart
 - One signed Windows EXE: runs portable, installs per user without UAC or machine-wide with /silent, and uninstalls without deleting your album
 - GPLv3, no account, no telemetry. The only connection it makes on its own is an update check, which can be turned off
     </description>

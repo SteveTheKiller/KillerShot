@@ -118,7 +118,7 @@ internal static class ListingCsv
     }
 }
 
-// The styled listing report: thirteen theme switcher, accent picker, click-to-sort columns.
+// The styled listing report: fourteen theme switcher, accent picker, click-to-sort columns.
 // It opens in the theme, accent and language the app was in at export time.
 internal static class ListingHtml
 {
