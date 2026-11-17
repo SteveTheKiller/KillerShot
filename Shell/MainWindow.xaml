@@ -87,7 +87,11 @@
         </Style>
     </Window.Resources>
 
-    <Grid x:Name="FrameHost">
+    <!-- Trash Polka: the window and its chrome carry the background ink (Controls/ThemeMotif.cs). Marking the root
+         also keeps EnableForAllWindows from inking this window's own surfaces, so the editor card (ContentPane) and
+         the capture in it stay plain. -->
+    <Grid x:Name="FrameHost"
+          icons:ThemeMotif.Part="Chrome" icons:ThemeMotif.BaseBrush="BackgroundBrush">
     <!-- Opacity 0: Chrome.cs FadeInContent brings RootGrid up on Loaded. -->
     <Grid x:Name="RootGrid" Opacity="0" Margin="{DynamicResource WindowFramePadding}">
         <Grid.RowDefinitions>
@@ -98,7 +102,8 @@
 
         <!-- ================= TITLE BAR ================= -->
         <!-- ZIndex 1 so the wordmark's drips can hang into the top of the content row below. -->
-        <Grid Grid.Row="0" Background="{DynamicResource TitleBarBrush}" Panel.ZIndex="1">
+        <Grid Grid.Row="0" Background="{DynamicResource TitleBarBrush}" Panel.ZIndex="1"
+              icons:ThemeMotif.Part="Chrome" icons:ThemeMotif.BaseBrush="TitleBarBrush">
             <Border IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}">
                 <Border.Background>
                     <ImageBrush x:Name="TitleGrainBrush" TileMode="Tile" ViewportUnits="Absolute"
@@ -184,7 +189,10 @@
         </Grid>
         <!-- ================= CONTENT ================= -->
         <!-- Chrome tier behind the content row so the side margins carry the grain. -->
-        <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}">
+        <!-- Trash Polka ink shows here behind the toolbar row, the sidebars and the margins; the editor card on
+             top keeps its own plain surface. -->
+        <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}"
+                icons:ThemeMotif.Part="Chrome" icons:ThemeMotif.BaseBrush="BackgroundBrush">
             <Border IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}"
                     Background="{DynamicResource GrainTileBrush}"/>
         </Border>
@@ -400,7 +408,8 @@
         <!-- ================= FOOTER (24px) =================
              Panel.ZIndex -1 so the editor card's downward shadow lands on the footer.
              The overlays are declared after this and stay on top. -->
-        <Border x:Name="FooterBar" Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}">
+        <Border x:Name="FooterBar" Grid.Row="2" Panel.ZIndex="-1" Background="{DynamicResource FooterBackgroundBrush}"
+                icons:ThemeMotif.Part="Chrome" icons:ThemeMotif.BaseBrush="FooterBackgroundBrush">
             <!-- KillerPDF's footer button styles, with the theme accent for hover and the checked
                  underline. FooterView.cs fills and syncs the view cell. -->
             <Border.Resources>
@@ -641,6 +650,7 @@
                     </Border.Effect>
                 </Border>
                 <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
+                        icons:ThemeMotif.Part="Window" icons:ThemeMotif.BaseBrush="OverlayWindowBrush"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -816,6 +826,7 @@
                     </Border.Effect>
                 </Border>
                 <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
+                        icons:ThemeMotif.Part="Window" icons:ThemeMotif.BaseBrush="OverlayWindowBrush"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -1013,6 +1024,7 @@
                     </Border.Effect>
                 </Border>
                 <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
+                        icons:ThemeMotif.Part="Window" icons:ThemeMotif.BaseBrush="OverlayWindowBrush"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
@@ -1131,6 +1143,7 @@
                     </Border.Effect>
                 </Border>
                 <Border Background="{DynamicResource OverlayWindowBrush}" BorderBrush="{DynamicResource OverlayEdgeBrush}"
+                        icons:ThemeMotif.Part="Window" icons:ThemeMotif.BaseBrush="OverlayWindowBrush"
                         BorderThickness="1" CornerRadius="{DynamicResource PanelCornerRadius}">
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"

@@ -93,6 +93,7 @@
     <sys:String x:Key="Str_Theme_Light">Világos</sys:String>
     <sys:String x:Key="Str_Theme_Malaise">rosszullét</sys:String>
     <sys:String x:Key="Str_Theme_Mourning">Gyász</sys:String>
+    <sys:String x:Key="Str_Theme_TrashPolka">Trash Polka</sys:String>
     <sys:String x:Key="Str_Theme_Sepulchre">Sír</sys:String>
     <sys:String x:Key="Str_Toolbar_Header">Eszköztár</sys:String>
     <sys:String x:Key="Str_Toolbar_LargeIcons">Nagy ikonok</sys:String>

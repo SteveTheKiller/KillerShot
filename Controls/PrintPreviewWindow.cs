@@ -126,6 +126,10 @@ internal sealed class PrintPreviewWindow : Window
         card.SetResourceReference(Border.BackgroundProperty, "BackgroundBrush");
         card.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
         card.SetResourceReference(Border.CornerRadiusProperty, "PanelCornerRadius");
+        // Trash Polka: the card carries the background ink. Marking it by hand keeps EnableForAllWindows from inking
+        // the preview frame too, which shows the user's capture on the page.
+        ThemeMotif.SetBaseBrush(card, "BackgroundBrush");
+        ThemeMotif.SetPart(card, MotifPart.Chrome);
         Content = card;
     }
 

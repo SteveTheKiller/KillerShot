@@ -94,6 +94,7 @@
     <sys:String x:Key="Str_Theme_Light">Ашық</sys:String>
     <sys:String x:Key="Str_Theme_Malaise">Науқастық</sys:String>
     <sys:String x:Key="Str_Theme_Mourning">Аза</sys:String>
+    <sys:String x:Key="Str_Theme_TrashPolka">Trash Polka</sys:String>
     <sys:String x:Key="Str_Theme_Sepulchre">Кесене</sys:String>
     <sys:String x:Key="Str_Toolbar_Header">Құралдар тақтасы</sys:String>
     <sys:String x:Key="Str_Toolbar_LargeIcons">Үлкен белгішелер</sys:String>

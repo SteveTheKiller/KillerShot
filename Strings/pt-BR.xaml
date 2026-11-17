@@ -94,6 +94,7 @@
     <sys:String x:Key="Str_Theme_Light">Claro</sys:String>
     <sys:String x:Key="Str_Theme_Malaise">Mal-estar</sys:String>
     <sys:String x:Key="Str_Theme_Mourning">Luto</sys:String>
+    <sys:String x:Key="Str_Theme_TrashPolka">Trash Polka</sys:String>
     <sys:String x:Key="Str_Theme_Sepulchre">Sepulcro</sys:String>
     <sys:String x:Key="Str_Toolbar_Header">Barra de ferramentas</sys:String>
     <sys:String x:Key="Str_Toolbar_LargeIcons">Ícones grandes</sys:String>

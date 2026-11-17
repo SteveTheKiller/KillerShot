@@ -21,6 +21,10 @@ namespace KillerShot.Services
             ThemeManager.AppTokens = AppTokens;
             ThemeManager.AppDerivedTokens = AppDerivedTokens;
 
+            // Trash Polka's background ink on every dialog, picker and preview window, not just the main window.
+            // Capture surfaces never take it: the region overlay paints plain black and the capture chrome windows are
+            // transparent, so neither matches a palette brush; the main window and print preview mark their own parts.
+            Controls.ThemeMotif.EnableForAllWindows();
             // Dialog captions (Controls/DialogChrome.cs) and their title icon.
             Controls.DialogChrome.AppName = "KillerShot";
             Controls.DialogChrome.WordmarkSplit = 6;
