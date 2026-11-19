@@ -198,8 +198,12 @@ internal static class SelfTestThemeMotif
         var span = Stopwatch.StartNew();
         if (prewarm)
         {
+            if (MotifDiskCache.Root is null)
+                throw new InvalidOperationException("prewarm needs KS_MOTIF_CACHE set to a temp folder: with the cache off nothing is prewarmed.");
             ThemeMotif.PrewarmWhenIdle(window);
-            while (ThemeMotif.PrewarmTask is null) await Task.Delay(20);
+            var queued = Stopwatch.StartNew();
+            while (ThemeMotif.PrewarmTask is null && queued.Elapsed.TotalSeconds < 30) await Task.Delay(20);
+            if (ThemeMotif.PrewarmTask is null) throw new InvalidOperationException("The prewarm was never queued.");
             await ThemeMotif.PrewarmTask;
         }
         else await Task.Delay(TimeSpan.FromSeconds(12));

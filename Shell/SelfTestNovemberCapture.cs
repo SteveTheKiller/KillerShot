@@ -85,6 +85,7 @@ internal static class SelfTestNovemberCapture
     private static async Task MonitorResizeAsync(string folder)
     {
         Directory.CreateDirectory(folder);
+        Settings.UseFolder(Path.Combine(folder, "settings"));
         int code = 1;
         System.Windows.Window? window = null;
         try
@@ -122,6 +123,7 @@ internal static class SelfTestNovemberCapture
     private static async Task ScrollKeysAsync(string folder)
     {
         Directory.CreateDirectory(folder);
+        Settings.UseFolder(Path.Combine(folder, "settings"));
         int code = 1;
         ScrollCaptureSession? session = null;
         using var owner = new System.Windows.Interop.HwndSource(new System.Windows.Interop.HwndSourceParameters("KillerShot hotkey conflict fixture") { ParentWindow = new IntPtr(-3) });

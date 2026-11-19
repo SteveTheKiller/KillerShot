@@ -8,6 +8,8 @@ using Microsoft.Data.Sqlite;
 
 namespace KillerShot.Shell;
 
+/// <summary>--selftest-external-album &lt;new folder&gt; &lt;image&gt; [--after-export-failure]. The image must hold a QR
+/// code that reads killershot.net (the QR fixture): the check finds the external capture by its recognized text.</summary>
 internal static class SelfTestExternalAlbumChanges
 {
     internal static bool TryRun(string[] args)
@@ -73,8 +75,11 @@ internal static class SelfTestExternalAlbumChanges
                 if (CaptureLibrary.Items("killershot.net").Count == 1 && Volatile.Read(ref changes) > 0) break;
                 await Task.Delay(20);
             }
-            if (CaptureLibrary.Items("killershot.net").Count != 1 || Volatile.Read(ref changes) == 0)
-                throw new InvalidOperationException("An external capture did not wake recognition and album refresh after the workers became idle.");
+            int found = CaptureLibrary.Items("killershot.net").Count, all = CaptureLibrary.Items().Count;
+            if (found != 1 || Volatile.Read(ref changes) == 0)
+                throw new InvalidOperationException(all == 1 && Volatile.Read(ref changes) > 0
+                    ? "The external capture arrived but no QR text matched killershot.net: pass the QR fixture image."
+                    : $"An external capture did not wake recognition and album refresh after the workers became idle (items={all}, changes={changes}).");
             report.Add("external_commit_refreshes_album_and_recognizes_qr=True");
             code = 0;
         }

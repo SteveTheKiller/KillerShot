@@ -96,7 +96,13 @@ public partial class App : Application
         // holds its e_sqlcipher.dll open, so a test build with a different engine could not
         // replace it. Suites that pick their own cache folder still override this one.
         if (e.Args.Length > 0 && e.Args[0].StartsWith("--selftest", StringComparison.Ordinal))
+        {
             Services.SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(Path.GetTempPath(), "KillerShot-selftest-native"));
+            // Nor the real profile: settings and the motif disk cache stay out of %APPDATA% and %LOCALAPPDATA%
+            // unless a suite points them somewhere itself (SelfTestThemeMotif reads KS_MOTIF_CACHE).
+            Settings.UseFolder(Path.Combine(Path.GetTempPath(), "KillerShot-selftest-settings"));
+            Controls.MotifDiskCache.Root = null;
+        }
 
         if (SelfTestThemeDump.TryRun(e.Args)) return;
         if (SelfTestThemeMotif.TryRun(e.Args)) return;
