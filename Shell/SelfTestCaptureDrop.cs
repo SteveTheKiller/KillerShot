@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using KillerShot.Controls;
 using KillerShot.Services;
 
 namespace KillerShot.Shell;
@@ -74,6 +75,52 @@ internal static class SelfTestCaptureDrop
             var folderFile = Item(loose) with { Id = -42, CollectionId = FolderCaptures.CollectionId };
             Check(!window.CanDropCapture(folderFile, targetRow, out _), "a folder file refuses a collection drop");
             Check(!window.CanDropCapture(null, targetRow, out _), "no capture drag means no capture drop");
+
+            // The real drop point: hit-test the centre of each target and hand CanDropCapture
+            // whatever WPF finds there, as PreviewDrop does with e.OriginalSource.
+            DependencyObject? HitAt(FrameworkElement target)
+            {
+                target.UpdateLayout();
+                if (!target.IsVisible || target.ActualWidth < 1 || target.ActualHeight < 1) return null;
+                if (PresentationSource.FromVisual(target)?.RootVisual is not Visual root) return null;
+                var centre = target.TransformToAncestor(root).Transform(new Point(target.ActualWidth / 2, target.ActualHeight / 2));
+                // Skip what the input system skips, such as the theme ink laid over a popup.
+                DependencyObject? hit = null;
+                VisualTreeHelper.HitTest(root,
+                    d => d is UIElement { IsHitTestVisible: false } or UIElement { IsVisible: false }
+                        ? HitTestFilterBehavior.ContinueSkipSelfAndChildren : HitTestFilterBehavior.Continue,
+                    r => { hit = r.VisualHit; return HitTestResultBehavior.Stop; },
+                    new PointHitTestParameters(centre));
+                return hit;
+            }
+            async Task Settle() { for (int n = 0; n < 20; n++) await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle); }
+            var library = (LibraryView)window.FindName("Library");
+            Check(window.CanDropCapture(Item(loose), HitAt(targetRow), out long? rowHit) && rowHit == target, "hit-test: a sidebar collection row accepts a drop at its centre");
+
+            library.TestSet("grid", "collection", "");
+            await Settle();
+            var header = Descendants<CollectionHeader>(library).FirstOrDefault(h => h.DataContext is LibraryRow { Key: var key } && key == targetSource);
+            Check(header != null && window.CanDropCapture(Item(loose), HitAt(header), out long? headerHit) && headerHit == target,
+                "hit-test: a collection header on the library page accepts a drop at its centre");
+
+            library.TestSet("shelves", "collection", "");
+            await Settle();
+            var shelf = Descendants<LibraryRowHost>(library).FirstOrDefault(h => h.DataContext is LibraryRow { Kind: LibraryRowKind.Shelf, Key: var key } && key == otherSource);
+            Check(shelf != null && window.CanDropCapture(Item(loose), HitAt(shelf), out long? shelfHit) && shelfHit == other,
+                "hit-test: a collection shelf on the library page accepts a drop at its centre");
+            Check(shelf != null && !window.CanDropCapture(Item(kept), HitAt(shelf), out _), "hit-test: a capture's own shelf refuses it");
+
+            var picker = ((ContentControl)window.FindName("ToolbarCollectionHost")).Content as ComboBox;
+            picker?.ApplyTemplate();
+            if (picker != null) { picker.IsDropDownOpen = true; await Settle(); }
+            var entry = picker?.Items.OfType<ComboBoxItem>().FirstOrDefault(i => Equals(i.Tag, targetSource));
+            var unfiledEntry = picker?.Items.OfType<ComboBoxItem>().FirstOrDefault(i => Equals(i.Tag, "c0"));
+            Check(entry != null && window.CanDropCapture(Item(kept), HitAt(entry), out long? entryHit) && entryHit == target,
+                "hit-test: a collection entry in the toolbar picker accepts a drop at its centre");
+            Check(unfiledEntry != null && window.CanDropCapture(Item(kept), HitAt(unfiledEntry), out long? unfiledHit) && unfiledHit == null,
+                "hit-test: the toolbar picker's Unfiled entry takes a capture out of its collection");
+            if (picker != null) { picker.IsDropDownOpen = false; await Settle(); }
+            Check(picker != null && !window.CanDropCapture(Item(loose), HitAt(picker), out _), "hit-test: the closed picker showing All captures refuses a drop");
 
             ImageDrag.BeginDropTracking();
             Check(ImageDrag.KeepExport((int)DragDropEffects.Copy), "a copy to another program keeps its exported file");

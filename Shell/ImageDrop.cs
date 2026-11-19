@@ -60,6 +60,9 @@ public partial class MainWindow
             ? CanDropCapture(dragged, e.OriginalSource as DependencyObject, out _)
             : !ImageDrag.Active && HasImages(e.Data));
         e.Effects = accept ? DragDropEffects.Copy : DragDropEffects.None;
+        FrameworkElement? target = null;
+        if (accept && ImageDrag.DraggedCapture != null) CollectionDropTarget(e.OriginalSource as DependencyObject, out target);
+        ShowDropHighlight(target);
     }
 
     /// <summary>A capture dragged out of the album and dropped on a collection row in the sidebar
@@ -89,16 +92,59 @@ public partial class MainWindow
         return true;
     }
 
-    private static string? CollectionRowSource(DependencyObject? over)
+    /// <summary>The collection a drop point stands for, as a sidebar source ("c" + id, "c0" for
+    /// Unfiled), and the element that carries it: a sidebar row, a collection header or shelf on
+    /// the library page, or an entry of the toolbar collection picker. The closed picker stands
+    /// for the collection it shows.</summary>
+    private string? CollectionRowSource(DependencyObject? over) => CollectionDropTarget(over, out _);
+
+    private string? CollectionDropTarget(DependencyObject? over, out FrameworkElement? target)
     {
+        target = null;
         for (var node = over; node != null; node = node is System.Windows.Media.Visual or System.Windows.Media.Media3D.Visual3D
             ? System.Windows.Media.VisualTreeHelper.GetParent(node) : LogicalTreeHelper.GetParent(node))
         {
-            if (node is System.Windows.Controls.ListBoxItem { DataContext: CollectionChoice choice }
-                && System.Windows.Controls.ItemsControl.ItemsControlFromItemContainer(node) is CollectionBrowser)
-                return choice.Source;
+            switch (node)
+            {
+                case System.Windows.Controls.ListBoxItem { DataContext: CollectionChoice choice } row
+                    when System.Windows.Controls.ItemsControl.ItemsControlFromItemContainer(row) is CollectionBrowser:
+                    target = row;
+                    return choice.Source;
+                case Controls.CollectionHeader { DataContext: LibraryRow header }:
+                    target = (FrameworkElement)node;
+                    return LibraryRowSource(header);
+                case LibraryRowHost { DataContext: LibraryRow { Kind: LibraryRowKind.Shelf } shelf } host:
+                    target = host;
+                    return LibraryRowSource(shelf);
+                case LibraryRowHost:
+                    return null;
+                case System.Windows.Controls.ComboBoxItem { Tag: string tag } entry
+                    when _strip != null && System.Windows.Controls.ItemsControl.ItemsControlFromItemContainer(entry) == _strip.CollectionPicker:
+                    target = entry;
+                    return tag;
+                case System.Windows.Controls.ComboBox picker when _strip != null && picker == _strip.CollectionPicker:
+                    target = picker;
+                    return (picker.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag as string;
+            }
         }
         return null;
+    }
+
+    /// <summary>A collection's header or shelf, or the Unfiled group's; day and folder groups are
+    /// not collections.</summary>
+    private static string? LibraryRowSource(LibraryRow row) =>
+        row.IsCollection && row.CollectionId is long id ? "c" + id.ToString(CultureInfo.InvariantCulture)
+        : row.Key == "c0" && !row.IsFolder ? "c0" : null;
+
+    private FrameworkElement? _dropHighlight;
+
+    /// <summary>The sidebar's hover wash on whichever collection target is under a capture drag.</summary>
+    private void ShowDropHighlight(FrameworkElement? target)
+    {
+        if (ReferenceEquals(target, _dropHighlight)) return;
+        if (_dropHighlight != null) Controls.DropHighlight.SetIsActive(_dropHighlight, false);
+        _dropHighlight = target;
+        if (target != null) Controls.DropHighlight.SetIsActive(target, true);
     }
 
     private static bool HasImages(IDataObject data)
@@ -145,6 +191,7 @@ public partial class MainWindow
 
     private void EndDropImage()
     {
+        ShowDropHighlight(null);
         _dropImage?.Leave();
         _dropImage?.Dispose();
         _dropImage = null;

@@ -92,7 +92,8 @@ internal sealed class CollectionBrowser : ListBox
             </DataTemplate>
             """);
         ItemContainerStyle = (Style)System.Windows.Markup.XamlReader.Parse("""
-            <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="ListBoxItem">
+            <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:c="clr-namespace:KillerShot.Controls;assembly=KillerShot" TargetType="ListBoxItem">
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <Setter Property="Padding" Value="5"/>
                 <Setter Property="Margin" Value="0,2"/>
@@ -106,6 +107,7 @@ internal sealed class CollectionBrowser : ListBox
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
+                        <Trigger Property="c:DropHighlight.IsActive" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
                         <Trigger Property="IsSelected" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource SelectionBg}"/><Setter Property="Foreground" Value="{DynamicResource SelectionFg}"/></Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate></Setter.Value></Setter>
