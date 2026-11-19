@@ -116,6 +116,7 @@ public partial class App : Application
         if (SelfTestFilesNativeMessages.TryRun(e.Args)) return;
         if (SelfTestFilesWatchRefresh.TryRun(e.Args)) return;
         if (SelfTestReview120.TryRun(e.Args)) return;
+        if (SelfTestNativeCacheLock.TryRun(e.Args)) return;
         if (SelfTestCaptureLatency.TryRun(e.Args)) return;
         if (SelfTestRedactionFinder.TryRun(e.Args)) return;
         if (SelfTestAutoRedact.TryRun(e.Args)) return;

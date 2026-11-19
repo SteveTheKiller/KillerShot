@@ -36,7 +36,8 @@ internal static class SqlCipherBootstrap
 
     /// <summary>
     /// Extracts the embedded native when the cached copy differs and preloads it. Natives live
-    /// in a per-version cache because they must match the app.
+    /// in a per-version cache because they must match the app; when that copy differs and is
+    /// held open by another process, a subfolder keyed by the embedded image's hash is used.
     /// </summary>
     public static void EnsureLoaded()
     {
@@ -59,33 +60,19 @@ internal static class SqlCipherBootstrap
             byte[] contents = embedded.ToArray();
             byte[] expectedHash = SHA256.HashData(contents);
 
-            Directory.CreateDirectory(nativeDir);
-            if (!CachedMatches(target, expectedHash))
+            // The version folder is shared by every KillerShot process of this version. A running
+            // build with a different engine copy (a test or dev build of the same version) holds
+            // that file open, so it cannot be replaced. Fall back to a folder named after the
+            // embedded image's hash: identical builds share it and differing builds never collide.
+            if (!TryPublish(nativeDir, target, contents, expectedHash))
             {
-                // Each process writes its own temporary file. Rename within the same directory
-                // publishes the complete image without a missing-target window for other readers.
-                string temp = Path.Combine(nativeDir, $"e_sqlcipher.{Guid.NewGuid():N}.tmp");
-                try
-                {
-                    using (var dst = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                    {
-                        dst.Write(contents);
-                        dst.Flush(true);
-                    }
-                    if (!CachedMatches(target, expectedHash))
-                    {
-                        try { File.Move(temp, target, true); }
-                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException &&
-                            CachedMatches(target, expectedHash)) { }
-                    }
-                }
-                finally
-                {
-                    try { File.Delete(temp); }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
-                }
+                nativeDir = Path.Combine(nativeDir, Convert.ToHexString(expectedHash, 0, 16));
+                target = Path.Combine(nativeDir, "e_sqlcipher.dll");
+                if (!TryPublish(nativeDir, target, contents, expectedHash))
+                    throw new IOException("The cached SQLCipher native library differs from the embedded copy.");
             }
 
+            // Final check right before loading: only the verified image is ever loaded.
             if (!CachedMatches(target, expectedHash))
                 throw new IOException("The cached SQLCipher native library differs from the embedded copy.");
             if (!SetDllDirectory(nativeDir))
@@ -94,6 +81,34 @@ internal static class SqlCipherBootstrap
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not load the SQLCipher native library.");
             _ready = true;
         }
+    }
+
+    private static bool TryPublish(string nativeDir, string target, byte[] contents, byte[] expectedHash)
+    {
+        Directory.CreateDirectory(nativeDir);
+        if (CachedMatches(target, expectedHash)) return true;
+        // Each process writes its own temporary file. Rename within the same directory
+        // publishes the complete image without a missing-target window for other readers.
+        string temp = Path.Combine(nativeDir, $"e_sqlcipher.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            using (var dst = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                dst.Write(contents);
+                dst.Flush(true);
+            }
+            if (!CachedMatches(target, expectedHash))
+            {
+                try { File.Move(temp, target, true); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
+        }
+        finally
+        {
+            try { File.Delete(temp); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        return CachedMatches(target, expectedHash);
     }
 
     private static bool CachedMatches(string target, byte[] expectedHash)

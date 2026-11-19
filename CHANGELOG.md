@@ -94,6 +94,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - A frozen desktop capture always gets its finished pixels, never a frame GDI hasn't finished drawing.
 - A decrypted recording that a player still had open when it was deleted or its album closed is removed once the player lets go, instead of staying on disk until KillerShot next starts or exits.
 - Unlocking a damaged album says the library could not be opened and why, instead of calling the password wrong.
+- The command line, and KillerMCP through it, works while another KillerShot of the same version with a different SQLCipher engine is running. Every command used to fail; each engine copy now gets its own verified cache folder.
 
 ### Changed
 
