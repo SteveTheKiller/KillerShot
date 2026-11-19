@@ -48,8 +48,35 @@ internal sealed class CollectionBrowser : ListBox
     // The card is rebuilt each time it opens, so names, counts and KillerPDF are current.
     private void Row_ContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
-        if (sender is ListBoxItem { DataContext: CollectionChoice choice, ContextMenu: { } menu } && RowMenu is { } fill)
+        if (sender is ListBoxItem { DataContext: CollectionChoice choice, ContextMenu: { } menu } row && RowMenu is { } fill)
+        {
             fill(choice, menu);
+            HoldToolTips(row, menu);
+        }
+    }
+
+    /// <summary>The pointer stays on the tile while its card is open, so the tile's tooltip would
+    /// open again on top of the card's header. Tooltips under the row stay off until the card closes.</summary>
+    private static void HoldToolTips(ListBoxItem row, ContextMenu menu)
+    {
+        var held = new List<DependencyObject>();
+        void Walk(DependencyObject node)
+        {
+            if (node is FrameworkElement { ToolTip: not null } tipped && ToolTipService.GetIsEnabled(tipped))
+            {
+                ToolTipService.SetIsEnabled(tipped, false);
+                held.Add(tipped);
+            }
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++) Walk(VisualTreeHelper.GetChild(node, i));
+        }
+        Walk(row);
+        if (held.Count == 0) return;
+        void Release(object? sender, RoutedEventArgs e)
+        {
+            menu.Closed -= Release;
+            foreach (var element in held) element.ClearValue(ToolTipService.IsEnabledProperty);
+        }
+        menu.Closed += Release;
     }
 
     public CollectionBrowser()
