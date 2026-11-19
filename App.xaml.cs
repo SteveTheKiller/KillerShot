@@ -75,6 +75,13 @@ public partial class App : Application
         AppTheme.Configure();
         base.OnStartup(e);
 
+        // The motif cache builder: a windowless child the editor starts at idle priority (Controls/ThemeMotif.cs).
+        if (Controls.ThemeMotif.TryRunCacheBuilder(e.Args, Services.AppInfo.DisplayName) is int builderExit)
+        {
+            Shutdown(builderExit);
+            return;
+        }
+
         // The command line runs in its own process without the tray, the shortcuts or the
         // single-instance claim, so scripts and KillerMCP can use it beside a running KillerShot.
         string[]? cli = PendingCli ?? KillerFamily.CommandLine.CommandLineEntry.GetArguments(e.Args,
@@ -92,6 +99,7 @@ public partial class App : Application
             Services.SqlCipherBootstrap.UseCacheFolderForTests(Path.Combine(Path.GetTempPath(), "KillerShot-selftest-native"));
 
         if (SelfTestThemeDump.TryRun(e.Args)) return;
+        if (SelfTestThemeMotif.TryRun(e.Args)) return;
         if (SelfTestNovemberInstall.TryRun(e.Args)) return;
         if (SelfTestShortcutRecorder.TryRun(e.Args)) return;
         if (SelfTestCrashLog.TryRun(e.Args)) return;
@@ -521,6 +529,8 @@ public partial class App : Application
                 if (!CloseToTray && !IsExiting) Dispatcher.BeginInvoke(new Action(RequestExit));
             };
             _editor.Show();
+            // Fills the motif disk cache in the background so a first switch to Trash Polka decodes instead of rendering.
+            Controls.ThemeMotif.PrewarmWhenIdle(_editor);
         }
         _editor.CancelHideToTray();
         if (_editor.WindowState == WindowState.Minimized) _editor.WindowState = WindowState.Normal;
