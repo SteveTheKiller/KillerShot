@@ -778,4 +778,15 @@
     <sys:String x:Key="Str_Rpt_MetaList">Wygenerowano {0} · elementy: {1}</sys:String>
     <sys:String x:Key="Str_Rpt_Listing">Lista zawartości {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_GenBy">Wygenerowano przez {0}</sys:String>
+    <sys:String x:Key="Str_TT_NewFolder">Nowy folder (Ctrl+Shift+N)</sys:String>
+    <sys:String x:Key="Str_FD_NewFolder">Nowy folder</sys:String>
+    <sys:String x:Key="Str_FD_FolderEmpty">Wpisz nazwę folderu.</sys:String>
+    <sys:String x:Key="Str_FD_FolderInvalid">Nazwa folderu nie może zawierać żadnego z następujących znaków: \ / : * ? " &lt; &gt; |</sys:String>
+    <sys:String x:Key="Str_FD_FolderReserved">Ta nazwa jest zarezerwowana przez system Windows. Wybierz inną.</sys:String>
+    <sys:String x:Key="Str_FD_FolderTrailing">Nazwa folderu nie może kończyć się kropką ani spacją.</sys:String>
+    <sys:String x:Key="Str_FD_FolderTooLong">Ta nazwa jest zbyt długa. Użyj najwyżej 255 znaków.</sys:String>
+    <sys:String x:Key="Str_FD_FolderExists">Folder lub plik o takiej nazwie już tu istnieje.</sys:String>
+    <sys:String x:Key="Str_FD_FolderFailed">Nie udało się utworzyć folderu:</sys:String>
+    <sys:String x:Key="Str_Key_Alt">Alt</sys:String>
+    <sys:String x:Key="Str_Key_Shift">Shift</sys:String>
 </ResourceDictionary>

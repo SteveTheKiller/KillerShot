@@ -778,4 +778,15 @@
     <sys:String x:Key="Str_Rpt_MetaList">Opprettet {0} &#183; {1} elementer</sys:String>
     <sys:String x:Key="Str_Rpt_Listing">Oversikt over {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_GenBy">Opprettet av {0}</sys:String>
+    <sys:String x:Key="Str_TT_NewFolder">Ny mappe (Ctrl+Skift+N)</sys:String>
+    <sys:String x:Key="Str_FD_NewFolder">Ny mappe</sys:String>
+    <sys:String x:Key="Str_FD_FolderEmpty">Skriv inn et navn på mappen.</sys:String>
+    <sys:String x:Key="Str_FD_FolderInvalid">Et mappenavn kan ikke inneholde noen av disse tegnene: \ / : * ? " &lt; &gt; |</sys:String>
+    <sys:String x:Key="Str_FD_FolderReserved">Windows reserverer dette navnet. Velg et annet.</sys:String>
+    <sys:String x:Key="Str_FD_FolderTrailing">Et mappenavn kan ikke slutte med punktum eller mellomrom.</sys:String>
+    <sys:String x:Key="Str_FD_FolderTooLong">Dette navnet er for langt. Bruk maksimalt 255 tegn.</sys:String>
+    <sys:String x:Key="Str_FD_FolderExists">Det finnes allerede en mappe eller fil med dette navnet her.</sys:String>
+    <sys:String x:Key="Str_FD_FolderFailed">Mappen kunne ikke opprettes:</sys:String>
+    <sys:String x:Key="Str_Key_Alt">Alt</sys:String>
+    <sys:String x:Key="Str_Key_Shift">Skift</sys:String>
 </ResourceDictionary>

@@ -81,13 +81,23 @@ namespace KillerFamily.Controls
                 b.Click += (_, _) => { Close(b); run(); };
                 grid.Children.Add(b);
             }
-            // Inset 8 like the kit's separators, so the strip's rules start on the icon column.
-            var rule = new Border { Margin = new Thickness(8, 0, 8, 0), BorderThickness = new Thickness(0, 1, 0, 1), Padding = new Thickness(0, 4, 0, 4), Child = grid };
+            // No inset: with the card's 7px padding and border, a tile's hover sits 8px from the edge (family rule).
+            var rule = new Border { Margin = new Thickness(0), BorderThickness = new Thickness(0, 1, 0, 1), Padding = new Thickness(0, 4, 0, 4), Child = grid };
             rule.SetResourceReference(Border.BorderBrushProperty, "MenuBorderBrush");
             var slot = Slot(rule);
             slot.Padding = new Thickness(0);
             AutomationProperties.SetName(slot, name);
+            // The rule below only separates the strip from rows under it; a card that ends at the
+            // strip drew a stray line at its bottom edge.
+            slot.Loaded += (_, _) => rule.BorderThickness = new Thickness(0, 1, 0, EndsCard(slot) ? 0 : 1);
             return slot;
+        }
+
+        /// <summary>Whether this item is the last thing on its card.</summary>
+        internal static bool EndsCard(MenuItem item)
+        {
+            if (ItemsControl.ItemsControlFromItemContainer(item) is not { } owner) owner = item.Parent as ItemsControl;
+            return owner == null || owner.Items.IndexOf(item) == owner.Items.Count - 1;
         }
 
         /// <summary>A labeled row of independent on/off chips (CardToggle).</summary>

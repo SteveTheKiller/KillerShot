@@ -104,6 +104,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - Updated SQLite bindings to 11.0.0.
 - Multiple carousels with one collection picked in the sidebar shows a carousel per day. Grouping by collection there gave a single carousel, the same as Single carousel.
 - Single-line text fields are as tall as the dropdowns beside them, so form rows line up instead of the text boxes standing oversized.
+- Menus and cards draw their text in the full text color in Dark, Black, Light and Trash Polka, keep an even 8 px edge, and put tile shortcuts on a second line. The theme and language rows center their content in the hover box, and the Trash Polka grain sits behind the menu's contents.
 - The copyright at the right end of the footer ends 8 px before the corner grip, the same gap in every Killer app.
 
 ### Added
@@ -117,6 +118,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - The Files location row matches KillerShell's file pane. A star saves the open folder to your places (Ctrl+D), the clock button lists the last 15 folders you visited (Alt+R), and Export saves the listing as CSV (Ctrl+Alt+Shift+E) or as a themed HTML page (Ctrl+Alt+E). The details pane (Alt+P) docks at the bottom or the right, and when the window gets narrow the secondary tools fold into a "more" menu so the path stays readable.
 - Dragging a capture from the album onto a collection moves it into that collection, the same as Move to (Ctrl+M). It drops on a collection in the sidebar, a collection's header or shelf on the library page, or the toolbar collection picker, and the target lights up while the capture is over it. Dropping it on Unfiled takes it out of its collection.
 - Capture remembers the last Region, Window, Monitor or All Monitors choice even when the selector is canceled. Explicit shortcuts keep their selected modes, and QR capture does not replace the saved choice.
+- The save and folder pickers have a New folder button (Ctrl+Shift+N). Type a name and press Enter to create the folder and open it; a name Windows won't accept is explained under the box.
 
 ## [1.1.1] - 2026-10-28
 
