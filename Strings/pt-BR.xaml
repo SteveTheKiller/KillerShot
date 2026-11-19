@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Excluir</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Novo nome</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Nova pasta</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - Cópia</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Enviar {0} item(ns) para a Lixeira? A seleção inclui uma pasta, e tudo dentro dela também será enviado.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Não perguntar novamente</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} concluído(s), {1} com falha</sys:String>

@@ -726,6 +726,7 @@
 <sys:String x:Key="Str_Btn_Delete">Delete</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">New name</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">New folder</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - Copy</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Send {0} item(s) to the Recycle Bin? The selection includes a folder, and everything inside it goes too.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Don't ask again</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} done, {1} failed</sys:String>

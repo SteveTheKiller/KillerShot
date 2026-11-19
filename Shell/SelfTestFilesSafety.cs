@@ -765,8 +765,8 @@ internal static class SelfTestFilesSafety
         files.ReadClipboard = () => Clip(1);
         var copied = await files.PasteFiles();
         check(conflicts == 0 && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase)
-            && File.ReadAllText(Path.Combine(folder, "A (2)", "a.txt")) == "a bytes"
-            && File.ReadAllText(Path.Combine(folder, "A (2)", "sub", "b.txt")) == "b bytes"
+            && File.ReadAllText(Path.Combine(folder, "A - Copy", "a.txt")) == "a bytes"
+            && File.ReadAllText(Path.Combine(folder, "A - Copy", "sub", "b.txt")) == "b bytes"
             && copied is { Failed.Count: 0 },
             $"same-folder folder copy lands beside the original without self-conflicts (conflicts={conflicts}, inside={string.Join("|", Inside())})");
 
@@ -774,7 +774,7 @@ internal static class SelfTestFilesSafety
         files.ReadClipboard = () => Clip(2);
         var moved = await files.PasteFiles();
         check(conflicts == 0 && (moved == null || moved.Succeeded == 0) && Directory.Exists(source)
-            && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase) && !Directory.Exists(Path.Combine(folder, "A (3)")),
+            && Inside().SequenceEqual(original, StringComparer.OrdinalIgnoreCase) && !Directory.Exists(Path.Combine(folder, "A - Copy (2)")),
             $"same-folder cut and paste changes nothing (conflicts={conflicts}, succeeded={moved?.Succeeded})");
     }
 

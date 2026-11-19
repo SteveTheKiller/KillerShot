@@ -161,7 +161,20 @@ public partial class FilesView
         ResultsList.Drop += Files_Drop;
         ResultsList.DragEnter += Files_DragEnter;
         ResultsList.DragLeave += Files_DragLeave;
-        Unloaded += (_, _) => { EndPointer(); ReleaseDropImage(); CancelRename(); };
+        Window? host = null;
+        EventHandler deactivated = (_, _) => CommitRenameOnLeave();
+        Loaded += (_, _) =>
+        {
+            if (host != null) host.Deactivated -= deactivated;
+            host = Window.GetWindow(this);
+            if (host != null) host.Deactivated += deactivated;
+        };
+        Unloaded += (_, _) =>
+        {
+            if (host != null) host.Deactivated -= deactivated;
+            host = null;
+            EndPointer(); ReleaseDropImage(); CancelRename();
+        };
     }
 
     private string DropTarget(DependencyObject? source)

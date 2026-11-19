@@ -137,7 +137,8 @@ internal static class KillerPdfHandoff
         DeleteOrRetry(folder);
     }
 
-    /// <summary>Deletes every decrypted Make PDF folder, including ones left by an earlier run.</summary>
+    /// <summary>Deletes every decrypted Make PDF folder, including ones left by an earlier run. A
+    /// folder whose pictures are still held open goes on the retry timer.</summary>
     internal static void WipeCopies()
     {
         lock (CopiesGate)
@@ -149,7 +150,7 @@ internal static class KillerPdfHandoff
         try
         {
             if (Directory.Exists(VideoCaptures.PlaybackFolder))
-                foreach (string folder in Directory.EnumerateDirectories(VideoCaptures.PlaybackFolder, "PDF *")) TryDeleteFolder(folder);
+                foreach (string folder in Directory.EnumerateDirectories(VideoCaptures.PlaybackFolder, "PDF *").ToList()) DeleteOrRetry(folder);
         }
         catch (Exception) { }
     }

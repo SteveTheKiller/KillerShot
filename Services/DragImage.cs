@@ -42,7 +42,12 @@ namespace KillerShot.Services
                     crColorKey    = unchecked((int)0xFFFFFFFF),
                 };
 
-                int hr = helper.InitializeFromBitmap(ref shdi, data);
+                // A real QueryInterface pointer, so the shell gets NativeDataObject's
+                // HRESULT-returning IDataObject rather than the managed void-GetData one.
+                IntPtr pointer = KillerShot.Files.NativeDataObject.ComPointer(data);
+                int hr;
+                try { hr = helper.InitializeFromBitmap(ref shdi, pointer); }
+                finally { Marshal.Release(pointer); }
                 System.Diagnostics.Debug.WriteLine($"[DragDiag] DragImage.Attach: InitializeFromBitmap hr=0x{hr:X8}");
                 if (hr == 0) { hBitmap = IntPtr.Zero; attached = true; }
 
@@ -180,10 +185,8 @@ namespace KillerShot.Services
          InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         private interface IDragSourceHelper
         {
-            [PreserveSig] int InitializeFromBitmap(ref SHDRAGIMAGE pshdi,
-                System.Runtime.InteropServices.ComTypes.IDataObject pDataObject);
-            [PreserveSig] int InitializeFromWindow(IntPtr hwnd, ref POINT ppt,
-                System.Runtime.InteropServices.ComTypes.IDataObject pDataObject);
+            [PreserveSig] int InitializeFromBitmap(ref SHDRAGIMAGE pshdi, IntPtr pDataObject);
+            [PreserveSig] int InitializeFromWindow(IntPtr hwnd, ref POINT ppt, IntPtr pDataObject);
         }
 
     }

@@ -23,8 +23,83 @@ namespace KillerShot.Files
     /// an hGlobal handed across a STGMEDIUM can be GlobalLock'd by whoever receives it, and only a
     /// real GMEM_MOVEABLE handle satisfies that.
     /// </summary>
-    internal sealed class NativeDataObject : System.Runtime.InteropServices.ComTypes.IDataObject
+    internal sealed class NativeDataObject : System.Runtime.InteropServices.ComTypes.IDataObject,
+        IHResultDataObject, ICustomQueryInterface
     {
+        internal const int DV_E_FORMATETC = unchecked((int)0x80040064);
+        internal static readonly Guid IID_IDataObject = new("0000010e-0000-0000-C000-000000000046");
+
+        /// <summary>
+        /// What a native caller gets when it asks this object for IDataObject: the
+        /// <see cref="IHResultDataObject"/> vtable, whose GetData answers DV_E_FORMATETC for a
+        /// format this object does not hold, as the IDataObject contract says. The managed
+        /// ComTypes interface (void GetData) stays for in-process callers such as WPF's own drop,
+        /// where a thrown exception would not become an HRESULT.
+        /// </summary>
+        CustomQueryInterfaceResult ICustomQueryInterface.GetInterface(ref Guid iid, out IntPtr ppv)
+        {
+            if (iid == IID_IDataObject)
+            {
+                ppv = Marshal.GetComInterfaceForObject(this, typeof(IHResultDataObject), CustomQueryInterfaceMode.Ignore);
+                return CustomQueryInterfaceResult.Handled;
+            }
+            ppv = IntPtr.Zero;
+            return CustomQueryInterfaceResult.NotHandled;
+        }
+
+        /// <summary>An AddRef'd native IDataObject pointer for <paramref name="data"/>, for handing
+        /// to ole32 or the shell. For this class it is the HRESULT vtable above; the caller
+        /// releases it.</summary>
+        internal static IntPtr ComPointer(System.Runtime.InteropServices.ComTypes.IDataObject data)
+        {
+            IntPtr unknown = Marshal.GetIUnknownForObject(data);
+            try
+            {
+                Guid iid = IID_IDataObject;
+                Marshal.ThrowExceptionForHR(Marshal.QueryInterface(unknown, in iid, out IntPtr pointer));
+                return pointer;
+            }
+            finally { Marshal.Release(unknown); }
+        }
+
+        int IHResultDataObject.GetData(ref FORMATETC format, out STGMEDIUM medium)
+        {
+            if (FindMatch(ref format) < 0)
+            {
+                medium = new STGMEDIUM { tymed = TYMED.TYMED_NULL, unionmember = IntPtr.Zero };
+                return DV_E_FORMATETC;
+            }
+            GetData(ref format, out medium);
+            return medium.tymed == TYMED.TYMED_NULL ? unchecked((int)0x80004005) : 0; // E_FAIL or S_OK
+        }
+
+        int IHResultDataObject.GetDataHere(ref FORMATETC format, ref STGMEDIUM medium)
+            => FindMatch(ref format) < 0 ? DV_E_FORMATETC : unchecked((int)0x80004001); // E_NOTIMPL
+
+        int IHResultDataObject.QueryGetData(ref FORMATETC format) => QueryGetData(ref format);
+
+        int IHResultDataObject.GetCanonicalFormatEtc(ref FORMATETC formatIn, out FORMATETC formatOut)
+            => GetCanonicalFormatEtc(ref formatIn, out formatOut);
+
+        int IHResultDataObject.SetData(ref FORMATETC formatIn, ref STGMEDIUM medium, bool release)
+        {
+            SetData(ref formatIn, ref medium, release);
+            return 0;
+        }
+
+        int IHResultDataObject.EnumFormatEtc(DATADIR direction, out IEnumFORMATETC? enumerator)
+        {
+            enumerator = EnumFormatEtc(direction);
+            return 0;
+        }
+
+        int IHResultDataObject.DAdvise(ref FORMATETC format, ADVF advf, IAdviseSink adviseSink, out int connection)
+            => DAdvise(ref format, advf, adviseSink, out connection);
+
+        int IHResultDataObject.DUnadvise(int connection) => unchecked((int)0x80040003); // OLE_E_NOCONNECTION
+
+        int IHResultDataObject.EnumDAdvise(out IEnumSTATDATA? enumAdvise) => EnumDAdvise(out enumAdvise);
+
         public const short CF_UNICODETEXT = 13;
         public const short CF_HDROP       = 15;
 
@@ -89,16 +164,13 @@ namespace KillerShot.Files
         public void GetData(ref FORMATETC format, out STGMEDIUM medium)
         {
             System.Diagnostics.Debug.WriteLine($"[NativeDataObject.GetData] cfFormat={format.cfFormat}, tymed={format.tymed}");
-            // A real COM caller (the shell, or ole32 itself) always crosses a true marshaled
-            // boundary, where .NET converts a thrown exception into the DV_E_FORMATETC HRESULT
-            // automatically - fine. But a drag that never leaves KillerShot hands the SAME
-            // managed object back around, and some of the calls into it along that path are
-            // plain in-process C# dispatch with no marshaling boundary to do that conversion, so
-            // a thrown exception here becomes a real unhandled exception instead and takes the
-            // whole drag down with it - confirmed the hard way (2026-08-03). Returning an
-            // empty medium instead of throwing is not strictly correct IDataObject behavior, but
-            // every real caller checks QueryGetData/GetDataPresent first anyway, so nothing that
-            // matters ever sees this fallback.
+            // This managed form is only reached in-process: a drag that never leaves KillerShot
+            // hands the SAME managed object back around, and those calls are plain C# dispatch
+            // with no marshaling boundary to turn a thrown exception into an HRESULT, so a throw
+            // here becomes a real unhandled exception and takes the whole drag down with it -
+            // confirmed the hard way (2026-08-03). So it answers an empty medium instead. Native
+            // callers (the shell, ole32, Office) never see this: ICustomQueryInterface above
+            // hands them IHResultDataObject, whose GetData returns DV_E_FORMATETC properly.
             int i = FindMatch(ref format);
             if (i < 0)
             {
@@ -389,6 +461,27 @@ namespace KillerShot.Files
         public int GiveFeedback(int effect) => 0x00040102; // DRAGDROP_S_USEDEFAULTCURSORS
     }
 
+    /// <summary>
+    /// IDataObject as native callers see it: every method keeps its HRESULT (PreserveSig), so a
+    /// missing format is DV_E_FORMATETC without anything being thrown. Same IID and vtable order
+    /// as ComTypes.IDataObject (GetData, GetDataHere, QueryGetData, GetCanonicalFormatEtc,
+    /// SetData, EnumFormatEtc, DAdvise, DUnadvise, EnumDAdvise).
+    /// </summary>
+    [ComImport, Guid("0000010e-0000-0000-C000-000000000046"),
+     InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IHResultDataObject
+    {
+        [PreserveSig] int GetData(ref FORMATETC format, out STGMEDIUM medium);
+        [PreserveSig] int GetDataHere(ref FORMATETC format, ref STGMEDIUM medium);
+        [PreserveSig] int QueryGetData(ref FORMATETC format);
+        [PreserveSig] int GetCanonicalFormatEtc(ref FORMATETC formatIn, out FORMATETC formatOut);
+        [PreserveSig] int SetData(ref FORMATETC formatIn, ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
+        [PreserveSig] int EnumFormatEtc(DATADIR direction, out IEnumFORMATETC? enumerator);
+        [PreserveSig] int DAdvise(ref FORMATETC format, ADVF advf, IAdviseSink adviseSink, out int connection);
+        [PreserveSig] int DUnadvise(int connection);
+        [PreserveSig] int EnumDAdvise(out IEnumSTATDATA? enumAdvise);
+    }
+
     [ComImport, Guid("00000121-0000-0000-C000-000000000046"),
      InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IDropSource
@@ -407,11 +500,15 @@ namespace KillerShot.Files
     {
         public static int DoDragDrop(System.Runtime.InteropServices.ComTypes.IDataObject dataObject,
             IDropSource dropSource, int okEffects, out int effect)
-            => OleDoDragDrop(dataObject, dropSource, okEffects, out effect);
+        {
+            // The pointer comes from a real QueryInterface, so a NativeDataObject hands ole32 and
+            // the drop target its HRESULT-returning IDataObject (see NativeDataObject).
+            IntPtr pointer = NativeDataObject.ComPointer(dataObject);
+            try { return OleDoDragDrop(pointer, dropSource, okEffects, out effect); }
+            finally { Marshal.Release(pointer); }
+        }
 
         [DllImport("ole32.dll", EntryPoint = "DoDragDrop")]
-        private static extern int OleDoDragDrop(
-            System.Runtime.InteropServices.ComTypes.IDataObject dataObject,
-            IDropSource dropSource, int okEffects, out int effect);
+        private static extern int OleDoDragDrop(IntPtr dataObject, IDropSource dropSource, int okEffects, out int effect);
     }
 }

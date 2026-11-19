@@ -548,6 +548,10 @@ namespace KillerShot.Files
         private static readonly Dictionary<string, bool> HandledCache =
             new(StringComparer.OrdinalIgnoreCase);
 
+        // This exe's own path, read once. Process.GetCurrentProcess() made a Process (and a handle)
+        // per uncached extension and never disposed it.
+        private static readonly string SelfPath = Environment.ProcessPath ?? "";
+
         private const int ASSOCF_NONE       = 0x0000;
         private const int ASSOCSTR_EXECUTABLE = 2;
 
@@ -577,7 +581,7 @@ namespace KillerShot.Files
                 if (AssocQueryString(ASSOCF_NONE, ASSOCSTR_EXECUTABLE, ext, null, sb, ref len) == 0)
                 {
                     string handler = sb.ToString();
-                    string self = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                    string self = SelfPath;
                     mine = handler.Length > 0 && self.Length > 0
                         && string.Equals(handler, self, StringComparison.OrdinalIgnoreCase);
                 }

@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">মুছুন</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">নতুন নাম</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">নতুন ফোল্ডার</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - অনুলিপি</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">{0} টি আইটেম রিসাইকেল বিনে পাঠাবেন? নির্বাচনে একটি ফোল্ডার রয়েছে, এবং তার ভেতরের সবকিছুও যাবে।</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">আর জিজ্ঞাসা করবেন না</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} টি সম্পন্ন, {1} টি ব্যর্থ</sys:String>

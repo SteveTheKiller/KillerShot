@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">删除</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">新名称</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">新建文件夹</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - 副本</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">要将 {0} 个项目移到回收站吗？所选内容包含文件夹，其中的所有内容也会一并移除。</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">不再询问</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} 个完成，{1} 个失败</sys:String>

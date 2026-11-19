@@ -213,8 +213,9 @@ internal static class VideoCaptures
         if (id == null) KillerPdfHandoff.ForgetCopies(session);
     }
 
-    /// <summary>Deletes every decrypted playback copy. A copy a player still holds open stays
-    /// until the next start.</summary>
+    /// <summary>Deletes every decrypted playback copy and Make PDF folder. A copy something still
+    /// holds open is tried again on the retry timer until it can go, rather than waiting for the
+    /// next start.</summary>
     public static void WipePlayback()
     {
         lock (PlaybackGate)
@@ -223,11 +224,11 @@ internal static class VideoCaptures
             PendingPlaybackDeletes.Clear();
             try
             {
-                if (!Directory.Exists(PlaybackFolder)) return;
-                foreach (string file in Directory.EnumerateFiles(PlaybackFolder))
-                    try { File.Delete(file); } catch { }
+                if (Directory.Exists(PlaybackFolder))
+                    foreach (string file in Directory.EnumerateFiles(PlaybackFolder))
+                        if (!TryDelete(file)) RetryLater(file);
             }
-            catch { }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
         }
         KillerPdfHandoff.WipeCopies();
     }

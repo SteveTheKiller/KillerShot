@@ -114,7 +114,8 @@ public partial class FilesView
                     _ => error
                 };
                 SetCommandError(string.Format(Loc("Str_Status_RenameFailed"), reason));
-                RenameBox.Focus();
+                // Back to the box for a fix, but never by pulling activation back from another app.
+                if (Window.GetWindow(this) is not { IsActive: false }) RenameBox.Focus();
                 return false;
             }
             CancelRename();
@@ -130,9 +131,16 @@ public partial class FilesView
         else if (e.Key == System.Windows.Input.Key.Enter) { e.Handled = true; StartCommand(CommitRename()); }
     }
 
+    // Leaving the box commits the typed name the way Explorer does, whether the click went
+    // elsewhere in the list or the window lost activation (Alt+Tab, a click into another app).
+    // Only Escape throws the edit away.
     private void RenameBox_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        => CommitRenameOnLeave();
+
+    internal void CommitRenameOnLeave()
     {
-        if (!_committingRename) CancelRename();
+        if (_renaming == null || _committingRename || RenameBox.Visibility != Visibility.Visible) return;
+        StartCommand(CommitRename());
     }
 
     public IReadOnlyList<string> SelectedPaths => ResultsList.SelectedItems.OfType<FileEntry>()
@@ -231,7 +239,9 @@ public partial class FilesView
             { SetCommandError(Loc("Str_Status_DropIntoSelf")); return null; }
             if (effect == DragDropEffects.Move && !MutableEntry(new FileEntry { FilePath = path })) return null;
         }
-        string[] incoming = paths.Where(path => !string.Equals(Path.GetDirectoryName(path.TrimEnd(Path.DirectorySeparatorChar)),
+        // Moving an item into the folder it is already in changes nothing, the way Explorer treats
+        // it. A copy there is a duplicate beside it ("name - Copy"), which FileOps names.
+        string[] incoming = effect != DragDropEffects.Move ? paths : paths.Where(path => !string.Equals(Path.GetDirectoryName(path.TrimEnd(Path.DirectorySeparatorChar)),
             target.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase)).ToArray();
         if (incoming.Length == 0) return null;
         var result = await RunCopyMove(incoming, target, effect == DragDropEffects.Move, cancellationToken);
@@ -288,7 +298,10 @@ public partial class FilesView
         if (lease == null) return null;
         try
         {
-            var result = await Task.Run(() => FileOps.Recycle(paths));
+            // The shell's progress and "cannot be recycled" dialogs are owned by this window, so
+            // they open in front of it. ShellRecycle runs them on their own STA thread.
+            IntPtr owner = Window.GetWindow(this) is { } window ? new System.Windows.Interop.WindowInteropHelper(window).Handle : IntPtr.Zero;
+            var result = await Task.Run(() => FileOps.Recycle(paths, owner: owner));
             LastOperation = result;
             ReportOperation(result);
             return result;

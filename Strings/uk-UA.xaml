@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Видалити</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Нове ім'я</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Нова папка</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - копія</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Перемістити до Кошика елементів: {0}? Вибране містить папку, і все всередині неї теж буде переміщено.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Більше не запитувати</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">Виконано: {0}, помилок: {1}</sys:String>

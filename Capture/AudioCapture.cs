@@ -51,7 +51,6 @@ internal sealed class AudioCapture : IDisposable
         Func<bool> paused, Action<byte[], TimeSpan> output) : this(SoundSource.None, clock, paused, output)
         => _sources.AddRange(sources);
 
-    /// <summary>Clears sound captured while the devices were starting, before video time zero.</summary>
     /// <summary>How far behind the recording clock the mix runs, so packets a device delivers a
     /// little late are in place before their stretch is written instead of leaving silence and
     /// queueing up behind it.</summary>
@@ -60,6 +59,7 @@ internal sealed class AudioCapture : IDisposable
     /// <summary>One mixer pass at recording time <paramref name="now"/>, for a simulated clock.</summary>
     internal void Pump(TimeSpan now) => Emit(now - Latency);
 
+    /// <summary>Clears sound captured while the devices were starting, before video time zero.</summary>
     internal void DiscardBuffered()
     {
         foreach (var source in _sources) source.Drain(int.MaxValue, null);

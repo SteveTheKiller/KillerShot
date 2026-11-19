@@ -324,11 +324,15 @@ internal static partial class FolderCaptures
                 FileSystemEventHandler changed = (_, _) => LinkedTouched(folder);
                 watcher.Created += changed; watcher.Deleted += changed; watcher.Changed += changed;
                 watcher.Renamed += (_, _) => LinkedTouched(folder);
+                var raising = watcher;
                 watcher.Error += (_, _) =>
                 {
                     lock (LinkedGate)
                     {
-                        folder.Watcher?.Dispose();
+                        // A late error from a watcher that has already been replaced must not
+                        // take the replacement down with it.
+                        if (!ReferenceEquals(folder.Watcher, raising)) return;
+                        raising.Dispose();
                         folder.Watcher = null;
                         folder.NextScan = DateTime.MinValue;
                     }

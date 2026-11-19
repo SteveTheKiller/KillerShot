@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Жою</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Жаңа атау</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Жаңа қалта</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - көшірме</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">{0} элемент себетке жіберілсін бе? Таңдауда қалта бар, оның ішіндегінің бәрі де кетеді.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Қайта сұрамау</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} орындалды, {1} сәтсіз</sys:String>

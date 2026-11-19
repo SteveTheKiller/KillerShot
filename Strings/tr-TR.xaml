@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Sil</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Yeni ad</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Yeni klasör</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - Kopya</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">{0} öğe Geri Dönüşüm Kutusu'na gönderilsin mi? Seçim bir klasör içeriyor ve içindeki her şey de gidecek.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Bir daha sorma</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} tamam, {1} başarısız</sys:String>

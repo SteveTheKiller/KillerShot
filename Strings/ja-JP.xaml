@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">削除</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">新しい名前</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">新しいフォルダー</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - コピー</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">{0} 件をごみ箱に移動しますか? 選択にフォルダーが含まれており、その中身もすべて移動します。</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">今後は確認しない</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} 件完了、{1} 件失敗</sys:String>

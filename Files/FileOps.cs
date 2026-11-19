@@ -18,8 +18,8 @@ namespace KillerShot.Files
     // File bytes and metadata use CopyFileEx, with our progress and cancellation callbacks.
     // The Recycle Bin has no managed route and no documented file
     // format to write - a "deleted" file is a rename plus an entry in a per-volume index that
-    // only the shell maintains. Recycling therefore calls SHFileOperation with FOF_ALLOWUNDO,
-    // which is also what gives you Ctrl+Z in Explorer afterwards.
+    // only the shell maintains. Recycling therefore goes through the shell's IFileOperation
+    // (ShellRecycle.cs) with FOF_ALLOWUNDO, which is also what gives you Ctrl+Z in Explorer.
     //
     // All of this runs OFF the UI thread. Copying a folder is an unbounded amount of work and
     // the callbacks below are the only things that touch the caller, so the caller is
@@ -280,7 +280,7 @@ namespace KillerShot.Files
                     if (sameFolder && (File.Exists(full) || Directory.Exists(full)))
                     {
                         renamed ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                        renamed[source] = UniqueName(full, renamed.Values.ToDictionary(v => v, v => v, StringComparer.OrdinalIgnoreCase));
+                        renamed[source] = CopyName(full, Directory.Exists(full), renamed.Values.ToDictionary(v => v, v => v, StringComparer.OrdinalIgnoreCase));
                     }
                     kept.Add(source);
                 }
@@ -778,7 +778,7 @@ namespace KillerShot.Files
         }
 
         /// <summary>
-        /// Recycle Bin. THE one shell call in this file - see the header. FOF_ALLOWUNDO is what
+        /// Recycle Bin. THE one shell call in this file - see the header and ShellRecycle.cs. FOF_ALLOWUNDO is what
         /// makes it a recycle rather than a delete, and it is also what puts the operation on
         /// Explorer's undo stack, so Ctrl+Z there brings the files back.
         /// </summary>
@@ -788,49 +788,50 @@ namespace KillerShot.Files
         /// progress in a process with nothing to pump it is how that call hangs or quietly bails.
         /// The interactive path leaves it false, because a long recycle has to show something.
         /// </param>
-        public static FileOpResult Recycle(IEnumerable<string> paths, bool silent = false)
+        /// <param name="owner">The window that owns the shell's progress and "cannot be recycled"
+        /// dialogs, so they open in front of KillerShot rather than behind it.</param>
+        public static FileOpResult Recycle(IEnumerable<string> paths, bool silent = false, IntPtr owner = default)
         {
             var list = new List<string>(paths);
             var result = new FileOpResult();
             if (list.Count == 0) return result;
 
-            // Double-null terminated, and the whole block terminated again - the API reads until
-            // it sees an empty string, so a single terminator would run off the end.
-            string joined = string.Join("\0", list) + "\0\0";
+            // FOF_NOERRORUI: the shell no longer draws its own Access Denied box, which is the one
+            // piece of UI in this app that was not ours. The refusal comes back per item instead
+            // and the caller answers it in a themed dialog. FOF_SILENT is deliberately NOT set -
+            // the progress dialog is the shell's job here, and killing it would leave a long
+            // recycle with no feedback at all - except in the headless helper, which passes
+            // silent and has nothing to pump a dialog with. FOFX_RECYCLEONDELETE is what makes
+            // IFileOperation's delete a recycle.
+            uint flags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING | FOF_NOERRORUI
+                         | (silent ? FOF_SILENT : 0u) | FOFX_RECYCLEONDELETE;
 
-            var op = new SHFILEOPSTRUCT
+            List<ShellRecycle.ItemResult> items;
+            bool aborted;
+            try { (items, aborted, _) = ShellRecycle.Run(list, flags, owner); }
+            catch (Exception error) when (error is IOException or COMException or InvalidCastException)
             {
-                wFunc  = FO_DELETE,
-                pFrom  = joined,
-                // FOF_NOERRORUI: the shell no longer draws its own Access Denied box, which is
-                // the one piece of UI in this app that was not ours. The refusal comes back as a
-                // return code instead and the caller answers it in a themed dialog. FOF_SILENT is
-                // deliberately NOT set - the progress dialog is the shell's job here, and killing
-                // it would leave a long recycle with no feedback at all - except in the headless
-                // helper, which passes silent and has nothing to pump a dialog with.
-                fFlags = (ushort)(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING
-                                  | FOF_NOERRORUI | (silent ? FOF_SILENT : 0)),
-            };
-
-            int rc = SHFileOperation(ref op);
-
-            if (rc != 0 || op.fAnyOperationsAborted)
-            {
-                result.Canceled = op.fAnyOperationsAborted;
-                result.AccessDenied = rc == DE_ACCESSDENIEDSRC || rc == ERROR_ACCESS_DENIED;
-                // The shell reports one code for the whole batch, so the disk says what happened
-                // to each item: gone was recycled, still there was not.
-                foreach (string path in list)
-                {
-                    bool left;
-                    try { left = File.Exists(path) || Directory.Exists(path); }
-                    catch { left = true; }
-                    if (!left) result.Succeeded++;
-                    else if (rc != 0) result.Failed.Add((path, "SHFileOperation returned " + rc));
-                }
+                foreach (string path in list) result.Failed.Add((path, error.Message));
+                return result;
             }
-            else result.Succeeded = list.Count;
 
+            result.Canceled = aborted;
+            foreach (var item in items)
+            {
+                bool left;
+                try { left = File.Exists(item.Path) || Directory.Exists(item.Path); }
+                catch { left = true; }
+                // Gone counts as recycled unless the shell said this item failed (a path that
+                // was never there is gone too, but it was not recycled).
+                if (!left && !(item.Reported && item.HResult < 0)) { result.Succeeded++; continue; }
+                if (item.HResult == E_ACCESSDENIED || item.HResult == unchecked((int)0x80070000 | DE_ACCESSDENIEDSRC))
+                    result.AccessDenied = true;
+                if (aborted && item.HResult == COPYENGINE_E_USER_CANCELLED) continue;
+                string reason = item.Reported && item.HResult < 0
+                    ? Marshal.GetExceptionForHR(item.HResult)?.Message ?? ("0x" + item.HResult.ToString("X8"))
+                    : Services.LocaleManager.Loc("Str_Status_OpFailed");
+                result.Failed.Add((item.Path, reason));
+            }
             return result;
         }
 
@@ -839,8 +840,14 @@ namespace KillerShot.Files
         /// <summary>Renames in place. Returns null on success, or the error to show.</summary>
         public static string? Rename(string path, string newName)
         {
-            if (string.IsNullOrWhiteSpace(newName)) return "empty name";
             if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return "invalid characters";
+            // Windows drops trailing dots and spaces from a name, and Explorer drops leading
+            // spaces too, so "a.txt." is "a.txt" and "b. " is "b". Strip them here the same way,
+            // so the checks below see the name the file would really get: renaming a.txt to
+            // "a.txt." is a no-op rather than an "already exists" against itself, and a name of
+            // nothing but dots and spaces is empty.
+            newName = newName.TrimStart(' ').TrimEnd('.', ' ');
+            if (string.IsNullOrWhiteSpace(newName)) return "empty name";
 
             string dir = Path.GetDirectoryName(path) ?? string.Empty;
             string target = Path.Combine(dir, newName);
@@ -923,6 +930,26 @@ namespace KillerShot.Files
             return candidate;
         }
 
+        /// <summary>The name Explorer gives a copy made in the original's own folder:
+        /// "report.txt" -> "report - Copy.txt", then "report - Copy (2).txt". A folder keeps its
+        /// whole name as the stem, so "my.photos" becomes "my.photos - Copy".</summary>
+        internal static string CopyName(string path, bool directory, IReadOnlyDictionary<string, string>? reserved = null)
+        {
+            string dir  = Path.GetDirectoryName(path) ?? string.Empty;
+            string name = Path.GetFileName(path);
+            string stem = directory ? name : Path.GetFileNameWithoutExtension(path);
+            string ext  = directory ? string.Empty : Path.GetExtension(path);
+            string copy = string.Format(Services.LocaleManager.Loc("Str_Fo_CopyName"), stem);
+
+            int n = 1;
+            string candidate;
+            do { candidate = Path.Combine(dir, copy + (n == 1 ? "" : " (" + n + ")") + ext); n++; }
+            while (File.Exists(candidate) || Directory.Exists(candidate)
+                   || (reserved != null && reserved.ContainsKey(candidate)));
+
+            return candidate;
+        }
+
         private static ConflictInfo BuildConflictInfo(string src, string dst)
         {
             var info = new ConflictInfo { SourcePath = src, TargetPath = dst };
@@ -972,34 +999,19 @@ namespace KillerShot.Files
             catch { return false; }
         }
 
-        // ── SHFileOperation (Recycle Bin only) ───────────────────
+        // ── Recycle Bin flags (ShellRecycle.cs) ─────────────────
 
-        private const uint FO_DELETE            = 0x0003;
-        private const ushort FOF_ALLOWUNDO      = 0x0040;
-        private const ushort FOF_NOCONFIRMATION = 0x0010;
-        private const ushort FOF_WANTNUKEWARNING= 0x4000;   // still warn if it CANNOT be recycled
-        private const ushort FOF_NOERRORUI       = 0x0400;   // we draw the failure, not the shell
-        private const ushort FOF_SILENT          = 0x0004;   // no progress dialog either
+        private const uint FOF_ALLOWUNDO      = 0x0040;
+        private const uint FOF_NOCONFIRMATION = 0x0010;
+        private const uint FOF_WANTNUKEWARNING= 0x4000;   // still warn if it CANNOT be recycled
+        private const uint FOF_NOERRORUI       = 0x0400;   // we draw the failure, not the shell
+        private const uint FOF_SILENT          = 0x0004;   // no progress dialog either
+        private const uint FOFX_RECYCLEONDELETE = 0x00080000; // IFileOperation: delete means recycle
+        private const int E_ACCESSDENIED = unchecked((int)0x80070005);
+        private const int COPYENGINE_E_USER_CANCELLED = unchecked((int)0x80270000);
 
-        // SHFileOperation's own code for a permissions refusal, plus the Win32 one it sometimes
-        // returns instead. Neither is documented as exclusive, so both are treated the same.
+        // The shell copy engine's legacy permissions code, seen wrapped as an HRESULT, is treated
+        // the same as E_ACCESSDENIED.
         private const int DE_ACCESSDENIEDSRC  = 0x78;
-        private const int ERROR_ACCESS_DENIED = 5;
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private struct SHFILEOPSTRUCT
-        {
-            public IntPtr hwnd;
-            public uint   wFunc;
-            [MarshalAs(UnmanagedType.LPWStr)] public string pFrom;
-            [MarshalAs(UnmanagedType.LPWStr)] public string pTo;
-            public ushort fFlags;
-            [MarshalAs(UnmanagedType.Bool)] public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            [MarshalAs(UnmanagedType.LPWStr)] public string lpszProgressTitle;
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-        private static extern int SHFileOperation(ref SHFILEOPSTRUCT lpFileOp);
     }
 }

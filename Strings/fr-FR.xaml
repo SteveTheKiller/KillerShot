@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Supprimer</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Nouveau nom</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Nouveau dossier</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - Copie</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Envoyer {0} élément(s) à la Corbeille ? La sélection contient un dossier, et tout son contenu part avec.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Ne plus demander</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} traité(s), {1} en échec</sys:String>

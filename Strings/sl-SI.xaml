@@ -716,6 +716,7 @@
 <sys:String x:Key="Str_Btn_Delete">Izbriši</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Novo ime</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Nova mapa</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - kopija</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Pošljem {0} elementov v koš? Izbor vključuje mapo, zato bo odstranjena tudi vsa njena vsebina.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Ne sprašuj več</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">Dokončanih: {0}, neuspešnih: {1}</sys:String>

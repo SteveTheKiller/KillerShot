@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Удалить</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Новое имя</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Новая папка</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - копия</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Отправить в корзину элементов: {0}? В выделении есть папка, и всё её содержимое отправится тоже.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Больше не спрашивать</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} выполнено, {1} не удалось</sys:String>

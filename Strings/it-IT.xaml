@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Elimina</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Nuovo nome</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Nuova cartella</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - Copia</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Inviare {0} elemento/i al Cestino? La selezione include una cartella, e va anche tutto ciò che contiene.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Non chiedere più</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} riusciti, {1} non riusciti</sys:String>

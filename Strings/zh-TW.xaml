@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">刪除</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">新名稱</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">新資料夾</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - 複製</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">要將 {0} 個項目移到資源回收筒嗎？所選內容包含資料夾，其中的所有內容也會一併移除。</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">不再詢問</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} 個完成，{1} 個失敗</sys:String>

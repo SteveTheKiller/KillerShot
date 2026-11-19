@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Slett</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Nytt navn</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Ny mappe</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - kopi</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Sende {0} element(er) til Papirkurven? Utvalget inneholder en mappe, og alt i den følger med.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Ikke spør igjen</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} ferdig, {1} mislyktes</sys:String>

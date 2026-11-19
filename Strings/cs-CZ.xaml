@@ -723,6 +723,7 @@
 <sys:String x:Key="Str_Btn_Delete">Smazat</sys:String>
 <sys:String x:Key="Str_Fo_RenameTitle">Nový název</sys:String>
 <sys:String x:Key="Str_Fo_NewFolderName">Nová složka</sys:String>
+<sys:String x:Key="Str_Fo_CopyName">{0} - kopie</sys:String>
 <sys:String x:Key="Str_Dlg_RecycleFolderMsg">Přesunout {0} položek do koše? Výběr obsahuje složku a půjde i vše, co je v ní.</sys:String>
 <sys:String x:Key="Str_Chk_DontAskAgain">Příště se neptat</sys:String>
 <sys:String x:Key="Str_Status_OpPartial">{0} hotovo, {1} selhalo</sys:String>

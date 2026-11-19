@@ -113,6 +113,7 @@ public partial class App : Application
         if (SelfTestFilesIntegration.TryRun(e.Args)) return;
         if (SelfTestFilesVerification.TryRun(e.Args)) return;
         if (SelfTestFilesSafety.TryRun(e.Args)) return;
+        if (SelfTestKsfg.TryRun(e.Args)) return;
         if (SelfTestFilesNativeMessages.TryRun(e.Args)) return;
         if (SelfTestFilesWatchRefresh.TryRun(e.Args)) return;
         if (SelfTestReview120.TryRun(e.Args)) return;
@@ -229,10 +230,13 @@ public partial class App : Application
         // The encrypted library opens with the Windows-account key without a prompt, off this
         // thread so the editor paints first. With a password set it stays locked until the
         // library screen unlocks it.
+        // Decrypted playback and Make PDF copies left by a session that did not close cleanly go
+        // first, before any album opens: a wipe racing the open could otherwise delete this
+        // session's fresh copies, or leave plaintext behind. Anything still held open is retried
+        // on a timer while KillerShot runs.
+        if (!demo) VideoCaptures.WipePlayback();
         if (demo) DemoMode.BeginSeed();
         else CaptureLibrary.BeginOpen();
-        // Decrypted copies left by a session that did not close cleanly.
-        if (!demo) _ = Task.Run(VideoCaptures.WipePlayback);
 
         // The first Print Screen switch changed Windows' own setting; put it back once, before the
         // tray claims the shortcuts (Services/PrintScreenKey.cs). Best effort.

@@ -7,7 +7,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 ### Security
 - Updates check certificate revocation and the exact release publisher, and limit release metadata downloads.
 - Recording exports stay tied to their album, and failed cleanup identifies the original unencrypted file that remains.
-- Deleting a recording, switching albums, changing the album password or closing the album removes the decrypted copies made for playing its recordings. They used to stay unencrypted on disk until KillerShot exited. Renaming the open album keeps them, so a recording that is playing keeps playing.
+- Deleting a recording, switching albums, changing the album password or closing the album removes the decrypted copies made for playing its recordings. They used to stay unencrypted on disk until KillerShot exited. Renaming the open album keeps them, so a recording that is playing keeps playing. Copies and Make PDF pictures left by an earlier session are deleted before any album opens, and copies another program still holds are retried while KillerShot runs.
 - Setting an album password retires the album's account key before the album file is swapped, so an album that fails to reopen afterwards is shown as password protected instead of unprotected, and the old key is removed with the backup once the album opens with its password.
 - The Print Screen helper is compiled to native code and no longer starts the .NET runtime, so another program running as you cannot use .NET environment variables to load its own code into the helper's elevated window access.
 
@@ -95,6 +95,8 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - A decrypted recording that a player still had open when it was deleted or its album closed is removed once the player lets go, instead of staying on disk until KillerShot next starts or exits.
 - Unlocking a damaged album says the library could not be opened and why, instead of calling the password wrong.
 - The command line, and KillerMCP through it, works while another KillerShot of the same version with a different SQLCipher engine is running. Every command used to fail; each engine copy now gets its own verified cache folder.
+- Files sends paths longer than 260 characters to the Recycle Bin with a reason for each item that fails, and the Recycle Bin's progress and warning dialogs open in front of KillerShot. Copying an item into its own folder, by Ctrl+drag or paste, makes "name - Copy" like Explorer. A rename keeps the typed name when you click away or switch apps, and trailing dots and spaces are dropped instead of reported as an existing file.
+- A late error from a linked folder's old watcher no longer stops its replacement.
 
 ### Changed
 
