@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media.Imaging;
 using KillerShot.Capture;
+using KillerShot.Editor;
 using KillerShot.Native;
 using KillerShot.Services;
 
@@ -17,8 +18,16 @@ internal sealed partial class CaptureController
 
     public BitmapSource? Last { get; private set; }
 
-    /// <summary>Raised on the UI thread with each finished capture and when it was taken.</summary>
-    public event Action<BitmapSource, DateTime, string?, bool>? Captured;
+    /// <summary>Raised on the UI thread with each finished capture and when it was taken. With
+    /// Scan every capture on, the last argument is the scanned document, its redaction boxes
+    /// already in place, so the editor opens it as is instead of scanning again.</summary>
+    public event Action<BitmapSource, DateTime, string?, bool, EditorDocument?>? Captured;
+
+    /// <summary>How Scan every capture reads a new capture. Self-tests supply a reader they control.</summary>
+    internal Func<BitmapSource, Task<IReadOnlyList<IReadOnlyList<OcrWord>>?>> ReadWordsAsync { get; set; } = TextRecognition.ReadWordsAsync;
+
+    /// <summary>Self-tests only: receives the picture in place of the system clipboard.</summary>
+    internal Action<BitmapSource, string?>? CopyForTest { get; set; }
 
     /// <summary>The file the last capture was saved to, when saving to the folder is on.</summary>
     public string? LastSavedPath { get; private set; }
@@ -159,7 +168,7 @@ internal sealed partial class CaptureController
             }
 
             if (result == null) return;   // cancelled: no output, last mode unchanged
-            Deliver(result, mode, source, interval);
+            await DeliverAsync(result, mode, source, interval);
         }
         catch (Exception ex)
         {
@@ -172,12 +181,23 @@ internal sealed partial class CaptureController
         }
     }
 
-    /// <summary>A finished capture: the shutter, the album, then review or the chosen outputs.</summary>
-    private void Deliver(BitmapSource result, CaptureMode mode, IntPtr source, bool interval)
+    /// <summary>A finished capture: the shutter, the album, then review or the chosen outputs.
+    /// With Scan every capture on, the redaction scan runs first and only the redacted picture
+    /// reaches the album, folder, clipboard and editor; a scan that fails or finds nothing lets
+    /// the original out as before.</summary>
+    internal async Task DeliverAsync(BitmapSource result, CaptureMode mode, IntPtr source, bool interval)
     {
         if (CaptureSettings.PlaySound) ShutterSound.Play();
         if (mode != CaptureMode.Qr) CaptureSettings.LastMode = mode;
         var taken = DateTime.Now;
+        // Review first holds everything and scans in the editor; otherwise nothing goes out
+        // until the boxes are in the picture.
+        EditorDocument? scanned = null;
+        if (!CaptureSettings.ReviewFirst && !interval && mode != CaptureMode.Qr && RedactSettings.ScanEveryCapture)
+        {
+            scanned = new EditorDocument(result, null, taken);
+            if (await RedactAsync(scanned) > 0) result = scanned.Render();
+        }
         // A locked or failing album holds only so much; past that the capture still goes to
         // the clipboard, folder and editor, but the album keeps what it already holds.
         if (!CaptureLibrary.Add(result, taken, ModeKey(mode),
@@ -190,7 +210,22 @@ internal sealed partial class CaptureController
             ReviewRequested?.Invoke(result, taken, mode);
             return;
         }
-        Publish(result, taken, mode, interval);
+        Publish(result, taken, mode, interval, scanned: scanned);
+    }
+
+    /// <summary>Boxes what the redaction scan finds in a new capture; 0 when it finds nothing or
+    /// Windows cannot read text.</summary>
+    private async Task<int> RedactAsync(EditorDocument doc)
+    {
+        var kinds = RedactSettings.Kinds;
+        if (kinds == RedactKinds.None) return 0;
+        try
+        {
+            var lines = await ReadWordsAsync(doc.Render());
+            return lines == null ? 0 : RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
+        }
+        // A scan that fails for any reason lets the original out as before; it never loses the capture.
+        catch (Exception error) when (error is not OutOfMemoryException) { return 0; }
     }
 
     /// <summary>Scrolling capture: pick a region, scroll it, and the stitched page is delivered like
@@ -209,7 +244,7 @@ internal sealed partial class CaptureController
             var source = frozen.WindowAt(Center(region))?.Handle ?? IntPtr.Zero;
             _tray.ShowInfo(Loc("Str_Scroll_Title"), Loc("Str_Scroll_Start"));
             var stitched = await new ScrollCaptureSession(region).RunAsync();
-            if (stitched != null) Deliver(stitched, CaptureMode.Region, source, interval: false);
+            if (stitched != null) await DeliverAsync(stitched, CaptureMode.Region, source, interval: false);
         }
         catch (Exception ex)
         {
@@ -228,7 +263,7 @@ internal sealed partial class CaptureController
     /// <summary>Sends a finished capture to the chosen places, in order: the folder, the save
     /// dialog, the clipboard (with the file's path when chosen), then programs and email. A
     /// reviewed capture comes back here with <paramref name="openEditor"/> off, since it is open.</summary>
-    public string? Publish(BitmapSource result, DateTime taken, CaptureMode mode, bool interval = false, bool openEditor = true)
+    public string? Publish(BitmapSource result, DateTime taken, CaptureMode mode, bool interval = false, bool openEditor = true, EditorDocument? scanned = null)
     {
         // The tray's Save last and Print last only ever reach a picture that was allowed out: with
         // review first, that is the accepted, edited one.
@@ -263,9 +298,10 @@ internal sealed partial class CaptureController
         }
 
         // The picture goes to the clipboard after saving, so the saved path can ride along.
-        if (wantCopy) copied = ImageOutput.TryCopy(result, CaptureSettings.CopyFilePath ? saved : null, out error);
+        if (wantCopy && CopyForTest != null) { CopyForTest(result, CaptureSettings.CopyFilePath ? saved : null); copied = true; }
+        else if (wantCopy) copied = ImageOutput.TryCopy(result, CaptureSettings.CopyFilePath ? saved : null, out error);
         HandOn(result, saved);
-        if (openEditor) Captured?.Invoke(result, taken, saved, mode == CaptureMode.Qr);
+        if (openEditor) Captured?.Invoke(result, taken, saved, mode == CaptureMode.Qr, scanned);
         if (wantCopy && !copied)
             _tray.ShowWarning(Loc("Str_Tray_ClipboardBusyTitle"), string.Format(Loc("Str_Tray_ClipboardBusy"), error));
         else if (CaptureSettings.Notify && (copied || saved != null))

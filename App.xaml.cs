@@ -175,6 +175,7 @@ public partial class App : Application
         if (SelfTestRegions.TryRun(e.Args)) return;
         if (SelfTestTextRecognition.TryRun(e.Args)) return;
         if (SelfTestReviewFirst.TryRun(e.Args)) return;
+        if (SelfTestRedactBeforePublish.TryRun(e.Args)) return;
         if (SelfTestScrollStitch.TryRun(e.Args)) return;
         if (SelfTestScrollCapture.TryRun(e.Args)) return;
         if (SelfTestGdiLifetime.TryRun(e.Args)) return;
@@ -435,10 +436,16 @@ public partial class App : Application
         Controls.MenuIcons.Install();
     }
 
-    private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath, bool readQr)
+    private void OnCaptured(BitmapSource bmp, DateTime taken, string? savedPath, bool readQr, EditorDocument? scanned)
     {
         // A capture saved to the folder opens as that file, so Save in the editor updates it.
-        SetDocument(new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr, ScanForRedaction = !readQr && RedactSettings.ScanEveryCapture });
+        // A capture already scanned for redaction opens with its boxes, which the file holds.
+        if (scanned != null)
+        {
+            scanned.FilePath = savedPath;
+            scanned.MarkSaved();
+        }
+        SetDocument(scanned ?? new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr, ScanForRedaction = !readQr && RedactSettings.ScanEveryCapture });
         if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }
 
