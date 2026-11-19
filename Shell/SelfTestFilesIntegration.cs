@@ -278,8 +278,9 @@ internal static class SelfTestFilesIntegration
             await library.FilesNavigation;
             var contentMenu = library.ContextMenu!;
             contentMenu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
-            Check(contentMenu.Items.OfType<MenuItem>().Count(item => item.InputGestureText is "F5" or "F6" or "F7" or "F8" or "F9") == 5,
-                "content menu exposes all five library views without opening a popup");
+            Check(SelfTestCards.TextRows(contentMenu) == null && SelfTestCards.Tiles(contentMenu)
+                .Count(tile => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile) is "F5" or "F6" or "F7" or "F8" or "F9") == 5,
+                "content card exposes all five library views as tiles without opening a popup");
             Check(footer.Children.OfType<RadioButton>().Where(button => button.GroupName == "FooterLibraryGroup")
                 .All(button => !button.IsEnabled && button.IsChecked != true), "Files disables and unchecks capture grouping");
             string fallback = Directory.CreateDirectory(Path.Combine(folder, "fallback")).FullName;

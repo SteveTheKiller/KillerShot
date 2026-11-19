@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Izquierda</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Derecha</sys:String>
     <sys:String x:Key="Str_Card_Quick">Acciones rápidas</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">A la biblioteca</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Herramientas</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Ajuste de Windows</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Duplicar</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Editar texto</sys:String>
     <sys:String x:Key="Str_Tab_Open">Nueva pestaña</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Abrir en una pestaña nueva</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Explorar</sys:String>

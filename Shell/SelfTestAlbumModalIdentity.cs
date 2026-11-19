@@ -129,8 +129,7 @@ internal static class SelfTestAlbumModalIdentity
                 case "new-collection": view.NewCollection(itemA); break;
                 case "rename-collection": case "delete-collection":
                     string key = action == "rename-collection" ? "Str_Lib_RenameCollection" : "Str_Lib_DeleteCollection";
-                    menu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc(key)))
-                        .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                    SelfTestCards.Click(SelfTestCards.Command(menu, LocaleManager.Loc(key)));
                     break;
                 default: throw new ArgumentException("Unsupported modal action.");
             }

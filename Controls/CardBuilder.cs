@@ -21,6 +21,57 @@ namespace KillerFamily.Controls
     public sealed record CardChoice(string Text, string Tip, string? Gesture, bool On, Action Run, bool Enabled = true);
 
     /// <summary>
+    /// One tile of a card strip (TileStrip): an MDL2 glyph over a caption, the family card style. Caption is the
+    /// full name (tooltip and accessible name); Shown, when set, is the shorter text drawn under the glyph.
+    /// Keys is the shortcut as it reads ("Ctrl+C"), drawn on the tile's second line while shortcuts show in menus.
+    /// Mirror flips the glyph left to right. Flyout: the tile opens these rows beside itself instead of acting.
+    /// Checked: an on/off command, filled while on. KeepsOpen: the tile flips in place and the card stays open.
+    /// </summary>
+    public sealed record CardTile(string Glyph, string Caption, string? Keys, Action? Run, bool Mirror = false, bool Enabled = true)
+    {
+        public string? Shown { get; init; }
+        /// <summary>The tooltip, when the app words its shortcut hints its own way; otherwise "Caption (Keys)".</summary>
+        public string? Hint { get; init; }
+        public IList<object>? Flyout { get; init; }
+        public bool? Checked { get; init; }
+        public bool KeepsOpen { get; init; }
+        /// <summary>The tile's stable name for a customized card (CardEdit). Defaults to the glyph, plus "~" when
+        /// mirrored, which is unique on a card because two tiles never share a glyph unless one is mirrored.</summary>
+        public string? Id { get; init; }
+        internal string Key => Id ?? (Glyph + (Mirror ? "~" : ""));
+    }
+
+    /// <summary>
+    /// Makes a card's tile grid customizable (Steve 2026-11-19). A small pencil in the card's top-left corner turns
+    /// on edit mode: the card stays open with an accent border, a Hidden drawer two tiles wide slides out on the right,
+    /// and tiles move between the card and the drawer by dragging (or a click, which also works from the keyboard).
+    /// Locked tiles, the card's most important actions, stay put and are drawn dimmed while editing. The drawer's
+    /// close X ends editing, and Reset to default returns to the starting layout. Only big cards get this; a small
+    /// card stays fixed.
+    /// DefaultHidden names the tiles that start in the drawer (an action that rarely belongs on that card, like Paste
+    /// on a picture, or a spare the app offers); the user can drag them out, and Reset to default returns to exactly
+    /// this set.
+    /// Load and Save carry the user's layout in the app's own settings: "v1:" plus the "|"-joined hidden tile ids once
+    /// the user has changed anything, and null (store it as empty) for the defaults.
+    /// </summary>
+    public sealed class CardEdit
+    {
+        public CardEdit(Func<string?> load, Action<string?> save) { Load = load; Save = save; }
+        public Func<string?> Load { get; }
+        public Action<string?> Save { get; }
+        public Func<CardTile, bool> Locked { get; init; } = _ => false;
+        public Func<CardTile, bool> DefaultHidden { get; init; } = _ => false;
+        public string EditTip { get; init; } = "Customize this card";
+        public string DoneTip { get; init; } = "Done";
+        public string ResetTip { get; init; } = "Reset to default";
+        /// <summary>The drawer's Reset link text: a word, because a circular arrow reads as Refresh.</summary>
+        public string ResetLabel { get; init; } = "Reset";
+        public string HiddenLabel { get; init; } = "Hidden";
+        public string HiddenHint { get; init; } = "Drag a tile here to hide it";
+        public string LockedTip { get; init; } = "Always shown";
+    }
+
+    /// <summary>
     /// Builds card-menu rows in code, for the menus that are made at open time rather than in
     /// XAML (KillerNotes 1.7.0: the graph, sketch pad, dictation and Tags dialog cards). Every
     /// row is a MenuItem on the kit's card styles (CardSlot, CardQuickButton, CardToggle,
@@ -91,6 +142,713 @@ namespace KillerFamily.Controls
             // strip drew a stray line at its bottom edge.
             slot.Loaded += (_, _) => rule.BorderThickness = new Thickness(0, 1, 0, EndsCard(slot) ? 0 : 1);
             return slot;
+        }
+
+        /// <summary>A card row that holds controls rather than being a command (CardSlot), with its own padding.</summary>
+        public static MenuItem Slot(object content, Thickness padding)
+        {
+            var slot = Slot(content);
+            slot.Padding = padding;
+            return slot;
+        }
+
+        /// <summary>
+        /// The family tile strip: tiles in one row, or wrapped into rows of columns when there are more. A tile closes
+        /// its card, then acts. Each tile fills its cell, so with the card's 7px padding and 1px edge its hover sits
+        /// 8px from the card's edge (family rule). Put the result in a card with Slot(strip, new Thickness(0)).
+        /// </summary>
+        public static Border TileStrip(ContextMenu card, string name, int columns, IEnumerable<CardTile> tiles)
+        {
+            var list = tiles.Cast<CardTile?>().ToList();
+            var grid = columns > 0 && list.Count > columns ? new UniformGrid { Columns = columns } : new UniformGrid { Rows = 1 };
+            return Strip(card, name, grid, list);
+        }
+
+        /// <summary>The family card width in tiles: three across, the page cards' width (Steve 2026-11-19).</summary>
+        public const int CardColumns = 3;
+
+        /// <summary>
+        /// The family card grid. Rules (Steve 2026-11-19), which this method enforces so apps don't relearn them:
+        /// 1. Three tiles across (CardColumns), so every card is the page cards' width. A long caption wraps inside its
+        ///    tile; it never widens the card.
+        /// 2. Related tiles are one group and share a row: Copy, Cut and Paste; the turns; Save and Replace; Raise and
+        ///    Lower. A group never shares a row with another group, and a group longer than a row continues on the
+        ///    next row; an unfilled row stays blank on the right instead of borrowing a tile from the next group.
+        /// 3. Groups run most used first: the clipboard row leads, a destructive tile (Clear) goes last, and Delete on
+        ///    a card for one thing sits in the header, not in the grid.
+        /// 4. A tile that only sometimes applies keeps its spot dimmed (Paste with nothing to paste), so the rows
+        ///    don't shift under the pointer from one right-click to the next.
+        /// 5. Cards carry no text rows; everything a card does is a tile or a flyout tile.
+        /// Empty groups are skipped.
+        /// </summary>
+        public static Border TileGroups(ContextMenu card, string name, IEnumerable<IEnumerable<CardTile>> groups, int columns = CardColumns)
+            => TileGroups(card, name, groups, null, columns);
+
+        /// <summary>TileGroups with edit mode (CardEdit) when edit is set; see CardEdit for how it behaves.</summary>
+        public static Border TileGroups(ContextMenu card, string name, IEnumerable<IEnumerable<CardTile>> groups, CardEdit? edit, int columns = CardColumns)
+        {
+            var lists = groups.Select(g => g.ToList()).Where(g => g.Count > 0).ToList();
+            if (edit is not null) return EditableGroups(card, name, lists, edit, columns);
+            return GroupGrid(card, name, lists, columns);
+        }
+
+        private static Border GroupGrid(ContextMenu card, string name, List<List<CardTile>> lists, int columns, TileGrid? measureFrom = null)
+        {
+            var cells = new List<CardTile?>();
+            foreach (var list in lists)
+            {
+                if (list.Count == 0) continue;
+                cells.AddRange(list);
+                for (int pad = (columns - list.Count % columns) % columns; pad > 0; pad--) cells.Add(null);
+            }
+            // Equal columns, but each row only as tall as its own tiles: a UniformGrid gave every row the height of the
+            // tallest (a tile with a shortcut line), which left a blank line under the rows without one.
+            var grid = new TileGrid { MeasureFrom = measureFrom };
+            for (int c = 0; c < columns; c++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            for (int r = 0; r < (cells.Count + columns - 1) / columns; r++) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var strip = Strip(card, name, grid, cells);
+            for (int i = 0; i < grid.Children.Count; i++)
+            {
+                Grid.SetRow(grid.Children[i], i / columns);
+                Grid.SetColumn(grid.Children[i], i % columns);
+            }
+            if (measureFrom is not null)
+                for (int c = 0; c < columns; c++)
+                {
+                    var spacer = new FrameworkElement { Height = 0, IsHitTestVisible = false, Focusable = false };
+                    Grid.SetColumn(spacer, c);
+                    grid.Children.Add(spacer);
+                    grid.Spacers.Add(spacer);
+                }
+            return strip;
+        }
+
+        // A customizable card lays out every tile it has, spares included, in a hidden, zero-height copy of its grid. Any
+        // tile can end up in any column once others hide, so the shown grid holds every column at least as wide as the
+        // widest tile in that copy, through a zero-height spacer per column. Hiding or showing tiles never collapses the
+        // card to two across, shifts a column, or changes the card's width.
+        private sealed class TileGrid : Grid
+        {
+            public TileGrid? MeasureFrom { get; init; }
+            public List<FrameworkElement> Spacers { get; } = [];
+            public double[] ColumnWidths { get; private set; } = [];
+
+            protected override Size MeasureOverride(Size constraint)
+            {
+                if (MeasureFrom is not null && MeasureFrom.ColumnWidths.Length == 0) MeasureFrom.Measure(new Size(constraint.Width, double.PositiveInfinity));
+                if (MeasureFrom is not null)
+                    for (int c = 0; c < Spacers.Count; c++)
+                    {
+                        double w = MeasureFrom.ColumnWidths.DefaultIfEmpty(0).Max();
+                        if (Spacers[c].Width is double old && (double.IsNaN(old) || old != w)) Spacers[c].Width = w;
+                    }
+                var size = base.MeasureOverride(constraint);
+                ColumnWidths = new double[ColumnDefinitions.Count];
+                foreach (UIElement child in Children)
+                    if (GetColumn(child) is int c && c < ColumnWidths.Length) ColumnWidths[c] = Math.Max(ColumnWidths[c], child.DesiredSize.Width);
+                return size;
+            }
+        }
+
+        // The customizable card grid (CardEdit).
+        private static Border EditableGroups(ContextMenu card, string name, List<List<CardTile>> lists, CardEdit edit, int columns)
+        {
+            const string Version = "v1:";
+            var all = lists.SelectMany(g => g).ToList();
+            var defaults = all.Where(t => !edit.Locked(t) && edit.DefaultHidden(t)).Select(t => t.Key).ToList();
+            string? saved = edit.Load();
+            var hidden = saved is not null && saved.StartsWith(Version, StringComparison.Ordinal)
+                ? new HashSet<string>(saved[Version.Length..].Split('|', StringSplitOptions.RemoveEmptyEntries))
+                : new HashSet<string>(defaults);
+            hidden.IntersectWith(all.Where(t => !edit.Locked(t)).Select(t => t.Key));
+            bool editing = false;
+            // After editing ends the card stays open until the next click: one outside closes it, one inside acts as
+            // usual. Without this the card went back to closing on an outside click in the middle of the X's own
+            // click, which lands over the drawer, outside the card, and the whole menu shut with the drawer.
+            bool lingering = false;
+            var owners = new Dictionary<UIElement, CardTile>();
+
+            // The card keeps its three columns; nothing on it changes size in edit mode.
+            var root = new Grid();
+            var fullStrip = GroupGrid(card, name, lists, columns);
+            var full = (TileGrid)fullStrip.Child;
+            var fullHost = new Border { Height = 0, ClipToBounds = true, Visibility = Visibility.Hidden, IsHitTestVisible = false, Focusable = false, VerticalAlignment = VerticalAlignment.Top, Child = fullStrip };
+            root.Children.Add(fullHost);
+            var gridHost = new Border();
+            root.Children.Add(gridHost);
+            var pencil = SmallButton("", edit.EditTip);
+            pencil.HorizontalAlignment = HorizontalAlignment.Left;
+            pencil.VerticalAlignment = VerticalAlignment.Top;
+            root.Children.Add(pencil);
+
+            // The drawer: its own panel beside the card, its own shape and size, sliding out from behind the card's
+            // right edge. It holds the tiles stashed away, two across and scrolling, under Reset to default and the
+            // red-hover close X that ends editing, the same X the windows close with.
+            var drawerTiles = new Border { HorizontalAlignment = HorizontalAlignment.Left };
+            var drawerHint = new TextBlock { Text = edit.HiddenHint, TextWrapping = TextWrapping.Wrap, FontSize = 11, Margin = new Thickness(4, 6, 4, 6), TextAlignment = TextAlignment.Center };
+            drawerHint.SetResourceReference(TextBlock.ForegroundProperty, "DimTextBrush");
+            var drawerTitle = new TextBlock { Text = edit.HiddenLabel, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+            drawerTitle.SetResourceReference(TextBlock.ForegroundProperty, "DimTextBrush");
+            var reset = LinkButton(edit.ResetLabel, edit.ResetTip);
+            reset.Margin = new Thickness(4, 0, 4, 0);
+            DockPanel.SetDock(reset, Dock.Right);
+            var done = CloseButton(edit.DoneTip);
+            done.Margin = new Thickness(2, 0, 0, 0);
+            DockPanel.SetDock(done, Dock.Right);
+            var drawerHead = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
+            drawerHead.Children.Add(done);
+            drawerHead.Children.Add(reset);
+            drawerHead.Children.Add(drawerTitle);
+            DockPanel.SetDock(drawerHead, Dock.Top);
+            var drawerBody = new DockPanel();
+            drawerBody.Children.Add(drawerHead);
+            var scroller = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = false, Content = new StackPanel { Children = { drawerHint, drawerTiles } } };
+            drawerBody.Children.Add(scroller);
+            var slide = new TranslateTransform();
+            // Open on the card side: no border and square corners where it joins the card, so the two read as one shape.
+            // The same film grain as the card surface, so the drawer reads as the card's own material.
+            var grain = new Border { IsHitTestVisible = false };
+            grain.SetResourceReference(UIElement.OpacityProperty, "GrainOpacity");
+            grain.SetResourceReference(Border.BackgroundProperty, "GrainTileBrush");
+            drawerBody.Margin = new Thickness(7);
+            var drawerFace = new Border { BorderThickness = new Thickness(0, 1, 1, 1), Child = new Grid { Children = { grain, drawerBody } } };
+            drawerFace.SetResourceReference(Border.BackgroundProperty, "MenuBackgroundBrush");
+            // The menu's own bevels on a flat theme (98SE), as the card template draws them, minus the joined side.
+            var bevels = new (string Brush, string Thickness, bool Inner)[]
+            {
+                ("MenuBevelLightBrush", "MenuBevelLightThickness", true), ("MenuBevelDarkBrush", "MenuBevelDarkThickness", true),
+                ("MenuBevel2LightBrush", "MenuBevel2LightThickness", false), ("MenuBevel2DarkBrush", "MenuBevel2DarkThickness", false),
+            }.Select(b =>
+            {
+                var bevel = new Border { IsHitTestVisible = false, Tag = b };
+                bevel.SetResourceReference(Border.BorderBrushProperty, b.Brush);
+                return bevel;
+            }).ToList();
+            var slideHost = new Grid { RenderTransform = slide };
+            slideHost.Children.Add(drawerFace);
+            foreach (var bevel in bevels) slideHost.Children.Add(bevel);
+            var drawerClip = new Border { ClipToBounds = true, Child = slideHost };
+            var drawer = new Popup
+            {
+                AllowsTransparency = true, StaysOpen = true, Placement = PlacementMode.Right, PlacementTarget = card,
+                Child = drawerClip, Focusable = false,
+            };
+            TextOptions.SetTextFormattingMode(drawerClip, TextFormattingMode.Display);
+            root.Children.Add(drawer);   // takes no room; keeps the drawer in the card's tree for resources and lookups
+
+            void Rebuild()
+            {
+                owners.Clear();
+                var shown = lists.Select(g => g.Where(t => !hidden.Contains(t.Key)).ToList()).ToList();
+                var strip = GroupGrid(card, name, shown, columns, full);
+                foreach (UIElement el in ((Panel)strip.Child).Children)
+                    if (TileOf(el) is { } tile)
+                    {
+                        owners[el] = tile;
+                        if (editing) PrepareForEdit(el, tile);
+                    }
+                gridHost.Child = strip;
+                // The drawer's own grid, two across, each row only as tall as its tiles, like the card's.
+                // Alphabetical by the name the tile shows, so a stocked drawer reads like an index.
+                var stashed = all.Where(t => hidden.Contains(t.Key)).OrderBy(t => t.Shown ?? t.Caption, StringComparer.CurrentCultureIgnoreCase).ToList();
+                var drawerStrip = GroupGrid(card, name, stashed.Count > 0 ? [stashed] : [], 2);
+                foreach (UIElement el in ((Panel)drawerStrip.Child).Children)
+                    if (TileOf(el) is { } tile)
+                    {
+                        owners[el] = tile;
+                        PrepareForEdit(el, tile);
+                    }
+                drawerTiles.Child = drawerStrip;
+                drawerHint.Visibility = hidden.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                reset.IsEnabled = !hidden.SetEquals(defaults);
+                if (drawer.IsOpen) PlaceDrawer();
+            }
+
+            double tileWidth = 0;
+            bool doneHot = false;
+            void PlaceDrawer()
+            {
+                // The card's visible face sits inside its shadow halo. The drawer is attached to that face's right edge,
+                // covering the card's border where they meet. It starts just under the card's top corner and never runs
+                // past its bottom one: a full drawer scrolls instead.
+                card.UpdateLayout();
+                var face = Descendants(card).OfType<Border>().FirstOrDefault(b => ReferenceEquals(b.BorderBrush, card.BorderBrush) && b.BorderThickness.Left > 0);
+                Rect r = face is not null && card.IsAncestorOf(face) ? face.TransformToAncestor(card).TransformBounds(new Rect(face.RenderSize)) : new Rect(card.RenderSize);
+                var radius = card.TryFindResource("PanelCornerRadius") is CornerRadius cr ? cr : new CornerRadius(0);
+                drawerFace.CornerRadius = new CornerRadius(0, radius.TopRight, radius.BottomRight, 0);
+                // A flat theme (98SE) has no accent edge on its menus: the drawer takes the menu's border and bevels.
+                bool flat = card.TryFindResource("UseDialogCaption") is true;
+                drawerFace.SetResourceReference(Border.BorderBrushProperty, flat ? "MenuBorderBrush" : "PrimaryBrush");
+                var innerMargin = card.TryFindResource("MenuBevelInnerMargin") is Thickness im ? im : new Thickness(0);
+                foreach (var bevel in bevels)
+                {
+                    var (_, thicknessKey, inner) = ((string, string, bool))bevel.Tag;
+                    var t = card.TryFindResource(thicknessKey) is Thickness th ? th : new Thickness(0);
+                    bevel.BorderThickness = new Thickness(0, t.Top, t.Right, t.Bottom);
+                    bevel.Margin = inner ? new Thickness(0, innerMargin.Top, innerMargin.Right, innerMargin.Bottom) : new Thickness(0);
+                }
+                grain.CornerRadius = new CornerRadius(0, Math.Max(0, radius.TopRight - 1), Math.Max(0, radius.BottomRight - 1), 0);
+                double inset = Math.Max(4, Math.Max(radius.TopRight, radius.BottomRight));
+                double room = Math.Max(60, r.Height - 2 * inset);
+                drawerTiles.Width = 2 * tileWidth;
+                drawerHint.MaxWidth = 2 * tileWidth;
+                drawerFace.MaxHeight = room;
+                drawerFace.MinHeight = Math.Min(120, room);
+                drawerFace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                drawer.HorizontalOffset = r.Right - card.ActualWidth - (face?.BorderThickness.Right ?? 0);
+                drawer.VerticalOffset = r.Top + inset;
+            }
+
+            void PrepareForEdit(UIElement el, CardTile t)
+            {
+                // While editing a tile is something to move, not a command: every tile takes the pointer (a dimmed Paste
+                // too), and a locked one says it always shows.
+                foreach (var b in Descendants(el).OfType<Button>()) { b.IsEnabled = true; b.Cursor = edit.Locked(t) ? Cursors.Arrow : Cursors.SizeAll; }
+                if (edit.Locked(t)) { el.Opacity = 0.45; if (el is FrameworkElement fe) fe.ToolTip = edit.LockedTip; }
+            }
+
+            void Persist() => edit.Save(hidden.SetEquals(defaults) ? null : Version + string.Join("|", all.Where(t => hidden.Contains(t.Key)).Select(t => t.Key)));
+
+            void Move(CardTile t, bool hide)
+            {
+                if (edit.Locked(t)) return;
+                if (hide ? !hidden.Add(t.Key) : !hidden.Remove(t.Key)) return;
+                Persist();
+                Rebuild();
+            }
+
+            void ResetLayout() { hidden.Clear(); hidden.UnionWith(defaults); Persist(); Rebuild(); }
+
+            void SetEditing(bool on, bool animate = true)
+            {
+                editing = on;
+                card.StaysOpen = true;
+                lingering = !on;
+                // The pencil opens editing; while editing it steps aside and the drawer's X is the one way out.
+                pencil.Visibility = on ? Visibility.Collapsed : Visibility.Visible;
+                HotDone(false);
+                Rebuild();
+                if (on)
+                {
+                    card.SetResourceReference(Control.BorderBrushProperty, "PrimaryBrush");
+                    // The drawer is two of the card's tiles wide and as tall as what it holds, up to the card's own
+                    // height; it slides out from under the card.
+                    card.UpdateLayout();
+                    tileWidth = Math.Max(54, owners.Keys.OfType<FrameworkElement>().Where(e => gridHost.IsAncestorOf(e)).Select(e => e.ActualWidth).DefaultIfEmpty(0).Max());
+                    PlaceDrawer();
+                    double width = drawerFace.DesiredSize.Width;
+                    drawer.IsOpen = true;
+                    slide.BeginAnimation(TranslateTransform.XProperty, new System.Windows.Media.Animation.DoubleAnimation(-width, 0, TimeSpan.FromMilliseconds(180))
+                    { EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut } });
+                }
+                else
+                {
+                    card.ClearValue(Control.BorderBrushProperty);
+                    if (!animate || !drawer.IsOpen) { slide.BeginAnimation(TranslateTransform.XProperty, null); drawer.IsOpen = false; HoldMouse(); return; }
+                    // Slides back in under the card, then closes.
+                    var tuck = new System.Windows.Media.Animation.DoubleAnimation(-drawerFace.ActualWidth, TimeSpan.FromMilliseconds(150))
+                    { EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn } };
+                    tuck.Completed += (_, _) => { if (!editing) { slide.BeginAnimation(TranslateTransform.XProperty, null); drawer.IsOpen = false; HoldMouse(); } };
+                    slide.BeginAnimation(TranslateTransform.XProperty, tuck);
+                }
+            }
+
+            pencil.Click += (_, _) => { if (!editing) SetEditing(true); };
+            reset.Click += (_, _) => ResetLayout();
+            done.Click += (_, _) => { if (editing) SetEditing(false); };
+            drawerClip.MouseLeave += (_, _) => { HotDone(false); HotReset(false); };
+            card.Closed += (_, _) =>
+            {
+                if (editing) SetEditing(false, animate: false);
+                lingering = false;
+                card.StaysOpen = false;
+            };
+            // The card keeps the mouse once the drawer is gone, so the next click anywhere reaches it.
+            void HoldMouse()
+            {
+                if (!lingering || !card.IsOpen) return;
+                if (Mouse.Captured is DependencyObject held && (held == card || card.IsAncestorOf(held))) return;
+                Mouse.Capture(card, CaptureMode.SubTree);
+            }
+            card.AddHandler(UIElement.PreviewMouseDownEvent, new MouseButtonEventHandler((_, e) =>
+            {
+                if (!lingering) return;
+                lingering = false;
+                card.StaysOpen = false;
+                if (card.InputHitTest(e.GetPosition(card)) is null) { card.IsOpen = false; e.Handled = true; }
+            }), true);
+
+            // The card holds the mouse while it is open, so the drawer's clicks arrive at the card: both surfaces are
+            // hit-tested by position. Drag a tile between them; a click without a drag moves it to the other side.
+            CardTile? pressed = null;
+            UIElement? pressedEl = null;
+            Point start = default;
+            bool dragging = false, scrubbing = false;
+            // The card holds the mouse, so the X never sees the pointer arrive: its red hover follows the pointer here.
+            // The Reset link underlines under the pointer, for the same reason.
+            void HotReset(bool on)
+            {
+                if (reset.Content is TextBlock text) text.TextDecorations = on && reset.IsEnabled ? TextDecorations.Underline : null;
+            }
+            void HotDone(bool on)
+            {
+                if (on == doneHot) return;
+                doneHot = on;
+                if (on)
+                {
+                    done.SetResourceReference(Control.BackgroundProperty, "CaptionCloseHoverBrush");
+                    done.SetResourceReference(Control.ForegroundProperty, "CaptionCloseHoverFgBrush");
+                }
+                else
+                {
+                    done.Background = Brushes.Transparent;
+                    done.SetResourceReference(Control.ForegroundProperty, "DimTextBrush");
+                }
+            }
+            bool Over(MouseEventArgs e, FrameworkElement el)
+            {
+                if (!drawer.IsOpen || !el.IsVisible) return false;
+                var p = e.GetPosition(el);
+                return p.X >= 0 && p.Y >= 0 && p.X <= el.ActualWidth && p.Y <= el.ActualHeight;
+            }
+            ScrollBar? Bar() => Descendants(scroller).OfType<ScrollBar>().FirstOrDefault(b => b.Orientation == Orientation.Vertical && b.IsVisible);
+            void Scrub(MouseEventArgs e)
+            {
+                if (Bar() is not { } bar) return;
+                double f = Math.Clamp(e.GetPosition(bar).Y / Math.Max(1, bar.ActualHeight), 0, 1);
+                scroller.ScrollToVerticalOffset(f * scroller.ScrollableHeight);
+            }
+            bool OverDrawer(MouseEventArgs e)
+            {
+                if (!drawer.IsOpen) return false;
+                var p = e.GetPosition(drawerFace);
+                return p.X >= 0 && p.Y >= 0 && p.X <= drawerFace.ActualWidth && p.Y <= drawerFace.ActualHeight;
+            }
+            DependencyObject? HitAt(MouseEventArgs e)
+            {
+                if (OverDrawer(e)) return drawerFace.InputHitTest(e.GetPosition(drawerFace)) as DependencyObject;
+                var p = e.GetPosition(root);
+                return p.X >= 0 && p.Y >= 0 && p.X <= root.ActualWidth && p.Y <= root.ActualHeight ? root.InputHitTest(p) as DependencyObject : null;
+            }
+            CardTile? Owner(DependencyObject? d)
+            {
+                for (; d != null; d = d is Visual ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+                    if (d is UIElement u && owners.TryGetValue(u, out var t)) { pressedEl = u; return t; }
+                return null;
+            }
+            bool Within(DependencyObject? d, DependencyObject parent)
+            {
+                for (; d != null; d = d is Visual ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d))
+                    if (d == parent) return true;
+                return false;
+            }
+            void Down(object? sender, MouseButtonEventArgs e)
+            {
+                if (!editing || e.ChangedButton != MouseButton.Left) return;
+                // The element under the click when the event reaches it directly, else the surface under the pointer.
+                var src = e.OriginalSource as DependencyObject;
+                var hit = Owner(src) is not null || Within(src, reset) || Within(src, done) ? src : HitAt(e);
+                if (Within(hit, done) || Over(e, done)) { SetEditing(false); e.Handled = true; return; }
+                if (Within(hit, reset)) { if (reset.IsEnabled) ResetLayout(); e.Handled = true; return; }
+                // The drawer's scroll bar: the card holds the mouse, so a press on it scrolls to that spot and a drag
+                // follows the pointer.
+                if (Bar() is { } bar && Over(e, bar)) { scrubbing = true; Scrub(e); e.Handled = true; return; }
+                pressed = Owner(hit);
+                if (pressed is null) { if (OverDrawer(e)) e.Handled = true; return; }
+                start = e.GetPosition(card);
+                dragging = false;
+                e.Handled = true;
+            }
+            void MoveMouse(object? sender, MouseEventArgs e)
+            {
+                if (!editing) return;
+                HotDone(Over(e, done));
+                HotReset(Over(e, reset));
+                if (scrubbing) { if (e.LeftButton == MouseButtonState.Pressed) Scrub(e); else scrubbing = false; return; }
+                if (pressed is null || e.LeftButton != MouseButtonState.Pressed || edit.Locked(pressed)) return;
+                if (!dragging && (e.GetPosition(card) - start).Length < 4) return;
+                dragging = true;
+                if (pressedEl is not null) pressedEl.Opacity = 0.4;
+                if (OverDrawer(e)) drawerFace.SetResourceReference(Border.BackgroundProperty, "MenuHoverBrush");
+                else drawerFace.SetResourceReference(Border.BackgroundProperty, "MenuBackgroundBrush");
+            }
+            void Up(object? sender, MouseButtonEventArgs e)
+            {
+                if (scrubbing) { scrubbing = false; e.Handled = true; return; }
+                if (pressed is null) return;
+                var t = pressed;
+                pressed = null;
+                drawerFace.SetResourceReference(Border.BackgroundProperty, "MenuBackgroundBrush");
+                if (pressedEl is not null) pressedEl.Opacity = edit.Locked(t) ? 0.45 : 1;
+                bool inDrawer = hidden.Contains(t.Key);
+                if (!dragging) Move(t, !inDrawer);
+                else if (OverDrawer(e) != inDrawer) Move(t, !inDrawer);
+                dragging = false;
+                e.Handled = true;
+            }
+            // Both surfaces listen: the card while it holds the mouse, the drawer when it gets the events itself.
+            foreach (UIElement surface in new UIElement[] { card, drawerClip })
+            {
+                surface.AddHandler(UIElement.PreviewMouseDownEvent, new MouseButtonEventHandler(Down), true);
+                surface.AddHandler(UIElement.PreviewMouseMoveEvent, new MouseEventHandler(MoveMouse), true);
+                surface.AddHandler(UIElement.PreviewMouseUpEvent, new MouseButtonEventHandler(Up), true);
+                // The wheel scrolls the drawer while the pointer is over it.
+                surface.AddHandler(UIElement.PreviewMouseWheelEvent, new MouseWheelEventHandler((_, e) =>
+                {
+                    if (!editing || !OverDrawer(e)) return;
+                    scroller.ScrollToVerticalOffset(scroller.VerticalOffset - e.Delta / 3.0);
+                    e.Handled = true;
+                }), true);
+            }
+            // Keyboard: Enter or Space on a card tile moves it to the drawer while editing.
+            root.PreviewKeyDown += (_, e) =>
+            {
+                if (!editing || e.Key is not (Key.Enter or Key.Space) || Owner(Keyboard.FocusedElement as DependencyObject) is not { } t) return;
+                Move(t, !hidden.Contains(t.Key));
+                e.Handled = true;
+            };
+
+            Rebuild();
+            var outer = new Border { Child = root };
+            AutomationProperties.SetName(outer, name);
+            return outer;
+        }
+
+        // A small dim icon button for a card's corner controls (the edit pencil).
+        private static Button SmallButton(string glyph, string tip)
+        {
+            var b = new Button { Content = glyph, ToolTip = tip, Width = 22, Height = 22, Padding = new Thickness(0), FontSize = 11, FontFamily = new FontFamily("Segoe MDL2 Assets"), Cursor = Cursors.Hand };
+            b.SetResourceReference(FrameworkElement.StyleProperty, "MenuRowButton");
+            b.SetResourceReference(Control.ForegroundProperty, "DimTextBrush");
+            AutomationProperties.SetName(b, tip);
+            ToolTipService.SetShowOnDisabled(b, true);
+            return b;
+        }
+
+        // A text link at caption size: the accent color, dim while there is nothing to do, underlined under the pointer
+        // (the card drives that, since it holds the mouse). No face, no border.
+        private static Button LinkButton(string text, string tip)
+        {
+            var bd = new FrameworkElementFactory(typeof(Border));
+            bd.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+            var content = new FrameworkElementFactory(typeof(ContentPresenter));
+            content.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            bd.AppendChild(content);
+            var label = new TextBlock { Text = text, FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
+            var b = new Button { Content = label, ToolTip = tip, Cursor = Cursors.Hand, Focusable = false, VerticalAlignment = VerticalAlignment.Center, Template = new ControlTemplate(typeof(Button)) { VisualTree = bd } };
+            void Paint() => label.SetResourceReference(TextBlock.ForegroundProperty, b.IsEnabled ? "PrimaryBrush" : "DimTextBrush");
+            Paint();
+            b.IsEnabledChanged += (_, _) => { Paint(); if (!b.IsEnabled) label.TextDecorations = null; };
+            AutomationProperties.SetName(b, tip);
+            ToolTipService.SetShowOnDisabled(b, true);
+            return b;
+        }
+
+        // The windows' close X at a small button's size: red on hover (CaptionCloseHoverBrush), the pixel-art X on the
+        // flat 98SE theme. The card drives the hover itself while it holds the mouse.
+        private static Button CloseButton(string tip)
+        {
+            var bd = new FrameworkElementFactory(typeof(Border), "Bd");
+            bd.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Control.BackgroundProperty));
+            bd.SetResourceReference(Border.CornerRadiusProperty, "SmallCornerRadius");
+            var glyph = new FrameworkElementFactory(typeof(ContentPresenter));
+            glyph.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            glyph.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            glyph.SetResourceReference(UIElement.VisibilityProperty, "CaptionFontGlyphVisibility");
+            bd.AppendChild(glyph);
+            var pixels = new FrameworkElementFactory(typeof(System.Windows.Shapes.Path));
+            pixels.SetValue(FrameworkElement.WidthProperty, 10.0);
+            pixels.SetValue(FrameworkElement.HeightProperty, 9.0);
+            pixels.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            pixels.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+            pixels.SetValue(UIElement.IsHitTestVisibleProperty, false);
+            pixels.SetValue(UIElement.SnapsToDevicePixelsProperty, true);
+            pixels.SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+            pixels.SetValue(System.Windows.Shapes.Shape.FillProperty, new TemplateBindingExtension(Control.ForegroundProperty));
+            pixels.SetValue(System.Windows.Shapes.Path.DataProperty, Geometry.Parse("M0,0h2v1h-2z M8,0h2v1h-2z M1,1h2v1h-2z M7,1h2v1h-2z M2,2h2v1h-2z M6,2h2v1h-2z M3,3h4v1h-4z M4,4h2v1h-2z M3,5h4v1h-4z M2,6h2v1h-2z M6,6h2v1h-2z M1,7h2v1h-2z M7,7h2v1h-2z M0,8h2v1h-2z M8,8h2v1h-2z"));
+            pixels.SetResourceReference(UIElement.VisibilityProperty, "CaptionDrawnGlyphVisibility");
+            var grid = new FrameworkElementFactory(typeof(Grid));
+            grid.AppendChild(bd);
+            grid.AppendChild(pixels);
+            var b = new Button
+            {
+                Content = "\uE8BB", ToolTip = tip, Width = 22, Height = 22, Padding = new Thickness(0), FontSize = 10,
+                FontFamily = new FontFamily("Segoe MDL2 Assets"), Cursor = Cursors.Hand, Background = Brushes.Transparent,
+                Focusable = true, Template = new ControlTemplate(typeof(Button)) { VisualTree = grid },
+            };
+            b.SetResourceReference(Control.ForegroundProperty, "DimTextBrush");
+            b.MouseEnter += (_, _) => { b.SetResourceReference(Control.BackgroundProperty, "CaptionCloseHoverBrush"); b.SetResourceReference(Control.ForegroundProperty, "CaptionCloseHoverFgBrush"); };
+            b.MouseLeave += (_, _) => { b.Background = Brushes.Transparent; b.SetResourceReference(Control.ForegroundProperty, "DimTextBrush"); };
+            AutomationProperties.SetName(b, tip);
+            return b;
+        }
+
+        private static readonly DependencyProperty TileProperty = DependencyProperty.RegisterAttached("Tile", typeof(CardTile), typeof(CardBuilder));
+        private static CardTile? TileOf(UIElement el) => el.GetValue(TileProperty) as CardTile;
+
+        private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+        {
+            yield return root;
+            int n = root is Visual ? VisualTreeHelper.GetChildrenCount(root) : 0;
+            if (n == 0) foreach (var c in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>()) foreach (var d in Descendants(c)) yield return d;
+            else for (int i = 0; i < n; i++) foreach (var d in Descendants(VisualTreeHelper.GetChild(root, i))) yield return d;
+        }
+
+        private static Border Strip(ContextMenu card, string name, Panel grid, List<CardTile?> list)
+        {
+            foreach (var tile in list)
+            {
+                if (tile is null)
+                {
+                    // The blank end of a group's row: holds the column, takes no hover.
+                    grid.Children.Add(new Border { Focusable = false });
+                    continue;
+                }
+                // A trailing "..." on a tile reads as a cut-off caption, so tiles drop it.
+                string caption = tile.Caption.TrimEnd('.', '\u2026').TrimEnd();
+                string shown = (tile.Shown ?? caption).TrimEnd('.', '\u2026').TrimEnd();
+                var button = new Button { Content = tile.Glyph, Tag = shown, ToolTip = tile.Hint ?? Tip(caption, tile.Keys), IsEnabled = tile.Enabled };
+                AutomationProperties.SetName(button, caption);
+                // The tile's second line shows these keys in brackets while shortcuts show in menus.
+                if (!string.IsNullOrEmpty(tile.Keys)) AutomationProperties.SetAcceleratorKey(button, tile.Keys);
+                ToolTipService.SetShowOnDisabled(button, true);
+                button.SetResourceReference(FrameworkElement.StyleProperty, "CardQuickButton");
+                bool on = tile.Checked == true;
+                if (tile.Checked is not null) ShowTileState(button, on);
+                if (tile.Flyout is { } rows)
+                {
+                    ContextMenu? flyout = null;
+                    button.Click += (_, _) =>
+                    {
+                        flyout ??= TileFlyout(card, button, rows);
+                        flyout.IsOpen = true;
+                    };
+                    var cell = WithFlyoutChevron(button);
+                    cell.SetValue(TileProperty, tile);
+                    grid.Children.Add(cell);
+                    continue;
+                }
+                if (tile.Mirror)
+                    button.Loaded += (_, _) =>
+                    {
+                        if (button.Template?.FindName("Glyph", button) is TextBlock g)
+                        {
+                            g.RenderTransformOrigin = new Point(0.5, 0.5);
+                            g.RenderTransform = new ScaleTransform(-1, 1);
+                        }
+                    };
+                var run = tile.Run;
+                if (tile.KeepsOpen)
+                    button.Click += (_, _) => { run?.Invoke(); on = !on; ShowTileState(button, on); };
+                else
+                    button.Click += (_, _) => { card.IsOpen = false; run?.Invoke(); };
+                button.SetValue(TileProperty, tile);
+                grid.Children.Add(button);
+            }
+            var strip = new Border { Padding = new Thickness(0), Child = grid };
+            strip.SetResourceReference(Border.BorderBrushProperty, "MenuBorderBrush");
+            AutomationProperties.SetName(strip, name);
+            return strip;
+        }
+
+        // An on/off tile is filled with the selected-row color while it is on (the template paints its Background).
+        // Most themes make that color a faint wash, so the glyph and caption keep their colors. A theme that makes
+        // it a solid fill states TileCheckedTextBrush (98SE: white on its navy), and the glyph, caption and
+        // shortcut take it while the tile is on, or they would sit dark on dark. Public so an app that repaints an
+        // open card's tiles in place shows them the same way.
+        public static void ShowTileState(Button button, bool on)
+        {
+            if (on) button.SetResourceReference(Control.BackgroundProperty, "RowSelectedBrush");
+            else button.ClearValue(Control.BackgroundProperty);
+            bool stated = on && button.TryFindResource("TileCheckedTextBrush") is Brush;
+            // A theme that derives the selected-row color from its accent (Light) also makes it a solid fill without
+            // stating a text color, so any part that no longer reads on an opaque fill (4.5:1 for text, 3:1 for the
+            // glyph) takes black or white, whichever reads better. Parts that already read keep their colors.
+            var fill = on && !stated && button.TryFindResource("RowSelectedBrush") is SolidColorBrush { Color.A: 255 } solid
+                ? solid.Color : (Color?)null;
+            static double Luminance(Color c)
+            {
+                static double Channel(byte v) { double x = v / 255.0; return x <= 0.04045 ? x / 12.92 : Math.Pow((x + 0.055) / 1.055, 2.4); }
+                return 0.2126 * Channel(c.R) + 0.7152 * Channel(c.G) + 0.0722 * Channel(c.B);
+            }
+            static double Contrast(Color a, Color b)
+            {
+                double la = Luminance(a), lb = Luminance(b);
+                return (Math.Max(la, lb) + 0.05) / (Math.Min(la, lb) + 0.05);
+            }
+            void Paint()
+            {
+                foreach (string part in new[] { "Glyph", "Caption", "Shortcut" })
+                {
+                    if (button.Template?.FindName(part, button) is not TextBlock text) continue;
+                    if (stated) { text.SetResourceReference(TextBlock.ForegroundProperty, "TileCheckedTextBrush"); continue; }
+                    text.ClearValue(TextBlock.ForegroundProperty);
+                    if (fill is not { } back || text.Foreground is not SolidColorBrush { } current) continue;
+                    if (Contrast(current.Color, back) >= (part == "Glyph" ? 3.0 : 4.5)) continue;
+                    text.Foreground = Contrast(Colors.White, back) >= Contrast(Colors.Black, back) ? Brushes.White : Brushes.Black;
+                }
+            }
+            button.ApplyTemplate();
+            if (button.Template?.FindName("Glyph", button) is TextBlock) { Paint(); return; }
+            // Not templated yet (a tile built before its card is in the tree): paint once it loads.
+            void Once(object sender, RoutedEventArgs e) { button.Loaded -= Once; Paint(); }
+            button.Loaded += Once;
+        }
+
+        // The quick-button template draws its content as one glyph, so the chevron is laid over the tile beside the
+        // icon and lets clicks through to it.
+        private static Grid WithFlyoutChevron(Button button)
+        {
+            var chevron = new TextBlock
+            {
+                Text = char.ConvertFromUtf32(0xE76C), FontFamily = new FontFamily("Segoe MDL2 Assets"), FontSize = 8, IsHitTestVisible = false,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(30, 12, 0, 0)
+            };
+            chevron.SetResourceReference(TextBlock.ForegroundProperty, "DimTextBrush");
+            var cell = new Grid();
+            cell.Children.Add(button);
+            cell.Children.Add(chevron);
+            return cell;
+        }
+
+        // The rows a flyout tile opens, beside the tile, on the plain menu style. Picking a row closes the card as
+        // well; Escape, Left or a click back on the card returns to the card, and a click anywhere else closes both.
+        private static ContextMenu TileFlyout(ContextMenu card, Button tile, IList<object> rows)
+        {
+            var flyout = new ContextMenu();
+            if (card.TryFindResource(typeof(ContextMenu)) is Style style) flyout.Style = style;
+            TextOptions.SetTextFormattingMode(flyout, TextFormattingMode.Display);
+            TextOptions.SetTextRenderingMode(flyout, TextRenderingMode.Grayscale);
+            foreach (object row in rows.ToList())
+            {
+                if (row is FrameworkElement { Parent: ItemsControl owner } fe) owner.Items.Remove(fe);
+                flyout.Items.Add(row);
+            }
+            flyout.PlacementTarget = tile;
+            flyout.Placement = PlacementMode.Right;
+            bool picked = false, byKeyboard = false;
+            flyout.AddHandler(MenuItem.ClickEvent, new RoutedEventHandler((_, e) =>
+            {
+                if (e.OriginalSource is not MenuItem { HasItems: false, StaysOpenOnClick: false }) return;
+                picked = true;
+                card.IsOpen = false;
+            }));
+            flyout.PreviewKeyDown += (_, e) => byKeyboard = e.Key is Key.Escape or Key.Left;
+            flyout.Opened += (_, _) =>
+            {
+                picked = byKeyboard = false;
+                if (InputManager.Current.MostRecentInputDevice is KeyboardDevice
+                    && flyout.Items.OfType<MenuItem>().FirstOrDefault(item => item.IsEnabled) is { } first)
+                    first.Dispatcher.BeginInvoke(DispatcherPriority.Input, () => first.Focus());
+            };
+            flyout.Closed += (_, _) =>
+            {
+                if (picked || !card.IsOpen) return;
+                if (!byKeyboard && card.InputHitTest(Mouse.GetPosition(card)) is null) { card.IsOpen = false; return; }
+                Mouse.Capture(card, CaptureMode.SubTree);
+                if (byKeyboard) tile.Focus();
+            };
+            return flyout;
         }
 
         /// <summary>Whether this item is the last thing on its card.</summary>

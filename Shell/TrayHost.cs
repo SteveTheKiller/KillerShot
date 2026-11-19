@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
+using KillerFamily.Controls;
 using KillerShot.Capture;
 using KillerShot.Native;
 using KillerShot.Services;
@@ -59,7 +60,7 @@ internal sealed class TrayHost : IDisposable
     public event Action? BalloonClicked;
     public Func<bool>? HasLastCapture { get; set; }
     /// <summary>Repeat, saved region and interval commands, supplied by the capture controller.</summary>
-    public Func<Func<ShortcutAction, string>, IEnumerable<object>>? RegionItems { get; set; }
+    public Func<Func<ShortcutAction, string>, IReadOnlyList<IReadOnlyList<CardTile>>>? RegionItems { get; set; }
 
     public IReadOnlyList<string> FailedShortcuts => _failed;
     public bool IsFailed(ShortcutAction action) => _failedActions.Contains(action);
@@ -294,84 +295,87 @@ internal sealed class TrayHost : IDisposable
 
     private void ShowMenu()
     {
-        // Bottom-left corner at the pointer, rising out of the tray, as every family app's tray menu opens.
-        var menu = new ContextMenu();
+        // The tray card. Bottom-left corner at the pointer, rising out of the tray, as every family
+        // app's tray menu opens. Three tiles across, one group per row: Open first, then captures, the
+        // regions, recording, the last capture, shortcut repair, and Exit last.
+        var menu = ShotCards.Menu();
         KillerFamily.Shell.CloseToTray.AnchorToPointer(menu);
+        menu.Items.Add(ShotCards.Header(menu, "KillerShot"));
+        static string? Keys(string text) => text.Length == 0 ? null : text;
+        CardTile Tile(string glyph, string caption, string gesture, Action click, bool enabled = true)
+            => new(glyph, caption, Keys(gesture), click, false, enabled);
 
-        MenuItem Item(string header, string gesture, Action click, bool enabled = true)
+        var captures = new List<CardTile>
         {
-            var mi = new MenuItem { Header = header, InputGestureText = gesture, IsEnabled = enabled };
-            mi.Click += (_, _) => click();
-            menu.Items.Add(mi);
-            return mi;
-        }
-
-        var open = Item(Loc("Str_Tray_Open"), "", () => OpenEditorRequested?.Invoke());
-        open.FontWeight = FontWeights.SemiBold;
-        // The Print Screen switch, where a tray app's user looks for it: ticked while the switch is
-        // on, the saved setting, whether or not a hook is live right now. The same switch as About's.
-        // Short in the tray: the menu is KillerShot's own, and the full wording made it twice as wide.
-        var printScreen = Item(Loc("Str_Tray_PrintScreenKey"), "", TogglePrintScreenKey);
-        printScreen.ToolTip = Loc("Str_CS_PrintScreenKey");
-        printScreen.IsCheckable = true;
-        printScreen.IsChecked = PrintScreenKey.Enabled;
-        menu.Items.Add(new Separator());
-        Item(Loc("Str_Btn_Capture"), "", () => DeferCapture(null, null));
-        Item(Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window));
-        Item(Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor));
-        Item(Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors));
-        Item(Loc("Str_Mode_Qr"), "", () => DeferCapture(null, CaptureMode.Qr));
-        if (RegionItems != null)
+            Tile("\uE722", Loc("Str_Btn_Capture"), "", () => DeferCapture(null, null)),
+            Tile("\uE73F", Loc("Str_Mode_Window"), Gesture(ShortcutAction.Window), () => DeferCapture(null, CaptureMode.Window)),
+            Tile("\uE7F4", Loc("Str_Mode_Monitor"), Gesture(ShortcutAction.Monitor), () => DeferCapture(null, CaptureMode.Monitor)),
+            Tile("\uE7C4", Loc("Str_Mode_AllMonitors"), Gesture(ShortcutAction.AllMonitors), () => DeferCapture(null, CaptureMode.AllMonitors)),
+            Tile("\uED14", Loc("Str_Mode_Qr"), "", () => DeferCapture(null, CaptureMode.Qr)),
+        };
+        // Open KillerShot leads, as the bold first row did. The Print Screen switch sits beside it, where a tray
+        // app's user looks for it: filled while the switch is on, the saved setting, whether or not a hook is
+        // live right now. The same switch as About's.
+        var groups = new List<IEnumerable<CardTile>>
         {
-            menu.Items.Add(new Separator());
-            foreach (var item in RegionItems(Gesture)) menu.Items.Add(item);
-        }
-        menu.Items.Add(new Separator());
-        Item(Loc(_recording ? "Str_Tray_StopRecording" : "Str_Tray_Record"), Gesture(ShortcutAction.Video), () =>
-        {
-            if (_recording) RecordRequested?.Invoke();
-            else
+            new[]
             {
-                // Wait for the menu to fade so it is not frozen into the region picker.
-                var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-                t.Tick += (_, _) => { t.Stop(); RecordRequested?.Invoke(); };
-                t.Start();
-            }
-        });
-        if (_recording)
-        {
-            Item(Loc(RecordingPaused?.Invoke() == true ? "Str_Rec_Resume" : "Str_Rec_Pause"), "Ctrl+Shift+R", () => PauseRecordingRequested?.Invoke());
-            Item(Loc("Str_Rec_Cancel"), "Ctrl+Shift+D", () => DiscardRecordingRequested?.Invoke());
-        }
-        menu.Items.Add(new Separator());
-        Item(Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
-        Item(Loc("Str_Tray_PrintLast"), "", () => PrintLastRequested?.Invoke(), HasLastCapture?.Invoke() == true);
-        Item(Loc("Str_Tray_OpenFolder"), "", () =>
-        {
-            try
+                Tile("\uE8A7", Loc("Str_Tray_Open"), "", () => OpenEditorRequested?.Invoke()),
+                new CardTile("\uE765", Loc("Str_Tray_PrintScreenKey"), null, TogglePrintScreenKey)
+                    { Checked = PrintScreenKey.Enabled, KeepsOpen = true, Hint = Loc("Str_CS_PrintScreenKey") },
+            },
+            captures,
+        };
+        if (RegionItems != null) groups.AddRange(RegionItems(Gesture));
+        // Pause and Discard keep their places, dimmed, while nothing is recording.
+        bool paused = _recording && RecordingPaused?.Invoke() == true;
+        groups.Add(
+        [
+            Tile(_recording ? "\uE71A" : "\uE7C8", Loc(_recording ? "Str_Tray_StopRecording" : "Str_Tray_Record"), Gesture(ShortcutAction.Video), () =>
             {
-                var folder = CaptureSettings.OutputFolder;
-                System.IO.Directory.CreateDirectory(folder);
-                Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
-            }
-            catch (Exception ex) { ShowWarning(Loc("Str_Tray_FailedTitle"), ex.Message); }
-        });
-        menu.Items.Add(new Separator());
-        if (_failed.Count > 0)
-        {
-            Item(Loc("Str_CS_OpenWindowsSetting"), "", OpenPrintScreenSetting);
-            Item(Loc("Str_Tray_Retry"), "", () =>
+                if (_recording) RecordRequested?.Invoke();
+                else
+                {
+                    // Wait for the menu to fade so it is not frozen into the region picker.
+                    var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+                    t.Tick += (_, _) => { t.Stop(); RecordRequested?.Invoke(); };
+                    t.Start();
+                }
+            }),
+            Tile(paused ? "\uE768" : "\uE769", Loc(paused ? "Str_Rec_Resume" : "Str_Rec_Pause"), "Ctrl+Shift+R", () => PauseRecordingRequested?.Invoke(), _recording),
+            Tile("\uE711", Loc("Str_Rec_Cancel"), "Ctrl+Shift+D", () => DiscardRecordingRequested?.Invoke(), _recording),
+        ]);
+        bool last = HasLastCapture?.Invoke() == true;
+        groups.Add(
+        [
+            Tile("\uE74E", Loc("Str_Tray_SaveLast"), "", () => SaveLastRequested?.Invoke(), last),
+            Tile("\uE749", Loc("Str_Tray_PrintLast"), "", () => PrintLastRequested?.Invoke(), last),
+            Tile("\uE838", Loc("Str_Tray_OpenFolder"), "", () =>
+            {
+                try
+                {
+                    var folder = CaptureSettings.OutputFolder;
+                    System.IO.Directory.CreateDirectory(folder);
+                    Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+                }
+                catch (Exception ex) { ShowWarning(Loc("Str_Tray_FailedTitle"), ex.Message); }
+            }),
+        ]);
+        // The shortcut repair tiles keep their row, dimmed while every shortcut is claimed.
+        bool failed = _failed.Count > 0;
+        groups.Add(
+        [
+            Tile("\uE713", Loc("Str_CS_OpenWindowsSetting"), "", OpenPrintScreenSetting, failed) with { Shown = Loc("Str_Card_WindowsSettingShort") },
+            Tile("\uE72C", Loc("Str_Tray_Retry"), "", () =>
             {
                 RegisterShortcuts();
                 if (_failed.Count == 0) ShowInfo(Loc("Str_Tray_ShortcutsReadyTitle"), Loc("Str_Tray_ShortcutsReady"));
                 else WarnIfFailed();
-            });
-            menu.Items.Add(new Separator());
-        }
-        Item(Loc("Str_Tray_Exit"), "", () => App.Instance.RequestExit());
+            }, failed),
+        ]);
+        groups.Add([Tile("\uE7E8", Loc("Str_Tray_Exit"), "", () => App.Instance.RequestExit())]);
+        menu.Items.Add(ShotCards.Grid(menu, [.. groups]));
 
-        // Only what can be done right now: nothing greyed out.
-        Controls.MenuTidy.HideInactive(menu);
         // The menu closes on an outside click only when this process owns the foreground.
         Win32.SetForegroundWindow(Handle);
         menu.IsOpen = true;

@@ -80,8 +80,15 @@ internal static class SelfTestViewCards
             window.UpdateLayout();
             await Task.Delay(80);
             var stripFlow = Visuals(strip).OfType<CoverFlow>().Single();
-            Check(RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-cards.png")) > 100,
-                "The collection carousel did not retain the album carousel's card preference.");
+            // The strip can have its size before its pictures, and so its cards, have loaded; a busy machine renders
+            // it empty first. It gets five seconds to draw them.
+            int stripStock = RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-cards.png"));
+            for (var wait = System.Diagnostics.Stopwatch.StartNew(); stripStock <= 100 && wait.ElapsedMilliseconds < 5000;)
+            {
+                await Task.Delay(100);
+                stripStock = RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-cards.png"));
+            }
+            Check(stripStock > 100, "The collection carousel did not retain the album carousel's card preference.");
             await ToggleMenu(strip, expected: true);
             Check(RenderStock(stripFlow, Path.Combine(folder, "strip-carousel-plain.png")) == 0,
                 "Turning the strip carousel's info cards off did not remove card stock.");
@@ -133,10 +140,11 @@ internal static class SelfTestViewCards
         menu.Closed += onClosed;
         menu.IsOpen = true;
         await opened.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        var item = menu.Items.OfType<MenuItem>().SingleOrDefault(item => item.Header?.ToString() == "Show info cards");
-        Check(item != null, "The view context menu needs a Show info cards toggle.");
-        Check(item!.IsCheckable && item.IsChecked == expected, "The info-card menu state does not match its view.");
-        item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Check(SelfTestCards.TextRows(menu) == null, "The view's card must hold tiles only.");
+        var tile = SelfTestCards.Find(menu, "Show info cards");
+        Check(tile != null, "The view card needs a Show info cards tile.");
+        Check(tile!.IsEnabled && SelfTestCards.IsOn(tile) == expected, "The info-card tile's state does not match its view.");
+        SelfTestCards.Click(tile);
         menu.IsOpen = false;
         await closed.Task.WaitAsync(TimeSpan.FromSeconds(2));
         menu.Opened -= onOpened;

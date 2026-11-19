@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">左</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">右</sys:String>
     <sys:String x:Key="Str_Card_Quick">クイックアクション</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">ライブラリへ</sys:String>
+    <sys:String x:Key="Str_Card_Tools">ツール</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows の設定</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">複製</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">テキストを編集</sys:String>
     <sys:String x:Key="Str_Tab_Open">新しいタブ</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">新しいタブで開く</sys:String>
     <sys:String x:Key="Str_Tab_Browse">参照</sys:String>

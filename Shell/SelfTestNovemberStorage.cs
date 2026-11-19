@@ -894,8 +894,8 @@ internal static class SelfTestNovemberStorage
             var menu = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(source => source.RootVisual != null)
                 .SelectMany(source => Visuals(source.RootVisual)).OfType<System.Windows.Controls.ContextMenu>().Single(candidate => candidate.IsOpen);
             menu.IsOpen = false;
-            menu.Items.OfType<System.Windows.Controls.MenuItem>().Single(entry => Equals(entry.Header,
-                LocaleManager.Loc("Str_Rec_MoveToLibrary"))).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+            SelfTestCards.CheckCard(menu, "recording");
+            SelfTestCards.Click(SelfTestCards.Tile(menu, LocaleManager.Loc("Str_Rec_MoveToLibrary")));
             string status = await message.Task.WaitAsync(TimeSpan.FromSeconds(5));
             if (!File.Exists(clip) || CaptureLibrary.Items().Count != 1)
                 throw new InvalidOperationException("The cleanup failure did not preserve the committed copy and original file.");

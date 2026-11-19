@@ -230,10 +230,11 @@ internal static class SelfTestFilesInteraction
             view.ResultsList.SelectedItem = view.Navigation.Results.Single(entry => entry.FileName == "alpha.txt");
             view.CanOpenInHost = path => Path.GetExtension(path) == ".txt";
             var menu = view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry);
-            // The card's strip buttons carry their command on Uid; its rows carry it on Tag.
-            string[] menuTags = menu.Items.OfType<System.Windows.Controls.MenuItem>().Select(item => Convert.ToString(item.Tag) ?? "")
-                .Concat(menu.Items.OfType<System.Windows.Controls.MenuItem>().SelectMany(FilesView.StripButtons).Select(button => button.Uid)).ToArray();
-            Check(new[] { "open", "host", "explorer", "cut", "copy", "paste", "rename", "newfolder", "delete", "shell", "properties", "refresh" }
+            // The card's tiles carry their command on Uid; Delete (to the Recycle Bin) sits in the header.
+            SelfTestCards.CheckCard(menu, "file");
+            SelfTestCards.CheckHeaderDelete(menu, KillerShot.Services.LocaleManager.Loc("Str_Btn_Delete"), "file");
+            string[] menuTags = SelfTestCards.Tiles(menu).Select(button => button.Uid).ToArray();
+            Check(new[] { "open", "host", "explorer", "cut", "copy", "paste", "rename", "newfolder", "shell", "properties", "refresh" }
                 .All(menuTags.Contains), "context menu exposes only the approved file command surface");
             if (!commandsOnly)
                 using (var shell = ShellContextMenu.Acquire(window, [Path.Combine(dropMove, "alpha.txt")]))
@@ -259,9 +260,9 @@ internal static class SelfTestFilesInteraction
             Task copyCommand = view.CurrentCommand;
             RenameKey(Key.Enter);
             var busyMenu = view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry);
-            var newFolderItem = busyMenu.Items.OfType<System.Windows.Controls.MenuItem>().Single(item => Equals(item.Tag, "newfolder"));
+            var newFolderTile = SelfTestCards.Tiles(busyMenu).Single(tile => tile.Uid == "newfolder");
             int busyFolderCount = Directory.GetDirectories(dropMove).Length;
-            newFolderItem.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+            SelfTestCards.Click(newFolderTile);
             bool busyTaskRetained = ReferenceEquals(copyCommand, view.CurrentCommand);
             bool renameDenied = !view.BeginRename();
             await view.NavigateTo(sibling);
@@ -368,15 +369,15 @@ internal static class SelfTestFilesInteraction
             int hostCalls = 0;
             view.Browser.OpenInEditor = _ => { hostCalls++; return Task.FromResult(false); };
             var hostMenu = view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry);
-            var hostItem = hostMenu.Items.OfType<System.Windows.Controls.MenuItem>().Single(item => Equals(item.Tag, "host"));
-            Check(Convert.ToString(hostItem.Header) == "Open in KillerShot", "explicit host menu uses approved localized app wording");
-            hostItem.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+            var hostTile = SelfTestCards.Tiles(hostMenu).Single(tile => tile.Uid == "host");
+            Check(SelfTestCards.Name(hostTile) == "Open in KillerShot" && hostTile.IsEnabled, "explicit host menu uses approved localized app wording");
+            SelfTestCards.Click(hostTile);
             await view.CurrentCommand;
             Check(hostCalls == 1 && File.Exists(Path.Combine(independent, "independent.txt")),
                 "canceled explicit host action reaches the host once and preserves its file");
             view.CanOpenInHost = _ => false;
-            Check(!view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry).Items.OfType<System.Windows.Controls.MenuItem>()
-                .Any(item => Equals(item.Tag, "host")), "unsupported file hides explicit editor action");
+            Check(SelfTestCards.Tiles(view.BuildFilesMenu(view.ResultsList.SelectedItem as FileEntry))
+                .Single(tile => tile.Uid == "host") is { IsEnabled: false }, "unsupported file dims the explicit editor action in its place");
             string[] beforeErrors = view.SelectedPaths.ToArray();
             view.WriteClipboard = _ => throw new System.Runtime.InteropServices.ExternalException("fixture clipboard busy");
             Check(!view.CopySelection() && view.CommandError != null && view.SelectedPaths.SequenceEqual(beforeErrors),

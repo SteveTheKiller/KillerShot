@@ -568,6 +568,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Left</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Right</sys:String>
     <sys:String x:Key="Str_Card_Quick">Quick actions</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">To library</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Tools</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows setting</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Duplicate</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Edit text</sys:String>
     <sys:String x:Key="Str_Tab_Open">New tab</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Open in a new tab</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Browse</sys:String>

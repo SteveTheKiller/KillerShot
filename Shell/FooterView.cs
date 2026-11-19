@@ -217,36 +217,25 @@ namespace KillerShot.Shell
 
 
 
-        /// <summary>The strip's flyout: the four sides with their shortcuts, and Minimize.</summary>
+        /// <summary>The strip's card: the sidebar's two sides, the carousel's two sides, each filled
+        /// where its dock sits, and Minimize.</summary>
         private void ShowStripMenu()
         {
             if (_stripButton == null) return;
-            var menu = new ContextMenu { PlacementTarget = _stripButton,
-                Placement = NavigationDock.Side switch { DockSide.Left => PlacementMode.Right, DockSide.Right => PlacementMode.Left,
-                    DockSide.Top => PlacementMode.Bottom, _ => PlacementMode.Top } };
+            var menu = ShotCards.Menu();
+            menu.PlacementTarget = _stripButton;
+            menu.Placement = NavigationDock.Side switch { DockSide.Left => PlacementMode.Right, DockSide.Right => PlacementMode.Left,
+                DockSide.Top => PlacementMode.Bottom, _ => PlacementMode.Top };
             menu.HorizontalOffset = 4;
-            foreach (var (side, key, arrow) in StripSides)
-            {
-                var item = new MenuItem
-                {
-                    Header = Loc(key), InputGestureText = "Alt+Shift+" + arrow,
-                    Icon = DockIcon(side, typeof(MenuItem)),
-                    IsCheckable = true, IsChecked = (side is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).Side == side,
-                };
-                DockSide target = side;
-                item.Click += (_, _) => (target is DockSide.Left or DockSide.Right ? NavigationDock : StripDock).DockTo(target);
-                menu.Items.Add(item);
-            }
-            menu.Items.Add(new Separator());
+            menu.Items.Add(ShotCards.Header(menu, Loc("Str_Dock_Menu")));
+            IEnumerable<KillerFamily.Controls.CardTile> Sides(bool sidebar) => StripSides
+                .Where(s => (s.Side is DockSide.Left or DockSide.Right) == sidebar)
+                .Select(s => SideTile(s.Side, s.Key, s.Arrow, sidebar ? NavigationDock : StripDock));
             var minimizeHost = StripDock;
             var arrowOfSide = StripSides.First(s => s.Side == minimizeHost.Side).Arrow;
-            var minimize = new MenuItem
-            {
-                Header = Loc(minimizeHost.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"),
-                InputGestureText = "Alt+Shift+" + arrowOfSide,
-            };
-            minimize.Click += (_, _) => minimizeHost.Toggle();
-            menu.Items.Add(minimize);
+            var minimize = new KillerFamily.Controls.CardTile(minimizeHost.IsMinimized ? "\uE923" : "\uE921",
+                Loc(minimizeHost.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"), "Alt+Shift+" + arrowOfSide, () => minimizeHost.Toggle());
+            menu.Items.Add(ShotCards.Grid(menu, Sides(true), Sides(false), [minimize]));
             menu.IsOpen = true;
         }
 

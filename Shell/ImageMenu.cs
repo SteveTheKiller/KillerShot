@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using KillerFamily.Controls;
 using KillerShot.Controls;
 using KillerShot.Editor;
 using KillerShot.Services;
@@ -12,12 +13,24 @@ namespace KillerShot.Shell;
 /// toolbar's Image button and in the editor's right-click menu.</summary>
 public partial class MainWindow
 {
-    private readonly ContextMenu _imageMenu = new();
+    private readonly ContextMenu _imageMenu = ShotCards.Menu();
 
     private void ImageBtn_Click(object sender, RoutedEventArgs e)
     {
-        _imageMenu.Items.Clear();
-        foreach (var item in ImageMenuItems()) _imageMenu.Items.Add(item);
+        // The Image card: bring a picture in, then the turns, then the size changes. Resize lists its
+        // sizes in a flyout. Every tile dims without a picture open.
+        ShotCards.Prepare(_imageMenu);
+        _imageMenu.Items.Add(ShotCards.Header(_imageMenu, Loc("Str_Btn_Image")));
+        bool has = _doc != null && !Library.IsVisible;
+        CardTile Tile(string glyph, string key, string keys, Action action, bool mirror = false) =>
+            new(glyph, Loc(key), keys, () => RunImageCommand(action), mirror, has);
+        var resize = ImageMenuItems().OfType<MenuItem>().Single(item => Equals(item.Header, Loc("Str_Img_Resize")));
+        _imageMenu.Items.Add(ShotCards.Grid(_imageMenu,
+            [Tile("\uE77F", "Str_Img_Paste", "Ctrl+V", PasteIntoPicture), Tile("\uE8B9", "Str_Img_InsertFile", "Ctrl+Shift+O", InsertImageFile)],
+            [Tile("\uE7AD", "Str_Img_RotateRight", "Ctrl+H", RotateRight), Tile("\uE7AD", "Str_Img_RotateLeft", "Ctrl+G", RotateLeft, mirror: true),
+             Tile("\uE8AB", "Str_Img_FlipH", "Ctrl+Shift+H", FlipHorizontal), Tile("\uE8CB", "Str_Img_FlipV", "Ctrl+Shift+G", FlipVertical)],
+            [ShotCards.Flyout("\uE740", Loc("Str_Img_Resize"), "Ctrl+I", ShotCards.RowsOf(resize), has),
+             Tile("\uE8B3", "Str_Img_Margin", "Ctrl+M", PromptMargin), Tile("\uE7A8", "Str_Img_AutoCrop", "Ctrl+T", TrimBorder)]));
         OpenFlyout(_imageMenu, ImageBtn);
     }
 

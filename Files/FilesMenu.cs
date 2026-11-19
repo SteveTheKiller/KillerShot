@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using KillerFamily.Controls;
 using KillerShot.Services;
 
 namespace KillerShot.Files;
@@ -29,74 +30,100 @@ public partial class FilesView
             ResultsList.SelectedItems.Clear();
             ResultsList.SelectedItems.Add(seed);
         }
-        // The file card, KillerShell 1.6.0's pattern: what was clicked, the clipboard and edit
-        // actions as a strip, then the rest as rows. ShellContextMenu stays the native menu.
-        var menu = KillerFamily.Controls.CardBuilder.Menu(320);
+        // The file card, the family tile card: what was clicked, with Delete (to the Recycle Bin) at
+        // the right end of the header, then three-across tile groups, most used first. A tile that
+        // does not apply to this selection stays in its place, dimmed. ShellContextMenu stays the
+        // native menu, opened from its own tile.
+        var menu = KillerShot.Shell.ShotCards.Menu();
         bool onItem = !background && (seed != null || ResultsList.SelectedItems.Count > 0);
+        var tags = new List<string>();
+        CardTile Tile(string tag, string glyph, string key, Action action, string? keys = null, bool enabled = true)
+        {
+            tags.Add(tag);
+            return new CardTile(glyph, Loc(key), keys, Guarded(action), false, enabled);
+        }
+        var groups = new List<IEnumerable<CardTile>>();
         if (onItem)
         {
             int count = ResultsList.SelectedItems.Count;
             var first = ResultsList.SelectedItem as FileEntry;
-            menu.Items.Add(count > 1
-                ? KillerFamily.Controls.CardBuilder.Header(string.Format(System.Globalization.CultureInfo.CurrentCulture, Loc("Str_Files_SelectedCount"), count), Navigation.CurrentFolder)
-                : KillerFamily.Controls.CardBuilder.Header(first?.FileName ?? "", first == null ? null : first.IsDirectory || first.SizeLabel.Length == 0 ? first.TypeName : first.TypeName + "  ·  " + first.SizeLabel));
-            var strip = KillerFamily.Controls.CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
+            string title = count > 1 ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Loc("Str_Files_SelectedCount"), count) : first?.FileName ?? "";
+            string? meta = count > 1 ? Navigation.CurrentFolder
+                : first == null ? null : first.IsDirectory || first.SizeLabel.Length == 0 ? first.TypeName : first.TypeName + "  ·  " + first.SizeLabel;
+            menu.Items.Add(KillerShot.Shell.ShotCards.Header(menu, title, meta, Loc("Str_Btn_Delete"), "Delete",
+                Guarded(() => StartCommand(RecycleSelection())), CanRecycle));
+            bool host = ResultsList.SelectedItem is FileEntry { IsDirectory: false } file && CanOpenInHost?.Invoke(file.FilePath) == true;
+            groups.Add(
             [
-                Quick("", "Str_Menu_Cut", () => CopySelection(true), "Ctrl+X", CanCut),
-                Quick("", "Str_Menu_Copy", () => CopySelection(), "Ctrl+C"),
-                Quick("", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste),
-                Quick("", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename),
-                Quick("", "Str_Btn_Delete", () => StartCommand(RecycleSelection()), "Delete", CanRecycle),
+                Tile("open", "\uE8E5", "Str_Btn_Open", () =>
+                {
+                    if (ResultsList.SelectedItem is FileEntry entry) StartCommand(Browser.ActivateEntry(entry));
+                }, "Enter"),
+                Tile("host", "\uE70F", "Str_Files_OpenInShot", () => StartCommand(OpenSelectionInHost()), enabled: host),
+                Tile("explorer", "\uE838", "Str_Menu_ShowExplorer", () =>
+                {
+                    if (SelectedPaths.FirstOrDefault() is { } path)
+                        Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, Arguments = "/select,\"" + path + "\"" });
+                }),
             ]);
-            // Tags ride on Uid so the command surface reads the same on buttons and rows.
-            string[] stripTags = ["cut", "copy", "paste", "rename", "delete"];
-            int index = 0;
-            foreach (var button in StripButtons(strip)) button.Uid = stripTags[index++];
-            menu.Items.Add(strip);
-            Add("open", "Str_Btn_Open", () =>
+            groups.Add(
+            [
+                Tile("cut", "\uE8C6", "Str_Menu_Cut", () => CopySelection(true), "Ctrl+X", CanCut),
+                Tile("copy", "\uE8C8", "Str_Menu_Copy", () => CopySelection(), "Ctrl+C"),
+                Tile("paste", "\uE77F", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste),
+            ]);
+            var edit = new List<CardTile>
             {
-                if (ResultsList.SelectedItem is FileEntry entry) StartCommand(Browser.ActivateEntry(entry));
-            }, "Enter", glyph: "");
-            if (ResultsList.SelectedItem is FileEntry { IsDirectory: false } entry && CanOpenInHost?.Invoke(entry.FilePath) == true)
-                Add("host", "Str_Files_OpenInShot", () => StartCommand(OpenSelectionInHost()), glyph: "");
-            Add("explorer", "Str_Menu_ShowExplorer", () =>
+                Tile("rename", "\uE8AC", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename),
+                Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
+            };
+            if (KillerPdfHandoff.IsInstalled)
             {
-                if (SelectedPaths.FirstOrDefault() is { } path)
-                    Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, Arguments = "/select,\"" + path + "\"" });
-            }, glyph: "");
-            if (count == 1 && ResultsList.SelectedItem is FileEntry { IsDirectory: true } folderEntry && KillerPdfHandoff.IsInstalled)
-                Add("makepdf", "Str_Menu_MakePdf", () => MakePdf(folderEntry.FilePath), glyph: "");
+                var folderEntry = count == 1 ? ResultsList.SelectedItem as FileEntry : null;
+                edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => { if (folderEntry != null) MakePdf(folderEntry.FilePath); },
+                    enabled: folderEntry is { IsDirectory: true }));
+            }
+            groups.Add(edit);
+            string[] paths = SelectedPaths.ToArray();
+            groups.Add(
+            [
+                Tile("shell", "\uE712", "Str_Menu_ShellMenu", () => AfterMenu(() =>
+                {
+                    var owner = Window.GetWindow(this);
+                    if (ShellContextMenu.SpansFolders(paths))
+                        SetCommandError(TryFindResource("Str_Status_ShellMixedFolders") as string
+                            ?? "The shell menu works on items from one folder at a time.");
+                    else if (owner == null || !ShellContextMenu.Show(owner, paths)) SetCommandError(Loc("Str_Status_ShellFailed"));
+                }), "Shift+F10"),
+                Tile("properties", "\uE946", "Str_Menu_Properties", () => AfterMenu(() =>
+                {
+                    if (paths.FirstOrDefault() is { } path && !ShellContextMenu.ShowProperties(path)) SetCommandError(Loc("Str_Status_ShellFailed"));
+                }), "Alt+Enter"),
+                Tile("refresh", "\uE72C", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5"),
+            ]);
         }
         else
         {
-            menu.Items.Add(KillerFamily.Controls.CardBuilder.Header(Path.GetFileName(Navigation.CurrentFolder.TrimEnd('\\')) is { Length: > 0 } name ? name : Navigation.CurrentFolder, Navigation.CurrentFolder));
-            Add("paste", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste, "");
+            menu.Items.Add(KillerShot.Shell.ShotCards.Header(menu,
+                Path.GetFileName(Navigation.CurrentFolder.TrimEnd('\\')) is { Length: > 0 } name ? name : Navigation.CurrentFolder, Navigation.CurrentFolder));
+            var here = new List<CardTile>
+            {
+                Tile("paste", "\uE77F", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste),
+                Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
+            };
             if (KillerPdfHandoff.IsInstalled)
             {
-                string here = Navigation.CurrentFolder;
-                Add("makepdf", "Str_Menu_MakePdf", () => MakePdf(here), glyph: "");
+                string folder = Navigation.CurrentFolder;
+                here.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folder)));
             }
+            groups.Add(here);
+            groups.Add([Tile("refresh", "\uE72C", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5")]);
         }
-        Add("newfolder", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste, "");
-        if (onItem)
-        {
-            menu.Items.Add(new Separator());
-            string[] paths = SelectedPaths.ToArray();
-            Add("shell", "Str_Menu_ShellMenu", () => AfterMenu(() =>
-            {
-                var owner = Window.GetWindow(this);
-                if (ShellContextMenu.SpansFolders(paths))
-                    SetCommandError(TryFindResource("Str_Status_ShellMixedFolders") as string
-                        ?? "The shell menu works on items from one folder at a time.");
-                else if (owner == null || !ShellContextMenu.Show(owner, paths)) SetCommandError(Loc("Str_Status_ShellFailed"));
-            }), "Shift+F10", glyph: "");
-            Add("properties", "Str_Menu_Properties", () => AfterMenu(() =>
-            {
-                if (paths.FirstOrDefault() is { } path && !ShellContextMenu.ShowProperties(path)) SetCommandError(Loc("Str_Status_ShellFailed"));
-            }), "Alt+Enter", glyph: "");
-        }
-        menu.Items.Add(new Separator());
-        Add("refresh", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5", glyph: "");
+        var grid = KillerShot.Shell.ShotCards.Grid(menu, [.. groups]);
+        menu.Items.Add(grid);
+        // Tags ride on Uid so the self-tests read the commands the same way on every card.
+        int index = 0;
+        foreach (var button in StripButtons(grid)) button.Uid = tags[index++];
         return menu;
 
         Action Guarded(Action action) => () =>
@@ -104,14 +131,6 @@ public partial class FilesView
             try { action(); }
             catch (Exception error) { SetCommandError(error.Message); }
         };
-        KillerFamily.Controls.CardAction Quick(string glyph, string key, Action action, string gesture, bool enabled = true) =>
-            new(glyph, Loc(key), Loc(key), gesture, Guarded(action), enabled);
-        void Add(string tag, string key, Action action, string gesture = "", bool enabled = true, string? glyph = null)
-        {
-            var item = KillerFamily.Controls.CardBuilder.Row(Loc(key), gesture, glyph, Guarded(action), enabled);
-            item.Tag = tag;
-            menu.Items.Add(item);
-        }
     }
 
     /// <summary>Make PDF: KillerPDF opens the folder's pictures as one new document.</summary>
@@ -121,9 +140,9 @@ public partial class FilesView
         if (problem != null) SetCommandError(Loc(problem));
     }
 
-    /// <summary>The quick buttons on a card strip, in order.</summary>
+    /// <summary>The tiles in a card's grid item (or a header's buttons), in order.</summary>
     internal static IEnumerable<Button> StripButtons(MenuItem strip) =>
-        strip.Header is Border { Child: System.Windows.Controls.Primitives.UniformGrid grid } ? grid.Children.OfType<Button>() : [];
+        KillerShot.Shell.ShotCards.ButtonsIn(strip);
 
     private void AfterMenu(Action action) => Dispatcher.BeginInvoke(action, DispatcherPriority.Background);
 

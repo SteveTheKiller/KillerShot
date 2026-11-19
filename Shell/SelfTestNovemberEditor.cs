@@ -159,11 +159,14 @@ internal static class SelfTestNovemberEditor
             window.OpenBtn.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             menu = System.Windows.PresentationSource.CurrentSources.OfType<System.Windows.Interop.HwndSource>()
                 .Where(source => source.RootVisual != null).SelectMany(source => Visuals(source.RootVisual))
-                .OfType<ContextMenu>().Single(context => context.Items.OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Btn_Recent"))));
-            var recent = menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, LocaleManager.Loc("Str_Btn_Recent")));
-            Expect(recent.Items.Count == 1 && recent.Items[0] is MenuItem { IsEnabled: false }, "Opening the parent menu eagerly filled Recent capture rows.");
-            recent.RaiseEvent(new RoutedEventArgs(MenuItem.SubmenuOpenedEvent, recent));
-            Expect(recent.Items.OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Recent_ShowLibrary"))), "Expanding Recent did not fill its capture choices.");
+                .OfType<ContextMenu>().Single(context => SelfTestCards.Find(context, LocaleManager.Loc("Str_Btn_Recent")) != null);
+            SelfTestCards.CheckCard(menu, "Open");
+            string recentName = LocaleManager.Loc("Str_Btn_Recent");
+            var rows = SelfTestCards.FlyoutRows(menu, recentName);
+            Expect(rows.Count == 1 && rows[0] is MenuItem { IsEnabled: false }, "Opening the Open card eagerly filled Recent capture rows.");
+            SelfTestCards.Click(SelfTestCards.Tile(menu, recentName));
+            Expect(SelfTestCards.FlyoutRows(menu, recentName).OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Recent_ShowLibrary"))),
+                "Opening the Recent tile did not fill its capture choices.");
         }
         finally { if (menu != null) menu.IsOpen = false; window.Close(); }
     }
@@ -216,9 +219,9 @@ internal static class SelfTestNovemberEditor
             window.ImageBtn.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             menu = System.Windows.PresentationSource.CurrentSources.OfType<System.Windows.Interop.HwndSource>()
                 .Where(source => source.RootVisual != null).SelectMany(source => Visuals(source.RootVisual))
-                .OfType<ContextMenu>().Single(context => context.Items.OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Img_Resize"))));
-            var resize = menu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, LocaleManager.Loc("Str_Img_Resize")));
-            var preset = resize.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "50%"));
+                .OfType<ContextMenu>().Single(context => SelfTestCards.Find(context, LocaleManager.Loc("Str_Img_Resize")) != null);
+            SelfTestCards.CheckCard(menu, "Image");
+            var preset = SelfTestCards.Row(menu, LocaleManager.Loc("Str_Img_Resize"), "50%");
             preset.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, preset));
             Expect(document.PixelWidth == 200 && document.PixelHeight == 150, "The real resize preset did not resize the picture.");
             Expect(document.State.Items.SingleOrDefault() is KillerShot.Editor.TextAnnotation { Text: "Pending resize text" }, "The resize preset lost the uncommitted text mark.");
@@ -233,11 +236,14 @@ internal static class SelfTestNovemberEditor
         var window = new MainWindow(null);
         try
         {
-            var items = window.CaptureMenu.Items.OfType<MenuItem>().ToArray();
-            Expect(items.Any(item => Equals(item.Header, LocaleManager.Loc("Str_Btn_Capture")) && item.InputGestureText == "Ctrl+N"), "The capture menu did not expose the remembered-mode generic action.");
-            Expect(items.Single(item => Equals(item.Header, LocaleManager.Loc("Str_Mode_Window"))).IsChecked, "The capture menu checked Region instead of the remembered mode.");
-            Expect(items.Single(item => Equals(item.Header, LocaleManager.Loc("Str_Mode_Region"))).InputGestureText != "Ctrl+N", "The explicit Region entry claimed the generic shortcut.");
-            Expect(items.Length >= 6, "The capture menu lost explicit mode choices.");
+            var card = window.CaptureMenu;
+            SelfTestCards.CheckCard(card, "capture");
+            static string Keys(Button tile) => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile);
+            Expect(SelfTestCards.Find(card, LocaleManager.Loc("Str_Btn_Capture")) is { } generic && Keys(generic) == "Ctrl+N", "The capture card did not expose the remembered-mode generic action.");
+            Expect(SelfTestCards.IsOn(SelfTestCards.Tile(card, LocaleManager.Loc("Str_Mode_Window"))), "The capture card filled Region instead of the remembered mode.");
+            Expect(!SelfTestCards.IsOn(SelfTestCards.Tile(card, LocaleManager.Loc("Str_Mode_Region"))), "The capture card filled Region as well as the remembered mode.");
+            Expect(Keys(SelfTestCards.Tile(card, LocaleManager.Loc("Str_Mode_Region"))) != "Ctrl+N", "The explicit Region tile claimed the generic shortcut.");
+            Expect(SelfTestCards.Tiles(card).Count() >= 6, "The capture card lost explicit mode choices.");
         }
         finally { window.Close(); }
     }

@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Venstre</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Høyre</sys:String>
     <sys:String x:Key="Str_Card_Quick">Hurtighandlinger</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">Til biblioteket</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Verktøy</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-innstilling</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Dupliser</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Rediger tekst</sys:String>
     <sys:String x:Key="Str_Tab_Open">Ny fane</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Åpne i en ny fane</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Bla gjennom</sys:String>

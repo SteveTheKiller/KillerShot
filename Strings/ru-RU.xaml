@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Слева</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Справа</sys:String>
     <sys:String x:Key="Str_Card_Quick">Быстрые действия</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">В библиотеку</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Инструменты</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Дублировать</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Изменить текст</sys:String>
     <sys:String x:Key="Str_Tab_Open">Новая вкладка</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Открыть в новой вкладке</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Обзор</sys:String>

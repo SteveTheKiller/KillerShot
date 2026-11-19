@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using KillerFamily.Controls;
 using KillerShot.Capture;
 using KillerShot.Controls;
 using KillerShot.Native;
@@ -104,33 +105,31 @@ internal sealed partial class CaptureController
 
     // ---- menus ----
 
-    /// <summary>Repeat, saved regions and interval commands for the tray and the editor's capture menu.</summary>
-    public IEnumerable<object> RegionMenuItems(Func<ShortcutAction, string> gesture)
+    /// <summary>Repeat, saved regions and interval for the tray card and the editor's capture card, as
+    /// two tile groups: the region commands, then the timed one. The lists open from flyout tiles.</summary>
+    public IReadOnlyList<IReadOnlyList<CardTile>> RegionTiles(Func<ShortcutAction, string> gesture)
     {
-        var repeat = new MenuItem { Header = Loc("Str_Region_Repeat"), InputGestureText = gesture(ShortcutAction.RepeatRegion), IsEnabled = RegionMemory.HasLast };
-        repeat.Click += (_, _) => Defer(() => _ = RepeatRegion());
-        yield return repeat;
+        static string? Keys(string text) => text.Length == 0 ? null : text;
+        var repeat = new CardTile("\uE8EE", Loc("Str_Region_Repeat"), Keys(gesture(ShortcutAction.RepeatRegion)),
+            () => Defer(() => _ = RepeatRegion()), false, RegionMemory.HasLast);
+        var scrolling = new CardTile("\uE74B", Loc("Str_Scroll_Title"), null, () => Defer(() => _ = ScrollingCapture()));
 
-        var scrolling = new MenuItem { Header = Loc("Str_Scroll_Title") };
-        scrolling.Click += (_, _) => Defer(() => _ = ScrollingCapture());
-        yield return scrolling;
-
-        var saved = new MenuItem { Header = Loc("Str_Region_Saved") };
+        var saved = new List<object>();
         foreach (var preset in RegionMemory.Presets)
         {
             var p = preset;
             string detail = p.IsFixedSize ? $"{p.Width} x {p.Height}" : $"{p.Width} x {p.Height} @ {p.Place!.Value.Left}, {p.Place.Value.Top}";
             var item = new MenuItem { Header = p.Name, InputGestureText = detail };
             item.Click += (_, _) => Defer(() => _ = CapturePreset(p));
-            saved.Items.Add(item);
+            saved.Add(item);
         }
-        if (saved.Items.Count > 0) saved.Items.Add(new Separator());
+        if (saved.Count > 0) saved.Add(new Separator());
         var saveLast = new MenuItem { Header = Loc("Str_Region_SaveLast"), IsEnabled = RegionMemory.HasLast };
         saveLast.Click += (_, _) => SaveLastRegion();
-        saved.Items.Add(saveLast);
+        saved.Add(saveLast);
         var fixedSize = new MenuItem { Header = Loc("Str_Region_AddSize") };
         fixedSize.Click += (_, _) => AddFixedSize();
-        saved.Items.Add(fixedSize);
+        saved.Add(fixedSize);
         if (RegionMemory.Presets.Count > 0)
         {
             var remove = new MenuItem { Header = Loc("Str_Region_Remove") };
@@ -141,16 +140,15 @@ internal sealed partial class CaptureController
                 item.Click += (_, _) => RegionMemory.RemovePreset(name);
                 remove.Items.Add(item);
             }
-            saved.Items.Add(remove);
+            saved.Add(remove);
         }
-        yield return saved;
 
-        var interval = new MenuItem { Header = Loc("Str_Region_Interval"), InputGestureText = gesture(ShortcutAction.Interval) };
+        var interval = new List<object>();
         if (IntervalRunning)
         {
             var stop = new MenuItem { Header = string.Format(CultureInfo.CurrentCulture, Loc("Str_Region_IntervalStop"), _intervalTaken) };
             stop.Click += (_, _) => StopInterval();
-            interval.Items.Add(stop);
+            interval.Add(stop);
         }
         else
             foreach (int seconds in new[] { 5, 10, 30, 60, 300 })
@@ -162,9 +160,13 @@ internal sealed partial class CaptureController
                     IsCheckable = true, IsChecked = CaptureSettings.IntervalSeconds == s, IsEnabled = RegionMemory.HasLast,
                 };
                 every.Click += (_, _) => StartInterval(s);
-                interval.Items.Add(every);
+                interval.Add(every);
             }
-        yield return interval;
+        return
+        [
+            [repeat, ShotCards.Flyout("\uE728", Loc("Str_Region_Saved"), null, saved), scrolling],
+            [ShotCards.Flyout("\uE916", Loc("Str_Region_Interval"), Keys(gesture(ShortcutAction.Interval)), interval) with { Checked = IntervalRunning ? true : null }],
+        ];
     }
 
     /// <summary>Menu-started captures wait for the menu to fade so it is not in the picture.</summary>

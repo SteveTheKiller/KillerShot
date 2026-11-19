@@ -48,11 +48,38 @@ internal sealed class CollectionBrowser : ListBox
     // The card is rebuilt each time it opens, so names, counts and KillerPDF are current.
     private void Row_ContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
-        if (sender is ListBoxItem { DataContext: CollectionChoice choice, ContextMenu: { } menu } row && RowMenu is { } fill)
-        {
-            fill(choice, menu);
-            HoldToolTips(row, menu);
-        }
+        if (sender is not ListBoxItem { DataContext: CollectionChoice choice, ContextMenu: { } menu } row || RowMenu is not { } fill) return;
+        if (_pendingCard != null || menu.IsOpen) { e.Handled = true; return; }
+        fill(choice, menu);
+        HoldToolTips(row, menu);
+    }
+
+    // A right-click on another collection selects it on button down, and the album reloads for it. The reload
+    // replaces the rows, so the card the click was about to open belonged to a row that no longer existed and the
+    // first right-click showed nothing. The click is noted here and the card opens on the collection's new row
+    // once the reload has settled, at the pointer, the way a right-click card does.
+    private (string Source, string StoredName)? _pendingCard;
+
+    protected override void OnPreviewMouseRightButtonDown(System.Windows.Input.MouseButtonEventArgs e)
+    {
+        base.OnPreviewMouseRightButtonDown(e);
+        if (ContainerFromElement(this, e.OriginalSource as DependencyObject) is not ListBoxItem { IsSelected: false, DataContext: CollectionChoice choice, ContextMenu: not null }) return;
+        _pendingCard = (choice.Source, choice.StoredName);
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, OpenPendingCard);
+    }
+
+    private void OpenPendingCard()
+    {
+        if (_pendingCard is not { } key) return;
+        _pendingCard = null;
+        if (RowMenu is not { } fill) return;
+        var item = Items.OfType<CollectionChoice>().FirstOrDefault(c => c.Source == key.Source && c.StoredName == key.StoredName);
+        if (item == null || ItemContainerGenerator.ContainerFromItem(item) is not ListBoxItem { ContextMenu: { } card } row || card.IsOpen) return;
+        fill(item, card);
+        HoldToolTips(row, card);
+        card.PlacementTarget = row;
+        card.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+        card.IsOpen = true;
     }
 
     /// <summary>The pointer stays on the tile while its card is open, so the tile's tooltip would
@@ -71,10 +98,26 @@ internal sealed class CollectionBrowser : ListBox
         }
         Walk(row);
         if (held.Count == 0) return;
+        // A tooltip that opened while the pointer rested on the tile stays up behind a card opened in code, since
+        // only a real right-click tells the tooltip service to close it.
+        foreach (var source in PresentationSource.CurrentSources.OfType<System.Windows.Interop.HwndSource>().ToList())
+        {
+            var root = source.RootVisual;
+            var tip = root as ToolTip ?? (root != null && VisualTreeHelper.GetChildrenCount(root) > 0 ? VisualTreeHelper.GetChild(root, 0) as ToolTip : null);
+            if (tip is { IsOpen: true, PlacementTarget: { } target } && held.Contains(target)) tip.IsOpen = false;
+        }
+        // A tooltip whose hover delay was already running when the card opened in code still shows on top of
+        // it, since turning the tooltip off does not stop a pending one. Its opening is refused instead.
+        static void Refuse(object sender, ToolTipEventArgs e) => e.Handled = true;
+        foreach (var element in held.OfType<FrameworkElement>()) element.ToolTipOpening += Refuse;
         void Release(object? sender, RoutedEventArgs e)
         {
             menu.Closed -= Release;
-            foreach (var element in held) element.ClearValue(ToolTipService.IsEnabledProperty);
+            foreach (var element in held)
+            {
+                element.ClearValue(ToolTipService.IsEnabledProperty);
+                if (element is FrameworkElement framework) framework.ToolTipOpening -= Refuse;
+            }
         }
         menu.Closed += Release;
     }

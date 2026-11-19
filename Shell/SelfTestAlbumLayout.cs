@@ -170,11 +170,11 @@ internal static class SelfTestAlbumLayout
             var workspaceMenu = pane.ContextMenu;
             workspaceMenu.PlacementTarget = pane;
             workspaceMenu.IsOpen = true;
-            var previews = workspaceMenu.Items.OfType<MenuItem>().SingleOrDefault(item =>
-                Equals(item.Header, LocaleManager.Loc("Str_CollectionPreview")));
-            Check(previews != null && previews.Items.Count == 4, "All four collection preview styles must be available from the sidebar menu.");
+            SelfTestCards.CheckCard(workspaceMenu, "sidebar");
+            var previews = SelfTestCards.FlyoutRows(workspaceMenu, LocaleManager.Loc("Str_CollectionPreview")).OfType<MenuItem>().ToList();
+            Check(previews.Count == 4, "All four collection preview styles must be available from the sidebar card's Preview tile.");
             workspaceMenu.IsOpen = false;
-            foreach (var choice in previews!.Items.OfType<MenuItem>())
+            foreach (var choice in previews)
             {
                 choice.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
                 Layout(root);

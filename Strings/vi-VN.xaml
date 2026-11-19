@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Trái</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Phải</sys:String>
     <sys:String x:Key="Str_Card_Quick">Thao tác nhanh</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">Vào thư viện</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Công cụ</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Cài đặt Windows</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Nhân bản</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Sửa văn bản</sys:String>
     <sys:String x:Key="Str_Tab_Open">Tab mới</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Mở trong tab mới</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Duyệt</sys:String>

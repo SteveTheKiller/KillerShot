@@ -241,11 +241,12 @@ internal static class SelfTestRecordingSafety
                 .SelectMany(s => Visuals(s.RootVisual)).OfType<System.Windows.Controls.ContextMenu>().Single(m => m.IsOpen);
             try
             {
-                var item = menu.Items.OfType<System.Windows.Controls.MenuItem>()
-                    .SingleOrDefault(i => Equals(i.Header, LocaleManager.Loc(key)));
-                if (item == null) throw new InvalidOperationException("Recording keyboard menu is missing " + key);
-                if (string.IsNullOrEmpty(item.InputGestureText)) throw new InvalidOperationException("Recording action has no discoverable shortcut.");
-                item.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+                SelfTestCards.CheckCard(menu, "tray");
+                var item = SelfTestCards.Find(menu, LocaleManager.Loc(key));
+                if (item == null) throw new InvalidOperationException("Recording keyboard card is missing " + key);
+                if (string.IsNullOrEmpty(System.Windows.Automation.AutomationProperties.GetAcceleratorKey(item)))
+                    throw new InvalidOperationException("Recording action has no discoverable shortcut.");
+                SelfTestCards.Click(item);
             }
             finally { menu.IsOpen = false; }
         }

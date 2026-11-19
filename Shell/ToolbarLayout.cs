@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using KillerFamily.Controls;
 
 // ============================================================
 // Toolbar layout: which buttons sit on the toolbar, in what order, on which side, and which
@@ -302,50 +303,35 @@ namespace KillerShot.Shell
 
         private void BuildMoreMenu()
         {
-            MoreMenu.Items.Clear();
+            // The More card: the user's choices first, then whatever the window was too narrow for, in
+            // bar order, each as the bar button's own tile (a tool's tile filled while it is in use).
+            // With the bar hidden, the toolbar's own choices follow as a flyout and Hide toolbar last.
+            ShotCards.Prepare(MoreMenu);
+            MoreMenu.Items.Add(ShotCards.Header(MoreMenu, Loc("Str_Toolbar_Header")));
             var byId = _toolbarUnits.ToDictionary(unit => unit.Id);
-            // The user's choices first, then whatever the window was too narrow for, in bar order.
             var ids = _toolbarHidden ? _toolbarLayout.Left.Concat(_toolbarLayout.Right).Concat(_toolbarLayout.More).Distinct()
                 : _toolbarLayout.More.Concat(_toolbarLayout.Left.Concat(_toolbarLayout.Right).Where(_toolbarShed.Contains));
+            var buttons = new List<CardTile>();
             foreach (string id in ids)
             {
                 if (!byId.TryGetValue(id, out ToolbarUnit? unit)) continue;
-                var item = new MenuItem
-                {
-                    Header = Loc(unit.LabelKey),
-                    Icon = ToolbarUnitIcon(unit.Id),
-                    InputGestureText = ShortcutFor(unit.Main) ?? "",
-                    IsEnabled = unit.Main.IsEnabled,
-                    IsCheckable = unit.Main.Tag is string tool && Enum.TryParse<KillerShot.Editor.ToolKind>(tool, out _),
-                    IsChecked = unit.Main == ToolButton(Editor.Tool),
-                };
                 Button target = unit.Main;
-                // After the menu closes, so a button that opens its own flyout opens it cleanly.
-                item.Click += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input,
+                bool tool = unit.Main.Tag is string kind && Enum.TryParse<KillerShot.Editor.ToolKind>(kind, out _);
+                string glyph = unit.Glyph != 0 ? ((char)unit.Glyph).ToString() : id == "color" ? "\uE790" : "\uE76F";
+                // After the card closes, so a button that opens its own flyout opens it cleanly.
+                buttons.Add(new CardTile(glyph, Loc(unit.LabelKey), ShortcutFor(unit.Main), () => Dispatcher.BeginInvoke(DispatcherPriority.Input,
                     new Action(() =>
                     {
                         if (target.IsEnabled) target.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, target));
-                    }));
-                MoreMenu.Items.Add(item);
+                    })), false, unit.Main.IsEnabled) { Checked = tool ? unit.Main == ToolButton(Editor.Tool) : null });
             }
+            var bar = new List<CardTile>();
             if (_toolbarHidden)
             {
-                MoreMenu.Items.Add(new Separator());
-                var appearance = new MenuItem { Header = Loc("Str_Toolbar_Header") };
-                foreach (object option in ToolbarMenu.Items)
-                {
-                    if (option is Separator) { appearance.Items.Add(new Separator()); continue; }
-                    if (option is not MenuItem original || !original.IsEnabled || Equals(original.Tag, "hide")) continue;
-                    var copy = new MenuItem { Header = original.Header, InputGestureText = original.InputGestureText,
-                        IsCheckable = original.IsCheckable, IsChecked = original.IsChecked };
-                    copy.Click += (_, _) => original.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-                    appearance.Items.Add(copy);
-                }
-                MoreMenu.Items.Add(appearance);
-                var show = new MenuItem { Header = Loc("Str_Toolbar_Hide"), IsCheckable = true, IsChecked = true, InputGestureText = "Alt+M" };
-                show.Click += (_, _) => ToggleToolbarHidden();
-                MoreMenu.Items.Add(show);
+                bar.Add(ShotCards.Flyout("\uE771", Loc("Str_Toolbar_Header"), null, ToolbarStyleRows()));
+                bar.Add(new CardTile("\uE7B3", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = true });
             }
+            MoreMenu.Items.Add(ShotCards.Grid(MoreMenu, buttons, bar));
         }
 
         /// <summary>Customize toolbar, from the toolbar's right-click menu.</summary>

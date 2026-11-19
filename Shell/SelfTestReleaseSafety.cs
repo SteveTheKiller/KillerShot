@@ -133,8 +133,9 @@ internal static class SelfTestReleaseSafety
             await Task.Delay(50);
             var menu = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
                 .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().Single(m => m.IsOpen);
-            var move = menu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Lib_MoveTo")));
-            var destination = move.Items.OfType<MenuItem>().Single(m => Equals(m.Header, "Move target"));
+            SelfTestCards.CheckCard(menu, "capture");
+            SelfTestCards.CheckHeaderDelete(menu, LocaleManager.Loc("Str_Lib_Delete"), "capture");
+            var destination = SelfTestCards.Row(menu, LocaleManager.Loc("Str_Lib_MoveTo"), "Move target");
             destination.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             Check(error?.Contains("Synthetic move failure") == true && CaptureLibrary.Items().Single(i => i.Id == item.Id).CollectionId == null,
                 "A failed album action reports the error and preserves the capture.");

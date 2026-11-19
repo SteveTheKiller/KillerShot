@@ -54,8 +54,8 @@ internal static class SelfTestLibraryMenu
             menu.Opacity = 0;
             menu.IsOpen = true;
             await Idle();
-            report.Add("menu_rows=" + string.Join(" | ", menu.Items.OfType<MenuItem>().Select(item => item.Header)));
-            bool noLibraryRow = !menu.Items.OfType<MenuItem>().Any(item => item.Header as string ==LocaleManager.Loc("Str_Btn_Library"));
+            report.Add("menu_rows=" + string.Join(" | ", SelfTestCards.Names(menu)));
+            bool noLibraryRow = SelfTestCards.TextRows(menu) == null && SelfTestCards.Find(menu, LocaleManager.Loc("Str_Btn_Library")) == null;
             report.Add($"sidebar_menu_without_library={noLibraryRow}");
             menu.IsOpen = false;
             await Idle();

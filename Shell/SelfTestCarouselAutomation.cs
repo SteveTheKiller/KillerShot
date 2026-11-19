@@ -49,7 +49,8 @@ internal static class SelfTestCarouselAutomation
                     throw new InvalidOperationException("Collection header is not a named invokable control.");
                 invoke.Invoke();
                 await Task.Delay(100);
-                if (header.ContextMenu?.IsOpen != true || header.ContextMenu.Items.OfType<MenuItem>().Count() < 3)
+                if (header.ContextMenu?.IsOpen != true || SelfTestCards.Tiles(header.ContextMenu).Count() < 3
+                    || SelfTestCards.TextRows(header.ContextMenu) != null)
                     throw new InvalidOperationException("Invoking the collection header did not open management actions.");
                 header.ContextMenu.IsOpen = false;
                 header.IsEnabled = false;

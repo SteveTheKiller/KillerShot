@@ -22,7 +22,7 @@ public partial class MainWindow
         // measure as nothing and never show.
         void Attach(FrameworkElement element, Action<ContextMenu> fill, bool card = false)
         {
-            var menu = card ? CardBuilder.Menu(280) : new ContextMenu();
+            var menu = card ? ShotCards.Menu() : new ContextMenu();
             element.ContextMenu = menu;
             // A right-click or the menu key fills it in ContextMenuOpening; Opened fills only a
             // menu opened some other way, so a filled menu is never rebuilt while it shows.
@@ -30,7 +30,6 @@ public partial class MainWindow
             element.ContextMenuOpening += (_, e) =>
             {
                 fill(menu);
-                MenuTidy.HideInactive(menu);
                 filled = menu.Items.OfType<MenuItem>().Any(item => item.Visibility == Visibility.Visible);
                 if (!filled) e.Handled = true;
             };
@@ -38,7 +37,6 @@ public partial class MainWindow
             {
                 if (!filled) fill(menu);
                 filled = false;
-                MenuTidy.HideInactive(menu);
             };
         }
         RailStack.Background = Brushes.Transparent;
@@ -60,66 +58,60 @@ public partial class MainWindow
         }
     }
 
-    private MenuItem AddItem(ContextMenu menu, string key, Action action, bool? selected = null, string gesture = "")
+    /// <summary>The glyph of a dock side's tile: an arrow toward that edge.</summary>
+    internal static string SideGlyph(DockSide side) => side switch
     {
-        var item = new MenuItem { Header = Loc(key), IsCheckable = selected.HasValue, IsChecked = selected == true, InputGestureText = gesture };
-        item.Click += (_, _) => action();
-        menu.Items.Add(item);
-        return item;
-    }
+        DockSide.Left => "\uE72B", DockSide.Right => "\uE72A", DockSide.Top => "\uE74A", _ => "\uE74B",
+    };
 
-    /// <summary>The collections sidebar: which collection, how collections look, and which side.</summary>
+    /// <summary>A dock side's tile, filled while the dock is on that side.</summary>
+    private CardTile SideTile(DockSide side, string key, string arrow, DockHost host)
+        => new(SideGlyph(side), Loc(key), "Alt+Shift+" + arrow, () => host.DockTo(side)) { Checked = host.Side == side };
+
+    /// <summary>The collections sidebar's card: which collection and how collections look, then which side.</summary>
     private void FillSidebarMenu(ContextMenu menu)
     {
         menu.Items.Clear();
         if (_navigationStrip is not { } strip) return;
         // A collection's own card names it; the sidebar's card is about the sidebar.
-        menu.Items.Add(CardBuilder.Header(Loc("Str_Sidebar_Title"), null));
-        var source = new MenuItem { Header = Loc("Str_Strip_Collection") };
-        var choices = strip.SourceMenu(CollectionPickerBtn);
-        while (choices.Items.Count > 0) { object item = choices.Items[0]; choices.Items.RemoveAt(0); source.Items.Add(item); }
-        menu.Items.Add(source);
-        menu.Items.Add(strip.PreviewMenu());
-        AddItem(menu, "Str_Sidebar_Compact", () => strip.Compact = !strip.Compact, strip.Compact);
-        menu.Items.Add(new Separator());
-        foreach (var (side, key, arrow) in StripSides.Where(s => s.Side is DockSide.Left or DockSide.Right))
+        menu.Items.Add(ShotCards.Header(menu, Loc("Str_Sidebar_Title")));
+        var look = new List<CardTile>
         {
-            var target = side;
-            AddItem(menu, key, () => NavigationDock.DockTo(target), NavigationDock.Side == side, "Alt+Shift+" + arrow);
-        }
+            ShotCards.Flyout("\uE8B7", Loc("Str_Strip_Collection"), null, ShotCards.RowsOf(strip.SourceMenu(CollectionPickerBtn))),
+            ShotCards.Flyout("\uE8A9", Loc("Str_CollectionPreview"), null, ShotCards.RowsOf(strip.PreviewMenu())),
+            new("\uE8FD", Loc("Str_Sidebar_Compact"), null, () => strip.Compact = !strip.Compact) { Checked = strip.Compact, KeepsOpen = true },
+        };
+        var sides = StripSides.Where(s => s.Side is DockSide.Left or DockSide.Right)
+            .Select(s => SideTile(s.Side, s.Key, s.Arrow, NavigationDock));
+        menu.Items.Add(ShotCards.Grid(menu, look, sides));
     }
 
-    /// <summary>The photo carousel: where it sits, and the cards under its pictures.</summary>
+    /// <summary>The photo carousel's card: where it sits, and the cards under its pictures.</summary>
     private void FillCarouselMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        menu.Items.Add(CardBuilder.Header(Loc("Str_Carousel_Title"), _strip?.SourceCaption));
-        foreach (var (side, key, arrow) in StripSides.Where(s => s.Side is DockSide.Top or DockSide.Bottom))
-        {
-            var target = side;
-            AddItem(menu, key, () => StripDock.DockTo(target), StripDock.Side == side, "Alt+Shift+" + arrow);
-        }
-        menu.Items.Add(new Separator());
-        menu.Items.Add(ViewInfoCards.Menu());
+        menu.Items.Add(ShotCards.Header(menu, Loc("Str_Carousel_Title"), _strip?.SourceCaption));
+        var sides = StripSides.Where(s => s.Side is DockSide.Top or DockSide.Bottom)
+            .Select(s => SideTile(s.Side, s.Key, s.Arrow, StripDock));
+        menu.Items.Add(ShotCards.Grid(menu, sides, [ViewInfoCards.Tile()]));
     }
 
-    /// <summary>The content area: the album views, and info cards where the view shows them.</summary>
+    /// <summary>The content area's card: the album views, and info cards, dimmed where the view
+    /// does not show them.</summary>
     private void FillContentMenu(ContextMenu menu)
     {
         menu.Items.Clear();
-        var views = new[] { ("shelves", "Str_Lib_ViewShelves"), ("flow", "Str_Lib_ViewFlow"), ("grid", "Str_Lib_ViewGrid"), ("timeline", "Str_Lib_ViewTimeline"), ("files", "Str_Lib_ViewFiles") };
-        string? shown = Library.IsVisible ? views.FirstOrDefault(v => v.Item1 == Library.CurrentView).Item2 : null;
-        menu.Items.Add(CardBuilder.Header(Loc("Str_Btn_Library"), shown == null ? null : Loc(shown)));
-        foreach (var (view, key) in views)
+        var views = new[]
         {
-            string target = view;
-            AddItem(menu, key, () => ShowLibraryView(target), Library.IsVisible && Library.CurrentView == view,
-                view switch { "shelves" => "F5", "flow" => "F6", "grid" => "F7", "timeline" => "F8", _ => "F9" });
-        }
-        if (Library.IsVisible && Library.CurrentView is "shelves" or "flow")
-        {
-            menu.Items.Add(new Separator());
-            menu.Items.Add(ViewInfoCards.Menu());
-        }
+            ("shelves", "\uE8A9", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
+            ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
+            ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
+        };
+        string? shown = Library.IsVisible ? views.FirstOrDefault(v => v.Item1 == Library.CurrentView).Item3 : null;
+        menu.Items.Add(ShotCards.Header(menu, Loc("Str_Btn_Library"), shown == null ? null : Loc(shown)));
+        var tiles = views.Select(v => new CardTile(v.Item2, Loc(v.Item3), v.Item4, () => ShowLibraryView(v.Item1))
+            { Checked = Library.IsVisible && Library.CurrentView == v.Item1 });
+        bool cards = Library.IsVisible && Library.CurrentView is "shelves" or "flow";
+        menu.Items.Add(ShotCards.Grid(menu, tiles, [ViewInfoCards.Tile(cards)]));
     }
 }

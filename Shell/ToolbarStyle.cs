@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using KillerFamily.Accessibility;
+using KillerFamily.Controls;
 
 // ============================================================
 // Toolbar appearance: two independent settings, icon size and where the text goes, with
@@ -120,21 +121,28 @@ namespace KillerShot.Shell
             QueueToolbarReflow();
         }
 
+        // A closed card is rebuilt, so its filled tiles and the dimmed sizes follow the settings. An open one keeps
+        // its tiles: rebuilding it under the pointer threw away the tile that was just pressed and took keyboard
+        // focus out of the card. Its tiles are repainted in place instead, a tick later, after the kit's own
+        // on/off toggle for the pressed tile has run.
         private void SyncToolbarMenuChecks()
         {
-            foreach (var item in ToolbarMenu.Items)
+            if (!ToolbarMenu.IsOpen) { BuildToolbarMenu(); return; }
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, RepaintToolbarMenu);
+        }
+
+        private void RepaintToolbarMenu()
+        {
+            if (!ToolbarMenu.IsOpen) { BuildToolbarMenu(); return; }
+            var tiles = ToolbarMenuTiles().SelectMany(g => g).ToList();
+            var buttons = ShotCards.Buttons(ToolbarMenu).ToList();
+            if (buttons.Count != tiles.Count) { ToolbarMenu.Closed += RebuildOnce; return; }
+            for (int i = 0; i < tiles.Count; i++)
             {
-                if (item is not MenuItem mi) continue;
-                if (mi.Tag is IconSize szTag)
-                {
-                    mi.IsChecked = szTag == _iconSize;
-                    // Text-only has no icon to size. Gray the choice rather than hiding it, so the
-                    // setting stays visible and comes back when text moves off Only.
-                    mi.IsEnabled = _labelMode != LabelMode.Only;
-                }
-                else if (mi.Tag is LabelMode lbTag) mi.IsChecked = lbTag == _labelMode;
-                else if (mi.Tag is "hide") mi.IsChecked = _toolbarHidden;
+                buttons[i].IsEnabled = tiles[i].Enabled;
+                CardBuilder.ShowTileState(buttons[i], tiles[i].Checked == true);
             }
+            void RebuildOnce(object? sender, RoutedEventArgs e) { ToolbarMenu.Closed -= RebuildOnce; BuildToolbarMenu(); }
         }
 
         // ---- KillerPDF's numbers, from SettingsPanel.cs SetToolbarButton. Do not retune these.
@@ -242,48 +250,62 @@ namespace KillerShot.Shell
 
         // ---- the right-click menu ----
 
+        private static readonly Dictionary<IconSize, string> IconSizeGlyphs = new() { [IconSize.Small] = "\uE71F", [IconSize.Large] = "\uE8A3" };
+        private static readonly Dictionary<LabelMode, string> LabelModeGlyphs = new()
+            { [LabelMode.None] = "\uE894", [LabelMode.Beside] = "\uE8E4", [LabelMode.Under] = "\uE8E3", [LabelMode.Only] = "\uE8D2" };
+
         /// <summary>
-        /// TWO radio groups, separated: icon size, then where the text goes. One flat list of five
-        /// could not express "large icons WITH text", which is the whole reason this was split.
-        /// Items stay open on click so the styles can be compared without reopening the menu.
-        /// Customize toolbar and Hide toolbar follow, as in KillerPDF.
+        /// The toolbar card: TWO groups of choices, icon size, then where the text goes. One flat list
+        /// could not express "large icons WITH text", which is the whole reason this was split. The
+        /// choice tiles keep the card open so the styles can be compared without reopening it; each
+        /// change rebuilds the card, so the filled tile follows. Customize toolbar and Hide toolbar
+        /// follow, as in KillerPDF. Text-only has no icon to size, so the sizes dim rather than hide.
         /// </summary>
         private void BuildToolbarMenu()
         {
-            ToolbarMenu.Items.Clear();
-            ToolbarMenu.Items.Add(new MenuItem { Header = Loc("Str_Toolbar_Header"), IsEnabled = false });
-            ToolbarMenu.Items.Add(new Separator());
+            ShotCards.Prepare(ToolbarMenu);
+            ToolbarMenu.Items.Add(ShotCards.Header(ToolbarMenu, Loc("Str_Toolbar_Header")));
+            ToolbarMenu.Items.Add(ShotCards.Grid(ToolbarMenu, ToolbarMenuTiles().ToArray()));
+        }
 
+        private IEnumerable<IEnumerable<CardTile>> ToolbarMenuTiles() => ToolbarStyleTiles()
+            .Append([
+                new CardTile("\uE70F", Loc("Str_Toolbar_Customize"), null, OpenCustomizeToolbar),
+                new CardTile("\uE7B3", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = _toolbarHidden },
+            ]);
+
+        /// <summary>The icon size and text choice tiles, two groups.</summary>
+        private IEnumerable<IEnumerable<CardTile>> ToolbarStyleTiles()
+        {
+            yield return IconSizes.Select(s => new CardTile(IconSizeGlyphs[s.Size], Loc(s.LabelKey), s.Gesture, () => SetIconSize(s.Size),
+                false, _labelMode != LabelMode.Only) { Checked = s.Size == _iconSize, KeepsOpen = true });
+            yield return LabelModes.Select(m => new CardTile(LabelModeGlyphs[m.Mode], Loc(m.LabelKey), m.Gesture, () => SetLabelMode(m.Mode))
+                { Checked = m.Mode == _labelMode, KeepsOpen = true });
+        }
+
+        /// <summary>The same choices as rows, for the More card's Toolbar flyout while the bar is hidden.</summary>
+        private IEnumerable<object> ToolbarStyleRows()
+        {
             foreach (var (size, key, gesture) in IconSizes)
             {
-                var mi = new MenuItem { Header = Loc(key), Tag = size, IsCheckable = true, IsChecked = size == _iconSize,
-                                        StaysOpenOnClick = true, InputGestureText = gesture };
-                // Checking one unchecks the rest through ApplyToolbarStyle, so this behaves as a
-                // radio group without needing RadioButton plumbing inside a menu.
+                var mi = new MenuItem { Header = Loc(key), IsCheckable = true, IsChecked = size == _iconSize, InputGestureText = gesture,
+                    IsEnabled = _labelMode != LabelMode.Only };
                 var s = size;
                 mi.Click += (_, __) => SetIconSize(s);
-                ToolbarMenu.Items.Add(mi);
+                yield return mi;
             }
-
-            ToolbarMenu.Items.Add(new Separator());
-
+            yield return new Separator();
             foreach (var (mode, key, gesture) in LabelModes)
             {
-                var mi = new MenuItem { Header = Loc(key), Tag = mode, IsCheckable = true, IsChecked = mode == _labelMode,
-                                        StaysOpenOnClick = true, InputGestureText = gesture };
+                var mi = new MenuItem { Header = Loc(key), IsCheckable = true, IsChecked = mode == _labelMode, InputGestureText = gesture };
                 var m = mode;
                 mi.Click += (_, __) => SetLabelMode(m);
-                ToolbarMenu.Items.Add(mi);
+                yield return mi;
             }
-
-            ToolbarMenu.Items.Add(new Separator());
+            yield return new Separator();
             var customize = new MenuItem { Header = Loc("Str_Toolbar_Customize") };
             customize.Click += (_, __) => OpenCustomizeToolbar();
-            ToolbarMenu.Items.Add(customize);
-            var hide = new MenuItem { Header = Loc("Str_Toolbar_Hide"), Tag = "hide", IsCheckable = true,
-                                      IsChecked = _toolbarHidden, InputGestureText = "Alt+M" };
-            hide.Click += (_, __) => ToggleToolbarHidden();
-            ToolbarMenu.Items.Add(hide);
+            yield return customize;
         }
 
         /// <summary>Ctrl+Shift+1 to 6: the two icon sizes, then the four text modes.</summary>

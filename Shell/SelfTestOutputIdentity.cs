@@ -161,13 +161,15 @@ internal static class SelfTestOutputIdentity
             window.SetToolbarLayout(new MainWindow.ToolbarLayout([], [], ["undo", "redo", "save", "copy", "copytext", "print"]));
             Click(window, "MoreBtn");
             var more = (ContextMenu)window.FindName("MoreMenu");
-            var queuedUndo = more.Items.OfType<MenuItem>().Single(m => m.InputGestureText == "Ctrl+Z");
+            static string Keys(Button tile) => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile);
+            SelfTestCards.CheckCard(more, "More");
+            var queuedUndo = SelfTestCards.Tiles(more).Single(tile => Keys(tile) == "Ctrl+Z");
             int replayed = 0;
             var undo = (Button)window.FindName("UndoBtn");
             RoutedEventHandler trackReplay = (_, _) => replayed++;
             undo.AddHandler(Button.ClickEvent, trackReplay, true);
             var beforeQueue = doc.State;
-            queuedUndo.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            SelfTestCards.Click(queuedUndo);
             more.IsOpen = false;
             window.TestShowLibraryView("grid");
             await Task.Delay(100);
@@ -175,8 +177,8 @@ internal static class SelfTestOutputIdentity
             if (replayed != 0 || !ReferenceEquals(doc.State, beforeQueue))
                 throw new InvalidOperationException("A queued overflow action replayed after the album covered the editor.");
             Click(window, "MoreBtn");
-            foreach (var item in more.Items.OfType<MenuItem>())
-                if (item.InputGestureText is "Ctrl+Z" or "Ctrl+Y" or "Ctrl+S" or "Ctrl+C" or "Ctrl+Shift+C" or "Ctrl+P")
+            foreach (var item in SelfTestCards.Tiles(more))
+                if (Keys(item) is "Ctrl+Z" or "Ctrl+Y" or "Ctrl+S" or "Ctrl+C" or "Ctrl+Shift+C" or "Ctrl+P")
                     if (item.IsEnabled) throw new InvalidOperationException("An editor output or edit action remained enabled in overflow.");
             more.IsOpen = false;
             report.Add("Overflow disables editor actions and drops a queued action after workspace change PASS");
@@ -272,8 +274,10 @@ internal static class SelfTestOutputIdentity
             "resize" => "Str_Img_Resize",
             _ => "Str_Img_Margin",
         });
-        var action = menu.Items.OfType<MenuItem>().Single(m => Equals(m.Header, label));
-        if (operation == "resize") action = action.Items.OfType<MenuItem>().Single(m => Equals(m.Header, LocaleManager.Loc("Str_Img_ResizeCustom")));
+        SelfTestCards.CheckCard(menu, "Image");
+        Action run = operation == "resize"
+            ? () => SelfTestCards.Row(menu, label, LocaleManager.Loc("Str_Img_ResizeCustom")).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent))
+            : () => SelfTestCards.Click(SelfTestCards.Tile(menu, label));
         menu.IsOpen = false;
         bool seen = false;
         Exception? failure = null;
@@ -288,7 +292,7 @@ internal static class SelfTestOutputIdentity
             catch (Exception error) { failure = error; dialog.DialogResult = false; }
         };
         timer.Start();
-        try { action.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent)); }
+        try { run(); }
         finally { timer.Stop(); }
         if (failure != null) throw failure;
         if (!seen) throw new InvalidOperationException(operation + " did not open its real modal dialog.");

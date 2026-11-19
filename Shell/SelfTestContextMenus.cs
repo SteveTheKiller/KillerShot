@@ -52,8 +52,8 @@ internal static class SelfTestContextMenus
             {
                 var menu = owner.ContextMenu!;
                 _ = new ContextMenuEventArgsProbe(owner);
-                return menu.Items.OfType<MenuItem>().Where(item => item.Visibility == Visibility.Visible && item.Header is string)
-                    .Select(item => (string)item.Header).ToArray();
+                SelfTestCards.CheckCard(menu, owner.Name is { Length: > 0 } named ? named : owner.GetType().Name);
+                return SelfTestCards.Names(menu);
             }
             string L(string key) => LocaleManager.Loc(key);
 
@@ -142,7 +142,8 @@ internal static class SelfTestContextMenus
                     Check(!probe.Cancelled, $"{name}'s card must open.");
                     rowCard = holder!.ContextMenu!;
                     string? head = rowCard.Items.OfType<MenuItem>().FirstOrDefault() is { } first ? System.Windows.Automation.AutomationProperties.GetName(first) : null;
-                    var labels = rowCard.Items.OfType<MenuItem>().Select(item => System.Windows.Automation.AutomationProperties.GetName(item) is { Length: > 0 } named ? named : item.Header as string ?? "").ToArray();
+                    SelfTestCards.CheckCard(rowCard, name);
+                    var labels = SelfTestCards.Names(rowCard);
                     report.Add($"sidebar_{source}_card=" + string.Join(" | ", labels));
                     Check(head == name, $"{name}'s card must be titled {name}, not '{head}'.");
                     Check(labels.Contains(L("Str_Menu_MakePdf")), $"{name}'s card must offer Make PDF when KillerPDF is installed.");
@@ -210,17 +211,15 @@ internal static class SelfTestContextMenus
             await Idle();
             opening = new ContextMenuEventArgsProbe(stage);
             Check(!opening.Cancelled, "With a picture open, the picture menu must open.");
-            var greyed = Visible(editor).Where(item => !item.IsEnabled).Select(item => (string)item.Header).ToArray();
-            Check(greyed.Length == 0, "The picture menu shows greyed-out items: " + string.Join(", ", greyed));
-            var shown = editor.Items.OfType<FrameworkElement>().Where(element => element.Visibility == Visibility.Visible).ToArray();
-            report.Add("picture_menu=" + string.Join(" | ", shown.Select(element => element is MenuItem item ? item.Header?.ToString() : "---")));
-            Check(shown.Length > 0 && shown[0] is not Separator && shown[^1] is not Separator
-                && !shown.Zip(shown.Skip(1)).Any(pair => pair.First is Separator && pair.Second is Separator),
-                "Hidden items must not leave separators at the ends or side by side.");
-            Check(shown.OfType<MenuItem>().Any(item => Equals(item.Tag, "deletecapture") && (string)item.Header == L("Str_Lib_Delete")),
-                "The picture menu must offer Delete for an album capture.");
-            Check(!shown.OfType<MenuItem>().Any(item => Equals(item.Tag, "delete")), "Delete the selected mark must be hidden with no mark selected.");
-            report.Add("picture menu: Delete for the capture, nothing greyed, no stray separators, no empty card: PASS");
+            report.Add("picture_menu=" + string.Join(" | ", SelfTestCards.Names(editor)));
+            SelfTestCards.CheckCard(editor, "picture");
+            var deleteCapture = SelfTestCards.CheckHeaderDelete(editor, L("Str_Lib_Delete"), "picture");
+            Check(deleteCapture.IsEnabled, "The picture card's header Delete must work for an album capture.");
+            // A tile that does not apply stays in its place, dimmed: Delete for marks with no mark selected.
+            var deleteMark = SelfTestCards.Tile(editor, L("Str_KS_Delete"));
+            Check(!deleteMark.IsEnabled, "Delete the selected mark must be dimmed with no mark selected.");
+            Check(SelfTestCards.Tiles(editor).First().IsEnabled, "The picture card's first tile, Copy, must work with a picture open.");
+            report.Add("picture menu: tiles only, Delete for the capture in the header, mark Delete dimmed in place, no empty card: PASS");
 
             // 300 x 400 popup with the family halo, at 100% and 150%.
             var halo = new Thickness(22, 18, 22, 26);

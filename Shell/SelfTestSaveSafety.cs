@@ -167,7 +167,8 @@ internal static class SelfTestSaveSafety
                 var menu = PresentationSource.CurrentSources.Cast<PresentationSource>()
                     .Where(s => s.RootVisual != null).SelectMany(s => Visuals(s.RootVisual))
                     .OfType<ContextMenu>().Single(m => m.IsOpen);
-                ((MenuItem)menu.Items[0]).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                SelfTestCards.CheckCard(menu, "save");
+                SelfTestCards.Click(SelfTestCards.Tiles(menu).First());
                 menu.IsOpen = false;
             }
         }

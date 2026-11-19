@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Bal</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Jobb</sys:String>
     <sys:String x:Key="Str_Card_Quick">Gyorsműveletek</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">Könyvtárba</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Eszközök</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-beállítás</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Másolat készítése</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Szöveg szerkesztése</sys:String>
     <sys:String x:Key="Str_Tab_Open">Új lap</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Megnyitás új lapon</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Tallózás</sys:String>

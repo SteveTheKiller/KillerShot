@@ -93,9 +93,9 @@ internal static class SelfTestAlbumActionIdentity
                 sessionA = CaptureLibrary.Session;
                 var menu = new System.Windows.Controls.ContextMenu();
                 view.FillCollectionMenu(menu, collectionA, "A collection", sessionA);
-                var command = menu.Items.OfType<System.Windows.Controls.MenuItem>()
-                    .Single(m => Equals(m.Header, LocaleManager.Loc(action == "rename" ? "Str_Lib_RenameCollection" : "Str_Lib_DeleteCollection")));
-                command.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
+                SelfTestCards.CheckCard(menu, "collection");
+                if (action == "delete") SelfTestCards.CheckHeaderDelete(menu, LocaleManager.Loc("Str_Lib_DeleteCollection"), "collection");
+                SelfTestCards.Click(SelfTestCards.Command(menu, LocaleManager.Loc(action == "rename" ? "Str_Lib_RenameCollection" : "Str_Lib_DeleteCollection")));
                 if (CaptureLibrary.FilePath != albumB || CaptureLibrary.Collections().Single().Name != "B collection")
                     throw new InvalidOperationException("Stale collection " + action + " changed album B.");
             }

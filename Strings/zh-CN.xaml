@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">左</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">右</sys:String>
     <sys:String x:Key="Str_Card_Quick">快捷操作</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">到库</sys:String>
+    <sys:String x:Key="Str_Card_Tools">工具</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows 设置</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">创建副本</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">编辑文本</sys:String>
     <sys:String x:Key="Str_Tab_Open">新标签页</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">在新标签页中打开</sys:String>
     <sys:String x:Key="Str_Tab_Browse">浏览</sys:String>

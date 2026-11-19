@@ -557,6 +557,11 @@
     <sys:String x:Key="Str_Sidebar_Left">Levo</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Desno</sys:String>
     <sys:String x:Key="Str_Card_Quick">Hitra dejanja</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">V knjižnico</sys:String>
+    <sys:String x:Key="Str_Card_Tools">Orodja</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavitev sistema Windows</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">Podvoji</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">Uredi besedilo</sys:String>
     <sys:String x:Key="Str_Tab_Open">Nov zavihek</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">Odpri v novem zavihku</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Prebrskaj</sys:String>

@@ -42,7 +42,7 @@ internal static class SelfTestQrUi
             if (CaptureLibrary.QrReadingEnabled || Equals(button.Tag, "on")) throw new InvalidOperationException("The QR rail toggle must start off.");
             if (button.Content?.ToString() != "\uED14" || button.ToolTip?.ToString() != "QR code reading") throw new InvalidOperationException("The QR rail glyph or tooltip is wrong.");
             var captureMenu = (ContextMenu)window.FindName("CaptureMenu");
-            if (!captureMenu.Items.OfType<MenuItem>().Any(item => item.Header?.ToString() == "Read QR code"))
+            if (SelfTestCards.TextRows(captureMenu) != null || SelfTestCards.Find(captureMenu, "Read QR code") == null)
                 throw new InvalidOperationException("The capture menu is missing Read QR code.");
             captureMenu.ApplyTemplate();
             var menuSurface = (FrameworkElement)VisualTreeHelper.GetChild(captureMenu, 0);

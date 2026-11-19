@@ -571,20 +571,7 @@ namespace KillerShot.Shell
                 // File Explorer.
                 string folderSource = row.Key;
                 line.ContextMenu = new ContextMenu();
-                MakeCard(line.ContextMenu);
-                line.ContextMenu.Items.Add(CardBuilder.Header(row.Title, FolderCaptures.PathForSource(folderSource)));
-                line.ContextMenu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
-                [
-                    new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)),
-                    new("", Loc("Str_Tab_Browse"), Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))),
-                    new("", Loc("Str_Tab_Explorer"), Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)),
-                ]));
-                if (KillerPdfHandoff.IsInstalled)
-                    line.ContextMenu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", () =>
-                    {
-                        if (KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(FolderCaptures.PathForSource(folderSource))) is { } problem)
-                            ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
-                    }, true));
+                FillFolderMenu(line.ContextMenu, folderSource, row.Title);
                 line.ToolTip = FolderCaptures.PathForSource(row.Key);
                 AutomationProperties.SetName(line, row.Title + ", " + row.Detail);
             }
@@ -1039,58 +1026,59 @@ namespace KillerShot.Shell
 
         internal void ShowItemMenu(CaptureItem item, FrameworkElement anchor, Action<CaptureItem>? open, string deleteGesture)
         {
-            // The capture card, KillerShell 1.6.0's pattern: the capture's name and when and how big
-            // it is, a strip of the everyday actions, then the rest as rows. Every action shows
-            // its shortcut, and a stale card does nothing once the album has changed under it.
+            // The capture card, the family tile card: the capture's name and when and how big it is,
+            // with Delete at the right end of the header, then three-across tile groups, most used
+            // first. Every tile shows its shortcut, and a stale card does nothing once the album has
+            // changed under it.
             bool keyboard = Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver;
-            var menu = CardBuilder.Menu(320);
-            menu.Items.Add(CardBuilder.Header(Title(item), item.Taken.ToString("g", CultureInfo.CurrentCulture) + "  ·  "
-                + item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture)));
+            var menu = ShotCards.Menu();
             Action Guard(Action action) => () => { if (CaptureLibrary.IsCurrent(item)) action(); };
-            CardAction Quick(string glyph, string key, string? gesture, Action action) => new(glyph, Loc(key), Loc(key), gesture, Guard(action));
-            void Row(string key, string? gesture, string glyph, Action action) => menu.Items.Add(CardBuilder.Row(Loc(key), gesture, glyph, Guard(action)));
-            void Rows(params object[] rows) { foreach (var row in rows) menu.Items.Add(row); }
-            var quick = new List<CardAction> { Quick("", "Str_Lib_Open", "Enter", () => open?.Invoke(item)) };
+            CardTile Tile(string glyph, string key, string? keys, Action action, bool enabled = true, string? shortKey = null)
+                => new(glyph, Loc(key), keys, Guard(action), false, enabled) { Shown = shortKey == null ? null : Loc(shortKey) };
+            menu.Items.Add(ShotCards.Header(menu, Title(item), item.Taken.ToString("g", CultureInfo.CurrentCulture) + "  ·  "
+                + item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture),
+                Loc("Str_Lib_Delete"), deleteGesture, Guard(() => Delete(item))));
             bool video = VideoCaptures.IsVideo(item), inFolder = FolderCaptures.IsFolderId(item.Id);
             void Print()
             {
                 try { PrintOutput.Print(CaptureLibrary.LoadOutput(item), Title(item)); }
                 catch (Exception ex) { StatusMessage?.Invoke(string.Format(Loc("Str_Status_PrintFailed"), ex.Message)); }
             }
-            // A recording has no picture to copy, print or recognize, only the clip itself.
-            if (!video)
+            // A recording has no picture to copy, print or recognize, only the clip itself: those tiles
+            // stay in their places, dimmed.
+            var everyday = new List<CardTile>
             {
-                quick.Add(Quick("", "Str_Lib_Copy", "Ctrl+C", () => Copy(item)));
-                quick.Add(Quick("", "Str_Btn_Print", "Ctrl+P", Print));
-            }
-            if (inFolder) quick.Add(Quick("", "Str_Lib_ShowInExplorer", "Ctrl+E", () => ShowInExplorer(item)));
-            else quick.Add(Quick("", "Str_Lib_SaveAs", "Ctrl+Shift+S", () => SaveAs(item)));
-            quick.Add(Quick("", "Str_Lib_Delete", deleteGesture, () => Delete(item)));
-            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"), quick));
-
+                Tile("\uE8E5", "Str_Lib_Open", "Enter", () => open?.Invoke(item)),
+                Tile("\uE8C8", "Str_Lib_Copy", "Ctrl+C", () => Copy(item), !video),
+                Tile("\uE749", "Str_Btn_Print", "Ctrl+P", Print, !video),
+            };
+            var keep = new List<CardTile>();
+            var picture = new List<CardTile>();
+            var look = new List<CardTile>();
             if (inFolder)
             {
                 // A file in a folder collection: the folder keeps it, so no collections or notes,
                 // only a way into the encrypted library.
-                if (video) Row("Str_Rec_MoveToLibrary", null, "", () => MoveVideoToLibrary(item));
-                else Row("Str_Lib_AddToLibrary", null, "", () => AddToLibrary(item));
+                keep.Add(Tile("\uE838", "Str_Lib_ShowInExplorer", "Ctrl+E", () => ShowInExplorer(item)));
+                if (video) keep.Add(Tile("\uE896", "Str_Rec_MoveToLibrary", null, () => MoveVideoToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
+                else keep.Add(Tile("\uE896", "Str_Lib_AddToLibrary", null, () => AddToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
             }
             else
             {
-                var move = new MenuItem { Header = Loc("Str_Lib_MoveTo"), InputGestureText = "Ctrl+M", Icon = "" };
+                keep.Add(Tile("\uE792", "Str_Lib_SaveAs", "Ctrl+Shift+S", () => SaveAs(item)));
+                var move = new MenuItem();
                 FillMoveItems(move, item);
-                Rows(move);
-                Row("Str_Lib_Note", "F2", "", () => EditNote(item));
-                if (!video)
-                {
-                    Row("Str_Marks_OpenOriginal", null, "", () => RecoverOriginal(item));
-                    if (BuildOcrLinksMenu(item.Id, anchor) is { } links) { links.Icon = ""; Rows(links); }
-                    Rows(new Separator());
-                    Row("Str_Lib_CardColor", null, "", PickCardColor);
-                    if (!CardColors.CardIsDefault) Row("Str_Lib_CardColorDefault", null, "", () => CardColors.SetCard(null));
-                }
+                keep.Add(ShotCards.Flyout("\uE8DE", Loc("Str_Lib_MoveTo"), "Ctrl+M", ShotCards.RowsOf(move)));
+                keep.Add(Tile("\uE70B", "Str_Lib_Note", "F2", () => EditNote(item)));
+                var links = BuildOcrLinksMenu(item.Id, anchor);
+                picture.Add(Tile("\uE81C", "Str_Marks_OpenOriginal", null, () => RecoverOriginal(item), !video));
+                picture.Add(links != null
+                    ? ShotCards.Flyout("\uE71B", Loc("Str_Ocr_Links"), null, ShotCards.RowsOf(links))
+                    : new CardTile("\uE71B", Loc("Str_Ocr_Links"), null, null, false, false));
+                look.Add(new CardTile("\uE790", Loc("Str_Lib_CardColor"), null, PickCardColor));
+                look.Add(new CardTile("\uE894", Loc("Str_Lib_CardColorDefault"), null, () => CardColors.SetCard(null), false, !CardColors.CardIsDefault));
             }
-            MenuTidy.HideInactive(menu);
+            menu.Items.Add(ShotCards.Grid(menu, everyday, keep, picture, look));
             CardBuilder.Open(menu, anchor, keyboard, new Rect(0, anchor.ActualHeight, 0, 0));
             Anim.FadeIn(menu);
         }
@@ -1112,40 +1100,35 @@ namespace KillerShot.Shell
         internal Func<PromptDialog, bool?> PresentPrompt { get; set; } = dialog => dialog.ShowDialog();
 
         /// <summary>Gives a header's own ContextMenu the card look at the card's width.</summary>
-        private static void MakeCard(ContextMenu menu, double width = 300)
-        {
-            menu.SetResourceReference(FrameworkElement.StyleProperty, "CardMenu");
-            menu.MinWidth = menu.MaxWidth = width + 44;
-        }
+        private static void MakeCard(ContextMenu menu) => ShotCards.Prepare(menu);
 
         /// <summary>The card for a folder on disk shown as a collection (Screenshots or a linked
         /// folder): open it as a collection tab, a folder tab or in File Explorer, and Make PDF.</summary>
         internal void FillFolderMenu(ContextMenu menu, string folderSource, string title)
         {
-            menu.Items.Clear();
             MakeCard(menu);
-            menu.Items.Add(CardBuilder.Header(title, FolderCaptures.PathForSource(folderSource)));
-            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
-            [
-                new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)),
-                new("", Loc("Str_Tab_Browse"), Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))),
-                new("", Loc("Str_Tab_Explorer"), Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)),
-            ]));
+            menu.Items.Add(ShotCards.Header(menu, title, FolderCaptures.PathForSource(folderSource)));
+            var open = new List<CardTile>
+            {
+                new("\uE8A7", Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)) { Shown = Loc("Str_Tab_Open") },
+                new("\uE8B7", Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))) { Shown = Loc("Str_Tab_Browse") },
+                new("\uE838", Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)) { Shown = Loc("Str_Tab_Explorer") },
+            };
+            var make = new List<CardTile>();
             if (KillerPdfHandoff.IsInstalled)
-                menu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", () =>
+                make.Add(new("\uEA90", Loc("Str_Menu_MakePdf"), null, () =>
                 {
                     if (KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(FolderCaptures.PathForSource(folderSource))) is { } problem)
                         ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
-                }, true));
+                }));
+            menu.Items.Add(ShotCards.Grid(menu, open, make));
         }
 
-        /// <summary>The collection card: its name and count, a strip to open it in a tab of its own
-        /// or color it, then rename and delete as rows.</summary>
+        /// <summary>The collection card: its name and count with Delete in the header, then tiles to
+        /// open it in a tab of its own, rename it and make a PDF of it, and its color.</summary>
         internal void FillCollectionMenu(ContextMenu menu, long id, string name, long session, string? detail = null)
         {
-            menu.Items.Clear();
             MakeCard(menu);
-            menu.Items.Add(CardBuilder.Header(name, detail));
             string source = "c" + id.ToString(CultureInfo.InvariantCulture);
             void PickColor()
             {
@@ -1153,34 +1136,36 @@ namespace KillerShot.Shell
                 dlg.ShowDialog();
                 if (dlg.Accepted) TryChangeAlbum(() => CardColors.SetCollection(id, dlg.SelectedColor, session));
             }
-            menu.Items.Add(CardBuilder.QuickStrip(Loc("Str_Card_Quick"),
-            [
-                new("", Loc("Str_Tab_Open"), Loc("Str_Tab_OpenCollection"), null,
-                    () => { if (CaptureLibrary.Session == session) _ = FileBrowser.NewCollectionTab(source); }),
-                new("", Loc("Str_Lib_ColorShort"), Loc("Str_Lib_CollectionColor"), null, PickColor),
-            ]));
-            menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_RenameCollection"), null, "", () =>
-            {
-                var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
-                if (PresentPrompt(dlg) == true && dlg.Text.Trim().Length > 0)
-                    TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text, session));
-            }));
-            if (CardColors.Collection(id) != null)
-                menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_CollectionColorNone"), null, "",
-                    () => TryChangeAlbum(() => CardColors.SetCollection(id, null, session))));
-            if (KillerPdfHandoff.IsInstalled)
-                menu.Items.Add(CardBuilder.Row(Loc("Str_Menu_MakePdf"), "", "", async () =>
-                {
-                    if (KillerPdfHandoff.MessageKey(await KillerPdfHandoff.MakePdfFromCollectionAsync(id, session)) is { } problem)
-                        ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
-                }, true));
-            menu.Items.Add(new Separator());
-            menu.Items.Add(CardBuilder.Row(Loc("Str_Lib_DeleteCollection"), null, "", () =>
+            menu.Items.Add(ShotCards.Header(menu, name, detail, Loc("Str_Lib_DeleteCollection"), null, () =>
             {
                 var dlg = new ConfirmDialog(string.Format(CultureInfo.CurrentCulture, Loc("Str_Lib_DeleteCollectionTitle"), name),
                     Loc("Str_Lib_DeleteCollectionDetail"), Loc("Str_Lib_DeleteCollection"), Loc("Str_Btn_Cancel")) { Owner = OwnerWindow };
                 if (PresentConfirmation(dlg)) TryChangeAlbum(() => CaptureLibrary.DeleteCollection(id, session));
             }));
+            var use = new List<CardTile>
+            {
+                new("\uE8A7", Loc("Str_Tab_OpenCollection"), null,
+                    () => { if (CaptureLibrary.Session == session) _ = FileBrowser.NewCollectionTab(source); }) { Shown = Loc("Str_Tab_Open") },
+                new("\uE8AC", Loc("Str_Lib_RenameCollection"), null, () =>
+                {
+                    var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };
+                    if (PresentPrompt(dlg) == true && dlg.Text.Trim().Length > 0)
+                        TryChangeAlbum(() => CaptureLibrary.RenameCollection(id, dlg.Text, session));
+                }) { Shown = Loc("Str_Lib_Rename") },
+            };
+            if (KillerPdfHandoff.IsInstalled)
+                use.Add(new("\uEA90", Loc("Str_Menu_MakePdf"), null, async () =>
+                {
+                    if (KillerPdfHandoff.MessageKey(await KillerPdfHandoff.MakePdfFromCollectionAsync(id, session)) is { } problem)
+                        ConfirmDialog.ShowNotice(Loc(problem), Window.GetWindow(this));
+                }));
+            var color = new List<CardTile>
+            {
+                new("\uE790", Loc("Str_Lib_CollectionColor"), null, PickColor) { Shown = Loc("Str_Lib_ColorShort") },
+                new("\uE894", Loc("Str_Lib_CollectionColorNone"), null,
+                    () => TryChangeAlbum(() => CardColors.SetCollection(id, null, session)), false, CardColors.Collection(id) != null),
+            };
+            menu.Items.Add(ShotCards.Grid(menu, use, color));
         }
 
         /// <summary>Picks the color of every card captures sit on.</summary>

@@ -82,7 +82,7 @@ internal static class SelfTestImageMenus
                     }
                 }
                 icons.ContextMenu!.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
-                if (icons.ContextMenu.Items.OfType<MenuItem>().Any(item => Equals(item.Header, LocaleManager.Loc("Str_Rail_Flip"))))
+                if (SelfTestCards.Find(icons.ContextMenu, LocaleManager.Loc("Str_Rail_Flip")) != null)
                     throw new InvalidOperationException("The rail-flip command is still present.");
                 App.Instance.SetDocument(null);
                 await Task.Delay(100);
@@ -190,39 +190,39 @@ internal static class SelfTestImageMenus
             var menu = stage.ContextMenu ?? throw new InvalidOperationException("Right-clicking the editor has no context menu.");
             // What a right-click raises: the card rebuilds from the editor's current state.
             void Open() => _ = new SelfTestContextMenus.ContextMenuEventArgsProbe(stage);
-            MenuItem Item(string id) => Descendants(menu).OfType<MenuItem>().Single(m => Equals(m.Tag, id));
+            // Tiles carry their command id on Uid; the flyout tiles' rows carry it on Tag.
+            Button Tile(string id) => SelfTestCards.Tiles(menu).Single(t => t.Uid == id);
+            MenuItem Row(string tile, string id) => (ShotCards.GetFlyoutRows(Tile(tile)) ?? []).OfType<MenuItem>().Single(m => Equals(m.Tag, id));
+            string Keys(Button tile) => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile);
             Open();
-            menu.IsOpen = true;
-            await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
-            // The card's header slot is the picture's name, not an action, so it has no icon.
-            var actions = Descendants(menu).OfType<MenuItem>().Where(i => !Equals(i.Tag, "cardhead")).ToArray();
-            if (actions.Any(i => i.Icon == null))
-                throw new InvalidOperationException("Missing menu icons: " + string.Join(", ", actions.Where(i => i.Icon == null).Select(i => i.Header)));
-            menu.IsOpen = false;
-            if (Item("copy").InputGestureText != "Ctrl+C" || Item("saveas").InputGestureText != "Ctrl+Shift+S"
-                || !Item("copy").IsEnabled || Item("undo").IsEnabled || Item("redo").IsEnabled)
-                throw new InvalidOperationException($"The menu's actions, shortcuts or initial edit states are wrong (copy '{Item("copy").InputGestureText}' {Item("copy").IsEnabled}, saveas '{Item("saveas").InputGestureText}', undo {Item("undo").IsEnabled}, redo {Item("redo").IsEnabled}).");
+            SelfTestCards.CheckCard(menu, "picture");
+            // Every tile shows a glyph; the header is the picture's name, not an action.
+            var blank = SelfTestCards.Tiles(menu).Where(t => string.IsNullOrEmpty(t.Content as string)).Select(SelfTestCards.Name).ToArray();
+            if (blank.Length > 0) throw new InvalidOperationException("Tiles without a glyph: " + string.Join(", ", blank));
+            if (Keys(Tile("copy")) != "Ctrl+C" || Keys(Tile("saveas")) != "Ctrl+Shift+S"
+                || !Tile("copy").IsEnabled || Tile("undo").IsEnabled || Tile("redo").IsEnabled)
+                throw new InvalidOperationException($"The card's tiles, shortcuts or initial edit states are wrong (copy '{Keys(Tile("copy"))}' {Tile("copy").IsEnabled}, saveas '{Keys(Tile("saveas"))}', undo {Tile("undo").IsEnabled}, redo {Tile("redo").IsEnabled}).");
             doc.Add(new ShapeAnnotation(ShapeKind.Rectangle, new Point(20, 20), new Point(120, 100), Colors.Red, 4));
             Open();
-            Item("undo").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            SelfTestCards.Click(Tile("undo"));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             if (doc.State.Items.Count != 0 || !doc.CanRedo) throw new InvalidOperationException("Menu Undo did not undo the mark.");
             Open();
-            Item("redo").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            SelfTestCards.Click(Tile("redo"));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             if (doc.State.Items.Count != 1) throw new InvalidOperationException("Menu Redo did not restore the mark.");
             Open();
-            Item("pen").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Row("tools", "pen").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             Open();
-            if (editor.Tool != ToolKind.Pen || !Item("pen").IsChecked || Item("pen").InputGestureText != "P")
-                throw new InvalidOperationException("The Tools menu did not select and check the Pen tool.");
+            if (editor.Tool != ToolKind.Pen || !Row("tools", "pen").IsChecked || Row("tools", "pen").InputGestureText != "P")
+                throw new InvalidOperationException("The Tools flyout did not select and check the Pen tool.");
             double previousZoom = editor.Zoom;
-            Item("zoomin").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Row("zoom", "zoomin").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             if (editor.Zoom <= previousZoom) throw new InvalidOperationException("Menu Zoom in did not zoom the image.");
             Open();
-            Item("actualsize").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Row("zoom", "actualsize").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             if (Math.Abs(editor.Zoom - 1) > .001) throw new InvalidOperationException("Menu 100% did not restore actual size.");
             Open();
@@ -247,7 +247,7 @@ internal static class SelfTestImageMenus
                 var opened = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
                     .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().SingleOrDefault(m => m.IsOpen);
                 // The picture card's Copy is a quick-strip button, named for the action.
-                if (opened == null || !opened.Items.OfType<MenuItem>().SelectMany(KillerShot.Files.FilesView.StripButtons).Any(b => System.Windows.Automation.AutomationProperties.GetName(b) == LocaleManager.Loc("Str_Lib_Copy")))
+                if (opened == null || SelfTestCards.TextRows(opened) != null || SelfTestCards.Find(opened, LocaleManager.Loc("Str_Lib_Copy")) == null)
                     throw new InvalidOperationException(view + " has no image menu through the context-menu key.");
                 opened.IsOpen = false;
                 await Task.Delay(250);
@@ -274,7 +274,7 @@ internal static class SelfTestImageMenus
                 throw new InvalidOperationException("The album must keep its visible pane on the left, its chevron above the icons, and its rail between pane and body.");
             report.Add($"Album sidebar: left pane, visible chevron and vertical rail between pane/body ({paneRight:F1}, {railLeft:F1}, {railRight:F1}, {bodyLeft:F1}) PASS");
             Open();
-            if (Item("copy").IsEnabled || Item("save").IsEnabled || Item("undo").IsEnabled)
+            if (Tile("copy").IsEnabled || Tile("save").IsEnabled || Tile("undo").IsEnabled)
                 throw new InvalidOperationException("Editor menu actions must be disabled without an image.");
             long collection = CaptureLibrary.CreateCollection("Resize checks");
             CaptureLibrary.Move(CaptureLibrary.Items().Take(3).Select(i => i.Id), collection);
@@ -284,8 +284,26 @@ internal static class SelfTestImageMenus
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
             ContextMenu OpenMenu() => PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
                 .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().Single(m => m.IsOpen);
+            // The picker's menu is a snapshot of the strip's collection list, and the strip reloads that list
+            // a beat after the collection is created (longer under suite load). Reopen it until the new
+            // collection is on it, for up to 5 s.
+            MenuItem? resizeChecks = null;
+            var waitMenu = System.Diagnostics.Stopwatch.StartNew();
+            while (true)
+            {
+                var open = PresentationSource.CurrentSources.Cast<PresentationSource>().Where(s => s.RootVisual != null)
+                    .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().Where(m => m.IsOpen).ToList();
+                resizeChecks = open.SelectMany(m => m.Items.OfType<MenuItem>()).FirstOrDefault(i => Equals(i.Header, "Resize checks"));
+                if (resizeChecks != null || waitMenu.ElapsedMilliseconds > 5000) break;
+                foreach (var stale in open) stale.IsOpen = false;
+                await Task.Delay(200);
+                collectionPicker.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+            }
+            if (resizeChecks == null)
+                throw new InvalidOperationException("The collection picker must open a menu listing the new collection.");
             var sourceMenu = OpenMenu();
-            sourceMenu.Items.OfType<MenuItem>().Single(i => Equals(i.Header, "Resize checks")).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            resizeChecks.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             sourceMenu.IsOpen = false;
             window.TestLibrary.TestSet("grid", "collection", "");
             await Task.Delay(150);
@@ -329,8 +347,9 @@ internal static class SelfTestImageMenus
             if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
                 throw new InvalidOperationException("The horizontal rail must stay on the right after the editor reopens.");
             var toolbarMenu = (ContextMenu)window.FindName("ToolbarMenu");
-            var hideToolbar = toolbarMenu.Items.OfType<MenuItem>().Single(m => Equals(m.Tag, "hide"));
-            hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            SelfTestCards.CheckCard(toolbarMenu, "toolbar");
+            var hideToolbar = SelfTestCards.Tile(toolbarMenu, LocaleManager.Loc("Str_Toolbar_Hide"));
+            SelfTestCards.Click(hideToolbar);
             var overflow = (Button)window.FindName("ToolbarOverflowButton");
             window.UpdateLayout();
             if (!overflow.IsVisible || ((FrameworkElement)window.FindName("ToolbarGrid")).IsVisible)
@@ -338,15 +357,18 @@ internal static class SelfTestImageMenus
             overflow.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             var more = (ContextMenu)window.FindName("MoreMenu");
             foreach (string key in new[] { "Str_Btn_Capture", "Str_Btn_Print", "Str_Tool_Pen", "Str_Btn_Color", "Str_Btn_Width" })
-                if (!more.Items.OfType<MenuItem>().Any(m => Equals(m.Header, LocaleManager.Loc(key))))
+                if (SelfTestCards.Find(more, LocaleManager.Loc(key)) == null)
                     throw new InvalidOperationException("The hidden toolbar lost " + key);
+            SelfTestCards.CheckCard(more, "More");
+            if (SelfTestCards.Find(more, LocaleManager.Loc("Str_Toolbar_Hide")) is not { } showToolbar || !SelfTestCards.IsOn(showToolbar))
+                throw new InvalidOperationException("The More card must offer Hide toolbar, filled, while the toolbar is hidden.");
             more.IsOpen = false;
-            hideToolbar.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            SelfTestCards.Click(showToolbar);
             report.Add("Rail and toolbar: fixed right end survives layout; hidden actions remain in title-bar overflow PASS");
             var railMenu = rail.ContextMenu!;
             void OpenRail() => railMenu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
             OpenRail();
-            if (railMenu.Items.OfType<MenuItem>().Any(m => Equals(m.Header, LocaleManager.Loc("Str_Rail_Flip"))))
+            if (SelfTestCards.Find(railMenu, LocaleManager.Loc("Str_Rail_Flip")) != null)
                 throw new InvalidOperationException("The removed rail-flip command is still present.");
             window.UpdateLayout();
             if (rail.TranslatePoint(new Point(), window).X < window.ActualWidth / 2)
@@ -369,7 +391,7 @@ internal static class SelfTestImageMenus
             // The rail belongs to the sidebar, so its menu holds sidebar options only: no reverse
             // order, no album views (those are the content area's), and the sides it can take.
             OpenRail();
-            bool Has(string key) => railMenu.Items.OfType<MenuItem>().Any(m => m.Visibility == Visibility.Visible && Equals(m.Header, LocaleManager.Loc(key)));
+            bool Has(string key) => SelfTestCards.Find(railMenu, LocaleManager.Loc(key)) != null;
             if (Has("Str_Rail_Reverse") || Has("Str_Lib_ViewGrid") || Has("Str_Dock_Top") || !Has("Str_Dock_Left") || !Has("Str_Sidebar_Compact"))
                 throw new InvalidOperationException("The rail menu must hold the sidebar's options and nothing from the content area or carousel.");
             if (!rail.Children.Cast<UIElement>().SequenceEqual(expectedRail)

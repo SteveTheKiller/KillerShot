@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using KillerFamily.Controls;
 using KillerShot.Capture;
 using CaptureMode = KillerShot.Capture.CaptureMode;
 using Shortcut = KillerShot.Services.Shortcut;
@@ -383,34 +384,30 @@ namespace KillerShot.Shell
 
         private void BuildCaptureMenu()
         {
-            CaptureMenu.Items.Clear();
-            var remembered = new MenuItem { Header = Loc("Str_Btn_Capture"), InputGestureText = "Ctrl+N" };
-            remembered.Click += (_, _) => StartCapture();
-            CaptureMenu.Items.Add(remembered);
-            CaptureMenu.Items.Add(new Separator());
+            // The capture card: Capture (the remembered mode) and each mode, the remembered one
+            // filled, then the region and interval tiles the tray card shows too.
+            ShotCards.Prepare(CaptureMenu);
+            CaptureMenu.Items.Add(ShotCards.Header(CaptureMenu, Loc("Str_Btn_Capture")));
+            static string? Keys(ShortcutAction? action) =>
+                action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) && sc.Short.Length > 0 ? sc.Short : null;
             var selected = CaptureController.Resolve(null, null);
-            foreach (var (mode, key, action) in new (CaptureMode, string, ShortcutAction?)[]
+            var modes = new List<CardTile> { new("\uE722", Loc("Str_Btn_Capture"), "Ctrl+N", () => StartCapture()) };
+            foreach (var (mode, glyph, key, action) in new (CaptureMode, string, string, ShortcutAction?)[]
             {
-                (CaptureMode.Region, "Str_Mode_Region", null),
-                (CaptureMode.Window, "Str_Mode_Window", ShortcutAction.Window),
-                (CaptureMode.Monitor, "Str_Mode_Monitor", ShortcutAction.Monitor),
-                (CaptureMode.AllMonitors, "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
-                (CaptureMode.Qr, "Str_Mode_Qr", null),
+                (CaptureMode.Region, "\uE7A8", "Str_Mode_Region", null),
+                (CaptureMode.Window, "\uE73F", "Str_Mode_Window", ShortcutAction.Window),
+                (CaptureMode.Monitor, "\uE7F4", "Str_Mode_Monitor", ShortcutAction.Monitor),
+                (CaptureMode.AllMonitors, "\uE7C4", "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
+                (CaptureMode.Qr, "\uED14", "Str_Mode_Qr", null),
             })
             {
                 var m = mode;
-                string gesture = action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) ? sc.Short : "";
-                var mi = new MenuItem { Header = Loc(key), InputGestureText = gesture,
-                    IsCheckable = true, IsChecked = mode == selected };
-                mi.Click += (_, _) => StartCapture(m);
-                CaptureMenu.Items.Add(mi);
+                modes.Add(new CardTile(glyph, Loc(key), Keys(action), () => StartCapture(m)) { Checked = mode == selected });
             }
+            var groups = new List<IEnumerable<CardTile>> { modes };
             if (App.Instance.Capture is { } capture)
-            {
-                CaptureMenu.Items.Add(new Separator());
-                foreach (var item in capture.RegionMenuItems(a => Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var s) ? s.Short : ""))
-                    CaptureMenu.Items.Add(item);
-            }
+                groups.AddRange(capture.RegionTiles(a => Keys(a) ?? ""));
+            CaptureMenu.Items.Add(ShotCards.Grid(CaptureMenu, [.. groups]));
         }
 
         private void CaptureBtn_Click(object sender, RoutedEventArgs e)
@@ -607,34 +604,29 @@ namespace KillerShot.Shell
 
         private void OpenBtn_Click(object sender, RoutedEventArgs e)
         {
-            var menu = new ContextMenu();
-            var open = new MenuItem { Header = Loc("Str_Btn_Open"), InputGestureText = "Ctrl+O", Icon = ToolbarUnitIcon("open") };
-            open.Click += (_, _) => OpenFile();
-            menu.Items.Add(open);
-            var paste = new MenuItem { Header = Loc("Str_Img_PasteNew"), InputGestureText = "Ctrl+Shift+V" };
-            paste.Click += (_, _) => PasteAsNewPicture();
-            menu.Items.Add(paste);
-            var recent = new MenuItem { Header = Loc("Str_Btn_Recent"), Icon = ToolbarUnitIcon("recent") };
-            recent.Items.Add(new MenuItem { Header = Loc("Str_Recent_None"), IsEnabled = false });
-            recent.SubmenuOpened += (_, args) =>
-            {
-                if (ReferenceEquals(args.OriginalSource, recent)) FillRecentMenu(recent);
-            };
-            menu.Items.Add(recent);
+            // The open card: open a file, paste a new picture, and the recent captures as a flyout list.
+            var menu = ShotCards.Menu();
+            menu.Items.Add(ShotCards.Header(menu, Loc("Str_Btn_Open")));
+            menu.Items.Add(ShotCards.Grid(menu,
+            [
+                new CardTile("\uE8E5", Loc("Str_Btn_Open"), "Ctrl+O", OpenFile),
+                new CardTile("\uE77F", Loc("Str_Img_PasteNew"), "Ctrl+Shift+V", PasteAsNewPicture),
+                ShotCards.LazyFlyout("\uE81C", Loc("Str_Btn_Recent"), Loc("Str_Recent_None"), FillRecentMenu),
+            ]));
             OpenFlyout(menu, _toolbarHidden ? ToolbarOverflowButton : OpenBtn.IsVisible ? OpenBtn : MoreBtn);
         }
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
             if (!EditorWorkspaceActive) return;
-            var menu = new ContextMenu();
-            foreach (var (id, key, shortcut, action) in new (string, string, string, Action)[]
-                { ("save", "Str_Btn_Save", "Ctrl+S", Save), ("saveas", "Str_Btn_SaveAs", "Ctrl+Shift+S", SaveAs) })
-            {
-                var item = new MenuItem { Header = Loc(key), InputGestureText = shortcut, Icon = ToolbarUnitIcon(id), IsEnabled = _doc != null };
-                item.Click += (_, _) => action();
-                menu.Items.Add(item);
-            }
+            // The save card: Save and Save as, one group.
+            var menu = ShotCards.Menu();
+            menu.Items.Add(ShotCards.Header(menu, Loc("Str_Btn_Save")));
+            menu.Items.Add(ShotCards.Grid(menu,
+            [
+                new CardTile("\uE74E", Loc("Str_Btn_Save"), "Ctrl+S", Save, false, _doc != null),
+                new CardTile("\uE792", Loc("Str_Btn_SaveAs"), "Ctrl+Shift+S", SaveAs, false, _doc != null),
+            ]));
             OpenFlyout(menu, _toolbarHidden ? ToolbarOverflowButton : SaveBtn.IsVisible ? SaveBtn : MoreBtn);
         }
         private void SaveAsBtn_Click(object sender, RoutedEventArgs e) => SaveAs();

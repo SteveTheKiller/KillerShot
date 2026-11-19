@@ -228,8 +228,8 @@ internal static class SelfTestShellReview
                 .SelectMany(s => Visuals(s.RootVisual)).OfType<ContextMenu>().Single(m => m.IsOpen);
             try
             {
-                var item = menu.Items.OfType<MenuItem>().Single(i => Equals(i.Header, LocaleManager.Loc("Str_Tray_OpenFolder")));
-                item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                SelfTestCards.CheckCard(menu, "tray");
+                SelfTestCards.Click(SelfTestCards.Tile(menu, LocaleManager.Loc("Str_Tray_OpenFolder")));
             }
             finally { menu.IsOpen = false; }
             Require(warnings.Count == 1 && warnings[0].Length > 0, $"Open folder raised {warnings.Count} warnings.");

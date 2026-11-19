@@ -269,7 +269,9 @@ internal static partial class SelfTestLibrary
             header.RaiseEvent(menuKey);
             bool keyboardMenu = header.Focusable && System.Windows.Input.KeyboardNavigation.GetIsTabStop(header)
                 && header.ContextMenu?.IsOpen == true
-                && header.ContextMenu.Items.OfType<MenuItem>().Any(item => Equals(item.Header, "Rename collection..."));
+                && SelfTestCards.TextRows(header.ContextMenu) == null
+                && SelfTestCards.Find(header.ContextMenu, "Rename collection") != null
+                && SelfTestCards.HeaderDelete(header.ContextMenu) != null;
             log.AppendLine($"collection_header_keyboard_menu={keyboardMenu}");
             if (header.ContextMenu != null) header.ContextMenu.IsOpen = false;
             headerWindow.Close();

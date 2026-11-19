@@ -209,19 +209,15 @@ namespace KillerShot.Shell
                 : Loc("Str_CS_OpenWith") + " (" + string.Join(", ", names) + ")";
         }
 
-        /// <summary>The programs Open with starts: each can be removed, and up to three added.</summary>
+        /// <summary>The programs Open with starts, as a card: Add a program (up to three), then one
+        /// Remove tile for each program chosen.</summary>
         private void OpenWithApps_Click(object sender, RoutedEventArgs e)
         {
-            var menu = new ContextMenu { PlacementTarget = OpenWithAppsBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
-            foreach (string app in Handoff.Apps)
-            {
-                string path = app;
-                var item = new MenuItem { Header = string.Format(Loc("Str_CS_RemoveApp"), Handoff.AppName(path)), ToolTip = path };
-                item.Click += (_, _) => { Handoff.Apps = Handoff.Apps.Where(a => a != path).ToList(); SyncOpenWithLabel(); };
-                menu.Items.Add(item);
-            }
-            var add = new MenuItem { Header = Loc("Str_CS_AddApp"), IsEnabled = Handoff.Apps.Count < Handoff.MaxApps };
-            add.Click += (_, _) =>
+            var menu = ShotCards.Menu();
+            menu.PlacementTarget = OpenWithAppsBtn;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.Items.Add(ShotCards.Header(menu, Loc("Str_CS_OpenWith")));
+            var add = new KillerFamily.Controls.CardTile("\uE710", Loc("Str_CS_AddApp"), null, () =>
             {
                 var dialog = new KillerShot.Controls.FileDialog(KillerShot.Controls.FileDialogMode.Open)
                 {
@@ -232,8 +228,11 @@ namespace KillerShot.Shell
                 Handoff.Apps = [.. Handoff.Apps, dialog.FileName];
                 CaptureSettings.OpenWithApps = true;
                 SyncCaptureOptions();
-            };
-            menu.Items.Add(add);
+            }, false, Handoff.Apps.Count < Handoff.MaxApps);
+            var remove = Handoff.Apps.Select(app => new KillerFamily.Controls.CardTile("\uE74D",
+                string.Format(Loc("Str_CS_RemoveApp"), Handoff.AppName(app)), null,
+                () => { Handoff.Apps = Handoff.Apps.Where(a => a != app).ToList(); SyncOpenWithLabel(); }) { Hint = app });
+            menu.Items.Add(ShotCards.Grid(menu, [add], remove));
             // Opening in programs with none chosen would do nothing, so the option turns itself off.
             menu.Closed += (_, _) => Dispatcher.BeginInvoke(() =>
             {

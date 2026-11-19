@@ -562,6 +562,11 @@
     <sys:String x:Key="Str_Sidebar_Left">বাঁ</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">ডান</sys:String>
     <sys:String x:Key="Str_Card_Quick">দ্রুত কাজ</sys:String>
+    <sys:String x:Key="Str_Card_ToLibraryShort">লাইব্রেরিতে</sys:String>
+    <sys:String x:Key="Str_Card_Tools">টুল</sys:String>
+    <sys:String x:Key="Str_Card_WindowsSettingShort">Windows সেটিং</sys:String>
+    <sys:String x:Key="Str_Card_DuplicateShort">অনুলিপি</sys:String>
+    <sys:String x:Key="Str_Card_EditTextShort">টেক্সট সম্পাদনা</sys:String>
     <sys:String x:Key="Str_Tab_Open">নতুন ট্যাব</sys:String>
     <sys:String x:Key="Str_Tab_OpenCollection">নতুন ট্যাবে খুলুন</sys:String>
     <sys:String x:Key="Str_Tab_Browse">ব্রাউজ</sys:String>
