@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Trái</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Phải</sys:String>
     <sys:String x:Key="Str_Card_Quick">Thao tác nhanh</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Tùy chỉnh thẻ này</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Xong</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Đặt lại mặc định</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Đặt lại</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Đã ẩn</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Kéo một ô vào đây để ẩn</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Luôn hiển thị</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Vào thư viện</sys:String>
     <sys:String x:Key="Str_Card_Tools">Công cụ</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Cài đặt Windows</sys:String>

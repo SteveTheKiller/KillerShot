@@ -28,8 +28,9 @@ public partial class MainWindow
         Editor.CommitText();
         // The picture card: the picture's name and size, with Delete for a picture from the album or a
         // folder collection at the right end of the header (it asks first, as it does in the album; a
-        // folder file goes to the Recycle Bin). Then the tile groups, most used first: output, undo,
-        // the selected marks, and the lists (arrange, tools, image, zoom) as flyout tiles.
+        // folder file goes to the Recycle Bin). Then five full rows, most used first: output, undo and
+        // the selected marks, the lists (arrange, tools, image) as flyout tiles, and the look. Print
+        // starts in the card's Hidden drawer.
         ShotCards.Prepare(menu);
         var current = App.Instance.CurrentItem;
         string title = current is { } shown ? LibraryView.Title(shown) : Loc("Str_Lib_Capture");
@@ -42,13 +43,13 @@ public partial class MainWindow
         CardTile ToolbarAction(string id, bool? isChecked = null)
         {
             var unit = _toolbarUnits.Single(u => u.Id == id);
-            string glyph = unit.Glyph != 0 ? ((char)unit.Glyph).ToString() : id == "color" ? "\uE790" : "\uE76F";
+            string glyph = CardGlyph(unit);
             return new CardTile(glyph, Loc(unit.LabelKey), ShortcutFor(unit.Main), () => Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
                 if (!unit.Main.IsEnabled) return;
                 if (id == "save") Save();
                 else unit.Main.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, unit.Main));
-            })), false, unit.Main.IsEnabled) { Checked = isChecked };
+            })), false, unit.Main.IsEnabled) { Checked = isChecked, Id = id };
         }
         // A tool row in the Tools flyout, ticked on the tool in use.
         MenuItem ToolRow(string id, bool isChecked)
@@ -66,15 +67,16 @@ public partial class MainWindow
         var history = new[] { ToolbarAction("undo"), ToolbarAction("redo") };
         bool any = Editor.Selected != null;
         // A tile shows the short caption; the full one stays its name and tooltip.
-        CardTile Mark(string glyph, string key, string shown, string keys, bool enabled, Action action)
-            => new(glyph, Loc(key), keys, action, false, enabled) { Shown = Loc(shown) };
-        // The marks: Delete for the selected marks is the destructive tile, so it goes last.
+        CardTile Mark(string id, string glyph, string key, string shown, string keys, bool enabled, Action action)
+            => new(glyph, Loc(key), keys, action, false, enabled) { Shown = Loc(shown), Id = id };
+        // The marks: Delete for the selected marks is the destructive tile, so it ends the row. It erases
+        // marks, so it is the eraser, not the header's bin, which deletes the picture.
         var marks = new[]
         {
-            Mark("\uE70F", "Str_KS_EditText", "Str_Card_EditTextShort", "F2", Editor.Selected is TextAnnotation or CalloutAnnotation, () => Editor.EditSelectedText()),
-            Mark("\uE8C8", "Str_KS_Duplicate", "Str_Card_DuplicateShort", "Ctrl+D", any, () => Editor.DuplicateSelected()),
-            Mark("\uE8B3", "Str_KS_SelectAllMarks", "Str_Ctx_SelectAll", "Ctrl+A", _doc?.State.Items.IsEmpty == false, () => Editor.SelectAll()),
-            Mark("\uE74D", "Str_KS_Delete", "Str_Lib_Delete", "Del", any, () => Editor.DeleteSelected()),
+            Mark("edittext", "\uE8D2", "Str_KS_EditText", "Str_Card_EditTextShort", "F2", Editor.Selected is TextAnnotation or CalloutAnnotation, () => Editor.EditSelectedText()),
+            Mark("duplicate", "\uF413", "Str_KS_Duplicate", "Str_Card_DuplicateShort", "Ctrl+D", any, () => Editor.DuplicateSelected()),
+            Mark("selectall", "\uE8B3", "Str_KS_SelectAllMarks", "Str_Ctx_SelectAll", "Ctrl+A", _doc?.State.Items.IsEmpty == false, () => Editor.SelectAll()),
+            Mark("delete", "\uED61", "Str_KS_Delete", "Str_Lib_Delete", "Del", any, () => Editor.DeleteSelected()),
         };
         var layer = new List<object>();
         foreach (var (tag, key, gesture, direction, all) in new[]
@@ -112,22 +114,18 @@ public partial class MainWindow
         bool open = _doc != null;
         var lists = new[]
         {
-            ShotCards.Flyout("\uE8E4", Loc("Str_KS_LayerMenu"), null, layer, any),
-            ShotCards.Flyout("\uE70F", Loc("Str_Card_Tools"), null, tools, open),
-            ShotCards.Flyout(((char)_toolbarUnits.Single(u => u.Id == "image").Glyph).ToString(), Loc("Str_Btn_Image"), null, ImageMenuItems(), open),
+            ShotCards.Flyout("\uE81E", Loc("Str_KS_LayerMenu"), null, layer, any) with { Id = "layer" },
+            ShotCards.Flyout("\uEC87", Loc("Str_Card_Tools"), null, tools, open) with { Id = "tools" },
+            ShotCards.Flyout(((char)_toolbarUnits.Single(u => u.Id == "image").Glyph).ToString(), Loc("Str_Btn_Image"), null, ImageMenuItems(), open) with { Id = "image" },
         };
         var look = new[]
         {
             ToolbarAction("color"),
             ToolbarAction("width"),
-            ShotCards.Flyout("\uE71E", Loc("Str_TT_ZoomLevel"), null, zoom, open),
+            ShotCards.Flyout("\uE71E", Loc("Str_TT_ZoomLevel"), null, zoom, open) with { Id = "zoom" },
         };
-        var grid = ShotCards.Grid(menu, output, history, marks, lists, look);
-        menu.Items.Add(grid);
-        // Each tile's command id rides on Uid, so the self-tests read the tiles the way they read the toolbar.
-        string[] ids = ["copy", "save", "saveas", "print", "undo", "redo", "edittext", "duplicate", "selectall", "delete",
-            "layer", "tools", "image", "color", "width", "zoom"];
-        int index = 0;
-        foreach (var tile in ShotCards.ButtonsIn(grid)) if (index < ids.Length) tile.Uid = ids[index++];
+        // Each tile's Id is its command name: the drawer keeps it, and the self-tests read it as the tile's Uid.
+        menu.Items.Add(ShotCards.Editable(menu, "Picture", ["copy", "save"], ["print"],
+            output, history, marks, lists, look));
     }
 }

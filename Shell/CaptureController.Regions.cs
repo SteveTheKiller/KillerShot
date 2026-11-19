@@ -105,14 +105,14 @@ internal sealed partial class CaptureController
 
     // ---- menus ----
 
-    /// <summary>Repeat, saved regions and interval for the tray card and the editor's capture card, as
-    /// two tile groups: the region commands, then the timed one. The lists open from flyout tiles.</summary>
+    /// <summary>Repeat, saved regions, scrolling and interval for the tray card and the editor's capture card,
+    /// one group. The lists open from flyout tiles. Ids name them for the cards' Hidden drawers.</summary>
     public IReadOnlyList<IReadOnlyList<CardTile>> RegionTiles(Func<ShortcutAction, string> gesture)
     {
         static string? Keys(string text) => text.Length == 0 ? null : text;
-        var repeat = new CardTile("\uE8EE", Loc("Str_Region_Repeat"), Keys(gesture(ShortcutAction.RepeatRegion)),
-            () => Defer(() => _ = RepeatRegion()), false, RegionMemory.HasLast);
-        var scrolling = new CardTile("\uE74B", Loc("Str_Scroll_Title"), null, () => Defer(() => _ = ScrollingCapture()));
+        var repeat = new CardTile("\uE8ED", Loc("Str_Region_Repeat"), Keys(gesture(ShortcutAction.RepeatRegion)),
+            () => Defer(() => _ = RepeatRegion()), false, RegionMemory.HasLast) { Id = "repeat" };
+        var scrolling = new CardTile("\uECE7", Loc("Str_Scroll_Title"), null, () => Defer(() => _ = ScrollingCapture())) { Id = "scrolling" };
 
         var saved = new List<object>();
         foreach (var preset in RegionMemory.Presets)
@@ -164,8 +164,13 @@ internal sealed partial class CaptureController
             }
         return
         [
-            [repeat, ShotCards.Flyout("\uE728", Loc("Str_Region_Saved"), null, saved), scrolling],
-            [ShotCards.Flyout("\uE916", Loc("Str_Region_Interval"), Keys(gesture(ShortcutAction.Interval)), interval) with { Checked = IntervalRunning ? true : null }],
+            [
+                repeat,
+                ShotCards.Flyout("\uE728", Loc("Str_Region_Saved"), null, saved) with { Id = "saved" },
+                scrolling,
+                ShotCards.Flyout("\uE916", Loc("Str_Region_Interval"), Keys(gesture(ShortcutAction.Interval)), interval)
+                    with { Checked = IntervalRunning ? true : null, Id = "interval" },
+            ],
         ];
     }
 

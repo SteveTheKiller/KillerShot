@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Sinistra</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Destra</sys:String>
     <sys:String x:Key="Str_Card_Quick">Azioni rapide</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Personalizza questa scheda</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Fine</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Ripristina predefiniti</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Ripristina</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Nascosti</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Trascina qui un riquadro per nasconderlo</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Sempre visibile</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Nella libreria</sys:String>
     <sys:String x:Key="Str_Card_Tools">Strumenti</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Impostazione di Windows</sys:String>

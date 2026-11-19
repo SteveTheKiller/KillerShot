@@ -317,7 +317,7 @@ namespace KillerShot.Shell
                 if (!byId.TryGetValue(id, out ToolbarUnit? unit)) continue;
                 Button target = unit.Main;
                 bool tool = unit.Main.Tag is string kind && Enum.TryParse<KillerShot.Editor.ToolKind>(kind, out _);
-                string glyph = unit.Glyph != 0 ? ((char)unit.Glyph).ToString() : id == "color" ? "\uE790" : "\uE76F";
+                string glyph = CardGlyph(unit);
                 // After the card closes, so a button that opens its own flyout opens it cleanly.
                 buttons.Add(new CardTile(glyph, Loc(unit.LabelKey), ShortcutFor(unit.Main), () => Dispatcher.BeginInvoke(DispatcherPriority.Input,
                     new Action(() =>
@@ -329,7 +329,7 @@ namespace KillerShot.Shell
             if (_toolbarHidden)
             {
                 bar.Add(ShotCards.Flyout("\uE771", Loc("Str_Toolbar_Header"), null, ToolbarStyleRows()));
-                bar.Add(new CardTile("\uE7B3", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = true });
+                bar.Add(new CardTile("\uED1A", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = true });
             }
             MoreMenu.Items.Add(ShotCards.Grid(MoreMenu, buttons, bar));
         }
@@ -343,6 +343,13 @@ namespace KillerShot.Shell
         }
 
         /// <summary>A unit's icon for a list row: its glyph, or the drawn color and width icons.</summary>
+        /// <summary>A toolbar unit's glyph for a card tile. The buttons the bar draws itself (color, width, fill,
+        /// step) have no glyph, so their tiles take one that says the same thing.</summary>
+        private static string CardGlyph(ToolbarUnit unit) => unit.Glyph != 0 ? ((char)unit.Glyph).ToString() : unit.Id switch
+        {
+            "color" => "\uE790", "width" => "\uEDA8", "fill" => "\uEB42", "step" => "\uF146", _ => "\uE76F",
+        };
+
         private FrameworkElement ToolbarUnitIcon(string id)
         {
             ToolbarUnit unit = _toolbarUnits.First(u => u.Id == id);

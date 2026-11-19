@@ -26,11 +26,12 @@ public partial class MainWindow
             new(glyph, Loc(key), keys, () => RunImageCommand(action), mirror, has);
         var resize = ImageMenuItems().OfType<MenuItem>().Single(item => Equals(item.Header, Loc("Str_Img_Resize")));
         _imageMenu.Items.Add(ShotCards.Grid(_imageMenu,
-            [Tile("\uE77F", "Str_Img_Paste", "Ctrl+V", PasteIntoPicture), Tile("\uE8B9", "Str_Img_InsertFile", "Ctrl+Shift+O", InsertImageFile)],
-            [Tile("\uE7AD", "Str_Img_RotateRight", "Ctrl+H", RotateRight), Tile("\uE7AD", "Str_Img_RotateLeft", "Ctrl+G", RotateLeft, mirror: true),
-             Tile("\uE8AB", "Str_Img_FlipH", "Ctrl+Shift+H", FlipHorizontal), Tile("\uE8CB", "Str_Img_FlipV", "Ctrl+Shift+G", FlipVertical)],
-            [ShotCards.Flyout("\uE740", Loc("Str_Img_Resize"), "Ctrl+I", ShotCards.RowsOf(resize), has),
-             Tile("\uE8B3", "Str_Img_Margin", "Ctrl+M", PromptMargin), Tile("\uE7A8", "Str_Img_AutoCrop", "Ctrl+T", TrimBorder)]));
+            [Tile("\uE77F", "Str_Img_Paste", "Ctrl+V", PasteIntoPicture), Tile("\uE8B9", "Str_Img_InsertFile", "Ctrl+Shift+O", InsertImageFile),
+             ShotCards.Flyout("\uE740", Loc("Str_Img_Resize"), "Ctrl+I", ShotCards.RowsOf(resize), has)],
+            [Tile("\uE7AD", "Str_Img_RotateLeft", "Ctrl+G", RotateLeft, mirror: true), Tile("\uE7AD", "Str_Img_RotateRight", "Ctrl+H", RotateRight),
+             Tile("\uE7A8", "Str_Img_AutoCrop", "Ctrl+T", TrimBorder)],
+            [Tile("\uE8AB", "Str_Img_FlipH", "Ctrl+Shift+H", FlipHorizontal), Tile("\uE8CB", "Str_Img_FlipV", "Ctrl+Shift+G", FlipVertical),
+             Tile("\uE91B", "Str_Img_Margin", "Ctrl+M", PromptMargin)]));
         OpenFlyout(_imageMenu, ImageBtn);
     }
 

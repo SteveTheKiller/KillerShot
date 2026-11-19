@@ -31,7 +31,7 @@ namespace KillerShot.Shell
         {
             foreach (var (view, glyph, key, keys) in new[]
             {
-                ("shelves", "\uE8A9", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
+                ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
                 ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
                 ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
             })
@@ -235,7 +235,12 @@ namespace KillerShot.Shell
             var arrowOfSide = StripSides.First(s => s.Side == minimizeHost.Side).Arrow;
             var minimize = new KillerFamily.Controls.CardTile(minimizeHost.IsMinimized ? "\uE923" : "\uE921",
                 Loc(minimizeHost.IsMinimized ? "Str_Dock_Restore" : "Str_Dock_Minimize"), "Alt+Shift+" + arrowOfSide, () => minimizeHost.Toggle());
-            menu.Items.Add(ShotCards.Grid(menu, Sides(true), Sides(false), [minimize]));
+            // Two full rows: the sidebar's sides and its compact switch, then the carousel's sides and Minimize.
+            var sidebar = Sides(true).ToList();
+            if (_navigationStrip is { } strip)
+                sidebar.Add(new KillerFamily.Controls.CardTile("\uE8FD", Loc("Str_Sidebar_Compact"), null, () => strip.Compact = !strip.Compact)
+                    { Checked = strip.Compact, KeepsOpen = true });
+            menu.Items.Add(ShotCards.Grid(menu, sidebar, Sides(false), [minimize]));
             menu.IsOpen = true;
         }
 

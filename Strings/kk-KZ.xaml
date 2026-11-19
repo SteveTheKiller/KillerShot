@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Сол</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Оң</sys:String>
     <sys:String x:Key="Str_Card_Quick">Жылдам әрекеттер</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Бұл картаны баптау</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Дайын</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Әдепкіге қайтару</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Қалпына келтіру</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Жасырын</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Жасыру үшін тақтаны осында сүйреңіз</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Әрқашан көрсетіледі</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Кітапханаға</sys:String>
     <sys:String x:Key="Str_Card_Tools">Құралдар</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows параметрі</sys:String>

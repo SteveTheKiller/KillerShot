@@ -1033,8 +1033,8 @@ namespace KillerShot.Shell
             bool keyboard = Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released && !anchor.IsMouseOver;
             var menu = ShotCards.Menu();
             Action Guard(Action action) => () => { if (CaptureLibrary.IsCurrent(item)) action(); };
-            CardTile Tile(string glyph, string key, string? keys, Action action, bool enabled = true, string? shortKey = null)
-                => new(glyph, Loc(key), keys, Guard(action), false, enabled) { Shown = shortKey == null ? null : Loc(shortKey) };
+            CardTile Tile(string id, string glyph, string key, string? keys, Action action, bool enabled = true, string? shortKey = null)
+                => new(glyph, Loc(key), keys, Guard(action), false, enabled) { Shown = shortKey == null ? null : Loc(shortKey), Id = id };
             menu.Items.Add(ShotCards.Header(menu, Title(item), item.Taken.ToString("g", CultureInfo.CurrentCulture) + "  ·  "
                 + item.Width.ToString(CultureInfo.CurrentCulture) + " x " + item.Height.ToString(CultureInfo.CurrentCulture),
                 Loc("Str_Lib_Delete"), deleteGesture, Guard(() => Delete(item))));
@@ -1048,9 +1048,9 @@ namespace KillerShot.Shell
             // stay in their places, dimmed.
             var everyday = new List<CardTile>
             {
-                Tile("\uE8E5", "Str_Lib_Open", "Enter", () => open?.Invoke(item)),
-                Tile("\uE8C8", "Str_Lib_Copy", "Ctrl+C", () => Copy(item), !video),
-                Tile("\uE749", "Str_Btn_Print", "Ctrl+P", Print, !video),
+                Tile("open", "\uE8E5", "Str_Lib_Open", "Enter", () => open?.Invoke(item)),
+                Tile("copy", "\uE8C8", "Str_Lib_Copy", "Ctrl+C", () => Copy(item), !video),
+                Tile("print", "\uE749", "Str_Btn_Print", "Ctrl+P", Print, !video),
             };
             var keep = new List<CardTile>();
             var picture = new List<CardTile>();
@@ -1059,26 +1059,30 @@ namespace KillerShot.Shell
             {
                 // A file in a folder collection: the folder keeps it, so no collections or notes,
                 // only a way into the encrypted library.
-                keep.Add(Tile("\uE838", "Str_Lib_ShowInExplorer", "Ctrl+E", () => ShowInExplorer(item)));
-                if (video) keep.Add(Tile("\uE896", "Str_Rec_MoveToLibrary", null, () => MoveVideoToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
-                else keep.Add(Tile("\uE896", "Str_Lib_AddToLibrary", null, () => AddToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
+                keep.Add(Tile("explorer", "\uE838", "Str_Lib_ShowInExplorer", "Ctrl+E", () => ShowInExplorer(item)));
+                if (video) keep.Add(Tile("tolibrary", "\uE8F1", "Str_Rec_MoveToLibrary", null, () => MoveVideoToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
+                else keep.Add(Tile("tolibrary", "\uE8F1", "Str_Lib_AddToLibrary", null, () => AddToLibrary(item), shortKey: "Str_Card_ToLibraryShort"));
             }
             else
             {
-                keep.Add(Tile("\uE792", "Str_Lib_SaveAs", "Ctrl+Shift+S", () => SaveAs(item)));
+                keep.Add(Tile("saveas", "\uE792", "Str_Lib_SaveAs", "Ctrl+Shift+S", () => SaveAs(item)));
                 var move = new MenuItem();
                 FillMoveItems(move, item);
-                keep.Add(ShotCards.Flyout("\uE8DE", Loc("Str_Lib_MoveTo"), "Ctrl+M", ShotCards.RowsOf(move)));
-                keep.Add(Tile("\uE70B", "Str_Lib_Note", "F2", () => EditNote(item)));
+                keep.Add(ShotCards.Flyout("\uE8DE", Loc("Str_Lib_MoveTo"), "Ctrl+M", ShotCards.RowsOf(move)) with { Id = "moveto" });
+                keep.Add(Tile("note", "\uE70B", "Str_Lib_Note", "F2", () => EditNote(item)));
                 var links = BuildOcrLinksMenu(item.Id, anchor);
-                picture.Add(Tile("\uE81C", "Str_Marks_OpenOriginal", null, () => RecoverOriginal(item), !video));
-                picture.Add(links != null
-                    ? ShotCards.Flyout("\uE71B", Loc("Str_Ocr_Links"), null, ShotCards.RowsOf(links))
-                    : new CardTile("\uE71B", Loc("Str_Ocr_Links"), null, null, false, false));
-                look.Add(new CardTile("\uE790", Loc("Str_Lib_CardColor"), null, PickCardColor));
-                look.Add(new CardTile("\uE894", Loc("Str_Lib_CardColorDefault"), null, () => CardColors.SetCard(null), false, !CardColors.CardIsDefault));
+                picture.Add(Tile("original", "\uE81C", "Str_Marks_OpenOriginal", null, () => RecoverOriginal(item), !video));
+                look.Add(new CardTile("\uE790", Loc("Str_Lib_CardColor"), null, PickCardColor) { Id = "cardcolor" });
+                look.Add(new CardTile("\uF570", Loc("Str_Lib_CardColorDefault"), null, () => CardColors.SetCard(null), false, !CardColors.CardIsDefault) { Id = "cardcolordefault" });
+                // Links only lists something on a picture with recognized web addresses, so it starts in the drawer.
+                look.Add(links != null
+                    ? ShotCards.Flyout("\uE71B", Loc("Str_Ocr_Links"), null, ShotCards.RowsOf(links)) with { Id = "links" }
+                    : new CardTile("\uE71B", Loc("Str_Ocr_Links"), null, null, false, false) { Id = "links" });
             }
-            menu.Items.Add(ShotCards.Grid(menu, everyday, keep, picture, look));
+            // A capture in the album: nine tiles in three full rows, customizable. A folder file: five, fixed.
+            menu.Items.Add(inFolder
+                ? ShotCards.Grid(menu, everyday, keep)
+                : ShotCards.Editable(menu, "LibraryCapture", ["open"], ["links"], everyday, keep, picture, look));
             CardBuilder.Open(menu, anchor, keyboard, new Rect(0, anchor.ActualHeight, 0, 0));
             Anim.FadeIn(menu);
         }
@@ -1162,7 +1166,7 @@ namespace KillerShot.Shell
             var color = new List<CardTile>
             {
                 new("\uE790", Loc("Str_Lib_CollectionColor"), null, PickColor) { Shown = Loc("Str_Lib_ColorShort") },
-                new("\uE894", Loc("Str_Lib_CollectionColorNone"), null,
+                new("\uF570", Loc("Str_Lib_CollectionColorNone"), null,
                     () => TryChangeAlbum(() => CardColors.SetCollection(id, null, session)), false, CardColors.Collection(id) != null),
             };
             menu.Items.Add(ShotCards.Grid(menu, use, color));

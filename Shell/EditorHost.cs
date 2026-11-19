@@ -391,13 +391,13 @@ namespace KillerShot.Shell
             static string? Keys(ShortcutAction? action) =>
                 action is { } a && Shortcut.TryParse(CaptureSettings.ShortcutText(a), out var sc) && sc.Short.Length > 0 ? sc.Short : null;
             var selected = CaptureController.Resolve(null, null);
-            var modes = new List<CardTile> { new("\uE722", Loc("Str_Btn_Capture"), "Ctrl+N", () => StartCapture()) };
+            var modes = new List<CardTile> { new("\uE722", Loc("Str_Btn_Capture"), "Ctrl+N", () => StartCapture()) { Id = "capture" } };
             foreach (var (mode, glyph, key, action) in new (CaptureMode, string, string, ShortcutAction?)[]
             {
-                (CaptureMode.Region, "\uE7A8", "Str_Mode_Region", null),
-                (CaptureMode.Window, "\uE73F", "Str_Mode_Window", ShortcutAction.Window),
+                (CaptureMode.Region, "\uF407", "Str_Mode_Region", null),
+                (CaptureMode.Window, "\uF7ED", "Str_Mode_Window", ShortcutAction.Window),
                 (CaptureMode.Monitor, "\uE7F4", "Str_Mode_Monitor", ShortcutAction.Monitor),
-                (CaptureMode.AllMonitors, "\uE7C4", "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
+                (CaptureMode.AllMonitors, "\uEBC6", "Str_Mode_AllMonitors", ShortcutAction.AllMonitors),
                 (CaptureMode.Qr, "\uED14", "Str_Mode_Qr", null),
             })
             {
@@ -407,7 +407,7 @@ namespace KillerShot.Shell
             var groups = new List<IEnumerable<CardTile>> { modes };
             if (App.Instance.Capture is { } capture)
                 groups.AddRange(capture.RegionTiles(a => Keys(a) ?? ""));
-            CaptureMenu.Items.Add(ShotCards.Grid(CaptureMenu, [.. groups]));
+            CaptureMenu.Items.Add(ShotCards.Editable(CaptureMenu, "Capture", ["capture"], ["interval"], [.. groups]));
         }
 
         private void CaptureBtn_Click(object sender, RoutedEventArgs e)

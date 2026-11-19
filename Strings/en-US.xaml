@@ -568,6 +568,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Left</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Right</sys:String>
     <sys:String x:Key="Str_Card_Quick">Quick actions</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Customize this card</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Done</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Reset to default</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Reset</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Hidden</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Drag a tile here to hide it</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Always shown</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">To library</sys:String>
     <sys:String x:Key="Str_Card_Tools">Tools</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows setting</sys:String>

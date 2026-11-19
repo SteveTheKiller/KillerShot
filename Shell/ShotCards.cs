@@ -4,6 +4,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using KillerFamily.Controls;
 using KillerShot.Services;
@@ -13,12 +14,13 @@ namespace KillerShot.Shell;
 /// <summary>
 /// KillerShot's family tile cards (the KillerPDF 1.9 card rules, KillerUI CardBuilder.TileGroups):
 /// 1. Three tiles across, every tile an MDL2 glyph over a short caption that wraps inside the tile.
-/// 2. Related tiles are one group on a row of their own; a group longer than a row goes on to the next,
-///    and an unfilled row stays blank on the right.
+/// 2. Tiles run on in order, related ones side by side, so every row is full but the last (Steve 2026-11-19:
+///    no blank cells in the middle of a card). A card's tile count is a multiple of three where it can be.
 /// 3. Most used first, destructive last; Delete on a card for one thing sits in the header.
 /// 4. A tile that only sometimes applies stays in its place, dimmed, so the rows never shift.
 /// 5. No text rows: everything is a tile, or a flyout tile for a list such as Move to.
-/// Grid lays the tiles out with the kit's CardBuilder.TileGroups.
+/// 6. A big card is customizable (Editable, the kit's CardEdit); a small card stays fixed (Grid).
+/// Both lay the tiles out with the kit's CardBuilder.TileGroups.
 /// </summary>
 internal static class ShotCards
 {
@@ -30,12 +32,6 @@ internal static class ShotCards
 
     /// <summary>The tag on a card header's Delete button, for the self-tests.</summary>
     public const string HeaderDeleteTag = "carddelete";
-
-    /// <summary>The rows a flyout tile opens, kept on its button so the self-tests can reach them.</summary>
-    public static readonly DependencyProperty FlyoutRowsProperty =
-        DependencyProperty.RegisterAttached("FlyoutRows", typeof(IList<object>), typeof(ShotCards));
-
-    public static IList<object>? GetFlyoutRows(DependencyObject d) => (IList<object>?)d.GetValue(FlyoutRowsProperty);
 
     private static readonly DependencyProperty DeleteButtonProperty =
         DependencyProperty.RegisterAttached("DeleteButton", typeof(Button), typeof(ShotCards));
@@ -122,48 +118,97 @@ internal static class ShotCards
     }
 
     /// <summary>
-    /// The tile grid: each group on rows of its own, three across. Empty groups are skipped. Put it on the
-    /// card after the header; it is the card's only other item.
+    /// A fixed tile grid for a small card: the tiles fill rows of three in order. Empty groups are skipped.
+    /// Put it on the card after the header; it is the card's only other item.
     /// </summary>
-    public static MenuItem Grid(ContextMenu card, params IEnumerable<CardTile>[] groups)
+    public static MenuItem Grid(ContextMenu card, params IEnumerable<CardTile>[] groups) => Build(card, null, groups);
+
+    /// <summary>
+    /// A customizable tile grid for a big card (the kit's CardEdit): a pencil in the corner opens edit mode, and
+    /// tiles move between the card and its Hidden drawer. Locked tiles always show; spares start in the drawer
+    /// (both named by tile Id, or by glyph for a tile without one), so the default card is full rows. The layout is kept as the "Card.{name}.Hidden" setting.
+    /// </summary>
+    public static MenuItem Editable(ContextMenu card, string name, string[] locked, string[] spares, params IEnumerable<CardTile>[] groups)
     {
-        // The kit lays out the grid (CardBuilder.TileGroups); blank cells end a group's row. Cells line up with
-        // the tiles in order, blanks skipped, so each flyout tile gets its rows and lazy fill wired here.
-        var lists = groups.Select(g => g.ToList()).Where(g => g.Count > 0).ToList();
-        var strip = CardBuilder.TileGroups(card, Loc("Str_Card_Quick"), lists, Columns);
-        var tiles = lists.SelectMany(g => g).ToList();
-        if (strip.Child is Panel cells)
+        var edit = new CardEdit(() => Settings.Get($"Card.{name}.Hidden") is { Length: > 0 } saved ? saved : null,
+            value => Settings.Set($"Card.{name}.Hidden", value ?? ""))
         {
-            int next = 0;
-            foreach (UIElement cell in cells.Children)
+            Locked = t => locked.Contains(t.Id ?? t.Glyph),
+            DefaultHidden = t => spares.Contains(t.Id ?? t.Glyph),
+            EditTip = Loc("Str_Card_Edit"), DoneTip = Loc("Str_Card_EditDone"), ResetTip = Loc("Str_Card_EditReset"),
+            ResetLabel = Loc("Str_Card_EditResetShort"), HiddenLabel = Loc("Str_Card_Hidden"),
+            HiddenHint = Loc("Str_Card_HiddenHint"), LockedTip = Loc("Str_Card_AlwaysShown"),
+        };
+        return Build(card, edit, groups);
+    }
+
+    // The card's tiles by caption (unique on a card, unlike a mirrored pair's glyph): a customizable card rebuilds
+    // its tile buttons whenever a tile moves, so a button's tile is found from its accessible name.
+    private static readonly DependencyProperty TilesProperty =
+        DependencyProperty.RegisterAttached("Tiles", typeof(Dictionary<string, CardTile>), typeof(ShotCards));
+
+    // The rows a lazy flyout holds once it has been filled.
+    private static readonly ConditionalWeakTable<CardTile, IList<object>> Filled = new();
+
+    private static MenuItem Build(ContextMenu card, CardEdit? edit, IEnumerable<CardTile>[] groups)
+    {
+        // The tiles run on as one list, so every row is full but the last: a group never leaves blank cells
+        // in the middle of a card, and a tile moved to the drawer closes up the rest.
+        var tiles = groups.SelectMany(g => g).ToList();
+        var byName = new Dictionary<string, CardTile>();
+        foreach (var tile in tiles) byName.TryAdd(Trimmed(tile.Caption), tile);
+        card.SetValue(TilesProperty, byName);
+        if (!(bool)card.GetValue(FlyoutWatchedProperty))
+        {
+            card.SetValue(FlyoutWatchedProperty, true);
+            card.Opened += (_, _) => NameTiles(card);
+            // Runs after the kit's own Click on the tile, which has opened the flyout with its placeholder row.
+            card.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler((_, e) =>
             {
-                if (cell is Border { Child: null }) continue;
-                if (next >= tiles.Count) break;
-                var tile = tiles[next++];
-                var button = cell as Button ?? (cell as System.Windows.Controls.Grid)?.Children.OfType<Button>().FirstOrDefault();
-                if (tile.Flyout is not { } rows || button == null) continue;
-                button.SetValue(FlyoutRowsProperty, rows);
-                if (!LazyFills.TryGetValue(tile, out var fill)) continue;
-                // The kit opens the flyout with the placeholder row first; this fills it in place.
-                ItemsControl? host = null;
-                button.Click += (_, _) =>
-                {
-                    host ??= (rows.FirstOrDefault() as FrameworkElement)?.Parent as ItemsControl;
-                    if (host == null) return;
-                    fill(host);
-                    button.SetValue(FlyoutRowsProperty, host.Items.Cast<object>().ToList());
-                    // The kit's flyout picked its focus row when it opened, before the fill replaced the rows, so
-                    // a keyboard open would have left focus on the card. The first real row takes it here.
-                    if (InputManager.Current.MostRecentInputDevice is KeyboardDevice)
-                        host.Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
-                            host.Items.OfType<MenuItem>().FirstOrDefault(i => i.IsEnabled)?.Focus());
-                };
-            }
+                if (e.OriginalSource is not Button button || TileFor(button) is not { } tile) return;
+                if (!LazyFills.TryGetValue(tile, out var fill) || tile.Flyout is not { } rows) return;
+                if ((rows.FirstOrDefault() as FrameworkElement)?.Parent is not ItemsControl host) return;
+                fill(host);
+                Filled.AddOrUpdate(tile, host.Items.Cast<object>().ToList());
+                // The kit's flyout picked its focus row when it opened, before the fill replaced the rows, so
+                // a keyboard open would have left focus on the card. The first real row takes it here.
+                if (InputManager.Current.MostRecentInputDevice is KeyboardDevice)
+                    host.Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+                        host.Items.OfType<MenuItem>().FirstOrDefault(i => i.IsEnabled)?.Focus());
+            }));
         }
+        var strip = CardBuilder.TileGroups(card, Loc("Str_Card_Quick"), tiles.Count > 0 ? [tiles] : [], edit, Columns);
         var slot = CardBuilder.Slot(strip, new Thickness(0));
         AutomationProperties.SetName(slot, Loc("Str_Card_Quick"));
+        // The grid is not on the card yet, so its tiles are named from this build's own list.
+        foreach (var button in Descendants(strip).OfType<Button>())
+            if (byName.GetValueOrDefault(Trimmed(AutomationProperties.GetName(button))) is { Id: { } id }) button.Uid = id;
         return slot;
     }
+
+    // A tile with an Id carries it as its button's Uid, the command name the self-tests read.
+    private static void NameTiles(ItemsControl card)
+    {
+        foreach (var button in Buttons(card))
+            if (TileFor(button) is { Id: { } id }) button.Uid = id;
+    }
+
+    private static string Trimmed(string caption) => caption.TrimEnd('.', '…').TrimEnd();
+
+    private static readonly DependencyProperty FlyoutWatchedProperty =
+        DependencyProperty.RegisterAttached("FlyoutWatched", typeof(bool), typeof(ShotCards), new PropertyMetadata(false));
+
+    private static CardTile? TileFor(Button button)
+    {
+        if (AutomationProperties.GetName(button) is not { Length: > 0 } name) return null;
+        DependencyObject? at = button;
+        while (at != null && at is not ContextMenu) at = LogicalTreeHelper.GetParent(at) ?? VisualTreeHelper.GetParent(at);
+        return (at?.GetValue(TilesProperty) as Dictionary<string, CardTile>)?.GetValueOrDefault(Trimmed(name));
+    }
+
+    /// <summary>The rows a flyout tile opens, or null for a tile that acts.</summary>
+    public static IList<object>? GetFlyoutRows(Button tile) =>
+        TileFor(tile) is { Flyout: { } rows } t ? (Filled.TryGetValue(t, out var filled) ? filled : rows) : null;
 
     /// <summary>A tile that opens a list beside itself. The rows are taken out of whatever held them.</summary>
     public static CardTile Flyout(string glyph, string caption, string? keys, IEnumerable<object> rows, bool enabled = true)
@@ -203,9 +248,12 @@ internal static class ShotCards
     /// <summary>Whether any tile or header button on the card can be used.</summary>
     public static bool AnyEnabled(ItemsControl card) => Buttons(card).Any(b => b.IsEnabled);
 
+    // The card's own controls: a customizable card's hidden measuring copy of its grid, its drawer (a popup)
+    // and its edit pencil (a button with no caption) are not tiles.
     private static IEnumerable<DependencyObject> Descendants(DependencyObject? root)
     {
-        if (root == null) yield break;
+        if (root == null || root is Popup || root is UIElement { Visibility: not Visibility.Visible }) yield break;
+        if (root is Button { Tag: null }) yield break;
         yield return root;
         foreach (var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())
             foreach (var d in Descendants(child)) yield return d;

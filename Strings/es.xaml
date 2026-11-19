@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Izquierda</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Derecha</sys:String>
     <sys:String x:Key="Str_Card_Quick">Acciones rápidas</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Personalizar esta tarjeta</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Listo</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Restablecer valores predeterminados</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Restablecer</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Ocultos</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Arrastra un mosaico aquí para ocultarlo</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Siempre visible</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">A la biblioteca</sys:String>
     <sys:String x:Key="Str_Card_Tools">Herramientas</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Ajuste de Windows</sys:String>

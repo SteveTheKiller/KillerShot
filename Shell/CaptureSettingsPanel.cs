@@ -209,8 +209,8 @@ namespace KillerShot.Shell
                 : Loc("Str_CS_OpenWith") + " (" + string.Join(", ", names) + ")";
         }
 
-        /// <summary>The programs Open with starts, as a card: Add a program (up to three), then one
-        /// Remove tile for each program chosen.</summary>
+        /// <summary>The programs Open with starts, as a card: Add a program (up to three), and Remove,
+        /// which lists the programs chosen.</summary>
         private void OpenWithApps_Click(object sender, RoutedEventArgs e)
         {
             var menu = ShotCards.Menu();
@@ -229,10 +229,16 @@ namespace KillerShot.Shell
                 CaptureSettings.OpenWithApps = true;
                 SyncCaptureOptions();
             }, false, Handoff.Apps.Count < Handoff.MaxApps);
-            var remove = Handoff.Apps.Select(app => new KillerFamily.Controls.CardTile("\uE74D",
-                string.Format(Loc("Str_CS_RemoveApp"), Handoff.AppName(app)), null,
-                () => { Handoff.Apps = Handoff.Apps.Where(a => a != app).ToList(); SyncOpenWithLabel(); }) { Hint = app });
-            menu.Items.Add(ShotCards.Grid(menu, [add], remove));
+            var rows = new List<object>();
+            foreach (string app in Handoff.Apps)
+            {
+                string chosen = app;
+                var row = new MenuItem { Header = Handoff.AppName(app), ToolTip = app };
+                System.Windows.Automation.AutomationProperties.SetName(row, string.Format(Loc("Str_CS_RemoveApp"), Handoff.AppName(app)));
+                row.Click += (_, _) => { Handoff.Apps = Handoff.Apps.Where(a => a != chosen).ToList(); SyncOpenWithLabel(); };
+                rows.Add(row);
+            }
+            menu.Items.Add(ShotCards.Grid(menu, [add, ShotCards.Flyout("\uE74D", Loc("Str_Region_Remove"), null, rows)]));
             // Opening in programs with none chosen would do nothing, so the option turns itself off.
             menu.Closed += (_, _) => Dispatcher.BeginInvoke(() =>
             {

@@ -68,7 +68,7 @@ public partial class MainWindow
     private CardTile SideTile(DockSide side, string key, string arrow, DockHost host)
         => new(SideGlyph(side), Loc(key), "Alt+Shift+" + arrow, () => host.DockTo(side)) { Checked = host.Side == side };
 
-    /// <summary>The collections sidebar's card: which collection and how collections look, then which side.</summary>
+    /// <summary>The collections sidebar's card: which side and how compact, then which collection and how it looks.</summary>
     private void FillSidebarMenu(ContextMenu menu)
     {
         menu.Items.Clear();
@@ -83,7 +83,7 @@ public partial class MainWindow
         };
         var sides = StripSides.Where(s => s.Side is DockSide.Left or DockSide.Right)
             .Select(s => SideTile(s.Side, s.Key, s.Arrow, NavigationDock));
-        menu.Items.Add(ShotCards.Grid(menu, look, sides));
+        menu.Items.Add(ShotCards.Grid(menu, sides.Append(look[2]), look.Take(2)));
     }
 
     /// <summary>The photo carousel's card: where it sits, and the cards under its pictures.</summary>
@@ -103,7 +103,7 @@ public partial class MainWindow
         menu.Items.Clear();
         var views = new[]
         {
-            ("shelves", "\uE8A9", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
+            ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
             ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
             ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
         };

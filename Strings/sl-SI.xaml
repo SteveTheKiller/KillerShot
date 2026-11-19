@@ -557,6 +557,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Levo</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Desno</sys:String>
     <sys:String x:Key="Str_Card_Quick">Hitra dejanja</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Prilagodi to kartico</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Končano</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Ponastavi na privzeto</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Ponastavi</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Skrito</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Povlecite ploščico sem, da jo skrijete</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Vedno prikazano</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">V knjižnico</sys:String>
     <sys:String x:Key="Str_Card_Tools">Orodja</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavitev sistema Windows</sys:String>

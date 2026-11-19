@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Lewa</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Prawa</sys:String>
     <sys:String x:Key="Str_Card_Quick">Szybkie akcje</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Dostosuj tę kartę</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Gotowe</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Przywróć domyślne</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Resetuj</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Ukryte</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Przeciągnij tu kafelek, aby go ukryć</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Zawsze widoczne</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Do biblioteki</sys:String>
     <sys:String x:Key="Str_Card_Tools">Narzędzia</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Ustawienie Windows</sys:String>

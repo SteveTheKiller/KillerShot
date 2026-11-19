@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Ліворуч</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Праворуч</sys:String>
     <sys:String x:Key="Str_Card_Quick">Швидкі дії</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Налаштувати цю картку</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Готово</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Скинути до типових</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Скинути</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Приховані</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Перетягніть плитку сюди, щоб приховати її</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Завжди показано</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">До бібліотеки</sys:String>
     <sys:String x:Key="Str_Card_Tools">Інструменти</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>

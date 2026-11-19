@@ -31,17 +31,14 @@ public partial class FilesView
             ResultsList.SelectedItems.Add(seed);
         }
         // The file card, the family tile card: what was clicked, with Delete (to the Recycle Bin) at
-        // the right end of the header, then three-across tile groups, most used first. A tile that
-        // does not apply to this selection stays in its place, dimmed. ShellContextMenu stays the
-        // native menu, opened from its own tile.
+        // the right end of the header, then full rows of three, most used first. A tile that does not
+        // apply to this selection stays in its place, dimmed. ShellContextMenu stays the native menu,
+        // opened from its own tile. The card for a file is customizable; the folder background's is small.
         var menu = KillerShot.Shell.ShotCards.Menu();
         bool onItem = !background && (seed != null || ResultsList.SelectedItems.Count > 0);
-        var tags = new List<string>();
+        // Each tile's Id is its command name: the drawer keeps it, and the self-tests read it as the tile's Uid.
         CardTile Tile(string tag, string glyph, string key, Action action, string? keys = null, bool enabled = true)
-        {
-            tags.Add(tag);
-            return new CardTile(glyph, Loc(key), keys, Guarded(action), false, enabled);
-        }
+            => new(glyph, Loc(key), keys, Guarded(action), false, enabled) { Id = tag };
         var groups = new List<IEnumerable<CardTile>>();
         if (onItem)
         {
@@ -119,11 +116,9 @@ public partial class FilesView
             groups.Add(here);
             groups.Add([Tile("refresh", "\uE72C", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5")]);
         }
-        var grid = KillerShot.Shell.ShotCards.Grid(menu, [.. groups]);
-        menu.Items.Add(grid);
-        // Tags ride on Uid so the self-tests read the commands the same way on every card.
-        int index = 0;
-        foreach (var button in StripButtons(grid)) button.Uid = tags[index++];
+        menu.Items.Add(onItem
+            ? KillerShot.Shell.ShotCards.Editable(menu, "File", ["open"], [], [.. groups])
+            : KillerShot.Shell.ShotCards.Grid(menu, [.. groups]));
         return menu;
 
         Action Guarded(Action action) => () =>

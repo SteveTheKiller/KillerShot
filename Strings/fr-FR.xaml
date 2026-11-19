@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Gauche</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Droite</sys:String>
     <sys:String x:Key="Str_Card_Quick">Actions rapides</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Personnaliser cette carte</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Terminé</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Rétablir les valeurs par défaut</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Réinitialiser</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Masqués</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Faites glisser une tuile ici pour la masquer</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Toujours affiché</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Vers la bibliothèque</sys:String>
     <sys:String x:Key="Str_Card_Tools">Outils</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Paramètre Windows</sys:String>

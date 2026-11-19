@@ -562,6 +562,13 @@
     <sys:String x:Key="Str_Sidebar_Left">Слева</sys:String>
     <sys:String x:Key="Str_Sidebar_Right">Справа</sys:String>
     <sys:String x:Key="Str_Card_Quick">Быстрые действия</sys:String>
+    <sys:String x:Key="Str_Card_Edit">Настроить эту карточку</sys:String>
+    <sys:String x:Key="Str_Card_EditDone">Готово</sys:String>
+    <sys:String x:Key="Str_Card_EditReset">Сбросить по умолчанию</sys:String>
+    <sys:String x:Key="Str_Card_EditResetShort">Сбросить</sys:String>
+    <sys:String x:Key="Str_Card_Hidden">Скрытые</sys:String>
+    <sys:String x:Key="Str_Card_HiddenHint">Перетащите плитку сюда, чтобы скрыть её</sys:String>
+    <sys:String x:Key="Str_Card_AlwaysShown">Всегда видно</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">В библиотеку</sys:String>
     <sys:String x:Key="Str_Card_Tools">Инструменты</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>

@@ -58,7 +58,7 @@ namespace KillerShot.Shell
             yield return ("redact",     ToolRedactBtn,      0xE73B, "Str_Tool_Redact");     // CheckboxFill
             yield return ("autoredact", AutoRedactBtn,      0xEA18, "Str_Btn_AutoRedact");  // Shield
             yield return ("crop",       ToolCropBtn,        0xE7A8, "Str_Tool_Crop");       // Crop
-            yield return ("image",      ImageBtn,           0xE7AD, "Str_Btn_Image");       // Rotate
+            yield return ("image",      ImageBtn,           0xEB9F, "Str_Btn_Image");       // Photo2
             yield return ("color",      ColorBtn,           0,      "Str_Btn_Color");
             yield return ("width",      WidthBtn,           0,      "Str_Btn_Width");
             yield return ("fit",        FitBtn,             0xE9A6, "Str_Btn_Fit");         // FitPage
@@ -250,7 +250,8 @@ namespace KillerShot.Shell
 
         // ---- the right-click menu ----
 
-        private static readonly Dictionary<IconSize, string> IconSizeGlyphs = new() { [IconSize.Small] = "\uE71F", [IconSize.Large] = "\uE8A3" };
+        // Small icons are the fine grid, large ones the coarse one, as a file browser's view sizes read.
+        private static readonly Dictionary<IconSize, string> IconSizeGlyphs = new() { [IconSize.Small] = "\uE80A", [IconSize.Large] = "\uE8A9" };
         private static readonly Dictionary<LabelMode, string> LabelModeGlyphs = new()
             { [LabelMode.None] = "\uE894", [LabelMode.Beside] = "\uE8E4", [LabelMode.Under] = "\uE8E3", [LabelMode.Only] = "\uE8D2" };
 
@@ -268,11 +269,13 @@ namespace KillerShot.Shell
             ToolbarMenu.Items.Add(ShotCards.Grid(ToolbarMenu, ToolbarMenuTiles().ToArray()));
         }
 
-        private IEnumerable<IEnumerable<CardTile>> ToolbarMenuTiles() => ToolbarStyleTiles()
-            .Append([
-                new CardTile("\uE70F", Loc("Str_Toolbar_Customize"), null, OpenCustomizeToolbar),
-                new CardTile("\uE7B3", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = _toolbarHidden },
-            ]);
+        // Three rows: the icon sizes with Customize, then the four text choices with Hide toolbar last.
+        private IEnumerable<IEnumerable<CardTile>> ToolbarMenuTiles()
+        {
+            var styles = ToolbarStyleTiles().ToList();
+            yield return styles[0].Append(new CardTile("\uE771", Loc("Str_Toolbar_Customize"), null, OpenCustomizeToolbar));
+            yield return styles[1].Append(new CardTile("\uED1A", Loc("Str_Toolbar_Hide"), "Alt+M", ToggleToolbarHidden) { Checked = _toolbarHidden });
+        }
 
         /// <summary>The icon size and text choice tiles, two groups.</summary>
         private IEnumerable<IEnumerable<CardTile>> ToolbarStyleTiles()
