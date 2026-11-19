@@ -173,7 +173,8 @@ public partial class FilesView
         {
             if (host != null) host.Deactivated -= deactivated;
             host = null;
-            EndPointer(); ReleaseDropImage(); CancelRename();
+            // A tab switch or a closing window commits the typed name, the same as clicking away.
+            EndPointer(); ReleaseDropImage(); CommitRenameOnLeave();
         };
     }
 

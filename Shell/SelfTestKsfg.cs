@@ -206,6 +206,27 @@ internal static class SelfTestKsfg
             new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(box), 0, Key.Escape) { RoutedEvent = Keyboard.KeyDownEvent }));
         Require(File.Exists(Path.Combine(folder, "three.txt")) && !File.Exists(Path.Combine(folder, "three-canceled.txt"))
             && box.Visibility != Visibility.Visible, "Escape did not cancel the rename.");
+
+        // A name that fails stays in the box with its error, and leaving again with the same text does not retry it.
+        await Rename("three.txt", "two-renamed.txt", window.Deactivate);
+        Require(File.Exists(Path.Combine(folder, "three.txt")) && box.Visibility == Visibility.Visible && box.Text == "two-renamed.txt",
+            "A failed rename did not keep the typed name in the box.");
+        var failed = view.CurrentCommand;
+        view.CommitRenameOnLeave();
+        Require(ReferenceEquals(failed, view.CurrentCommand), "Leaving again with the same failed name retried the rename.");
+        box.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(box), 0, Key.Escape) { RoutedEvent = Keyboard.KeyDownEvent });
+
+        // Unloading the view, as a tab switch does, commits the typed name too.
+        await Rename("three.txt", "three-unloaded.txt", () =>
+        {
+            object content = window.Content;
+            window.Content = null;
+            window.UpdateLayout();
+            window.Content = content;
+            window.UpdateLayout();
+        });
+        Require(File.Exists(Path.Combine(folder, "three-unloaded.txt")) && !File.Exists(Path.Combine(folder, "three.txt")),
+            "Unloading the view threw the typed name away.");
     }
 
     // ---- FIL-007: trailing dots and spaces are dropped the way Explorer drops them ----

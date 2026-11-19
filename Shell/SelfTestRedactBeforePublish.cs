@@ -121,6 +121,35 @@ internal static class SelfTestRedactBeforePublish
             await WaitFor(() => Directory.GetFiles(output).Length == 2);
             Expect(clipboard.Count == 2 && !Covered(clipboard[1]), "A capture with nothing found did not go out as the original.");
             report.Add("nothing found publishes the original PASS");
+
+            // Interval captures are new captures too: scanned before the album and folder get them.
+            // They never go to the clipboard.
+            capture.ReadWordsAsync = _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([[new OcrWord("jane.doe@example.com", Email)]]);
+            var existing = Directory.GetFiles(output).ToHashSet();
+            int albumBefore = CaptureLibrary.Count;
+            await capture.DeliverAsync(picture, CaptureMode.Region, IntPtr.Zero, interval: true);
+            await WaitFor(() => Directory.GetFiles(output).Length == 3 && CaptureLibrary.Count == albumBefore + 1);
+            var newest = Directory.GetFiles(output).Single(f => !existing.Contains(f));
+            Expect(Covered(Load(newest)), "An interval capture was saved unredacted.");
+            Expect(Covered(CaptureLibrary.LoadImage(CaptureLibrary.Items().MaxBy(i => i.Id)!.Id)), "An interval capture went into the album unredacted.");
+            Expect(clipboard.Count == 2, "An interval capture was copied to the clipboard.");
+            report.Add("interval capture is redacted before publish PASS");
+
+            // Review first: the album gets the covered picture and the review opens with the box as a mark.
+            CaptureSettings.ReviewFirst = true;
+            EditorDocument? reviewed = null;
+            BitmapSource? reviewPicture = null;
+            capture.ReviewRequested += (bmp, _, _, doc) => { reviewPicture = bmp; reviewed = doc; };
+            int before = CaptureLibrary.Count;
+            await capture.DeliverAsync(picture, CaptureMode.Region, IntPtr.Zero, interval: false);
+            await WaitFor(() => CaptureLibrary.Count == before + 1);
+            var albumNewest = CaptureLibrary.Items().MaxBy(i => i.Id)!;
+            Expect(Covered(CaptureLibrary.LoadImage(albumNewest.Id)), "A Review first capture went into the album unredacted.");
+            Expect(reviewPicture != null && Covered(reviewPicture), "The Review first picture is not covered.");
+            Expect(reviewed != null && reviewed.State.Items.OfType<ShapeAnnotation>().Count(s => s.Kind == ShapeKind.Redact) == 1,
+                "The review did not open the scanned document with its one box.");
+            Expect(clipboard.Count == 2, "A Review first capture was copied before review.");
+            report.Add("review first stores and reviews the redacted capture PASS");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

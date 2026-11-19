@@ -331,7 +331,7 @@ internal static class SelfTestAutoRedact
             App.Instance.PresentDocumentReplacement = _ => true;
             var onCaptured = typeof(App).GetMethod("OnCaptured", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?? throw new InvalidOperationException("App.OnCaptured was not found.");
-            onCaptured.Invoke(App.Instance, [Picture(), DateTime.Now, null, false]);
+            onCaptured.Invoke(App.Instance, [Picture(), DateTime.Now, null, false, null]);
             var captured = App.Instance.Document ?? throw new InvalidOperationException("The capture did not open.");
             for (int i = 0; i < 500 && !captured.State.Items.OfType<ShapeAnnotation>().Any(); i++) await Task.Delay(10);
             int found = captured.State.Items.OfType<ShapeAnnotation>().Count(s => s.Kind == ShapeKind.Redact);

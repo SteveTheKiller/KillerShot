@@ -163,6 +163,14 @@ internal static partial class CaptureLibrary
     /// <summary>Starts OpenAuto off the interface thread, so the window can paint first.</summary>
     public static Task<bool> BeginOpen() => Opening = Task.Run(OpenAuto);
 
+    /// <summary>BeginOpen with <paramref name="before"/> run first on the same background task, so
+    /// startup cleanup finishes before the album opens without holding up the UI thread.</summary>
+    public static Task<bool> BeginOpenAfter(Action before) => Opening = Task.Run(() =>
+    {
+        before();
+        return OpenAuto();
+    });
+
     /// <summary>BeginOpen, then <paramref name="afterOpen"/> on the same background task once the
     /// library is open. Demo mode fills its scratch library this way.</summary>
     public static Task<bool> BeginOpen(Action afterOpen) => Opening = Task.Run(() =>

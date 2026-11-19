@@ -18,6 +18,8 @@ public partial class FilesView
     public bool IsFileOperationBusy => _fileOperation != null;
     private FileEntry? _renaming;
     private bool _committingRename;
+    // The typed name whose commit just failed; leaving the box again with it unchanged does not retry.
+    private string? _failedRenameText;
     public bool CanRename => !IsFileOperationBusy && !Browser.IsThisPc(Navigation.CurrentFolder)
         && ResultsList.SelectedItems.Count == 1 && ResultsList.SelectedItem is FileEntry entry && MutableEntry(entry);
     public bool CanCut => !Browser.IsThisPc(Navigation.CurrentFolder) && ResultsList.SelectedItems.Count > 0
@@ -90,6 +92,7 @@ public partial class FilesView
     public void CancelRename()
     {
         _renaming = null;
+        _failedRenameText = null;
         RenameBox.Visibility = Visibility.Collapsed;
         SetCommandError(null);
     }
@@ -113,6 +116,7 @@ public partial class FilesView
                     "already exists" => Loc("Str_Err_AlreadyExists"),
                     _ => error
                 };
+                _failedRenameText = name;
                 SetCommandError(string.Format(Loc("Str_Status_RenameFailed"), reason));
                 // Back to the box for a fix, but never by pulling activation back from another app.
                 if (Window.GetWindow(this) is not { IsActive: false }) RenameBox.Focus();
@@ -139,7 +143,8 @@ public partial class FilesView
 
     internal void CommitRenameOnLeave()
     {
-        if (_renaming == null || _committingRename || RenameBox.Visibility != Visibility.Visible) return;
+        if (_renaming == null || _committingRename || RenameBox.Visibility != Visibility.Visible
+            || RenameBox.Text == _failedRenameText) return;
         StartCommand(CommitRename());
     }
 

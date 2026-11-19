@@ -239,12 +239,11 @@ public partial class App : Application
         // thread so the editor paints first. With a password set it stays locked until the
         // library screen unlocks it.
         // Decrypted playback and Make PDF copies left by a session that did not close cleanly go
-        // first, before any album opens: a wipe racing the open could otherwise delete this
-        // session's fresh copies, or leave plaintext behind. Anything still held open is retried
-        // on a timer while KillerShot runs.
-        if (!demo) VideoCaptures.WipePlayback();
+        // first, on the open's own background task before the album opens: a wipe racing the open
+        // could otherwise delete this session's fresh copies, or leave plaintext behind. Anything
+        // still held open is retried on a timer while KillerShot runs.
         if (demo) DemoMode.BeginSeed();
-        else CaptureLibrary.BeginOpen();
+        else CaptureLibrary.BeginOpenAfter(VideoCaptures.WipePlayback);
 
         // The first Print Screen switch changed Windows' own setting; put it back once, before the
         // tray claims the shortcuts (Services/PrintScreenKey.cs). Best effort.
@@ -462,9 +461,10 @@ public partial class App : Application
     }
 
     /// <summary>Review first: the capture opens in the editor and waits there to be accepted.</summary>
-    private void OnReviewRequested(BitmapSource bmp, DateTime taken, KillerShot.Capture.CaptureMode mode)
+    private void OnReviewRequested(BitmapSource bmp, DateTime taken, KillerShot.Capture.CaptureMode mode, EditorDocument? scanned)
     {
-        var doc = new EditorDocument(bmp, null, taken)
+        // A capture already scanned on arrival opens with its boxes as marks and is not scanned again.
+        var doc = scanned ?? new EditorDocument(bmp, null, taken)
         {
             ReadQr = mode == KillerShot.Capture.CaptureMode.Qr,
             ScanForRedaction = mode != KillerShot.Capture.CaptureMode.Qr && RedactSettings.ScanEveryCapture,

@@ -150,6 +150,9 @@ namespace KillerShot.Controls
             return null;
         }
 
+        /// <summary>The longest the crossfade waits on one piece's compose, in milliseconds.</summary>
+        internal const int ComposeWaitMs = 1000;
+
         // Swaps a finished piece in, unless a newer accent has replaced the job; the previous tint is dropped with it.
         private static bool Land(ComposeJob job)
         {
@@ -184,7 +187,9 @@ namespace KillerShot.Controls
             bool landed = false;
             foreach (var job in Jobs.ToArray())
             {
-                try { job.Work.Work.Wait(); } catch (AggregateException) { }
+                // A compose that hangs never freezes the window: past the bound the snapshot takes the old ink
+                // and the job lands on its own when it finishes.
+                try { if (!job.Work.Work.Wait(ComposeWaitMs)) continue; } catch (AggregateException) { }
                 landed |= Land(job);
             }
             ComposeMs += timer.Elapsed.TotalMilliseconds;

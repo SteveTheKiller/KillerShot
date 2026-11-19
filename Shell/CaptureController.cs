@@ -190,24 +190,26 @@ internal sealed partial class CaptureController
         if (CaptureSettings.PlaySound) ShutterSound.Play();
         if (mode != CaptureMode.Qr) CaptureSettings.LastMode = mode;
         var taken = DateTime.Now;
-        // Review first holds everything and scans in the editor; otherwise nothing goes out
-        // until the boxes are in the picture.
+        // The source window can close or retitle during the scan, so its name is read first.
+        string? title = source != IntPtr.Zero ? Win32.WindowTitle(source) : null;
+        string? process = Win32.ProcessName(source);
+        // Every new capture, interval and Review first included, is scanned before the album,
+        // folder or clipboard gets it, so nothing goes out until the boxes are in the picture.
         EditorDocument? scanned = null;
-        if (!CaptureSettings.ReviewFirst && !interval && mode != CaptureMode.Qr && RedactSettings.ScanEveryCapture)
+        if (mode != CaptureMode.Qr && RedactSettings.ScanEveryCapture)
         {
             scanned = new EditorDocument(result, null, taken);
             if (await RedactAsync(scanned) > 0) result = scanned.Render();
         }
         // A locked or failing album holds only so much; past that the capture still goes to
         // the clipboard, folder and editor, but the album keeps what it already holds.
-        if (!CaptureLibrary.Add(result, taken, ModeKey(mode),
-            source != IntPtr.Zero ? Win32.WindowTitle(source) : null, Win32.ProcessName(source)))
+        if (!CaptureLibrary.Add(result, taken, ModeKey(mode), title, process))
             _tray.ShowWarning(Loc("Str_Lib_PendingFullTitle"), string.Format(Loc("Str_Lib_PendingFull"), CaptureLibrary.PendingCount));
 
         if (CaptureSettings.ReviewFirst && !interval)
         {
             // Nothing leaves KillerShot until the reviewed picture is accepted.
-            ReviewRequested?.Invoke(result, taken, mode);
+            ReviewRequested?.Invoke(result, taken, mode, scanned);
             return;
         }
         Publish(result, taken, mode, interval, scanned: scanned);
@@ -257,8 +259,9 @@ internal sealed partial class CaptureController
         }
     }
 
-    /// <summary>A capture opened for review; <see cref="Publish"/> runs when it is accepted.</summary>
-    public event Action<BitmapSource, DateTime, CaptureMode>? ReviewRequested;
+    /// <summary>A capture opened for review; <see cref="Publish"/> runs when it is accepted. The
+    /// document is the scanned capture with its redaction boxes as marks, or null when no scan ran.</summary>
+    public event Action<BitmapSource, DateTime, CaptureMode, EditorDocument?>? ReviewRequested;
 
     /// <summary>Sends a finished capture to the chosen places, in order: the folder, the save
     /// dialog, the clipboard (with the file's path when chosen), then programs and email. A

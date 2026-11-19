@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -15,7 +16,7 @@ namespace KillerShot.Controls
     /// premultiplied picture is never converted and decodes back bit for bit. Every write goes to a unique temp file in
     /// the same folder and is then renamed, so a reader never sees half a file and two app instances writing the same
     /// key just race to an identical result. A file that is missing, will not decode, or has the wrong size is a miss,
-    /// and the caller renders instead. Writing a version deletes every other version's folder.
+    /// and the caller renders instead. The first write in a process clears other versions' layers.
     /// </summary>
     internal static class MotifDiskCache
     {
@@ -92,12 +93,27 @@ namespace KillerShot.Controls
             }
         }
 
+        private static string? _prunedFor;
+
+        /// <summary>Once per version per process, empties other versions' folders of the cache's own files and removes them when
+        /// nothing else is left. Only *.png and *.tmp files are deleted, so a root pointed at the wrong folder loses
+        /// nothing that is not a cache layer, and a folder holding anything else stays.</summary>
         private static void PruneOtherVersions(string version)
         {
-            if (Root is not { } root) return;
+            if (version == _prunedFor || Root is not { } root) return;
+            _prunedFor = version;
             foreach (var dir in Directory.EnumerateDirectories(root))
-                if (!string.Equals(Path.GetFileName(dir), version, StringComparison.OrdinalIgnoreCase))
-                    try { Directory.Delete(dir, recursive: true); } catch (Exception) { }
+            {
+                if (string.Equals(Path.GetFileName(dir), version, StringComparison.OrdinalIgnoreCase)) continue;
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(dir))
+                        if (file.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+                            File.Delete(file);
+                    if (!Directory.EnumerateFileSystemEntries(dir).Any()) Directory.Delete(dir);
+                }
+                catch (Exception) { }
+            }
         }
     }
 }
