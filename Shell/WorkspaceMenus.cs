@@ -103,7 +103,7 @@ public partial class MainWindow
         menu.Items.Clear();
         var views = new[]
         {
-            ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
+            ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"),
             ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
             ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
         };
@@ -111,7 +111,7 @@ public partial class MainWindow
         menu.Items.Add(ShotCards.Header(menu, Loc("Str_Btn_Library"), shown == null ? null : Loc(shown)));
         var tiles = views.Select(v => new CardTile(v.Item2, Loc(v.Item3), v.Item4, () => ShowLibraryView(v.Item1))
             { Checked = Library.IsVisible && Library.CurrentView == v.Item1 });
-        bool cards = Library.IsVisible && Library.CurrentView is "shelves" or "flow";
+        bool cards = Library.IsVisible && Library.CurrentView is "shelves";
         menu.Items.Add(ShotCards.Grid(menu, tiles, [ViewInfoCards.Tile(cards)]));
     }
 }

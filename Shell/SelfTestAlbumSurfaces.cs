@@ -49,7 +49,7 @@ internal static class SelfTestAlbumSurfaces
             foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.Black, Theme.Malaise })
             {
                 ThemeManager.Apply(theme);
-                foreach (string view in new[] { "grid", "timeline", "flow", "shelves" })
+                foreach (string view in new[] { "grid", "timeline", "shelves" })
                 {
                     window.TestShowLibraryView(view);
                     await Task.Delay(180);

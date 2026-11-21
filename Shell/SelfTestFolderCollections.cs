@@ -95,14 +95,15 @@ internal static partial class SelfTestLibrary
             if (select == null) throw new InvalidOperationException("Saved folders must be selectable from the collection menu.");
             select.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             var library = (LibraryView)window.FindName("Library");
-            library.SetView("flow");
+            library.SetView("shelves");
             // The library lists off the UI thread, so the view fills after the listing lands.
             await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(10));
             await App.Instance.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
             window.UpdateLayout();
-            var flow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
-            if (navigation.Source != source || flow.Items.Count != 1 || flow.Items[0].Window != "second")
-                throw new InvalidOperationException($"Selecting a linked folder must filter the main photo view (source {navigation.Source}, {flow.Items.Count} photos).");
+            // Shelves show every photo the view holds in its carousels; the linked folder alone leaves one.
+            var shown = ShelfItems(library);
+            if (navigation.Source != source || shown.Count != 1 || shown[0].Window != "second")
+                throw new InvalidOperationException($"Selecting a linked folder must filter the main photo view (source {navigation.Source}, {shown.Count} photos).");
             var root = (FrameworkElement)window.Content;
             var render = new RenderTargetBitmap((int)root.ActualWidth, (int)root.ActualHeight, 96, 96, PixelFormats.Pbgra32);
             render.Render(root);
@@ -125,10 +126,14 @@ internal static partial class SelfTestLibrary
             library.SetGroup("collection");
             navigation.SetSource("all");
             await Listed();
-            if (flow.Items.Count != 2) throw new InvalidOperationException($"All collection groups must include linked folders ({flow.Items.Count} photos).");
+            window.UpdateLayout();
+            shown = ShelfItems(library);
+            if (shown.Count != 2) throw new InvalidOperationException($"All collection groups must include linked folders ({shown.Count} photos).");
             navigation.SetSource("c" + storedCollection);
             await Listed();
-            if (flow.Items.Count != 1 || flow.Items[0].Id != stored)
+            window.UpdateLayout();
+            shown = ShelfItems(library);
+            if (shown.Count != 1 || shown[0].Id != stored)
                 throw new InvalidOperationException("Linked folders must not leak into another collection's filter.");
             navigation.SetSource(source);
             App.Instance.OpenLibraryCapture(FolderCaptures.LinkedItems(source)[0]);
@@ -188,5 +193,18 @@ internal static partial class SelfTestLibrary
         }
         catch (Exception ex) { File.WriteAllText(report, ex.ToString()); }
         finally { App.Instance.Shutdown(code); }
+    }
+
+    /// <summary>Every photo in the album's visible shelf carousels, in shelf order.</summary>
+    private static List<CaptureItem> ShelfItems(DependencyObject root)
+    {
+        var shown = new List<CaptureItem>();
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is KillerShot.Controls.CoverFlow { IsVisible: true } shelf) shown.AddRange(shelf.Items);
+            else shown.AddRange(ShelfItems(child));
+        }
+        return shown;
     }
 }

@@ -55,19 +55,24 @@ internal static class SelfTestViewCards
             window.Show();
             await Task.Delay(350);
             var library = (LibraryView)window.FindName("Library");
-            library.SetView("flow");
+            library.SetView("shelves");
             window.UpdateLayout();
-            var flow = (CoverFlow)library.FindName("BigFlow");
-            // The carousel lays out after the view switch settles; rendering it at zero width throws.
-            for (int i = 0; i < 100 && flow.ActualWidth < 1; i++) { await Task.Delay(20); window.UpdateLayout(); }
-            Check(flow.ActualWidth >= 1, "The carousel never laid out.");
+            // The shelf carousel is built once the listing lands and lays out after the view switch
+            // settles; rendering it at zero width throws.
+            CoverFlow? Shelf() => Visuals(library).OfType<CoverFlow>().FirstOrDefault(f => f.IsVisible && f.ActualWidth >= 1);
+            var shelf = Shelf();
+            for (int i = 0; i < 250 && shelf == null; i++) { await Task.Delay(20); window.UpdateLayout(); shelf = Shelf(); }
+            Check(shelf != null, "The shelf carousel never laid out.");
+            var flow = shelf!;
             long? selected = flow.SelectedItem?.Id;
             int plain = RenderStock(flow, Path.Combine(folder, "carousel-plain.png"));
             Check(plain == 0, "Carousel defaults must preserve image-only rendering.");
             await ToggleMenu(library, expected: false);
+            flow = Shelf() ?? flow;
             int stock = RenderStock(flow, Path.Combine(folder, "carousel-cards.png"));
             Check(stock > 100 && flow.SelectedItem?.Id == selected, "Carousel cards did not render or changed selection.");
             await ToggleMenu(library, expected: true);
+            flow = Shelf() ?? flow;
             Check(RenderStock(flow, Path.Combine(folder, "carousel-plain-restored.png")) == 0,
                 "Turning carousel cards off did not restore image-only rendering.");
             report.Add($"carousel_card_stock_pixels={stock} plain_pixels={plain}; reversible=True selection_preserved=True");

@@ -562,7 +562,7 @@ internal static partial class SelfTestLibrary
                 log.AppendLine($"shot {name} {rtb.PixelWidth}x{rtb.PixelHeight}");
             }
             var view = w.TestLibrary;
-            foreach (var (v, g) in new[] { ("shelves", "collection"), ("shelves", "date"), ("flow", "date"), ("flow", "collection"), ("grid", "collection"), ("grid", "date"), ("timeline", "date") })
+            foreach (var (v, g) in new[] { ("shelves", "collection"), ("shelves", "date"), ("grid", "collection"), ("grid", "date"), ("timeline", "date") })
             {
                 view.TestSet(v, g, "");
                 await Shot($"library-{v}-{g}");

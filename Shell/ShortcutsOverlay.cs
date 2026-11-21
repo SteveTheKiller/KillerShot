@@ -62,7 +62,6 @@ namespace KillerShot.Shell
             new("Alt+Shift+G", "Str_Theme_FilmGrain", KsCat.View, false),
             new("Alt+Shift+Arrows", "Str_KS_DockStrip", KsCat.View, false),
             new("F5",       "Str_Lib_ViewShelves",  KsCat.View, false, "F5"),
-            new("F6",       "Str_Lib_ViewFlow",     KsCat.View, false, "F6"),
             new("F7",       "Str_Lib_ViewGrid",     KsCat.View, false, "F7"),
             new("F8",       "Str_Lib_ViewTimeline", KsCat.View, false, "F8"),
             new("F9",       "Str_Lib_ViewFiles", KsCat.View, false, "F9"),

@@ -198,8 +198,8 @@ namespace KillerShot.Shell
             // Files used to be a fifth view. It is a kind of tab now, so a stored "files" view
             // means the folder tab was in front and the captures fall back to shelves.
             string stored = Settings.Get("LibraryView") ?? "";
-            _view = stored is "shelves" or "flow" or "grid" or "timeline" ? stored : "shelves";
-            _group = Settings.Get("LibraryGroup") is "collection" ? "collection" : "date";
+            _view = stored is "shelves" or "grid" or "timeline" ? stored : "shelves";
+            _group = "collection";   // Shelves and Grid group by collection; Timeline is always by date.
             FileBrowser.ConfigureCollections(CollectionTitle);
             FileBrowser.Restore(collectionFirst: stored != "files");
             if (FileBrowser.ActiveTab.IsCollection) _source = FileBrowser.ActiveTab.Source;
@@ -792,7 +792,7 @@ namespace KillerShot.Shell
         /// <summary>Picks a view from the footer or F5 to F9, and remembers it.</summary>
         public void SetView(string view)
         {
-            if (view is not ("shelves" or "flow" or "grid" or "timeline" or "files")) return;
+            if (view is not ("shelves" or "grid" or "timeline" or "files")) return;
             Settings.Set("LibraryView", view);
             // Files is a folder tab and the capture views belong to collection tabs, so picking
             // one brings the last tab of that kind forward, or opens one. The tab switch reloads.

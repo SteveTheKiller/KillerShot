@@ -462,6 +462,9 @@ public partial class App : Application
             scanned.FilePath = savedPath;
             scanned.MarkSaved();
         }
+        // With the window open and the editor not asked for, the capture only goes to the album and folder:
+        // the library or the picture on screen stays where it is instead of switching to the new shot.
+        if (!readQr && !CaptureSettings.OpenEditorAfterCapture && Windows.OfType<MainWindow>().Any(w => w.IsVisible)) return;
         SetDocument(scanned ?? new EditorDocument(bmp, savedPath, taken) { ReadQr = readQr, ScanForRedaction = !readQr && RedactSettings.ScanEveryCapture });
         if (readQr || CaptureSettings.OpenEditorAfterCapture) ShowEditor();
     }

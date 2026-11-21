@@ -46,7 +46,7 @@ internal static class SelfTestWorkspaceAreas
             foreach (var edge in new[] { DockSide.Top, DockSide.Bottom })
             {
                 sidebar.DockTo(side); carousel.DockTo(edge); carousel.Restore(); sidebar.Restore();
-                foreach (string view in new[] { "flow", "shelves", "timeline", "grid" })
+                foreach (string view in new[] { "shelves", "timeline", "grid" })
                 {
                     library.SetView(view);
                     window.UpdateLayout(); await Task.Delay(80);
@@ -70,8 +70,6 @@ internal static class SelfTestWorkspaceAreas
                     var c = library.TransformToAncestor(root).TransformBounds(new Rect(library.RenderSize));
                     if (Rect.Intersect(a, b).Width > 1 || Rect.Intersect(b, c).Height > 1 || a.Width < 100 || b.Height < 100 || c.Height < 200)
                         throw new InvalidOperationException("The workspace areas overlap or lose their usable size.");
-                    if (((FrameworkElement)window.FindName("FooterStripControls")).Visibility != Visibility.Visible)
-                        throw new InvalidOperationException("Carousel placement controls disappear in the library.");
                     var slider = Descendants(carousel.Pane).OfType<Slider>().Single();
                     var splitter = Descendants(carousel).OfType<GridSplitter>().Single();
                     var sliderBounds = slider.TransformToAncestor(root).TransformBounds(new Rect(slider.RenderSize));

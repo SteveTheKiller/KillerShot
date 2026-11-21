@@ -147,10 +147,9 @@ internal static class SelfTestImageMenus
             if (dockButton == null || !dockButton.IsVisible)
                 throw new InvalidOperationException("Strip position must be available in the rail.");
             report.Add("Collection-strip position button: available in rail PASS");
-            var stripModes = (StackPanel)window.FindName("FooterStripControls");
-            if (!stripModes.IsVisible || stripModes.Children.OfType<RadioButton>().Count(b => b.IsChecked == true) != 1)
-                throw new InvalidOperationException("The footer must mark the displayed collection-strip view.");
-            report.Add("Footer: displayed collection-strip view is marked PASS");
+            if (window.FindName("FooterStripControls") != null)
+                throw new InvalidOperationException("Carousel placement belongs to the carousel card, not footer buttons.");
+            report.Add("Footer: no carousel placement buttons PASS");
             var leftBar = (Panel)window.FindName("LeftBar");
             var rightBar = (Panel)window.FindName("RightBar");
             if (leftBar.ActualHeight > 50 || rightBar.Children.Count == 0)
@@ -235,7 +234,7 @@ internal static class SelfTestImageMenus
             capture.Render(surface);
             ImageOutput.SavePng(capture, Path.Combine(folder, "editor-menu.png"));
             report.Add("Editor menu: shortcuts, enabled states, Undo, Redo, tool selection and zoom PASS");
-            foreach (var (side, view) in new[] { (DockSide.Top, "flow"), (DockSide.Bottom, "flow") })
+            foreach (var (side, view) in new[] { (DockSide.Top, "shelves"), (DockSide.Bottom, "shelves") })
             {
                 window.TestStripDock.DockTo(side);
                 await Task.Delay(300);

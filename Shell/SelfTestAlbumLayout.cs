@@ -124,7 +124,7 @@ internal static class SelfTestAlbumLayout
             await Task.Delay(250);
             Check(window.TestStrip!.Source == "c" + collectionId && App.Instance.Document == null,
                 "Selecting a collection must filter the album without opening a photo.");
-            library.SetView("flow");
+            library.SetView("shelves");
             var mainFlow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
             for (int wait = 0; wait < 100 && mainFlow.Items.Count < 2; wait++) await Task.Delay(20);
             mainFlow.SelectedIndex = 1;
@@ -165,7 +165,7 @@ internal static class SelfTestAlbumLayout
             photoDock.DockTo(DockSide.Top);
             App.Instance.SetDocument(null);
             Layout(root);
-            Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
+            Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "shelves"
                 && mainFlow.Items.Count == 2 && mainFlow.SelectedItem?.Id == selectedPhoto,
                 $"Editor navigation must not replace the album's collection, view, or photo selection (source {window.TestStrip.Source}, view {library.CurrentView}, items {mainFlow.Items.Count}, selected {mainFlow.SelectedItem?.Id} of {selectedPhoto}).");
             var workspaceMenu = pane.ContextMenu;
@@ -180,7 +180,7 @@ internal static class SelfTestAlbumLayout
                 choice.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
                 Layout(root);
                 await Task.Delay(180);
-                Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "flow"
+                Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "shelves"
                     && mainFlow.SelectedItem?.Id == selectedPhoto, "Changing collection previews lost the browsing context.");
                 if (Equals(choice.Tag, "mini"))
                 {
@@ -220,7 +220,7 @@ internal static class SelfTestAlbumLayout
             foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 }.Concat(Enum.GetValues<Theme>()).Distinct())
             {
                 ThemeManager.Apply(theme);
-                library.SetView("flow");
+                library.SetView("shelves");
                 Layout(root);
                 await Task.Delay(180);
                 Render(root, Path.Combine(folder, "browser-theme-" + theme + ".png"));
@@ -229,7 +229,7 @@ internal static class SelfTestAlbumLayout
                     library.SetView("shelves");
                     Layout(root);
                     Render(root, Path.Combine(folder, "multiple-carousels-pane-" + theme + ".png"));
-                    library.SetView("flow");
+                    library.SetView("shelves");
                     Layout(root);
                 }
                 Check(mainFlow.ActualWidth > 0 && mainFlow.ActualHeight > 0 && browser.IsVisible,
@@ -264,7 +264,7 @@ internal static class SelfTestAlbumLayout
             Layout(root);
             report.Add("album_collection_selection_filters_without_opening=True");
             var chevron = Visuals(dock).OfType<Button>().Single(button => button.Content is string text && text is "\uE76B" or "\uE76C");
-            foreach (string view in new[] { "shelves", "flow", "grid", "timeline" })
+            foreach (string view in new[] { "shelves", "grid", "timeline" })
             {
                 library.SetView(view);
                 Layout(root);

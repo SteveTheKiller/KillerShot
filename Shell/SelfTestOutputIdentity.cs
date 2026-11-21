@@ -43,6 +43,9 @@ internal static class SelfTestOutputIdentity
             Settings.UseFolder(Path.Combine(folder, "settings"));
             CaptureLibrary.UseFolder(Path.Combine(folder, "library"));
             CaptureLibrary.BackgroundWork = false;
+            // The real Screenshots folder would show as the first collection and put its pictures ahead of B.
+            FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"));
+            FolderCaptures.Enabled = false;
             App.InitializeKit();
             LocaleManager.Apply(Locale.EnUS);
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException("The scratch library did not open.");
@@ -57,13 +60,13 @@ internal static class SelfTestOutputIdentity
             window.Show();
             await Task.Delay(200);
 
-            foreach (var view in new[] { "grid", "timeline", "shelves", "flow" })
+            foreach (var view in new[] { "grid", "timeline", "shelves" })
             {
                 window.TestShowLibraryView(view);
                 await Task.Delay(300);
                 window.UpdateLayout();
                 if (!window.Library.IsVisible) throw new InvalidOperationException(view + ": the album is not over the image.");
-                bool carousel = view is "flow" or "shelves";
+                bool carousel = view == "shelves";
                 if (window.StripDock.ShowPane == carousel)
                     throw new InvalidOperationException(view + ": the photo strip " + (carousel ? "doubles the album carousel." : "is missing."));
                 var shot = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
@@ -73,14 +76,14 @@ internal static class SelfTestOutputIdentity
                 AssertEditorCommandsDisabled(window);
                 if (view == "shelves") continue;
                 var target = Visuals(window.Library).OfType<FrameworkElement>()
-                    .FirstOrDefault(e => e.IsVisible && (e is Button { Tag: CaptureItem } || e is CoverFlow { MainView: true }))
+                    .FirstOrDefault(e => e.IsVisible && e is Button { Tag: CaptureItem })
                     ?? throw new InvalidOperationException(view + ": no capture control is showing.");
                 target.Focus();
                 Keyboard.Focus(target);
                 var item = window.Library.FocusedCapture() ?? throw new InvalidOperationException(view + ": the focused capture was not found.");
                 var px = new byte[4];
                 new FormatConvertedBitmap(CaptureLibrary.LoadImage(item), PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(1, 1, 1, 1), px, 4, 0);
-                if (px[0] != 220 || px[2] != 20) throw new InvalidOperationException(view + ": Copy and Print would use the editor image instead of capture B.");
+                if (px[0] != 220 || px[2] != 20) throw new InvalidOperationException(view + ": Copy and Print would use the editor image instead of capture B (focused " + item.Id + " '" + item.Window + "' collection " + item.CollectionId + ").");
                 report.Add(view + ": focused capture is B PASS");
                 if (view == "grid")
                 {

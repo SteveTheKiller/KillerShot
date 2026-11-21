@@ -31,7 +31,7 @@ namespace KillerShot.Shell
         {
             foreach (var (view, glyph, key, keys) in new[]
             {
-                ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"), ("flow", "\uE7C5", "Str_Lib_ViewFlow", "F6"),
+                ("shelves", "\uE8F1", "Str_Lib_ViewShelves", "F5"),
                 ("grid", "\uE80A", "Str_Lib_ViewGrid", "F7"), ("timeline", "\uE823", "Str_Lib_ViewTimeline", "F8"),
                 ("files", "\uE8B7", "Str_Lib_ViewFiles", "F9"),
             })
@@ -41,29 +41,6 @@ namespace KillerShot.Shell
                 _footerViews.Add((button, view));
                 FooterLibraryViews.Children.Add(button);
             }
-            FooterLibraryViews.Children.Add(FooterSeparator());
-            foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8A9", "Str_Lib_ByCollection") })
-            {
-                string target = group;
-                var button = FooterRadio("FooterLibraryGroup", glyph, key, null, () => ShowLibraryGroup(target));
-                _footerGroups.Add((button, group));
-                FooterLibraryViews.Children.Add(button);
-            }
-
-            foreach (var (side, key) in new[] { (DockSide.Top, "Str_Dock_Top"), (DockSide.Bottom, "Str_Dock_Bottom") })
-            {
-                var target = side;
-                object icon = DockIcon(side, typeof(RadioButton));
-                var button = FooterRadio("FooterStripView", icon, key, null, () =>
-                {
-                    StripDock.DockTo(target);
-                    if (StripDock.IsMinimized) StripDock.Restore();
-                    SyncFooterView();
-                });
-                _footerStripViews.Add((button, side.ToString()));
-                FooterStripControls.Children.Add(button);
-            }
-            FooterStripControls.Children.Add(FooterSeparator());
 
             _stripButton = StripRailButton(DockIcon(StripDock.Side, typeof(Button)), "Str_Dock_Menu");
             _stripButton.Click += (_, _) => ShowStripMenu();
@@ -249,7 +226,6 @@ namespace KillerShot.Shell
         {
             bool library = Library.Visibility == Visibility.Visible;
             bool picture = !library && _doc != null;
-            FooterStripControls.Visibility = Visibility.Visible;
             FooterZoomControls.Visibility = picture ? Visibility.Visible : Visibility.Collapsed;
             if (_stripButton != null)
             {

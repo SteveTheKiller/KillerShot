@@ -69,9 +69,9 @@ namespace KillerShot.Shell
 
             // F5 to F9 pick the library's view, as they pick KillerPDF's view mode, and bring the
             // library up over an open picture.
-            if (!ctrl && !alt && !shift && e.Key is >= Key.F5 and <= Key.F9)
+            if (!ctrl && !alt && !shift && e.Key is >= Key.F5 and <= Key.F9 and not Key.F6)
             {
-                ShowLibraryView(e.Key switch { Key.F5 => "shelves", Key.F6 => "flow", Key.F7 => "grid", Key.F8 => "timeline", _ => "files" });
+                ShowLibraryView(e.Key switch { Key.F5 => "shelves", Key.F7 => "grid", Key.F8 => "timeline", _ => "files" });
                 e.Handled = true;
                 return;
             }

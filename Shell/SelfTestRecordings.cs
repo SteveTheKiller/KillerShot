@@ -194,7 +194,7 @@ internal static class SelfTestRecordings
                 ?? throw new InvalidOperationException("The Recordings collection is not in the collection menu.");
             select.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));
             var library = (LibraryView)window.FindName("Library");
-            library.SetView("flow");
+            library.SetView("shelves");
             await library.ListingTask.WaitAsync(TimeSpan.FromSeconds(5));
             window.UpdateLayout();
             var flow = (CoverFlow)library.FindName("BigFlow");

@@ -265,24 +265,26 @@ internal static class SelfTestFilesIntegration
             Check(CaptureLibrary.Items().All(item => item.Id != captureId) && File.Exists(movedImage)
                 && opened.Dirty && opened.State.Items.Count == 1, "Grid Delete removes focused capture and preserves file and dirty editor");
             long flowId = CaptureLibrary.AddNow(image, DateTime.Now, "region", "Flow capture", null);
-            library.SetView("flow");
+            library.SetView("shelves");
             await library.ListingTask;
             window.UpdateLayout();
-            var flow = (Controls.CoverFlow)library.FindName("BigFlow");
-            flow.Select(flowId);
+            // The shelf carousel holding the new capture, the one a user would arrow to and delete from.
+            var flow = Children<Controls.CoverFlow>(library)
+                .FirstOrDefault(shelf => shelf.IsVisible && shelf.Items.Any(item => item.Id == flowId));
+            Check(flow != null, "Shelves show the new capture in a carousel");
+            flow!.Select(flowId);
             flow.Focus();
             SendKey(window, flow, Key.Delete);
             Check(CaptureLibrary.Items().All(item => item.Id != flowId) && File.Exists(movedImage)
-                && ReferenceEquals(App.Instance.Document, opened) && opened.Dirty, "Flow Delete removes selected capture and preserves file and dirty editor");
-            SendKey(window, flow, Key.F9);
+                && ReferenceEquals(App.Instance.Document, opened) && opened.Dirty, "Shelf Delete removes selected capture and preserves file and dirty editor");
+            SendKey(window, library, Key.F9);
             await library.FilesNavigation;
             var contentMenu = library.ContextMenu!;
             contentMenu.RaiseEvent(new RoutedEventArgs(ContextMenu.OpenedEvent));
             Check(SelfTestCards.TextRows(contentMenu) == null && SelfTestCards.Tiles(contentMenu)
-                .Count(tile => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile) is "F5" or "F6" or "F7" or "F8" or "F9") == 5,
-                "content card exposes all five library views as tiles without opening a popup");
-            Check(footer.Children.OfType<RadioButton>().Where(button => button.GroupName == "FooterLibraryGroup")
-                .All(button => !button.IsEnabled && button.IsChecked != true), "Files disables and unchecks capture grouping");
+                .Count(tile => System.Windows.Automation.AutomationProperties.GetAcceleratorKey(tile) is "F5" or "F7" or "F8" or "F9") == 4,
+                "content card exposes all four library views as tiles without opening a popup");
+            Check(!footer.Children.OfType<RadioButton>().Any(button => button.GroupName == "FooterLibraryGroup"), "the footer has no separate grouping buttons");
             string fallback = Directory.CreateDirectory(Path.Combine(folder, "fallback")).FullName;
             CaptureSettings.OutputFolder = fallback;
             var sidebar = (CollectionStrip)((KillerFamily.Layout.DockHost)window.FindName("NavigationDock")).Pane!;

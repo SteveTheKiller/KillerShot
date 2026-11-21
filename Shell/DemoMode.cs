@@ -179,7 +179,7 @@ internal static class SelfTestDemo
                 Dock(KillerFamily.Layout.DockSide.Right, KillerFamily.Layout.DockSide.Top);
                 Preview("stack");
                 w.TestStrip!.TestScrollTo(0.35);
-                view.TestSet("flow", "date", "");
+                view.TestSet("shelves", "collection", "");
                 await Shot("landing-02-carousel-blood");
 
                 Look(Theme.Light, Accent.Blue);
@@ -242,12 +242,12 @@ internal static class SelfTestDemo
                 System.Windows.Application.Current.Shutdown(0);
                 return;
             }
-            foreach (var (v, g) in new[] { ("shelves", "collection"), ("flow", "date"), ("grid", "collection"), ("timeline", "date") })
+            foreach (var (v, g) in new[] { ("shelves", "collection"), ("grid", "collection"), ("timeline", "date") })
             {
                 view.TestSet(v, g, "");
                 await Shot($"demo-{v}-{g}");
             }
-            view.TestSet("flow", "date", "");
+            view.TestSet("shelves", "collection", "");
             foreach (var choice in w.TestStrip!.PreviewMenu().Items.OfType<System.Windows.Controls.MenuItem>())
             {
                 choice.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.MenuItem.ClickEvent));

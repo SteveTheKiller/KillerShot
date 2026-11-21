@@ -100,6 +100,8 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 
 ### Changed
 
+- The album has four views: Shelves, Grid, Timeline and Files. The large single carousel is gone, Shelves and Grid group by collection and Timeline by date, and the footer keeps only the view buttons; the carousel moves from its own card.
+- A capture taken while the window is open goes to the album and folder without replacing the picture or view on screen, unless Open editor after capture is on.
 - Updated the encrypted album engine to SQLCipher 4.20.0 (SQLite 3.54.1). Existing albums open unchanged.
 - Updated SQLite bindings to 11.0.0.
 - Multiple carousels with one collection picked in the sidebar shows a carousel per day. Grouping by collection there gave a single carousel, the same as Single carousel.
