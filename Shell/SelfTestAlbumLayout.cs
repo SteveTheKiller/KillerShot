@@ -478,6 +478,26 @@ internal static class SelfTestAlbumLayout
             Check(Cue("ScrollTopCue")?.IsVisible == true && Cue("ScrollBottomCue")?.IsVisible != true,
                 "Shelves scrolled to the end must drop the bottom shadow and keep the top one.");
             report.Add("shelves_scroll_edge_shadows_and_full_height=True");
+
+            // A window capture of KillerShot keeps its own dialog open over it, the way it keeps
+            // its menus: Graphics Capture reads only the main window, so the dialog has to come
+            // back from the frozen desktop.
+            var notice = new KillerShot.Controls.ConfirmDialog("Notice fixture", "", "Close", notice: true)
+            { Owner = window, ShowActivated = false };
+            notice.Show();
+            await Task.Delay(250);
+            var noticeHandle = new System.Windows.Interop.WindowInteropHelper(notice).Handle;
+            var mainHandle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+            KillerShot.Native.Win32.GetWindowRect(noticeHandle, out var noticeRect);
+            // The test desktop refuses a pixel copy, and only the window list matters here.
+            var frozenDesktop = new KillerShot.Capture.FrozenDesktop(new KillerShot.Native.Win32.RECT(0, 0, 1, 1), new byte[4],
+                [], KillerShot.Capture.FrozenDesktop.EnumerateWindows(), KillerShot.Capture.FrozenDesktop.EnumerateTopWindows());
+            var pasted = frozenDesktop.PopupsOver(mainHandle).ToList();
+            report.Add($"owned_dialog: style=0x{KillerShot.Native.Win32.GetWindowLong(noticeHandle, KillerShot.Native.Win32.GWL_STYLE):X} rect={noticeRect} pasted={string.Join(";", pasted)}");
+            notice.Close();
+            Check(pasted.Any(r => r.Left == noticeRect.Left && r.Top == noticeRect.Top && r.Right == noticeRect.Right && r.Bottom == noticeRect.Bottom),
+                "A window capture of KillerShot must keep its own dialog that sits over it.");
+            report.Add("window_capture_keeps_owned_dialog=True");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

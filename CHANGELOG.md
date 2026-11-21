@@ -6,6 +6,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view and fixes how the album
 
 ### Fixed
 - Shelves, Grid and Timeline show the edge shadows while more captures lie above or below. The captures also scroll to the pane's edges instead of stopping short of the bottom.
+- A window capture of KillerShot keeps its own dialog when one sits over the window.
 
 ### Changed
 - Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.
