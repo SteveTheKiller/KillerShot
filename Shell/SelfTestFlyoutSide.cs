@@ -113,10 +113,11 @@ internal static class SelfTestFlyoutSide
                     report.Add($"window {window.ActualHeight:0} at {scale:0.##} {menuName}: card {top:0}-{bottom:0}, pane {paneTop:0}-{paneBottom:0}, scrollable {scroll.ScrollableHeight:0.#}");
                     Point windowTopLeft = window.PointToScreen(new Point());
                     Point windowBottomRight = window.PointToScreen(new Point(window.ActualWidth, window.ActualHeight));
-                    SaveShot(windowTopLeft, windowBottomRight, Path.Combine(folder, $"short-{scale:0.##}-{menuName}.png"));
+                    string shotName = $"short-{window.ActualHeight:0}-{scale:0.##}-{menuName}";
+                    SaveShot(windowTopLeft, windowBottomRight, Path.Combine(folder, shotName + ".png"));
                     var face = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(menu.ActualWidth), (int)Math.Ceiling(menu.ActualHeight), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
                     face.Render(menu);
-                    ImageOutput.Save(face, Path.Combine(folder, $"short-{scale:0.##}-{menuName}-card.png"));
+                    ImageOutput.Save(face, Path.Combine(folder, shotName + "-card.png"));
                     var client = (FrameworkElement)window.Content;
                     double clientTop = client.PointToScreen(new Point()).Y, clientBottom = client.PointToScreen(new Point(0, client.ActualHeight)).Y;
                     double inset8 = pane.PointToScreen(new Point(0, 8)).Y - paneTop;
