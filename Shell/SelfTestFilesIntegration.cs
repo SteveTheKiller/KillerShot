@@ -96,15 +96,32 @@ internal static class SelfTestFilesIntegration
             library.SetView("grid");
             filesButton!.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             Check(library.FilesActive && Settings.Get("LibraryView") == "files", "footer selects and persists Files");
-            Check(!((KillerFamily.Layout.DockHost)window.FindName("StripDock")).ShowPane, "Files hides the photo strip");
+            // Opening the app again on the saved Files tab: the editor's frame stays off from the
+            // first frame, not only after the view is switched once.
+            {
+                await Task.Delay(200);
+                var startup = new MainWindow { ShowActivated = false, ShowInTaskbar = false, Left = -20000, Top = -20000,
+                    Width = 1100, Height = 800, WindowStartupLocation = WindowStartupLocation.Manual };
+                startup.Show();
+                await Task.Delay(300);
+                var startupLibrary = (LibraryView)startup.FindName("Library");
+                var startupPane = (System.Windows.Controls.Border)startup.FindName("ContentPane");
+                report.AppendLine($"startup_files: active={startupLibrary.FilesActive} pane={startupPane.BorderThickness} effect={startupPane.Effect != null}");
+                Check(startupLibrary.FilesActive && startupPane.Effect == null && startupPane.BorderThickness == new Thickness(0),
+                    "the app opened on Files shows no editor frame around it");
+                startup.Close();
+                await Task.Delay(100);
+            }            Check(!((KillerFamily.Layout.DockHost)window.FindName("StripDock")).ShowPane, "Files hides the photo strip");
             var files = library.Files;
             await library.FilesNavigation;
             string original = Path.Combine(CaptureSettings.OutputFolder, "rename.txt");
             var originalTab = library.FilesWorkspace.ActiveTab;
+            int tabsBefore = library.FilesWorkspace.Tabs.Count;
             SendKey(window, files.ResultsList, Key.T, ModifierKeys.Control);
             for (int wait = 0; wait < 200 && library.FilesWorkspace.ActiveView!.Navigation.CurrentFolder.Length == 0; wait++) await Task.Delay(10);
-            // The library's all-captures tab, the original folder tab and the new one.
-            Check(library.FilesWorkspace.Tabs.Count == 3 && library.FilesWorkspace.ActiveTab.IsFolder, "host Ctrl+T opens a Files tab");
+            // Files keeps folder tabs only, so Ctrl+T adds one folder tab beside the original.
+            Check(library.FilesWorkspace.Tabs.Count == tabsBefore + 1 && library.FilesWorkspace.ActiveTab.IsFolder
+                && !ReferenceEquals(library.FilesWorkspace.ActiveTab, originalTab), "host Ctrl+T opens a Files tab");
             window.UpdateLayout();
             var contentPane = (Border)window.FindName("ContentPane");
             var frame = library.Files.PaneFrame;
@@ -121,7 +138,7 @@ internal static class SelfTestFilesIntegration
             SendKey(window, files.ResultsList, Key.Tab, ModifierKeys.Control);
             Check(library.FilesWorkspace.ActiveTab != originalTab, "host Ctrl+Tab selects the next Files tab");
             SendKey(window, library.Files.ResultsList, Key.W, ModifierKeys.Control);
-            Check(library.FilesWorkspace.Tabs.Count == 2 && library.FilesWorkspace.ActiveTab == originalTab,
+            Check(library.FilesWorkspace.Tabs.Count == tabsBefore && library.FilesWorkspace.ActiveTab == originalTab,
                 "host Ctrl+W closes only the active Files tab");
             File.WriteAllText(original, "owned");
             await files.NavigateTo(CaptureSettings.OutputFolder);
@@ -303,10 +320,10 @@ internal static class SelfTestFilesIntegration
             sourceMenu = sidebar.SourceMenu(sidebar);
             sourceMenu.Items.OfType<MenuItem>().Single(item => Convert.ToString(item.Header) == LocaleManager.Loc("Str_Strip_All"))
                 .RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            for (int wait = 0; wait < 200 && library.FilesActive; wait++) await Task.Delay(10);
-            Check(!library.FilesActive && library.FilesWorkspace.ActiveTab is { IsCollection: true, Source: "all" }
-                && files.Navigation.CurrentFolder == Path.Combine(folder, "screenshots"),
-                "non-folder sidebar source opens its collection tab and leaves the folder tab where it was");
+            await library.FilesNavigation;
+            // Only the footer changes the view, so an album collection keeps Files in front on the capture folder.
+            Check(library.FilesActive && files.Navigation.CurrentFolder == CaptureSettings.OutputFolder,
+                "non-folder sidebar source keeps Files in front on the capture folder");
             _ = library.FilesWorkspace.SelectTab(library.FilesWorkspace.Tabs.Last(tab => !tab.IsCollection));
             for (int wait = 0; wait < 200 && !library.FilesActive; wait++) await Task.Delay(10);
             library.FilesWorkspace.SaveSession();

@@ -520,7 +520,9 @@ namespace KillerShot.Shell
         /// <summary>The editor and every album view keep the same lifted content pane.</summary>
         private void SyncContentPane()
         {
-            bool files = Library.IsVisible && Library.FilesActive;
+            // Visibility, not IsVisible: at startup this runs before the window is on screen, when
+            // IsVisible is still false, and the Files tab then opened inside the editor's frame.
+            bool files = Library.Visibility == Visibility.Visible && Library.FilesActive;
             Library.Margin = files ? new Thickness(0) : new Thickness(1);
             ShowContentPane(!files);
         }
