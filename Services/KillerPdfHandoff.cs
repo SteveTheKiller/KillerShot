@@ -60,6 +60,18 @@ internal static class KillerPdfHandoff
         catch (Exception) { return []; }
     }
 
+    /// <summary>Whether the folder holds a picture Make PDF can use. Stops at the first one, so a
+    /// big Screenshots folder costs no more than an empty one.</summary>
+    internal static bool HasImages(string folder)
+    {
+        try
+        {
+            return Directory.EnumerateFiles(folder)
+                .Any(f => ImageExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase));
+        }
+        catch (Exception) { return false; }
+    }
+
     [System.Runtime.InteropServices.DllImport("shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     private static extern int StrCmpLogicalW(string a, string b);
 

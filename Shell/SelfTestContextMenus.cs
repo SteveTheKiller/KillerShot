@@ -117,6 +117,15 @@ internal static class SelfTestContextMenus
             string fakePdf = Path.Combine(folder, "KillerPDF.exe");
             File.WriteAllBytes(fakePdf, [0]);
             KillerPdfHandoff.FindOverride = () => fakePdf;
+            // Make PDF needs a picture to work with, so the Screenshots folder gets one.
+            string picture = Path.Combine(FolderCaptures.Folder, "card-picture.png");
+            Directory.CreateDirectory(FolderCaptures.Folder);
+            using (var stream = File.Create(picture))
+            {
+                var png = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(BitmapSourceOf(8, 8)));
+                png.Save(stream);
+            }
             try
             {
                 long clip = CaptureLibrary.AddNow(BitmapSourceOf(64, 48), DateTime.Now, "region", "Sidebar sample", null);
@@ -148,6 +157,14 @@ internal static class SelfTestContextMenus
                     Check(head == name, $"{name}'s card must be titled {name}, not '{head}'.");
                     Check(labels.Contains(L("Str_Menu_MakePdf")), $"{name}'s card must offer Make PDF when KillerPDF is installed.");
                 }
+                // A folder with no pictures has nothing to put in a PDF, so its card leaves the tile out.
+                File.Delete(picture);
+                var emptyCard = new ContextMenu();
+                ((LibraryView)library).FillFolderMenu(emptyCard, "folder", FolderCaptures.Name);
+                var emptyLabels = SelfTestCards.Names(emptyCard);
+                report.Add("folder_card_without_pictures=" + string.Join(" | ", emptyLabels));
+                Check(!emptyLabels.Contains(L("Str_Menu_MakePdf")), "A folder without pictures must not offer Make PDF.");
+                report.Add("make_pdf_only_for_folders_with_pictures=True");
                 _ = new ContextMenuEventArgsProbe(navigation);
                 var sidebarHead = navigation.ContextMenu!.Items.OfType<MenuItem>().First();
                 static IEnumerable<string> Texts(object node) => node switch

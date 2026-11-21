@@ -74,12 +74,10 @@ public partial class FilesView
                 Tile("rename", "\uE8AC", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename),
                 Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
             };
-            if (KillerPdfHandoff.IsInstalled)
-            {
-                var folderEntry = count == 1 ? ResultsList.SelectedItem as FileEntry : null;
-                edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => { if (folderEntry != null) MakePdf(folderEntry.FilePath); },
-                    enabled: folderEntry is { IsDirectory: true }));
-            }
+            // Make PDF shows only for one folder that has pictures in it.
+            if (KillerPdfHandoff.IsInstalled && count == 1 && ResultsList.SelectedItem is FileEntry { IsDirectory: true } folderEntry
+                && KillerPdfHandoff.HasImages(folderEntry.FilePath))
+                edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folderEntry.FilePath)));
             groups.Add(edit);
             string[] paths = SelectedPaths.ToArray();
             groups.Add(
@@ -108,11 +106,9 @@ public partial class FilesView
                 Tile("paste", "\uE77F", "Str_Menu_Paste", () => StartCommand(PasteFiles()), "Ctrl+V", CanPaste),
                 Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
             };
-            if (KillerPdfHandoff.IsInstalled)
-            {
-                string folder = Navigation.CurrentFolder;
+            string folder = Navigation.CurrentFolder;
+            if (KillerPdfHandoff.IsInstalled && KillerPdfHandoff.HasImages(folder))
                 here.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folder)));
-            }
             groups.Add(here);
             groups.Add([Tile("refresh", "\uE72C", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5")]);
         }

@@ -1110,7 +1110,7 @@ namespace KillerShot.Shell
                 new("\uE838", Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)) { Shown = Loc("Str_Tab_Explorer") },
             };
             var make = new List<CardTile>();
-            if (KillerPdfHandoff.IsInstalled)
+            if (KillerPdfHandoff.IsInstalled && KillerPdfHandoff.HasImages(FolderCaptures.PathForSource(folderSource)))
                 make.Add(new("\uEA90", Loc("Str_Menu_MakePdf"), null, () =>
                 {
                     if (KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(FolderCaptures.PathForSource(folderSource))) is { } problem)
