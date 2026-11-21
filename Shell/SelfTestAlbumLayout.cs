@@ -77,9 +77,10 @@ internal static class SelfTestAlbumLayout
             Check(window.FindName("LibrarySearchButton") is Button searchButton
                 && ReferenceEquals(searchButton.Parent, window.FindName("RailStack")),
                 "Search captures needs its own button in the left menu.");
-            Check(window.FindName("NewCollectionButton") is Button newCollectionButton
-                && ReferenceEquals(newCollectionButton.Parent, window.FindName("RailStack")),
-                "New collection needs its own button in the left menu.");
+            Check(window.FindName("NewCollectionButton") == null
+                && window.FindName("NewCollectionBtn") is Button newCollectionButton
+                && ReferenceEquals(newCollectionButton.Parent, window.FindName("LeftBar")),
+                "New collection belongs on the toolbar, not in the left menu.");
             Check(library.FindName("HeaderBar") == null, "The old search header still reserves a row above the album.");
             string? failure = null;
             foreach (var theme in new[] { Theme.Black, Theme.Dark, Theme.SE98 })
@@ -362,7 +363,7 @@ internal static class SelfTestAlbumLayout
                 ((Button)prompt.FindName("OkButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             };
             promptTimer.Start();
-            try { ((Button)window.FindName("NewCollectionButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
+            try { ((Button)window.FindName("NewCollectionBtn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
             finally { promptTimer.Stop(); }
             Check(CaptureLibrary.Collections().Any(collection => collection.Name == "From rail"),
                 "The separate New collection rail button did not create the requested collection.");

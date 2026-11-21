@@ -42,6 +42,7 @@ namespace KillerShot.Shell
             yield return ("copy",       CopyBtn,            0xE8C8, "Str_Btn_Copy");        // Copy
             yield return ("copytext",   CopyTextBtn,        0xE8C1, "Str_Btn_CopyText");    // Characters
             yield return ("print",      PrintBtn,           0xE749, "Str_Btn_Print");       // Print
+            yield return ("newcollection", NewCollectionBtn, 0xE8F4, "Str_Lib_NewCollection"); // NewFolder
             yield return ("undo",       UndoBtn,            0xE7A7, "Str_Btn_Undo");        // Undo
             yield return ("redo",       RedoBtn,            0xE7A6, "Str_Btn_Redo");        // Redo
             yield return ("select",     ToolSelectBtn,      0xE7C9, "Str_Tool_Select");     // TouchPointer

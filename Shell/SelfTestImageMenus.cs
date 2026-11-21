@@ -382,7 +382,7 @@ internal static class SelfTestImageMenus
                 throw new InvalidOperationException("The theme flyout does not open in the content pane's corner.");
             themeMenu.IsOpen = false;
             FrameworkElement[] expectedRail = [dockButton,
-                (Button)window.FindName("LibrarySearchButton"), (Button)window.FindName("NewCollectionButton"),
+                (Button)window.FindName("LibrarySearchButton"),
                 (Button)window.FindName("CaptureSettingsButton"), (Button)window.FindName("VideoSettingsButton"),
                 (Button)window.FindName("QrReadingButton"), (Button)window.FindName("ShortcutsButton"),
                 (Button)window.FindName("LangButton"), themeButton];

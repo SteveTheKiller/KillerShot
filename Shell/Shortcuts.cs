@@ -155,7 +155,7 @@ namespace KillerShot.Shell
                 bool handled = true;
                 switch (e.Key)
                 {
-                    case Key.N when shift: NewCollectionButton_Click(NewCollectionButton, new RoutedEventArgs()); break;
+                    case Key.N when shift: NewCollectionButton_Click(NewCollectionBtn, new RoutedEventArgs()); break;
                     case Key.N: StartCapture(); break;
                     case Key.E when captureView && !TypingInField(): Library.ShowFocusedInExplorer(); break;
                     case Key.M when captureView && !shift && !TypingInField(): Library.MoveFocused(); break;
