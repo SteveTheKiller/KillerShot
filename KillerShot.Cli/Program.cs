@@ -895,11 +895,17 @@ public static class Program
                     ? id : throw new CliException($"--{action} id: needs a capture id from recent --json, such as id:42.");
             else index = o.Int(action, 1, int.MaxValue)!.Value;
         }
-        OutputTarget? target = action == "export"
-            ? OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."),
-                null, o.Has("overwrite"))
+        if (byId != null && o.Has("search")) throw new CliException("An id: names one capture, so it does not go with --search.");
+        string? outValue = action == "export"
+            ? o.Value("out") ?? throw new CliException("--export needs --out with a file or folder.")
             : null;
-        bool imageExport = action == "export" && target!.File != null && target.Format != "png";
+        // Whether the capture is a picture or a recording is known only once the album is read,
+        // so a recording's --out is checked against its clip there. A picture's is checked now.
+        OutputTarget? target = null;
+        bool imageExport = false;
+        if (outValue != null && !Path.GetExtension(outValue).Equals(".mp4", StringComparison.OrdinalIgnoreCase)
+            && !Path.GetExtension(outValue).Equals(".gif", StringComparison.OrdinalIgnoreCase))
+            target = OutputTarget.ForImage(outValue, null, o.Has("overwrite"));
 
         IReadOnlyList<CaptureItem> items = [];
         Dictionary<long, string> collections = new();
@@ -907,6 +913,7 @@ public static class Program
         string? selectedReference = null;
         BitmapSource? image = null;
         byte[]? png = null;
+        string? clipExported = null;
         if (!CaptureLibrary.TryReadForCli(() =>
         {
             items = CaptureLibrary.Items(o.Value("search"));
@@ -917,7 +924,6 @@ public static class Program
             }
             if (byId is long wanted)
             {
-                if (o.Has("search")) throw new CliException("An id: names one capture, so it does not go with --search.");
                 int at = items.ToList().FindIndex(i => i.Id == wanted);
                 if (at < 0) throw new CliException($"No capture has the id {wanted}.", ExitFailed);
                 index = at + 1;
@@ -926,6 +932,20 @@ public static class Program
                 throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
             selected = items[index - 1];
             selectedReference = CaptureLibrary.CaptureReference(selected.Id);
+            if (VideoCaptures.IsVideo(selected))
+            {
+                // A recording's picture is only its poster frame, so it is exported as the clip
+                // and never copied as a picture, the same as in the app.
+                if (action == "copy")
+                    throw new CliException("That capture is a recording, so it cannot be copied as a picture. Use --export to save the clip.", ExitFailed);
+                if (action == "export") clipExported = ExportClip(selected, outValue!, o.Has("overwrite"));
+                return;
+            }
+            if (action == "export")
+            {
+                target ??= OutputTarget.ForImage(outValue!, null, o.Has("overwrite"));
+                imageExport = target.File != null && target.Format != "png";
+            }
             // Edited captures leave the album flattened, as they do from the app.
             if (action == "copy" || imageExport) image = CaptureLibrary.LoadOutput(selected.Id);
             else if (action == "export") png = CaptureLibrary.LoadOutputPng(selected.Id);
@@ -982,7 +1002,8 @@ public static class Program
                     throw new CliException("The clipboard is busy: " + OneLine(error ?? "another app is holding it"), ExitFailed);
                 break;
             case "export":
-                if (target!.File is { } exportFile && imageExport)
+                if (clipExported != null) result = clipExported;
+                else if (target!.File is { } exportFile && imageExport)
                 {
                     ImageOutput.Save(image!, exportFile, CaptureSettings.JpegQuality, o.Has("overwrite"));
                     result = exportFile;
@@ -1038,6 +1059,29 @@ public static class Program
         else
             Out.WriteLine(result);
         return ExitOk;
+    }
+
+    /// <summary>Writes a recording's clip, byte for byte, to the --out file or into the --out
+    /// folder, and gives the path. The file must end in the clip's own extension. Call with the
+    /// album open.</summary>
+    private static string ExportClip(CaptureItem item, string outValue, bool overwrite)
+    {
+        string ext = CaptureLibrary.VideoExtension(item.Id);
+        var target = OutputTarget.ForClip(outValue, ext, overwrite);
+        if (target.File is { } file)
+        {
+            CaptureLibrary.ExportVideo(item.Id, file);
+            return file;
+        }
+        string name = OutputFiles.FileName(VideoSettings.FileNamePattern, item.Taken, ModeFromKey(item.Mode), item.Width, item.Height, ext.TrimStart('.'));
+        Directory.CreateDirectory(target.Folder!);
+        string staged = Path.Combine(target.Folder!, "KillerShot export " + Guid.NewGuid().ToString("N") + ext);
+        try
+        {
+            CaptureLibrary.ExportVideo(item.Id, staged);
+            return OutputFiles.PublishUnique(staged, target.Folder!, name);
+        }
+        finally { if (File.Exists(staged)) File.Delete(staged); }
     }
 
     /// <summary>A collection by its name, ignoring case. Call with the album open.</summary>
@@ -1387,6 +1431,10 @@ public static class Program
 
         public static OutputTarget ForVideo(string value, string? format, bool overwrite) =>
             Resolve(value, format, overwrite, ext => ext switch { ".mp4" => "mp4", ".gif" => "gif", _ => null }, ".mp4 or .gif");
+
+        /// <summary>A stored recording goes out as the clip it is, so the file keeps its extension.</summary>
+        public static OutputTarget ForClip(string value, string ext, bool overwrite) =>
+            Resolve(value, null, overwrite, e => e.Equals(ext, StringComparison.OrdinalIgnoreCase) ? ext.TrimStart('.') : null, ext + " for this recording");
 
         private static OutputTarget Resolve(string value, string? format, bool overwrite, Func<string, string?> formatOf, string allowed)
         {
@@ -1766,6 +1814,8 @@ public static class Program
           --move <n> --to <name|none>     Move capture n into a collection, or out of one.
           --note <n> --text <text>        Set capture n's note; empty text clears it.
           --json                          Print the result as JSON.
+        A recording exports as its clip, so --out names a file with the clip's extension or a
+        folder, and it cannot be copied as a picture.
         A capture n is a position in the list, or id:<id> with the id from --json. A position
         moves when a new capture arrives; an id never does, so scripts should use it.
 

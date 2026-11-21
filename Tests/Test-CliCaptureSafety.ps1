@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$Output,
-    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact', 'recent-id')][string]$Case = 'all'
+    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact', 'recent-id', 'recent-recording')][string]$Case = 'all'
 )
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Output) { throw 'Use a new scratch output folder for each test.' }
@@ -98,6 +98,22 @@ if ($Case -in @('all', 'recent-id')) {
     Invoke-CaptureCase 'recent-bad-id' 'two-captures' @('recent', '--open', 'id:abc') 2 'needs a capture id'
     Invoke-CaptureCase 'recent-id-search' 'two-captures' @('recent', '--copy', "id:$($older.id)", '--search', 'Older') 2 'does not go with --search'
     Write-Output 'PASS: recent actions pick captures by id'
+}
+if ($Case -in @('all', 'recent-recording')) {
+    # A recording in the album exports as its clip, byte for byte, never as its poster frame.
+    $clip = Join-Path $Output 'exported.mp4'
+    Invoke-CaptureCase 'recording-export-file' 'recording' @('recent', '--export', '1', '--out', $clip, '--json') 0 ''
+    $result = Get-Content -LiteralPath (Join-Path $Output 'recording-export-file\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.path -ne $clip -or [Convert]::ToHexString([IO.File]::ReadAllBytes($clip)) -ne '0103050709') { throw "recent --export did not write the recording's clip: $($result | ConvertTo-Json -Compress)" }
+    $folder = Join-Path $Output 'clips'
+    [IO.Directory]::CreateDirectory($folder) | Out-Null
+    Invoke-CaptureCase 'recording-export-folder' 'recording' @('recent', '--export', '1', '--out', $folder, '--json') 0 ''
+    $files = @(Get-ChildItem -LiteralPath $folder -File)
+    if ($files.Count -ne 1 -or $files[0].Extension -ne '.mp4' -or [Convert]::ToHexString([IO.File]::ReadAllBytes($files[0].FullName)) -ne '0103050709') { throw "recent --export into a folder did not leave exactly the clip: $($files.Name -join ', ')" }
+    Invoke-CaptureCase 'recording-export-png' 'recording' @('recent', '--export', '1', '--out', (Join-Path $Output 'poster.png')) 2 'must end in \.mp4 for this recording'
+    if (Test-Path -LiteralPath (Join-Path $Output 'poster.png')) { throw 'A recording was exported as a picture.' }
+    Invoke-CaptureCase 'recording-copy' 'recording' @('recent', '--copy', '1') 1 'is a recording'
+    Write-Output 'PASS: recordings export as their clip and are not copied as pictures'
 }
 if ($Case -in @('all', 'account')) {
     Invoke-CaptureCase 'account-only' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard', '--json') 0 ''

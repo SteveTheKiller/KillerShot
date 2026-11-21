@@ -55,6 +55,15 @@ internal static class SelfTestCliSafety
             }
             CaptureLibrary.Close();
         }
+        else if (args[2] == "recording")
+        {
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            string clip = Path.Combine(dir, "clip.mp4");
+            File.WriteAllBytes(clip, [1, 3, 5, 7, 9]);
+            CaptureLibrary.AddVideo(clip, DateTime.Now, "Synthetic clip");
+            File.Delete(clip);
+            CaptureLibrary.Close();
+        }
         else if (args[2] == "failed-write")
         {
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
