@@ -43,6 +43,18 @@ internal static class SelfTestCliSafety
             CaptureLibrary.SetPassword("synthetic album password");
             CaptureLibrary.Close();
         }
+        else if (args[2] == "two-captures")
+        {
+            if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
+            foreach (string title in new[] { "Older capture", "Newer capture" })
+            {
+                var pixels = new byte[4 * 4 * 4];
+                Array.Fill(pixels, (byte)0x80);
+                var picture = System.Windows.Media.Imaging.BitmapSource.Create(4, 4, 96, 96, PixelFormats.Bgra32, null, pixels, 16);
+                CaptureLibrary.AddNow(picture, DateTime.Now, "region", title, null);
+            }
+            CaptureLibrary.Close();
+        }
         else if (args[2] == "failed-write")
         {
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);

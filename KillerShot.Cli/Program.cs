@@ -883,7 +883,18 @@ public static class Program
         string? action = chosen.Length == 0 ? null : chosen[0];
         if (action != null && o.Has("limit")) throw new CliException("--limit only applies to the list.");
         int limit = action == null ? o.Int("limit", 1, RecentListMax) ?? RecentListDefault : 0;
-        int index = action == null ? 0 : o.Int(action, 1, int.MaxValue)!.Value;
+        // A number is a position in the list, which moves when a capture arrives; id:<n> is the
+        // capture's id from --json and never moves, so a script acts on the capture it listed.
+        long? byId = null;
+        int index = 0;
+        if (action != null)
+        {
+            string pick = o.Value(action)!;
+            if (pick.StartsWith("id:", StringComparison.OrdinalIgnoreCase))
+                byId = long.TryParse(pick.AsSpan(3), NumberStyles.None, CultureInfo.InvariantCulture, out long id) && id > 0
+                    ? id : throw new CliException($"--{action} id: needs a capture id from recent --json, such as id:42.");
+            else index = o.Int(action, 1, int.MaxValue)!.Value;
+        }
         OutputTarget? target = action == "export"
             ? OutputTarget.ForImage(o.Value("out") ?? throw new CliException("--export needs --out with a file or folder."),
                 null, o.Has("overwrite"))
@@ -904,7 +915,14 @@ public static class Program
                 collections = CaptureLibrary.Collections().ToDictionary(c => c.Id, c => c.Name);
                 return;
             }
-            if (index > items.Count)
+            if (byId is long wanted)
+            {
+                if (o.Has("search")) throw new CliException("An id: names one capture, so it does not go with --search.");
+                int at = items.ToList().FindIndex(i => i.Id == wanted);
+                if (at < 0) throw new CliException($"No capture has the id {wanted}.", ExitFailed);
+                index = at + 1;
+            }
+            else if (index > items.Count)
                 throw new CliException(items.Count == 0 ? "The library is empty." : $"There are only {items.Count} captures.", ExitFailed);
             selected = items[index - 1];
             selectedReference = CaptureLibrary.CaptureReference(selected.Id);
@@ -1748,6 +1766,8 @@ public static class Program
           --move <n> --to <name|none>     Move capture n into a collection, or out of one.
           --note <n> --text <text>        Set capture n's note; empty text clears it.
           --json                          Print the result as JSON.
+        A capture n is a position in the list, or id:<id> with the id from --json. A position
+        moves when a new capture arrives; an id never does, so scripts should use it.
 
         Options left out follow your KillerShot settings.
         Exit codes: 0 success, 1 failure, 2 invalid command line, 3 cancelled.

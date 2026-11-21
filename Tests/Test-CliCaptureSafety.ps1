@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$Output,
-    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact')][string]$Case = 'all'
+    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact', 'recent-id')][string]$Case = 'all'
 )
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Output) { throw 'Use a new scratch output folder for each test.' }
@@ -82,6 +82,22 @@ if ($Case -in @('all', 'redact')) {
     if ($result.redactionChecked -ne $false -or $result.redactions -ne 0 -or !(Test-Path -LiteralPath $unchecked -PathType Leaf)) { throw "A CLI capture whose scan failed did not save the original and say so: $($result | ConvertTo-Json -Compress)" }
     if ((Get-Pixel $unchecked 16 10) -eq 'FF00FF') { throw 'A CLI capture whose scan failed was boxed anyway.' }
     Write-Output 'PASS: a failed scan saves the original and warns that it was not checked'
+}
+if ($Case -in @('all', 'recent-id')) {
+    # recent actions take id:<id> from --json, so a script acts on the capture it listed even
+    # after the list positions move. Each case runs in its own process and folder, so the
+    # fixture album holds the two captures every time.
+    Invoke-CaptureCase 'recent-list' 'two-captures' @('recent', '--json') 0 ''
+    $listed = Get-Content -LiteralPath (Join-Path $Output 'recent-list\stdout.txt') -Raw | ConvertFrom-Json
+    $older = $listed.items | Where-Object title -eq 'Older capture'
+    if ($listed.total -ne 2 -or $older.index -ne 2) { throw "The fixture album did not list two captures, older second: $($listed | ConvertTo-Json -Compress -Depth 4)" }
+    Invoke-CaptureCase 'recent-note-id' 'two-captures' @('recent', '--note', "id:$($older.id)", '--text', 'picked by id', '--json') 0 ''
+    $result = Get-Content -LiteralPath (Join-Path $Output 'recent-note-id\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.id -ne $older.id -or $result.index -ne 2 -or $result.action -ne 'note') { throw "recent --note id: acted on the wrong capture: $($result | ConvertTo-Json -Compress)" }
+    Invoke-CaptureCase 'recent-missing-id' 'two-captures' @('recent', '--delete', 'id:999999', '--yes') 1 'No capture has the id 999999'
+    Invoke-CaptureCase 'recent-bad-id' 'two-captures' @('recent', '--open', 'id:abc') 2 'needs a capture id'
+    Invoke-CaptureCase 'recent-id-search' 'two-captures' @('recent', '--copy', "id:$($older.id)", '--search', 'Older') 2 'does not go with --search'
+    Write-Output 'PASS: recent actions pick captures by id'
 }
 if ($Case -in @('all', 'account')) {
     Invoke-CaptureCase 'account-only' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard', '--json') 0 ''
