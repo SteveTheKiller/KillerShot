@@ -1377,6 +1377,8 @@
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
                                             <Setter Property="Padding" Value="0"/>
+                                            <!-- Without this the rows fall back to WPF's default black text. -->
+                                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListBoxItem">

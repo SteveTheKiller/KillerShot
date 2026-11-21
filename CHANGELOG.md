@@ -9,7 +9,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 - A window capture of KillerShot keeps its own dialog when one sits over the window.
 - Make PDF shows only for folders that have pictures in them, in the album's folder cards and in the Files view.
 - Opening KillerShot on the Files view no longer draws the editor's frame around it.
-- The selected album in the Albums window uses the same solid highlight as every other list, instead of a dim blend of it.
+- The selected album in the Albums window uses the same solid highlight as every other list, instead of a dim blend of it. The other albums read in the theme's text color instead of black.
 
 ### Changed
 - Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.

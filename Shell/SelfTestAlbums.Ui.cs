@@ -33,6 +33,11 @@ internal static partial class SelfTestAlbums
             list.SelectedIndex = 1;
             Check(CaptureLibrary.FilePath == original && CaptureLibrary.Count == 1,
                 "Browsing album rows must leave the current album live.");
+            // Unselected rows read in the theme's text color, never WPF's default black.
+            var text = (SolidColorBrush)card.FindResource("TextBrush");
+            foreach (var row in list.Items.OfType<ListBoxItem>().Where(row => !row.IsSelected))
+                Check(row.Foreground is SolidColorBrush rowText && rowText.Color == text.Color,
+                    $"Album row '{System.Windows.Automation.AutomationProperties.GetName(row)}' must use TextBrush, not {row.Foreground}.");
             string prefix = theme + "-" + locale;
             RenderCard(card, Path.Combine(folder, prefix + "-normal.png"));
             window.TestPrepareAlbumManager(280);
