@@ -35,7 +35,10 @@ param(
     [int]$UploadTimeoutMinutes = 30
 )
 $ErrorActionPreference = 'Stop'
-$api = "https://api.store.microsoft.com/submission/v1/product/$ProductId"
+# release.ps1 runs under strict mode, which this script would inherit. The Store API leaves out fields
+# that have no value (errors, ongoingSubmissionId, isReady), and strict mode throws on reading one.
+Set-StrictMode -Off
+$api ="https://api.store.microsoft.com/submission/v1/product/$ProductId"
 
 # The client secret lives in Windows Credential Manager as KillerTools.StoreClientSecret, never in the
 # environment that every process, agent clients included, inherits.
