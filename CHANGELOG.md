@@ -1,5 +1,12 @@
 # KillerShot Changelog
 
+## [1.2.1]
+
+KillerShot 1.2.1 carries Trash Polka into the Files view.
+
+### Changed
+- Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.
+
 ## [1.2.0] - 2026-11-21
 
 KillerShot 1.2.0 adds the Files view with folder tabs, recordings in the library, auto redact, Make PDF and the Trash Polka theme, fixes updates that could not install, and keeps large libraries responsive.
