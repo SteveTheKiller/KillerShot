@@ -357,8 +357,11 @@ internal static class SelfTestFilesInteraction
                     int leaseGdiDelta = (int)GetGuiResources(process, 0) - (int)leaseGdi;
                     acquiredAll &= acquiredCount == 10;
                     rawAll &= rawCount == 10;
-                    stableMenus &= leaseUserDelta <= Math.Max(0, rawUserDelta);
-                    stableGdi &= leaseGdiDelta <= Math.Max(0, rawGdiDelta);
+                    // A retained menu costs one object per acquire, ten per batch. The shell itself drifts by one
+                    // now and then (seen as shell+1 on SN01), so one object of slack keeps that noise from failing
+                    // the check without hiding a leak.
+                    stableMenus &= leaseUserDelta <= Math.Max(0, rawUserDelta) + 1;
+                    stableGdi &= leaseGdiDelta <= Math.Max(0, rawGdiDelta) + 1;
                     report.AppendLine($"Native lease batch {batch}: acquired={acquiredCount}/10, raw={rawCount}/10, USER lease+{leaseUserDelta} shell+{rawUserDelta}, GDI lease+{leaseGdiDelta} shell+{rawGdiDelta}, durationMs={batchDuration.ElapsedMilliseconds}");
                 }
                 Check(rawAll, "bare shell menu query builds the same native menu");
