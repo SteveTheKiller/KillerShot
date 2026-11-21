@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Skanuj każdy nowy zrzut</sys:String>
     <sys:String x:Key="Str_Redact_Find">Znajdź</sys:String>
     <sys:String x:Key="Str_Redact_None">Nie znaleziono poufnego tekstu.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Zrzut nie został przeskanowany</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Skanowanie w poszukiwaniu danych do zamazania nie powiodło się, więc ten zrzut wyszedł bez ramek. Sprawdź go przed udostępnieniem.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Obraz zmienił się podczas skanowania. Zeskanuj ponownie.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatyczne maskowanie dodało 1 ramkę. Sprawdź ją przed zapisaniem.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatyczne maskowanie dodało ramki: {0}. Sprawdź je przed zapisaniem.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Ukryte</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Przeciągnij tu kafelek, aby go ukryć</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Zawsze widoczne</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, pozycja {1} z {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Do biblioteki</sys:String>
     <sys:String x:Key="Str_Card_Tools">Narzędzia</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Ustawienie Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">nieprawidłowe znaki</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">już istnieje</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Nie udało się zmienić nazwy - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">inna operacja na plikach wciąż trwa</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Pliki</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtruj te wyniki (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nowa karta  (Ctrl+T)</sys:String>

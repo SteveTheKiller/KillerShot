@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Her yeni yakalamayı tara</sys:String>
     <sys:String x:Key="Str_Redact_Find">Bul</sys:String>
     <sys:String x:Key="Str_Redact_None">Hassas metin bulunamadı.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Yakalama taranmadı</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Karartma taraması başarısız oldu, bu yüzden bu yakalama kutusuz gönderildi. Paylaşmadan önce kontrol edin.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Tarama sırasında resim değişti. Yeniden tarayın.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Otomatik karartma 1 kutu ekledi. Kaydetmeden önce kontrol edin.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Otomatik karartma {0} kutu ekledi. Kaydetmeden önce kontrol edin.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Gizli</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Gizlemek için bir kutucuğu buraya sürükleyin</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Her zaman gösterilir</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, {2} içinde {1}. konum</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Kitaplığa</sys:String>
     <sys:String x:Key="Str_Card_Tools">Araçlar</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows ayarı</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">geçersiz karakterler</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">zaten var</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Yeniden adlandırılamadı - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">başka bir dosya işlemi hâlâ sürüyor</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Dosyalar</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Bu sonuçları filtrele (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Yeni sekme  (Ctrl+T)</sys:String>

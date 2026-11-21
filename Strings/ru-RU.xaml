@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Проверять каждый новый снимок</sys:String>
     <sys:String x:Key="Str_Redact_Find">Найти</sys:String>
     <sys:String x:Key="Str_Redact_None">Конфиденциальный текст не найден.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Снимок не проверен</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Проверка на скрытие данных не удалась, поэтому этот снимок ушёл без закрывающих рамок. Проверьте его, прежде чем делиться.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Изображение изменилось во время сканирования. Повторите сканирование.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Автозакрашивание добавило 1 прямоугольник. Проверьте его перед сохранением.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Автозакрашивание добавило прямоугольников: {0}. Проверьте их перед сохранением.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Скрытые</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Перетащите плитку сюда, чтобы скрыть её</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Всегда видно</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, позиция {1} из {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">В библиотеку</sys:String>
     <sys:String x:Key="Str_Card_Tools">Инструменты</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">недопустимые символы</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">уже существует</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Не удалось переименовать - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">ещё выполняется другая операция с файлами</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Файлы</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Отфильтровать эти результаты (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Новая вкладка  (Ctrl+T)</sys:String>

@@ -272,6 +272,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Preglej vsak nov posnetek</sys:String>
     <sys:String x:Key="Str_Redact_Find">Najdi</sys:String>
     <sys:String x:Key="Str_Redact_None">Občutljivega besedila ni bilo mogoče najti.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Zajem ni bil pregledan</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Pregled za zakrivanje ni uspel, zato je ta zajem odšel brez okvirjev. Preverite ga, preden ga delite.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Slika se je med iskanjem spremenila. Iščite znova.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Samodejno prekrivanje je dodalo 1 pravokotnik. Pred shranjevanjem ga preverite.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Samodejno prekrivanje je dodalo pravokotnike: {0}. Pred shranjevanjem jih preverite.</sys:String>
@@ -564,6 +566,7 @@
     <sys:String x:Key="Str_Card_Hidden">Skrito</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Povlecite ploščico sem, da jo skrijete</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Vedno prikazano</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, mesto {1} od {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">V knjižnico</sys:String>
     <sys:String x:Key="Str_Card_Tools">Orodja</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavitev sistema Windows</sys:String>
@@ -751,6 +754,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">neveljavni znaki</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">že obstaja</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Preimenovanje ni uspelo: {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">druga datotečna operacija še poteka</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Datoteke</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtriraj te rezultate (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nov zavihek  (Ctrl+T)</sys:String>

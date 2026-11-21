@@ -49,6 +49,7 @@ namespace KillerShot.Files
             var items = new List<ItemResult>();
             var op = (IFileOperation)Activator.CreateInstance(Type.GetTypeFromCLSID(CLSID_FileOperation, true)!)!;
             var sink = new Sink(items);
+            var shells = new List<IShellItem>();
             uint cookie = 0;
             try
             {
@@ -62,6 +63,7 @@ namespace KillerShot.Files
                     items.Add(item);
                     IShellItem? shell = Item(path, out int hr);
                     if (shell == null) { item.HResult = hr; item.Reported = true; continue; }
+                    shells.Add(shell);
                     sink.Expect(shell, item);
                     hr = op.DeleteItem(shell, null);
                     if (hr != 0) { item.HResult = hr; item.Reported = true; continue; }
@@ -75,6 +77,8 @@ namespace KillerShot.Files
             {
                 if (cookie != 0) op.Unadvise(cookie);
                 Marshal.FinalReleaseComObject(op);
+                // The per-path items are released after PerformOperations, so none waits on the finalizer.
+                foreach (var shell in shells) Marshal.FinalReleaseComObject(shell);
             }
         }
 
@@ -122,8 +126,8 @@ namespace KillerShot.Files
             public int PostDeleteItem(uint flags, IShellItem item, int hrDelete, IShellItem? newlyCreated)
             {
                 string path = Normal(Parsing(item));
-                if (!_byPath.TryGetValue(path, out var result))
-                    result = items.Find(i => !i.Reported && string.Equals(Normal(i.Path), path, StringComparison.OrdinalIgnoreCase))!;
+                ItemResult? result = _byPath.TryGetValue(path, out var known) ? known
+                    : items.Find(i => !i.Reported && string.Equals(Normal(i.Path), path, StringComparison.OrdinalIgnoreCase));
                 if (result != null)
                 {
                     result.HResult = hrDelete;

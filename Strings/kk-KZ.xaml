@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Әр жаңа түсірілімді тексеру</sys:String>
     <sys:String x:Key="Str_Redact_Find">Табу</sys:String>
     <sys:String x:Key="Str_Redact_None">Құпия мәтін табылмады.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Түсірілім тексерілмеді</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Жасыру тексерісі сәтсіз аяқталды, сондықтан бұл түсірілім жасыру қорапшаларынсыз шықты. Бөліспес бұрын тексеріңіз.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Сканерлеу кезінде сурет өзгерді. Қайта сканерлеңіз.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Автоматты жасыру 1 тіктөртбұрыш қосты. Сақтамас бұрын тексеріңіз.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Автоматты жасыру {0} тіктөртбұрыш қосты. Сақтамас бұрын тексеріңіз.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Жасырын</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Жасыру үшін тақтаны осында сүйреңіз</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Әрқашан көрсетіледі</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, {2} ішінен {1}-орын</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Кітапханаға</sys:String>
     <sys:String x:Key="Str_Card_Tools">Құралдар</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows параметрі</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">жарамсыз таңбалар</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">бұрыннан бар</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Атын өзгерту мүмкін болмады - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">басқа файл әрекеті әлі орындалып жатыр</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Файлдар</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Осы нәтижелерді сүзу (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Жаңа қойынды  (Ctrl+T)</sys:String>

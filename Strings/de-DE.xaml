@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Jede neue Aufnahme durchsuchen</sys:String>
     <sys:String x:Key="Str_Redact_Find">Suchen</sys:String>
     <sys:String x:Key="Str_Redact_None">Kein vertraulicher Text gefunden.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Aufnahme nicht geprüft</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Die Schwärzungsprüfung ist fehlgeschlagen, daher wurde diese Aufnahme ohne Schwärzungen weitergegeben. Prüfen Sie sie, bevor Sie sie teilen.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Das Bild hat sich während der Suche geändert. Suche erneut starten.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatisch schwärzen hat 1 Kasten hinzugefügt. Prüfen Sie ihn vor dem Speichern.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatisch schwärzen hat {0} Kästen hinzugefügt. Prüfen Sie sie vor dem Speichern.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Ausgeblendet</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Kachel hierher ziehen, um sie auszublenden</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Immer sichtbar</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, Position {1} von {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">In Bibliothek</sys:String>
     <sys:String x:Key="Str_Card_Tools">Werkzeuge</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-Einstellung</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">ungültige Zeichen</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">bereits vorhanden</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Umbenennen nicht möglich - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">ein anderer Dateivorgang läuft noch</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Dateien</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Diese Ergebnisse filtern (Strg+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Neuer Tab  (Strg+T)</sys:String>

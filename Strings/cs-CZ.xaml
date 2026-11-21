@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Prohledat každý nový snímek</sys:String>
     <sys:String x:Key="Str_Redact_Find">Najít</sys:String>
     <sys:String x:Key="Str_Redact_None">Nebyl nalezen žádný citlivý text.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Snímek nebyl prohledán</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Hledání citlivého textu selhalo, takže tento snímek odešel bez zakrývacích polí. Než ho budete sdílet, zkontrolujte ho.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Obrázek se během skenování změnil. Skenujte znovu.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Automatické začernění přidalo 1 rámeček. Před uložením ho zkontrolujte.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Automatické začernění přidalo rámečky: {0}. Před uložením je zkontrolujte.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Skryté</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Přetažením dlaždice sem ji skryjete</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Vždy zobrazeno</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, pozice {1} z {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Do knihovny</sys:String>
     <sys:String x:Key="Str_Card_Tools">Nástroje</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavení Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">neplatné znaky</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">již existuje</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Nelze přejmenovat - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">stále probíhá jiná operace se soubory</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Soubory</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrovat tyto výsledky (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nová karta  (Ctrl+T)</sys:String>

@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Перевіряти кожен новий знімок</sys:String>
     <sys:String x:Key="Str_Redact_Find">Знайти</sys:String>
     <sys:String x:Key="Str_Redact_None">Конфіденційний текст не знайдено.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Знімок не перевірено</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Перевірка на приховування даних не вдалася, тому цей знімок пішов без закривальних рамок. Перевірте його, перш ніж ділитися.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Зображення змінилося під час сканування. Скануйте ще раз.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Автозафарбовування додало 1 прямокутник. Перевірте його перед збереженням.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Автозафарбовування додало прямокутників: {0}. Перевірте їх перед збереженням.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Приховані</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Перетягніть плитку сюди, щоб приховати її</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Завжди показано</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, позиція {1} з {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">До бібліотеки</sys:String>
     <sys:String x:Key="Str_Card_Tools">Інструменти</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">недійсні символи</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">уже існує</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Не вдалося перейменувати - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">ще виконується інша операція з файлами</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Файли</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Фільтрувати ці результати (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Нова вкладка  (Ctrl+T)</sys:String>

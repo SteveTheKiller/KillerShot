@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">新しいキャプチャをすべてスキャン</sys:String>
     <sys:String x:Key="Str_Redact_Find">検索</sys:String>
     <sys:String x:Key="Str_Redact_None">機密情報は見つかりませんでした。</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">キャプチャはスキャンされていません</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">墨消しのスキャンに失敗したため、このキャプチャはボックスなしで出力されました。共有する前に確認してください。</sys:String>
     <sys:String x:Key="Str_Redact_Changed">スキャン中に画像が変わりました。もう一度スキャンしてください。</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">自動黒塗りでボックスを 1 個追加しました。保存する前に確認してください。</sys:String>
     <sys:String x:Key="Str_Redact_Found">自動黒塗りでボックスを {0} 個追加しました。保存する前に確認してください。</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">非表示</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">非表示にするにはタイルをここにドラッグ</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">常に表示</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}、{2} 個中 {1} 番目</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">ライブラリへ</sys:String>
     <sys:String x:Key="Str_Card_Tools">ツール</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows の設定</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">使用できない文字があります</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">既に存在します</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">名前を変更できません - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">別のファイル操作がまだ実行中です</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">ファイル</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">この結果を絞り込む (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">新しいタブ  (Ctrl+T)</sys:String>

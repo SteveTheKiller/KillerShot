@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analizar cada captura nueva</sys:String>
     <sys:String x:Key="Str_Redact_Find">Buscar</sys:String>
     <sys:String x:Key="Str_Redact_None">No se encontró texto confidencial.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Captura sin analizar</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">El análisis de censura falló, así que esta captura salió sin recuadros. Revísala antes de compartirla.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">La imagen cambió durante el análisis. Vuelve a analizar.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">El tachado automático añadió 1 recuadro. Revísalo antes de guardar.</sys:String>
     <sys:String x:Key="Str_Redact_Found">El tachado automático añadió {0} recuadros. Revísalos antes de guardar.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Ocultos</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Arrastra un mosaico aquí para ocultarlo</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Siempre visible</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, posición {1} de {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">A la biblioteca</sys:String>
     <sys:String x:Key="Str_Card_Tools">Herramientas</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Ajuste de Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">caracteres no válidos</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">ya existe</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">No se pudo renombrar - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">otra operación de archivos sigue en curso</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Archivos</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrar estos resultados (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nueva pestaña  (Ctrl+T)</sys:String>

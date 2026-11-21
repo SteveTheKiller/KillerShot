@@ -275,6 +275,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Minden új felvétel átvizsgálása</sys:String>
     <sys:String x:Key="Str_Redact_Find">Keresés</sys:String>
     <sys:String x:Key="Str_Redact_None">Nem található bizalmas szöveg.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">A felvétel nincs átvizsgálva</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">A kitakarási vizsgálat nem sikerült, ezért ez a felvétel takaró dobozok nélkül ment ki. Megosztás előtt ellenőrizze.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">A kép megváltozott a keresés közben. Keresse újra.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Az automatikus kitakarás 1 dobozt adott hozzá. Mentés előtt ellenőrizze.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Az automatikus kitakarás {0} dobozt adott hozzá. Mentés előtt ellenőrizze őket.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Rejtett</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Húzzon ide egy csempét az elrejtéséhez</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Mindig látható</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, {1}. hely ennyiből: {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Könyvtárba</sys:String>
     <sys:String x:Key="Str_Card_Tools">Eszközök</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-beállítás</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">érvénytelen karakterek</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">már létezik</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Nem sikerült átnevezni - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">egy másik fájlművelet még folyamatban van</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Fájlok</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Az eredmények szűrése (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Új lap (Ctrl+T)</sys:String>

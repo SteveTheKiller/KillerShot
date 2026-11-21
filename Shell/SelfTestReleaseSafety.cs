@@ -26,6 +26,7 @@ internal static class SelfTestReleaseSafety
         if (SelfTestAlbumSurfaces.TryRun(args)) return true;
         if (SelfTestAlbumLayout.TryRun(args)) return true;
         if (SelfTestViewCards.TryRun(args)) return true;
+        if (SelfTestCards.TryRun(args)) return true;
         if (SelfTestWindowLifetime.TryRun(args)) return true;
         if (args.Length < 2 || args[0] != "--selftest-release-safety") return false;
         _ = RunAsync(Path.GetFullPath(args[1]));

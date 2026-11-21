@@ -72,10 +72,24 @@ internal static class SelfTestThemeMotif
         return window;
     }
 
+    // Two composes that never finish hold the crossfade for one bound in all, not one bound each.
+    private static void HungComposes(StringBuilder log)
+    {
+        var hung = new[] { new TaskCompletionSource().Task, new TaskCompletionSource().Task };
+        var timer = Stopwatch.StartNew();
+        var finished = ThemeMotif.WaitWithin(hung, ThemeMotif.ComposeWaitMs);
+        double ms = timer.Elapsed.TotalMilliseconds;
+        log.AppendLine(FormattableString.Invariant($"hungComposes waitedMs={ms:0} boundMs={ThemeMotif.ComposeWaitMs}"));
+        if (finished.Any(f => f)) throw new InvalidOperationException("A compose that never finishes was reported finished.");
+        if (ms > ThemeMotif.ComposeWaitMs * 1.5)
+            throw new InvalidOperationException(FormattableString.Invariant($"Two hung composes held the crossfade {ms:0} ms, past the {ThemeMotif.ComposeWaitMs} ms bound."));
+    }
+
     // ---- lifetime ----------------------------------------------------------------------------------------------
 
     private static async Task Lifetime(StringBuilder log)
     {
+        HungComposes(log);
         var window = HostWindow(800, 600, out var root);
         // Wait for the bitmap layers: elements painted before them carry the vector piece.
         await WaitForComposes();

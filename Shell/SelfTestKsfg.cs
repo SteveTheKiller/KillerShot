@@ -57,6 +57,8 @@ internal static class SelfTestKsfg
             await Check("FIL-004", () => RecycleDialogsOwned(dir, view, window));
             await Check("FIL-005", () => SameFolderCopy(dir, view));
             await Check("FIL-006", () => RenameCommitsOnLeave(dir, view, (TestWindow)window));
+            await Check("BF-201-lease", () => RenameLeaveWithHeldLease(dir, view, (TestWindow)window));
+            await Check("BF-201-failed", () => RenameLeaveWithFailedName(dir, view, (TestWindow)window));
             await Check("FIL-007", () => Sync(() => TrailingDotsAndSpaces(dir)));
             await Check("LIB-003", () => LateErrorKeepsReplacement(dir));
             await Check("SEC-005", () => Task.Run(() => HeldCopiesRetried(dir)));
@@ -227,6 +229,94 @@ internal static class SelfTestKsfg
         });
         Require(File.Exists(Path.Combine(folder, "three-unloaded.txt")) && !File.Exists(Path.Combine(folder, "three.txt")),
             "Unloading the view threw the typed name away.");
+    }
+
+    // ---- BF-201: unloading with a rename that cannot commit closes the box instead of leaving it stale ----
+
+    private static async Task<(string Folder, System.Windows.Controls.TextBox Box, Func<Task> Unload, Func<string, string, Task> Open)>
+        RenameLeaveFixture(string dir, string name, FilesView view, TestWindow window)
+    {
+        string folder = Directory.CreateDirectory(Path.Combine(dir, name)).FullName;
+        foreach (string file in new[] { "four.txt", "five.txt", "taken.txt" }) File.WriteAllText(Path.Combine(folder, file), file);
+        view.CancelRename();
+        Require(await view.NavigateTo(folder), "The rename fixture did not open.");
+        await WaitUntil(() => view.Navigation.Results.Count == 3);
+        window.UpdateLayout();
+        var box = (System.Windows.Controls.TextBox)view.FindName("RenameBox");
+        // A tab switch takes the view out of the tree long enough for Unloaded to run; putting it
+        // back in the same pass would let WPF drop the pending Unloaded.
+        async Task Unload()
+        {
+            object content = window.Content;
+            window.Content = null;
+            window.UpdateLayout();
+            await WaitUntil(() => !view.IsLoaded);
+            await window.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            window.Content = content;
+            window.UpdateLayout();
+            await WaitUntil(() => view.IsLoaded);
+        }
+        async Task Open(string from, string to)
+        {
+            bool opened = false;
+            await WaitUntil(() =>
+            {
+                view.ResultsList.SelectedItem = view.Navigation.Results.Single(e => e.FileName == from);
+                window.UpdateLayout();
+                return opened = view.BeginRename();
+            });
+            Require(opened, $"Rename did not open for {from} (busy={view.IsFileOperationBusy}, can={view.CanRename}).");
+            box.Text = to;
+        }
+        return (folder, box, Unload, Open);
+    }
+
+    // Another file operation holds the mutation lease when the view unloads.
+    private static async Task RenameLeaveWithHeldLease(string dir, FilesView view, TestWindow window)
+    {
+        var (folder, box, unload, open) = await RenameLeaveFixture(dir, "rename-leave-lease", view, window);
+        string Loc(string key) => Convert.ToString(view.TryFindResource(key)) ?? key;
+        await open("four.txt", "four-renamed.txt");
+        var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        var lease = (CancellationTokenSource?)typeof(FilesView).GetMethod("BeginMutation", flags)!
+            .Invoke(view, [CancellationToken.None, false]);
+        Require(lease != null, "The test could not hold the file-operation lease.");
+        try
+        {
+            await unload();
+            await view.CurrentCommand;
+            Require(box.Visibility != Visibility.Visible, "A rename refused by a running file operation left its box open after the view came back.");
+            Require(File.Exists(Path.Combine(folder, "four.txt")) && !File.Exists(Path.Combine(folder, "four-renamed.txt")),
+                "A refused rename changed the file.");
+            string expected = string.Format(Loc("Str_Status_RenameFailed"), Loc("Str_Err_OperationBusy"));
+            Require(view.CommandError == expected, $"A refused rename said '{view.CommandError}' instead of '{expected}'.");
+        }
+        finally
+        {
+            typeof(FilesView).GetMethod("EndMutation", flags)!.Invoke(view, [lease]);
+            lease?.Dispose();
+        }
+        var idle = view.CurrentCommand;
+        view.CommitRenameOnLeave();
+        Require(ReferenceEquals(idle, view.CurrentCommand), "The refused rename was still open and committed later.");
+    }
+
+    // The typed name already failed, so leaving again does not retry; the box still closes.
+    private static async Task RenameLeaveWithFailedName(string dir, FilesView view, TestWindow window)
+    {
+        var (folder, box, unload, open) = await RenameLeaveFixture(dir, "rename-leave-failed", view, window);
+        await open("five.txt", "taken.txt");
+        view.CommitRenameOnLeave();
+        await view.CurrentCommand;
+        Require(box.Visibility == Visibility.Visible && box.Text == "taken.txt", "The colliding rename did not fail into the box.");
+        await unload();
+        await view.CurrentCommand;
+        Require(box.Visibility != Visibility.Visible, "A rename that already failed left its box open after the view came back.");
+        Require(File.Exists(Path.Combine(folder, "five.txt")) && File.ReadAllText(Path.Combine(folder, "taken.txt")) == "taken.txt",
+            "The failed rename changed a file.");
+        var idle = view.CurrentCommand;
+        view.CommitRenameOnLeave();
+        Require(ReferenceEquals(idle, view.CurrentCommand), "The failed rename was still open and retried later.");
     }
 
     // ---- FIL-007: trailing dots and spaces are dropped the way Explorer drops them ----

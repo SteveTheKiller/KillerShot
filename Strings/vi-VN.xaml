@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Quét mọi ảnh chụp mới</sys:String>
     <sys:String x:Key="Str_Redact_Find">Tìm</sys:String>
     <sys:String x:Key="Str_Redact_None">Không tìm thấy văn bản nhạy cảm.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Ảnh chụp chưa được quét</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">Quét che thông tin thất bại nên ảnh chụp này đã được xuất mà không có ô che. Hãy kiểm tra trước khi chia sẻ.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">Hình ảnh đã thay đổi trong lúc quét. Hãy quét lại.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Tự động che đã thêm 1 ô. Hãy kiểm tra trước khi lưu.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Tự động che đã thêm {0} ô. Hãy kiểm tra trước khi lưu.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Đã ẩn</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Kéo một ô vào đây để ẩn</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Luôn hiển thị</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, vị trí {1} trên {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Vào thư viện</sys:String>
     <sys:String x:Key="Str_Card_Tools">Công cụ</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Cài đặt Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">ký tự không hợp lệ</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">đã tồn tại</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Không thể đổi tên. {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">một thao tác tệp khác vẫn đang chạy</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Tệp</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Lọc các kết quả này (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Tab mới  (Ctrl+T)</sys:String>

@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analizza ogni nuova cattura</sys:String>
     <sys:String x:Key="Str_Redact_Find">Trova</sys:String>
     <sys:String x:Key="Str_Redact_None">Nessun testo sensibile trovato.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Cattura non analizzata</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">L'analisi di oscuramento non è riuscita, quindi questa cattura è uscita senza riquadri. Controllala prima di condividerla.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">L’immagine è cambiata durante la scansione. Esegui di nuovo la scansione.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">L’oscuramento automatico ha aggiunto 1 riquadro. Controllalo prima di salvare.</sys:String>
     <sys:String x:Key="Str_Redact_Found">L’oscuramento automatico ha aggiunto {0} riquadri. Controllali prima di salvare.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Nascosti</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Trascina qui un riquadro per nasconderlo</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Sempre visibile</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, posizione {1} di {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Nella libreria</sys:String>
     <sys:String x:Key="Str_Card_Tools">Strumenti</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Impostazione di Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">caratteri non validi</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">esiste già</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Impossibile rinominare - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">è ancora in corso un'altra operazione sui file</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">File</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtra questi risultati (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nuova scheda  (Ctrl+T)</sys:String>

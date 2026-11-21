@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">扫描每个新截图</sys:String>
     <sys:String x:Key="Str_Redact_Find">查找</sys:String>
     <sys:String x:Key="Str_Redact_None">未找到敏感文字。</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">截图未扫描</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">遮盖扫描失败，因此这张截图未加遮盖框就已输出。分享前请先检查。</sys:String>
     <sys:String x:Key="Str_Redact_Changed">扫描期间图片发生了变化。请重新扫描。</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">自动涂黑添加了 1 个方框。请在保存前检查。</sys:String>
     <sys:String x:Key="Str_Redact_Found">自动涂黑添加了 {0} 个方框。请在保存前检查。</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">已隐藏</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">将磁贴拖到此处即可隐藏</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">始终显示</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}，第 {1} 个，共 {2} 个</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">到库</sys:String>
     <sys:String x:Key="Str_Card_Tools">工具</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows 设置</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">包含无效字符</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">已存在</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">无法重命名 - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">另一个文件操作仍在进行</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">文件</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">筛选这些结果（Ctrl+F）</sys:String>
     <sys:String x:Key="Str_TT_NewTab">新建标签页  (Ctrl+T)</sys:String>

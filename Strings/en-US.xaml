@@ -286,6 +286,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Scan every new capture</sys:String>
     <sys:String x:Key="Str_Redact_Find">Find</sys:String>
     <sys:String x:Key="Str_Redact_None">No sensitive text was found.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Capture not scanned</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">The redaction scan failed, so this capture went out without boxes. Check it before you share it.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">The picture changed during the scan. Scan again.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Auto redact added 1 box. Check it before you save.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Auto redact added {0} boxes. Check them before you save.</sys:String>
@@ -575,6 +577,7 @@
     <sys:String x:Key="Str_Card_Hidden">Hidden</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Drag a tile here to hide it</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Always shown</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, position {1} of {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">To library</sys:String>
     <sys:String x:Key="Str_Card_Tools">Tools</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows setting</sys:String>
@@ -760,6 +763,7 @@
 <sys:String x:Key="Str_Err_EmptyName">empty name</sys:String>
 <sys:String x:Key="Str_Err_InvalidChars">invalid characters</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">already exists</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">another file operation is still running</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Could not rename - {0}</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Files</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filter these results (Ctrl+F)</sys:String>

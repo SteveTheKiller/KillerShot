@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analyser chaque nouvelle capture</sys:String>
     <sys:String x:Key="Str_Redact_Find">Rechercher</sys:String>
     <sys:String x:Key="Str_Redact_None">Aucun texte sensible trouvé.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Capture non analysée</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">L'analyse de masquage a échoué, cette capture est donc partie sans cadres. Vérifiez-la avant de la partager.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">L’image a changé pendant l’analyse. Relancez l’analyse.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Le masquage automatique a ajouté 1 cadre. Vérifiez-le avant d’enregistrer.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Le masquage automatique a ajouté {0} cadres. Vérifiez-les avant d’enregistrer.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Masqués</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Faites glisser une tuile ici pour la masquer</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Toujours affiché</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, position {1} sur {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Vers la bibliothèque</sys:String>
     <sys:String x:Key="Str_Card_Tools">Outils</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Paramètre Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">caractères non valides</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">existe déjà</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Renommage impossible - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">une autre opération sur les fichiers est encore en cours</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Fichiers</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrer ces résultats (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nouvel onglet  (Ctrl+T)</sys:String>

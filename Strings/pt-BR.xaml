@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">Analisar cada nova captura</sys:String>
     <sys:String x:Key="Str_Redact_Find">Procurar</sys:String>
     <sys:String x:Key="Str_Redact_None">Nenhum texto confidencial encontrado.</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">Captura não verificada</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">A verificação de ocultação falhou, então esta captura saiu sem caixas. Confira antes de compartilhar.</sys:String>
     <sys:String x:Key="Str_Redact_Changed">A imagem mudou durante a verificação. Verifique novamente.</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">Ocultar automaticamente adicionou 1 caixa. Confira antes de salvar.</sys:String>
     <sys:String x:Key="Str_Redact_Found">Ocultar automaticamente adicionou {0} caixas. Confira antes de salvar.</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">Ocultos</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">Arraste um bloco para cá para ocultá-lo</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">Sempre exibido</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}, posição {1} de {2}</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">Para a biblioteca</sys:String>
     <sys:String x:Key="Str_Card_Tools">Ferramentas</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Configuração do Windows</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">caracteres inválidos</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">já existe</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">Não foi possível renomear - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">outra operação de arquivo ainda está em andamento</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">Arquivos</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">Filtrar estes resultados (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_NewTab">Nova guia  (Ctrl+T)</sys:String>

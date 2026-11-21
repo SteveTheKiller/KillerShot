@@ -293,6 +293,10 @@ internal sealed class TrayHost : IDisposable
     private string Gesture(ShortcutAction action) => _active.TryGetValue(action, out var sc) ? sc.Short : "";
     internal string TestGesture(ShortcutAction action) => Gesture(action);
 
+    /// <summary>Test seam: opens the tray card the way a right-click on the icon does and returns it.</summary>
+    internal ContextMenu TestShowMenu() { ShowMenu(); return _lastMenu!; }
+    private ContextMenu? _lastMenu;
+
     private void ShowMenu()
     {
         // The tray card. Bottom-left corner at the pointer, rising out of the tray, as every family
@@ -300,6 +304,7 @@ internal sealed class TrayHost : IDisposable
         // then KillerShot itself (Open, the Print Screen switch, Exit). QR, scrolling, interval and the
         // shortcut repair tiles start in the card's Hidden drawer; the pencil brings them out.
         var menu = ShotCards.Menu();
+        _lastMenu = menu;
         KillerFamily.Shell.CloseToTray.AnchorToPointer(menu);
         menu.Items.Add(ShotCards.Header(menu, "KillerShot"));
         static string? Keys(string text) => text.Length == 0 ? null : text;
@@ -359,9 +364,12 @@ internal sealed class TrayHost : IDisposable
             if (_failed.Count == 0) ShowInfo(Loc("Str_Tray_ShortcutsReadyTitle"), Loc("Str_Tray_ShortcutsReady"));
             else WarnIfFailed();
         }, failed));
-        // Hidden shortcuts are what the repair tiles are for, so they come out of the drawer while a shortcut is lost.
-        string[] spares = failed ? ["qr", "scrolling", "interval", "savelast", "printlast"] : ["qr", "scrolling", "interval", "winsetting", "retry"];
-        menu.Items.Add(ShotCards.Editable(menu, "Tray", ["capture", "open", "exit"], spares, tiles));
+        // Hidden shortcuts are what the repair tiles are for, so they come out of the drawer while a shortcut is lost,
+        // even on a card the user has edited; that is never written into the user's layout.
+        // One spares list in both states, so saving the card while a shortcut is lost never moves other tiles to the drawer.
+        string[] spares = ["qr", "scrolling", "interval", "winsetting", "retry"];
+        string[] repair = failed ? ["winsetting", "retry"] : [];
+        menu.Items.Add(ShotCards.Editable(menu, "Tray", ["capture", "open", "exit"], spares, repair, tiles));
 
         // The menu closes on an outside click only when this process owns the foreground.
         Win32.SetForegroundWindow(Handle);

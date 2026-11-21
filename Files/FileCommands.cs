@@ -101,7 +101,11 @@ public partial class FilesView
     {
         if (_renaming is not { } entry || _committingRename) return false;
         using var lease = BeginMutation();
-        if (lease == null) return false;
+        if (lease == null)
+        {
+            SetCommandError(string.Format(Loc("Str_Status_RenameFailed"), Loc("Str_Err_OperationBusy")));
+            return false;
+        }
         _committingRename = true;
         try
         {
@@ -116,8 +120,10 @@ public partial class FilesView
                     "already exists" => Loc("Str_Err_AlreadyExists"),
                     _ => error
                 };
-                _failedRenameText = name;
                 SetCommandError(string.Format(Loc("Str_Status_RenameFailed"), reason));
+                // The box was closed while the rename ran; the reason stays, the box does not come back.
+                if (!ReferenceEquals(_renaming, entry)) return false;
+                _failedRenameText = name;
                 // Back to the box for a fix, but never by pulling activation back from another app.
                 if (Window.GetWindow(this) is not { IsActive: false }) RenameBox.Focus();
                 return false;
@@ -146,6 +152,34 @@ public partial class FilesView
         if (_renaming == null || _committingRename || RenameBox.Visibility != Visibility.Visible
             || RenameBox.Text == _failedRenameText) return;
         StartCommand(CommitRename());
+    }
+
+    // A view that goes away (a tab switch, a closing window) commits the typed name when it can.
+    // When it cannot, because the name already failed, a rename is still running or another file
+    // operation holds the lease, the box closes so no stale edit waits for the next visit. The
+    // reason stays in the status line.
+    internal void LeaveRename()
+    {
+        if (_renaming == null) return;
+        if (_committingRename || RenameBox.Visibility != Visibility.Visible || RenameBox.Text == _failedRenameText)
+        {
+            CloseRenameKeepingError();
+            return;
+        }
+        StartCommand(CommitRenameAndClose());
+    }
+
+    private async Task CommitRenameAndClose()
+    {
+        var entry = _renaming;
+        if (!await CommitRename() && ReferenceEquals(_renaming, entry)) CloseRenameKeepingError();
+    }
+
+    private void CloseRenameKeepingError()
+    {
+        string? error = CommandError;
+        CancelRename();
+        SetCommandError(error);
     }
 
     public IReadOnlyList<string> SelectedPaths => ResultsList.SelectedItems.OfType<FileEntry>()

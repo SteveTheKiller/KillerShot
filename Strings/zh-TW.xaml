@@ -276,6 +276,8 @@
     <sys:String x:Key="Str_Redact_EveryCapture">掃描每張新擷取畫面</sys:String>
     <sys:String x:Key="Str_Redact_Find">尋找</sys:String>
     <sys:String x:Key="Str_Redact_None">找不到敏感文字。</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailedTitle">擷取畫面未掃描</sys:String>
+    <sys:String x:Key="Str_Redact_ScanFailed">遮蓋掃描失敗，因此這張擷取畫面未加遮蓋框就已輸出。分享前請先檢查。</sys:String>
     <sys:String x:Key="Str_Redact_Changed">掃描期間圖片已變更。請重新掃描。</sys:String>
     <sys:String x:Key="Str_Redact_FoundOne">自動塗黑已新增 1 個方框。請在儲存前檢查。</sys:String>
     <sys:String x:Key="Str_Redact_Found">自動塗黑已新增 {0} 個方框。請在儲存前檢查。</sys:String>
@@ -569,6 +571,7 @@
     <sys:String x:Key="Str_Card_Hidden">已隱藏</sys:String>
     <sys:String x:Key="Str_Card_HiddenHint">將圖格拖曳到此處即可隱藏</sys:String>
     <sys:String x:Key="Str_Card_AlwaysShown">一律顯示</sys:String>
+    <sys:String x:Key="Str_Card_Moved">{0}，第 {1} 個，共 {2} 個</sys:String>
     <sys:String x:Key="Str_Card_ToLibraryShort">到媒體庫</sys:String>
     <sys:String x:Key="Str_Card_Tools">工具</sys:String>
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows 設定</sys:String>
@@ -758,6 +761,7 @@
 <sys:String x:Key="Str_Err_InvalidChars">含有無效字元</sys:String>
 <sys:String x:Key="Str_Err_AlreadyExists">已經存在</sys:String>
 <sys:String x:Key="Str_Status_RenameFailed">無法重新命名 - {0}</sys:String>
+<sys:String x:Key="Str_Err_OperationBusy">另一個檔案作業仍在進行中</sys:String>
 <sys:String x:Key="Str_Lib_ViewFiles">檔案</sys:String>
 <sys:String x:Key="Str_TT_FilterResults">篩選這些結果（Ctrl+F）</sys:String>
     <sys:String x:Key="Str_TT_NewTab">新增分頁  (Ctrl+T)</sys:String>

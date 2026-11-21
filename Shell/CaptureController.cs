@@ -183,8 +183,8 @@ internal sealed partial class CaptureController
 
     /// <summary>A finished capture: the shutter, the album, then review or the chosen outputs.
     /// With Scan every capture on, the redaction scan runs first and only the redacted picture
-    /// reaches the album, folder, clipboard and editor; a scan that fails or finds nothing lets
-    /// the original out as before.</summary>
+    /// reaches the album, folder, clipboard and editor; a scan that finds nothing lets the original
+    /// out as before, and one that fails lets it out with a tray warning that it was not checked.</summary>
     internal async Task DeliverAsync(BitmapSource result, CaptureMode mode, IntPtr source, bool interval)
     {
         if (CaptureSettings.PlaySound) ShutterSound.Play();
@@ -199,7 +199,10 @@ internal sealed partial class CaptureController
         if (mode != CaptureMode.Qr && RedactSettings.ScanEveryCapture)
         {
             scanned = new EditorDocument(result, null, taken);
-            if (await RedactAsync(scanned) > 0) result = scanned.Render();
+            int found = await RedactAsync(scanned, result);
+            if (found > 0) result = scanned.Render();
+            // The original still goes out, but it was not checked, so the user hears about it.
+            else if (found < 0) _tray.ShowWarning(Loc("Str_Redact_ScanFailedTitle"), Loc("Str_Redact_ScanFailed"));
         }
         // A locked or failing album holds only so much; past that the capture still goes to
         // the clipboard, folder and editor, but the album keeps what it already holds.
@@ -215,19 +218,20 @@ internal sealed partial class CaptureController
         Publish(result, taken, mode, interval, scanned: scanned);
     }
 
-    /// <summary>Boxes what the redaction scan finds in a new capture; 0 when it finds nothing or
-    /// Windows cannot read text.</summary>
-    private async Task<int> RedactAsync(EditorDocument doc)
+    /// <summary>Boxes what the redaction scan finds in a new capture: the number of boxes, 0 when it
+    /// finds nothing or Windows cannot read text, and -1 when the scan fails. The document is fresh
+    /// and has no marks yet, so recognition reads the captured picture itself.</summary>
+    private async Task<int> RedactAsync(EditorDocument doc, BitmapSource picture)
     {
         var kinds = RedactSettings.Kinds;
         if (kinds == RedactKinds.None) return 0;
         try
         {
-            var lines = await ReadWordsAsync(doc.Render());
+            var lines = await ReadWordsAsync(picture);
             return lines == null ? 0 : RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
         }
         // A scan that fails for any reason lets the original out as before; it never loses the capture.
-        catch (Exception error) when (error is not OutOfMemoryException) { return 0; }
+        catch (Exception error) when (error is not OutOfMemoryException) { return -1; }
     }
 
     /// <summary>Scrolling capture: pick a region, scroll it, and the stitched page is delivered like

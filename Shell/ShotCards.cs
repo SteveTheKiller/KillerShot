@@ -129,17 +129,72 @@ internal static class ShotCards
     /// (both named by tile Id, or by glyph for a tile without one), so the default card is full rows. The layout is kept as the "Card.{name}.Hidden" setting.
     /// </summary>
     public static MenuItem Editable(ContextMenu card, string name, string[] locked, string[] spares, params IEnumerable<CardTile>[] groups)
+        => Editable(card, name, locked, spares, [], groups);
+
+    /// <summary>
+    /// Editable, with tiles the card shows for now whatever the saved layout says (the tray's shortcut repair tiles
+    /// while a shortcut is lost). They come out of the drawer like a locked tile, but only for this card: the saved
+    /// layout keeps the user's own place for them, and a move the user makes to one while editing is kept.
+    /// </summary>
+    public static MenuItem Editable(ContextMenu card, string name, string[] locked, string[] spares, string[] showing, params IEnumerable<CardTile>[] groups)
     {
-        var edit = new CardEdit(() => Settings.Get($"Card.{name}.Hidden") is { Length: > 0 } saved ? saved : null,
-            value => Settings.Set($"Card.{name}.Hidden", value ?? ""))
+        string key = $"Card.{name}.Hidden";
+        string? Stored() => Settings.Get(key) is { Length: > 0 } saved ? saved : null;
+        var edit = new CardEdit(() => ShowForNow(Stored(), showing),
+            value => Settings.Set(key, KeepOwnPlace(value, Stored(), showing) ?? ""))
         {
             Locked = t => locked.Contains(t.Id ?? t.Glyph),
             DefaultHidden = t => spares.Contains(t.Id ?? t.Glyph),
             EditTip = Loc("Str_Card_Edit"), DoneTip = Loc("Str_Card_EditDone"), ResetTip = Loc("Str_Card_EditReset"),
             ResetLabel = Loc("Str_Card_EditResetShort"), HiddenLabel = Loc("Str_Card_Hidden"),
             HiddenHint = Loc("Str_Card_HiddenHint"), LockedTip = Loc("Str_Card_AlwaysShown"),
+            MovedText = Loc("Str_Card_Moved"),
         };
         return Build(card, edit, groups);
+    }
+
+    // The kit's layout setting: "v2:" + shown ids "|" + "/" + drawer ids, or the older "v1:" + drawer ids.
+    private static (List<string> Shown, List<string> Stashed, bool V1)? ParseLayout(string? layout)
+    {
+        if (layout is null) return null;
+        static List<string> Ids(string part) => part.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (layout.StartsWith("v2:", StringComparison.Ordinal))
+        {
+            var parts = layout[3..].Split('/');
+            return (Ids(parts[0]), parts.Length > 1 ? Ids(parts[1]) : [], false);
+        }
+        if (layout.StartsWith("v1:", StringComparison.Ordinal)) return ([], Ids(layout[3..]), true);
+        return null;
+    }
+
+    private static string FormatLayout(List<string> shown, List<string> stashed, bool v1) =>
+        v1 ? "v1:" + string.Join("|", stashed) : "v2:" + string.Join("|", shown) + "/" + string.Join("|", stashed);
+
+    // The saved layout as this card loads it: the tiles shown for now leave the drawer for the end of the card.
+    private static string? ShowForNow(string? saved, string[] showing)
+    {
+        if (showing.Length == 0 || ParseLayout(saved) is not { } layout) return saved;
+        foreach (var id in showing)
+        {
+            layout.Stashed.Remove(id);
+            if (!layout.V1 && !layout.Shown.Contains(id)) layout.Shown.Add(id);
+        }
+        return FormatLayout(layout.Shown, layout.Stashed, layout.V1);
+    }
+
+    // What the card saves, minus the tiles it only showed for now: one the saved layout did not show goes back to
+    // where that layout had it (the drawer, or unnamed). One the user put in the drawer while editing stays there.
+    private static string? KeepOwnPlace(string? value, string? saved, string[] showing)
+    {
+        if (showing.Length == 0 || ParseLayout(value) is not { V1: false } next) return value;
+        var before = ParseLayout(saved);
+        foreach (var id in showing)
+        {
+            if (!next.Shown.Contains(id) || before is { V1: false } was && was.Shown.Contains(id)) continue;
+            next.Shown.Remove(id);
+            if (before?.Stashed.Contains(id) == true && !next.Stashed.Contains(id)) next.Stashed.Add(id);
+        }
+        return FormatLayout(next.Shown, next.Stashed, false);
     }
 
     // The card's tiles by caption (unique on a card, unlike a mirrored pair's glyph): a customizable card rebuilds
