@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">場所:</sys:String>
 <sys:String x:Key="Str_TT_Scope">クリックして検索フォルダーを変更  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">戻る  (Alt+左矢印キー)</sys:String>
+<sys:String x:Key="Str_Btn_Back">戻る</sys:String>
 <sys:String x:Key="Str_TT_Forward">進む  (Alt+右矢印キー)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">フォルダーをファイルより上に表示  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">場所</sys:String>

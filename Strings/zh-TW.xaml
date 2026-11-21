@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">位置：</sys:String>
 <sys:String x:Key="Str_TT_Scope">按一下以變更搜尋資料夾  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">上一頁  (Alt+向左鍵)</sys:String>
+<sys:String x:Key="Str_Btn_Back">上一頁</sys:String>
 <sys:String x:Key="Str_TT_Forward">下一頁  (Alt+向右鍵)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">資料夾置於檔案之上  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">位置</sys:String>

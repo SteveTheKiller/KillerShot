@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">in:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Klicken, um den Suchordner zu ändern  (Strg+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Zurück  (Alt+Pfeil links)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Zurück</sys:String>
 <sys:String x:Key="Str_TT_Forward">Vorwärts  (Alt+Pfeil rechts)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Ordner über Dateien halten  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">Ort</sys:String>

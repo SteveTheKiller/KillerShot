@@ -221,6 +221,9 @@
                         <ColumnDefinition Width="Auto"/>   <!-- More menu -->
                     </Grid.ColumnDefinitions>
                     <StackPanel x:Name="LeftBar" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Back to the library from an open image, as Alt+Left and the mouse's back
+                             button do (MouseHistory.cs). The Files page keeps its own folder Back. -->
+                        <Button x:Name="BackBtn" Style="{StaticResource ToolbarButton}" Click="BackBtn_Click"/>
                         <Button x:Name="CaptureBtn" Style="{StaticResource ToolbarButton}" Click="CaptureBtn_Click">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="CaptureMenu"/>
@@ -322,17 +325,6 @@
                         <!-- The library: every capture kept, shown when no image is open and on Ctrl+L
                              (LibraryView). It also says so when there is no capture yet. -->
                         <local:LibraryView x:Name="Library" Margin="1" Visibility="Collapsed"/>
-
-                        <!-- Back to the library from an open image, as Ctrl+L, Esc's partner and the
-                             mouse's back button do (MouseHistory.cs). Shown with the editor. -->
-                        <Border x:Name="EditorBackHost" Panel.ZIndex="50" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
-                                Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="{DynamicResource PanelCornerRadius}"
-                                Visibility="{Binding Visibility, ElementName=EditorScroll}">
-                            <Button x:Name="EditorBackButton" Style="{StaticResource ViewToggleBtn}" Click="EditorBack_Click"
-                                    ToolTip="{DynamicResource Str_TT_Back}" AutomationProperties.Name="{DynamicResource Str_TT_Back}">
-                                <Path Data="M7,1 L0,8 L7,15 M0,8 H16" Width="16" Height="16" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" />
-                            </Button>
-                        </Border>
 
                         <Border x:Name="ContentPaneOutline" Panel.ZIndex="99" IsHitTestVisible="False"
                                 BorderBrush="{DynamicResource PaneBorderBrush}"

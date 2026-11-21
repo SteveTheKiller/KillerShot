@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">konum:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Arama klasörünü değiştirmek için tıklayın  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Geri  (Alt+Sol ok)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Geri</sys:String>
 <sys:String x:Key="Str_TT_Forward">İleri  (Alt+Sağ ok)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Klasörleri dosyaların üstünde tut  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">konum</sys:String>

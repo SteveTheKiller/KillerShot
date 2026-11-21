@@ -26,7 +26,7 @@ public partial class FilesView
     {
         ExportPopup.IsOpen = false;
         OverflowPopup.IsOpen = false;
-        if (ExportRows().Count == 0) { CommandStatus.Text = Loc("Str_Status_NothingExport"); return; }
+        if (ExportRows().Count == 0) { ShowCommandResult(Loc("Str_Status_NothingExport")); return; }
         string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
         var dialog = new FileDialog(FileDialogMode.Save)
         {
@@ -60,12 +60,12 @@ public partial class FilesView
         try
         {
             write();
-            CommandStatus.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Status_Exported"), path);
+            ShowCommandResult(string.Format(CultureInfo.CurrentCulture, Loc("Str_Status_Exported"), path));
             return true;
         }
         catch (Exception error)
         {
-            CommandStatus.Text = string.Format(CultureInfo.CurrentCulture, Loc("Str_Status_ExportFailed"), error.Message);
+            SetCommandError(string.Format(CultureInfo.CurrentCulture, Loc("Str_Status_ExportFailed"), error.Message));
             return false;
         }
     }

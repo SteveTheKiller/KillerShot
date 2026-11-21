@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">v:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Kliknutím změníte prohledávanou složku  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Zpět  (Alt+Šipka vlevo)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Zpět</sys:String>
 <sys:String x:Key="Str_TT_Forward">Vpřed  (Alt+Šipka vpravo)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Držet složky nad soubory  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">umístění</sys:String>

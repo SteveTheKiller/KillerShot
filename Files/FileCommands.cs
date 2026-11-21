@@ -55,8 +55,44 @@ public partial class FilesView
         catch (Exception error) when (error is ArgumentException or NotSupportedException) { return false; }
     }
 
+    /// <summary>How long a finished command's result line stays on the status strip.</summary>
+    internal static TimeSpan StatusLinger { get; set; } = TimeSpan.FromSeconds(5);
+
+    private System.Windows.Threading.DispatcherTimer? _statusLinger;
+
+    // The status strip shows only while it has something to say: progress during an operation, a
+    // result for a moment after it, and an error until the user moves to another folder.
+    private void InitStatusLine()
+    {
+        Navigation.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(BrowseState.CurrentFolder) && !IsFileOperationBusy && _renaming == null)
+                SetCommandError(null);
+        };
+    }
+
+    /// <summary>A finished command's result: shown on the strip, then cleared after <see cref="StatusLinger"/>.</summary>
+    private void ShowCommandResult(string text)
+    {
+        SetCommandError(null);
+        CommandStatus.Text = text;
+        _statusLinger ??= new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Background, Dispatcher);
+        _statusLinger.Stop();
+        _statusLinger.Interval = StatusLinger;
+        _statusLinger.Tick -= ClearCommandResult;
+        _statusLinger.Tick += ClearCommandResult;
+        _statusLinger.Start();
+    }
+
+    private void ClearCommandResult(object? sender, EventArgs e)
+    {
+        _statusLinger?.Stop();
+        if (!IsFileOperationBusy && CommandError == null) CommandStatus.Text = string.Empty;
+    }
+
     private void SetCommandError(string? error)
     {
+        _statusLinger?.Stop();
         CommandError = error;
         RenameBox.ToolTip = error;
         CommandStatus.Text = error ?? string.Empty;
@@ -357,14 +393,13 @@ public partial class FilesView
             SetCommandError(result.Failed[0].Error);
             return;
         }
-        SetCommandError(null);
-        CommandStatus.Text = result.Failed.Count > 0
-            ? string.Format(Loc("Str_Status_OpPartial"), result.Succeeded, result.Failed.Count) + ": " + result.Failed[0].Error
-            : string.Format(Loc(result.Canceled ? "Str_Status_OpCanceled" : "Str_Status_OpDone"), result.Succeeded);
+        string skipped = result.SkippedDirectoryLinks > 0
+            ? " " + string.Format(Loc("Str_Status_DirectoryLinksSkipped"), result.SkippedDirectoryLinks) : "";
+        // A partial failure is an error and stays; a clean or canceled run is a passing result.
         if (result.Failed.Count > 0)
-            CommandStatus.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "DangerRed");
-        if (result.SkippedDirectoryLinks > 0)
-            CommandStatus.Text += " " + string.Format(Loc("Str_Status_DirectoryLinksSkipped"), result.SkippedDirectoryLinks);
+            SetCommandError(string.Format(Loc("Str_Status_OpPartial"), result.Succeeded, result.Failed.Count) + ": " + result.Failed[0].Error + skipped);
+        else
+            ShowCommandResult(string.Format(Loc(result.Canceled ? "Str_Status_OpCanceled" : "Str_Status_OpDone"), result.Succeeded) + skipped);
     }
 
     private async Task<FileOpResult> RunCopyMove(string[] paths, string target, bool move, CancellationToken cancellationToken)

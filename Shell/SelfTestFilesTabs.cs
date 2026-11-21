@@ -95,8 +95,29 @@ internal static class SelfTestFilesTabs
                 commandStatus.Text = "";
                 await Idle();
                 Check(statusBar.Visibility == Visibility.Collapsed, "the strip leaves with the message");
+                FilesView.StatusLinger = TimeSpan.FromMilliseconds(300);
+                Check(first.View.ExportCsvTo(Path.Combine(folder, "listing.csv")), "fixture exports the listing");
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Visible, "a finished command shows its result on the strip");
+                await Task.Delay(500);
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Collapsed, "the result line leaves on its own after a moment");
+                Check(!first.View.ExportCsvTo(Path.Combine(folder, "no-such-folder", "listing.csv")), "fixture export fails");
+                await Task.Delay(500);
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Visible, "an error stays on the strip");
+                await first.View.NavigateTo(child);
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Collapsed, "moving to another folder clears the error");
+                await first.View.NavigateTo(firstFolder);
                 Check(IconCache.IsPhoto(Path.Combine(firstFolder, "clip.mp4"), false) && !IconCache.IsPhoto(Path.Combine(firstFolder, "notes.txt"), false),
                     "videos are drawn as thumbnails, other files as icons");
+                string brokenClip = Path.Combine(firstFolder, "broken.mp4");
+                File.WriteAllBytes(brokenClip, [0, 1, 2, 3, 4, 5, 6, 7]);
+                var brokenArt = await IconCache.ForTileAsync(brokenClip, 96);
+                Check(brokenArt.Image != null && !brokenArt.IsThumbnail && brokenArt.Late == null,
+                    "a video with no picture draws its flat type icon, never a blank tile or a shadow");
+                File.Delete(brokenClip);
                 await first.View.NavigateTo(child);
                 await first.View.NavigateTo(firstFolder);
                 first.View.SetView(2);

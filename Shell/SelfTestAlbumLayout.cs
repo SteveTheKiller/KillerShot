@@ -125,10 +125,16 @@ internal static class SelfTestAlbumLayout
             Check(window.TestStrip!.Source == "c" + collectionId && App.Instance.Document == null,
                 "Selecting a collection must filter the album without opening a photo.");
             library.SetView("shelves");
-            var mainFlow = (KillerShot.Controls.CoverFlow)library.FindName("BigFlow");
-            for (int wait = 0; wait < 100 && mainFlow.Items.Count < 2; wait++) await Task.Delay(20);
-            mainFlow.SelectedIndex = 1;
-            long? selectedPhoto = mainFlow.SelectedItem?.Id;
+            // Shelves are one carousel per day, so the two photos a day apart sit on two shelves.
+            KillerShot.Controls.CoverFlow[] Shelves() => [.. Visuals(library).OfType<KillerShot.Controls.CoverFlow>()
+                .Where(flow => flow.IsVisible && flow.Items.Count > 0)];
+            int ShelvedPhotos() => Shelves().Sum(flow => flow.Items.Count);
+            for (int wait = 0; wait < 100 && ShelvedPhotos() < 2; wait++) await Task.Delay(20);
+            Check(ShelvedPhotos() == 2, $"Shelves must show the collection's two photos ({ShelvedPhotos()}).");
+            var shelf = Shelves()[^1];
+            shelf.SelectedIndex = shelf.Items.Count - 1;
+            long? selectedPhoto = shelf.SelectedItem?.Id;
+            Check(selectedPhoto != null, "The shelves fixture must select a photo.");
             App.Instance.SetDocument(new EditorDocument(image));
             var openDocument = App.Instance.Document;
             var photoDock = window.TestStripDock;
@@ -140,6 +146,8 @@ internal static class SelfTestAlbumLayout
                 dock.DockTo(sidebar);
                 photoDock.DockTo(carousel);
                 await Task.Delay(300);   // a moved pane slides open over 180 ms
+                // A loaded test desktop can run the slide late; wait for it to land, not a fixed time.
+                for (int wait = 0; wait < 40 && Math.Abs(pane.ActualWidth - 180) >= 1; wait++) { await Task.Delay(25); Layout(root); }
                 Layout(root);
                 var photos = (FrameworkElement)photoDock.Pane!;
                 var imageView = (FrameworkElement)window.FindName("EditorScroll");
@@ -165,9 +173,11 @@ internal static class SelfTestAlbumLayout
             photoDock.DockTo(DockSide.Top);
             App.Instance.SetDocument(null);
             Layout(root);
+            for (int wait = 0; wait < 100 && ShelvedPhotos() < 2; wait++) await Task.Delay(20);
+            var selectedNow = Shelves().Select(flow => flow.SelectedItem?.Id).Where(id => id != null).ToArray();
             Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "shelves"
-                && mainFlow.Items.Count == 2 && mainFlow.SelectedItem?.Id == selectedPhoto,
-                $"Editor navigation must not replace the album's collection, view, or photo selection (source {window.TestStrip.Source}, view {library.CurrentView}, items {mainFlow.Items.Count}, selected {mainFlow.SelectedItem?.Id} of {selectedPhoto}).");
+                && ShelvedPhotos() == 2 && selectedNow.Contains(selectedPhoto),
+                $"Editor navigation must not replace the album's collection, view, or photo selection (source {window.TestStrip.Source}, view {library.CurrentView}, items {ShelvedPhotos()}, selected {string.Join(",", selectedNow)} of {selectedPhoto}).");
             var workspaceMenu = pane.ContextMenu;
             workspaceMenu.PlacementTarget = pane;
             workspaceMenu.IsOpen = true;
@@ -181,7 +191,7 @@ internal static class SelfTestAlbumLayout
                 Layout(root);
                 await Task.Delay(180);
                 Check(window.TestStrip.Source == "c" + collectionId && library.CurrentView == "shelves"
-                    && mainFlow.SelectedItem?.Id == selectedPhoto, "Changing collection previews lost the browsing context.");
+                    && Shelves().Any(flow => flow.SelectedItem?.Id == selectedPhoto), "Changing collection previews lost the browsing context.");
                 if (Equals(choice.Tag, "mini"))
                 {
                     var row = (ListBoxItem)browser.ItemContainerGenerator.ContainerFromItem(browser.SelectedItem);
@@ -232,7 +242,7 @@ internal static class SelfTestAlbumLayout
                     library.SetView("shelves");
                     Layout(root);
                 }
-                Check(mainFlow.ActualWidth > 0 && mainFlow.ActualHeight > 0 && browser.IsVisible,
+                Check(Shelves().Length > 0 && Shelves().All(flow => flow.ActualWidth > 0 && flow.ActualHeight > 0) && browser.IsVisible,
                     "The collection browser and main photo must remain available in " + theme);
             }
             ThemeManager.Apply(Theme.Dark);

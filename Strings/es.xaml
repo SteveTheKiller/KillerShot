@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">en:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Haz clic para cambiar la carpeta de búsqueda  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Atrás  (Alt+Flecha izquierda)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Atrás</sys:String>
 <sys:String x:Key="Str_TT_Forward">Adelante  (Alt+Flecha derecha)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Mantener las carpetas encima de los archivos  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">ubicación</sys:String>

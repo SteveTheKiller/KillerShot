@@ -228,9 +228,12 @@ public partial class FilesView
         DetailsPathText.Text = entry.FilePath;
         DetailsTypeText.Text = DescribeExtension(entry.FileName);
         DetailsCreatedText.Text = "...";
-        DetailsPreviewIcon.Source = IconCache.For(entry.FilePath, 128, false);
+        // The icon, and a video's poster, decode off the UI thread; a slow handler never freezes
+        // the selection.
+        DetailsPreviewIcon.Source = null;
         DetailsPreviewIcon.Visibility = Visibility.Visible;
         string path = entry.FilePath;
+        _ = ShowDetailsIcon(path, gen);
         bool image = DetailsImageExtensions.Contains(Path.GetExtension(path));
         _ = Task.Run(() =>
         {
@@ -257,6 +260,16 @@ public partial class FilesView
                 CorrectDetailsPaneSize();
             });
         });
+    }
+
+    private async Task ShowDetailsIcon(string path, int gen)
+    {
+        var art = await IconCache.ForTileAsync(path, 128);
+        if (gen != _detailsGen) return;
+        DetailsPreviewIcon.Source = art.Image;
+        if (art.Late == null) return;
+        var late = await art.Late;
+        if (late != null && gen == _detailsGen) DetailsPreviewIcon.Source = late;
     }
 
     private static (int Width, int Height) ReadPixelSize(string path)

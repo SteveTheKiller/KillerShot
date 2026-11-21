@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">мұнда:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Іздеу қалтасын ауыстыру үшін басыңыз  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Артқа  (Alt+Сол жақ көрсеткі)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Артқа</sys:String>
 <sys:String x:Key="Str_TT_Forward">Алға  (Alt+Оң жақ көрсеткі)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Қалталарды файлдардан жоғары ұстау  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">орналасуы</sys:String>

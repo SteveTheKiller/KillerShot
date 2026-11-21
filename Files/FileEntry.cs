@@ -84,9 +84,14 @@ public sealed class FileEntry : INotifyPropertyChanged
         int revision = _iconRevision;
         try
         {
-            var icon = await IconCache.ForAsync(FilePath, 32, IsDirectory);
+            var art = await IconCache.ForTileAsync(FilePath, 32, IsDirectory);
             if (revision != _iconRevision) return;
-            _icon = icon;
+            _icon = art.Image;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
+            if (art.Late == null) return;
+            var late = await art.Late;
+            if (late == null || revision != _iconRevision) return;
+            _icon = late;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException) { }

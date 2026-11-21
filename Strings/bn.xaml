@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">যেখানে:</sys:String>
 <sys:String x:Key="Str_TT_Scope">অনুসন্ধানের ফোল্ডার পরিবর্তন করতে ক্লিক করুন  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">পেছনে  (Alt+বাম তীর)</sys:String>
+<sys:String x:Key="Str_Btn_Back">পেছনে</sys:String>
 <sys:String x:Key="Str_TT_Forward">সামনে  (Alt+ডান তীর)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">ফোল্ডার ফাইলের উপরে রাখুন  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">অবস্থান</sys:String>

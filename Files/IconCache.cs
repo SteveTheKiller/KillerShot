@@ -226,49 +226,97 @@ namespace KillerShot.Files
 
         public static async Task<ImageSource?> ForAsync(string path, int pixels, bool isDirectory = false,
             CancellationToken token = default)
+            => (await ForTileAsync(path, pixels, isDirectory, token)).Image;
+
+        /// <summary>What a tile draws right now, whether it is a real picture (which casts the tile
+        /// shadow), and, when the picture took longer than the wait, the still-running decode that
+        /// delivers it later. The tile shows the file-type icon meanwhile, never a blank square.</summary>
+        public readonly record struct TileImage(ImageSource? Image, bool IsThumbnail, Task<ImageSource?>? Late);
+
+        // Video posters come from the shell's thumbnail handler, which can take seconds per file.
+        // Two at a time keeps a folder of recordings from flooding the thread pool, and the queue
+        // waits off the UI thread.
+        private static readonly SemaphoreSlim PosterGate = new(2);
+
+        public static async Task<TileImage> ForTileAsync(string path, int pixels, bool isDirectory = false,
+            CancellationToken token = default)
         {
             Application.Current?.Dispatcher.VerifyAccess();
             // Capture theme resources before the worker touches the shell or decodes file bytes.
             var folderArt = isDirectory ? FolderArtFor(path, pixels) : null;
             var documentArt = Art("text_document_icon", pixels);
+            string? full = null;
+            try { if (!isDirectory && HasThumbnail(Path.GetExtension(path))) full = Path.GetFullPath(path); }
+            catch { }
+            if (full == null)
+                return new(await Bounded(Task.Run(() => ForCore(path, pixels, isDirectory, folderArt, documentArt), token), token), false, null);
+
+            Task<ImageSource?>? thumbnail = null;
             try
             {
-                string? full = null;
-                try { if (!isDirectory && HasThumbnail(Path.GetExtension(path))) full = Path.GetFullPath(path); }
-                catch { }
-                if (full != null)
+                long started = System.Diagnostics.Stopwatch.GetTimestamp();
+                Task<T> Within<T>(Func<Task<T>> start)
                 {
-                    long started = System.Diagnostics.Stopwatch.GetTimestamp();
-                    Task<T> Within<T>(Func<Task<T>> start)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        if (System.Diagnostics.Stopwatch.GetElapsedTime(started) >= TimeSpan.FromSeconds(2)) throw new TimeoutException();
-                        var pending = start();
-                        var remaining = TimeSpan.FromSeconds(2) - System.Diagnostics.Stopwatch.GetElapsedTime(started);
-                        if (remaining <= TimeSpan.Zero) throw new TimeoutException();
-                        return pending.WaitAsync(remaining, token);
-                    }
-                    var timestamp = await Within(() => Shared(MetadataRequests, full, () =>
-                    {
-                        try { return File.Exists(full) ? (long?)File.GetLastWriteTimeUtc(full).Ticks : null; }
-                        catch { return null; }
-                    }));
-                    if (timestamp is long version)
-                    {
-                        int shil = ShilFor(pixels);
-                        string key = full + "|" + shil + "|" + pixels + "|thumb|" + version;
-                        var image = await Within(() => Shared(ThumbnailRequests, key, () => ImageThumbnail(full, pixels, shil)));
-                        if (image != null) return image;
-                    }
-                    return await Within(() => Task.Run(() => ForCore(path, pixels, false, null, documentArt, skipThumbnail: true), token));
+                    token.ThrowIfCancellationRequested();
+                    if (System.Diagnostics.Stopwatch.GetElapsedTime(started) >= TimeSpan.FromSeconds(2)) throw new TimeoutException();
+                    var pending = start();
+                    var remaining = TimeSpan.FromSeconds(2) - System.Diagnostics.Stopwatch.GetElapsedTime(started);
+                    if (remaining <= TimeSpan.Zero) throw new TimeoutException();
+                    return pending.WaitAsync(remaining, token);
                 }
-                return await Task.Run(() => ForCore(path, pixels, isDirectory, folderArt, documentArt), token)
-                    .WaitAsync(TimeSpan.FromSeconds(2), token);
+                var timestamp = await Within(() => Shared(MetadataRequests, full, () =>
+                {
+                    try { return File.Exists(full) ? (long?)File.GetLastWriteTimeUtc(full).Ticks : null; }
+                    catch { return null; }
+                }));
+                if (timestamp is long version)
+                {
+                    int shil = ShilFor(pixels);
+                    string key = full + "|" + shil + "|" + pixels + "|thumb|" + version;
+                    var image = await Within(() => thumbnail = SharedAsync(ThumbnailRequests, key, () => ThumbnailWork(full, key, pixels, shil)));
+                    if (image != null) return new(image, true, null);
+                }
             }
+            catch (TimeoutException) { }
+            // No picture in time, or none at all (a video type with no thumbnail handler): the
+            // type icon. A decode still running hands its result over when it lands.
+            var icon = await Bounded(Task.Run(() => ForCore(path, pixels, false, null, documentArt, skipThumbnail: true), token), token);
+            return new(icon, false, thumbnail is { IsCompleted: false } ? Quiet(thumbnail) : null);
+        }
+
+        // A late decode that throws just means the icon stays; the tile never sees the fault.
+        private static async Task<ImageSource?> Quiet(Task<ImageSource?> work)
+        {
+            try { return await work; }
+            catch (Exception) { return null; }
+        }
+
+        private static async Task<ImageSource?> Bounded(Task<ImageSource?> work, CancellationToken token)
+        {
+            try { return await work.WaitAsync(TimeSpan.FromSeconds(2), token); }
             catch (TimeoutException) { return null; }
         }
 
+        private static async Task<ImageSource?> ThumbnailWork(string full, string key, int pixels, int shil)
+        {
+            if (!VideoExtensions.Contains(Path.GetExtension(full))) return ImageThumbnail(full, pixels, shil);
+            // A poster already decoded skips the queue behind slow ones.
+            lock (Thumbnails)
+                if (Thumbnails.TryGetValue(key, out var hit))
+                {
+                    ThumbnailLru.Remove(hit);
+                    ThumbnailLru.AddLast(hit);
+                    return hit.Value.Image;
+                }
+            await PosterGate.WaitAsync().ConfigureAwait(false);
+            try { return ImageThumbnail(full, pixels, shil); }
+            finally { PosterGate.Release(); }
+        }
+
         private static Task<T> Shared<T>(Dictionary<string, Task<T>> requests, string key, Func<T> read)
+            => SharedAsync(requests, key, () => Task.FromResult(read()));
+
+        private static Task<T> SharedAsync<T>(Dictionary<string, Task<T>> requests, string key, Func<Task<T>> read)
         {
             lock (requests)
             {
@@ -365,12 +413,31 @@ namespace KillerShot.Files
             string target = perFile ? filePath : "x" + ext;
             bool real = perFile;
 
-            var img = shil == SHIL_LARGE ? LoadSmallPath(target, real)
-                                         : LoadFromImageList(target, real, shil);
+            BitmapSource? Load()
+            {
+                var loaded = shil == SHIL_LARGE ? LoadSmallPath(target, real)
+                                                : LoadFromImageList(target, real, shil);
+                // The image list can legitimately come up empty on a locked-down or unusual shell.
+                // Falling back to the 32px path is better than a blank tile.
+                if (loaded == null && shil != SHIL_LARGE) loaded = LoadSmallPath(target, real);
+                return loaded;
+            }
 
-            // The image list can legitimately come up empty on a locked-down or unusual shell.
-            // Falling back to the 32px path is better than a blank tile.
-            if (img == null && shil != SHIL_LARGE) img = LoadSmallPath(target, real);
+            // Several workers asking for the same type icon at once (a folder of timed-out
+            // thumbnails all falling back together) made the shell hand some of them nothing.
+            // Type icons are quick, so they load one at a time, and a failed load is not cached.
+            // A per-file icon reads the real file, which can be slow, so it keeps its own pace.
+            ImageSource? img;
+            if (perFile) img = Load();
+            else
+            {
+                lock (ShellGate)
+                {
+                    lock (Cache)
+                        if (Cache.TryGetValue(key, out var raced) && raced != null) return raced;
+                    img = Load();
+                }
+            }
 
             if (perFile)
             {
@@ -385,9 +452,11 @@ namespace KillerShot.Files
                     }
                 }
             }
-            else lock (Cache) Cache[key] = img;
+            else if (img != null) lock (Cache) Cache[key] = img;
             return img;
         }
+
+        private static readonly object ShellGate = new();
 
         private static ImageSource? ImageThumbnail(string filePath, int px, int shil)
         {

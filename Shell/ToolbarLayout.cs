@@ -34,7 +34,7 @@ namespace KillerShot.Shell
 
         // File and capture operations on the left, annotation tools on the right.
         internal static readonly ToolbarLayout DefaultToolbarLayout = new(
-            ["capture", "record", "open", "save", "copy", "copytext", "print", "newcollection"],
+            ["back", "capture", "record", "open", "save", "copy", "copytext", "print", "newcollection"],
             ["undo", "redo", "select", "pen", "highlighter", "arrow", "line", "rectangle", "ellipse", "fill", "text", "step", "callout", "redact", "autoredact", "crop", "image", "color", "width"],
             []);
 
@@ -134,12 +134,20 @@ namespace KillerShot.Shell
                 {
                     string id = defaults[i];
                     if (id == ToolbarSeparatorToken || seen.Contains(id)) continue;
-                    int at = side.Count;
-                    for (int k = i - 1; k >= 0; k--)
+                    int at = -1;
+                    for (int k = i - 1; k >= 0 && at < 0; k--)
                     {
                         int found = side.IndexOf(defaults[k]);
-                        if (found >= 0) { at = found + 1; break; }
+                        if (found >= 0) at = found + 1;
                     }
+                    // No neighbour before it (Back, first on the bar): it goes ahead of the
+                    // first default neighbour after it instead of at the far end.
+                    for (int k = i + 1; k < defaults.Count && at < 0; k++)
+                    {
+                        int found = side.IndexOf(defaults[k]);
+                        if (found >= 0) at = found;
+                    }
+                    if (at < 0) at = side.Count;
                     side.Insert(at, id);
                     seen.Add(id);
                 }

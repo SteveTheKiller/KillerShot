@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">范围：</sys:String>
 <sys:String x:Key="Str_TT_Scope">点击以更改搜索文件夹  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">后退  (Alt+左箭头键)</sys:String>
+<sys:String x:Key="Str_Btn_Back">后退</sys:String>
 <sys:String x:Key="Str_TT_Forward">前进  (Alt+右箭头键)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">文件夹置于文件之上  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">位置</sys:String>

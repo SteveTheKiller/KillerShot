@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">в:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Нажмите, чтобы сменить папку поиска  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Назад  (Alt+Стрелка влево)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Назад</sys:String>
 <sys:String x:Key="Str_TT_Forward">Вперёд  (Alt+Стрелка вправо)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Папки выше файлов  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">расположение</sys:String>

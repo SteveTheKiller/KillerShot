@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">itt:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Kattintson a keresési mappa megváltoztatásához (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Vissza (Alt+Balra nyíl)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Vissza</sys:String>
 <sys:String x:Key="Str_TT_Forward">Előre (Alt+Jobbra nyíl)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Tartsa a mappákat a fájlok felett (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">helyen</sys:String>

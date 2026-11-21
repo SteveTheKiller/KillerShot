@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">trong:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Bấm để đổi thư mục tìm kiếm  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Quay lại  (Alt+Mũi tên trái)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Quay lại</sys:String>
 <sys:String x:Key="Str_TT_Forward">Tiến  (Alt+Mũi tên phải)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Luôn đặt thư mục phía trên tệp  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">vị trí</sys:String>

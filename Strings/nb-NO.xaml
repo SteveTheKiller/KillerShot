@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">i:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Klikk for å endre søkemappe  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Tilbake  (Alt+Venstrepil)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Tilbake</sys:String>
 <sys:String x:Key="Str_TT_Forward">Fremover  (Alt+Høyrepil)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Hold mapper over filer  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">plassering</sys:String>

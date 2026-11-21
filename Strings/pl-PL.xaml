@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">w:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Kliknij, aby zmienić folder wyszukiwania  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Wstecz  (Alt+Strzałka w lewo)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Wstecz</sys:String>
 <sys:String x:Key="Str_TT_Forward">Dalej  (Alt+Strzałka w prawo)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Foldery nad plikami  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">lokalizacja</sys:String>

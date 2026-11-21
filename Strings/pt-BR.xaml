@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">em:</sys:String>
 <sys:String x:Key="Str_TT_Scope">Clique para alterar a pasta de pesquisa  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Voltar  (Alt+Seta para a esquerda)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Voltar</sys:String>
 <sys:String x:Key="Str_TT_Forward">Avançar  (Alt+Seta para a direita)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Manter as pastas acima dos arquivos  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">local</sys:String>

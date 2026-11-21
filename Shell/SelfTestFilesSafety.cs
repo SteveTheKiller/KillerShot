@@ -272,6 +272,7 @@ internal static class SelfTestFilesSafety
             report.AppendLine($"Unrelated latencyMs={latency:F1}, sameCachedObject={ReferenceEquals(warm, unrelated)}, heldAtCompletion={held}, publicTimeouts={completed.Count(image => image == null)}/16");
             check(held && ReferenceEquals(warm, unrelated) && latency < 500,
                 "minimal observer-free unrelated cache request stays within 500ms while filesystem control remains held");
+            check(completed.All(image => image != null), "a thumbnail that runs out of time draws the type icon, never a blank tile");
         }
         finally
         {

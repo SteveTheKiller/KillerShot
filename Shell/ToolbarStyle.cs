@@ -33,6 +33,7 @@ namespace KillerShot.Shell
         /// </summary>
         private IEnumerable<(string Id, Button Btn, int Glyph, string LabelKey)> ToolbarItems()
         {
+            yield return ("back",       BackBtn,            0xE72B, "Str_Btn_Back");        // Back
             yield return ("capture",    CaptureBtn,         0xE722, "Str_Btn_Capture");     // Camera
             yield return ("record",     RecordBtn,          0xE7C8, "Str_Btn_Record");      // Record
             yield return ("recent",     RecentBtn,          0xE81C, "Str_Btn_Recent");      // History

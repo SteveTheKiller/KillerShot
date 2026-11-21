@@ -229,6 +229,7 @@ namespace KillerShot.Shell
         /// file and edit buttons. One place, so a tooltip cannot disagree with the key handler.</summary>
         private string? ShortcutFor(Button b)
         {
+            if (b == BackBtn) return "Alt+Left";
             if (b == CaptureBtn) return "Ctrl+N";
             if (b == RecordBtn) return "Ctrl+R";
             if (b == OpenBtn) return "Ctrl+O";
@@ -436,6 +437,8 @@ namespace KillerShot.Shell
                 b.IsEnabled = EditorWorkspaceActive;
             UndoBtn.IsEnabled = EditorWorkspaceActive && _doc.CanUndo;
             RedoBtn.IsEnabled = EditorWorkspaceActive && _doc.CanRedo;
+            // Back leaves the open picture; in the library the Files page has its own Back.
+            BackBtn.IsEnabled = EditorWorkspaceActive;
         }
 
         private void InitLibrary()

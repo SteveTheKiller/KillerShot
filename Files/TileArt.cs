@@ -25,10 +25,21 @@ public static class TileArt
         int size = GetSize(image);
         bool directory = GetIsDirectory(image);
         if (string.IsNullOrEmpty(path) || size <= 0) { image.Source = null; image.ClearValue(UIElement.EffectProperty); return; }
-        var art = await IconCache.ForAsync(path, size, directory);
-        if (GetPath(image) != path || GetSize(image) != size || GetIsDirectory(image) != directory) return;
+        var art = await IconCache.ForTileAsync(path, size, directory);
+        bool Same() => GetPath(image) == path && GetSize(image) == size && GetIsDirectory(image) == directory;
+        if (!Same()) return;
+        Show(image, art.Image, art.IsThumbnail);
+        if (art.Late == null) return;
+        var late = await art.Late;
+        if (late != null && Same()) Show(image, late, true);
+    }
+
+    // Only a real picture casts the shadow; a type icon (a video with no thumbnail handler, or one
+    // still decoding) sits flat like every other file's.
+    private static void Show(Image image, System.Windows.Media.ImageSource? art, bool picture)
+    {
         image.Source = art;
-        if (IconCache.IsPhoto(path, directory)) image.SetResourceReference(UIElement.EffectProperty, "ThumbShadowEffect");
+        if (picture) image.SetResourceReference(UIElement.EffectProperty, "ThumbShadowEffect");
         else image.ClearValue(UIElement.EffectProperty);
     }
 }

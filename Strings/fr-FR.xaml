@@ -712,6 +712,7 @@
 <sys:String x:Key="Str_Lbl_In">dans :</sys:String>
 <sys:String x:Key="Str_TT_Scope">Cliquez pour changer de dossier de recherche  (Ctrl+L)</sys:String>
 <sys:String x:Key="Str_TT_Back">Précédent  (Alt+Flèche gauche)</sys:String>
+<sys:String x:Key="Str_Btn_Back">Précédent</sys:String>
 <sys:String x:Key="Str_TT_Forward">Suivant  (Alt+Flèche droite)</sys:String>
 <sys:String x:Key="Str_TT_FoldersTop">Garder les dossiers au-dessus des fichiers  (Alt+O)</sys:String>
 <sys:String x:Key="Str_Col_Folder">emplacement</sys:String>

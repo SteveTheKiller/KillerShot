@@ -54,6 +54,15 @@ namespace KillerShot.Shell
             if (e.Key == Key.F12) { ShowAboutOverlay(); e.Handled = true; return; }
             if (AnyOverlayOpen) return;
 
+            // Alt+Left leaves the open picture for the library, as the toolbar's Back and the
+            // mouse's back button do. In the library the Files page walks its own folder history.
+            if (alt && !ctrl && !shift && dockKey == Key.Left && EditorWorkspaceActive && !TypingInField())
+            {
+                HistoryStep(-1);
+                e.Handled = true;
+                return;
+            }
+
             if (ctrl && !alt && e.Key == Key.Enter && InReview && !TypingInField())
             {
                 AcceptReview();
