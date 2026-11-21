@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows সেটিং</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">অনুলিপি</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">টেক্সট সম্পাদনা</sys:String>
-    <sys:String x:Key="Str_Tab_Open">নতুন ট্যাব</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">নতুন ট্যাবে খুলুন</sys:String>
     <sys:String x:Key="Str_Tab_Browse">ব্রাউজ</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">নতুন ফাইলগুলি ট্যাবে ফোল্ডার ব্রাউজ করুন</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">এক্সপ্লোরার</sys:String>

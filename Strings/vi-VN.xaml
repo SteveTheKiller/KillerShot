@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Cài đặt Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Nhân bản</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Sửa văn bản</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Tab mới</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Mở trong tab mới</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Duyệt</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Duyệt thư mục trong tab Tệp mới</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">File Explorer</sys:String>

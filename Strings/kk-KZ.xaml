@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows параметрі</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Көшірмесін жасау</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Мәтінді өңдеу</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Жаңа қойынды</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Жаңа қойындыда ашу</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Шолу</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Қалтаны жаңа «Файлдар» қойындысында шолу</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Сілтеуші</sys:String>

@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Параметр Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Дублювати</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Редагувати текст</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Нова вкладка</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Відкрити в новій вкладці</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Огляд</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Переглянути папку в новій вкладці «Файли»</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Провідник</sys:String>

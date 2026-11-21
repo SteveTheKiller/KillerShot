@@ -50,13 +50,7 @@ internal static class SelfTestFilesTabs
             await library.FilesNavigation;
             var workspace = library.FilesWorkspace;
             Check(workspace.FindName("TabStrip") != null, "Files exposes its tab strip");
-            // The library's own collection tab sits beside folder tabs; this test is about folder
-            // tabs, so it steps out of the way (SelfTestCollectionTabs covers it).
-            async Task DropCollectionTabs()
-            {
-                foreach (var tab in workspace.Tabs.Where(tab => tab.IsCollection).ToArray()) await workspace.CloseTab(tab);
-            }
-            await DropCollectionTabs();
+            Check(workspace.Tabs.All(tab => tab.IsFolder), "the tab strip holds folder tabs only");
             if (restore)
             {
                 Check(workspace.Tabs.Count == 2, "restart restores two tabs");
@@ -77,11 +71,11 @@ internal static class SelfTestFilesTabs
                 await workspace.CloseTab(workspace.ActiveTab);
                 Check(workspace.Tabs.Count == 1 && workspace.ActiveTab == first, "closing active tab selects its neighbor");
                 await workspace.CloseTab(first);
-                Check(workspace.Tabs.Count == 1 && workspace.ActiveTab.IsCollection && workspace.ActiveTab.Source == "all",
-                    "closing the last tab leaves the library's all-captures tab");
+                Check(workspace.Tabs.Count == 0 && workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == "all",
+                    "closing the last folder tab goes back to the collection page");
                 Settings.Set("Files.Tabs", "malformed");
                 using var recovery = new FilesWorkspace();
-                Check(recovery.Tabs.Count == 1, "malformed session opens one usable tab");
+                Check(recovery.Tabs.Count == 0 && recovery.ActiveTab == recovery.LibraryTab, "a malformed session opens the collection page");
             }
             else
             {
@@ -124,7 +118,6 @@ internal static class SelfTestFilesTabs
                     "library round trip retains active tab and folder");
                 Check(first.View.Navigation.FilterText == "item" && first.View.SelectedPaths.Count == 1,
                     "library round trip retains filter and selection");
-                await DropCollectionTabs();
                 Check(workspace.HandleTabKey(Key.Tab, ModifierKeys.Control) && workspace.ActiveTab == second,
                     "Ctrl+Tab selects next tab");
                 Check(workspace.HandleTabKey(Key.Tab, ModifierKeys.Control | ModifierKeys.Shift) && workspace.ActiveTab == first,

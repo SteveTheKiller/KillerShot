@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Impostazione di Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Duplica</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Modifica testo</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Nuova scheda</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Apri in una nuova scheda</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Sfoglia</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Sfoglia la cartella in una nuova scheda File</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Esplora file</sys:String>

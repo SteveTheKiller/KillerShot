@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows ayarı</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Çoğalt</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Metni düzenle</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Yeni sekme</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Yeni sekmede aç</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Gözat</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Klasöre yeni Dosyalar sekmesinde gözat</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Dosya Gezgini</sys:String>

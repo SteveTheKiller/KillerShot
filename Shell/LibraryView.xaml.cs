@@ -87,10 +87,9 @@ namespace KillerShot.Shell
         public event Action<string>? CountChanged;
         private string _source = "all";
 
-        /// <summary>The collection the sidebar picked. As in KillerShell, the active tab shows it
-        /// when it can: a collection tab is pointed at it, and a folder tab goes to a linked
-        /// folder's own folder. A folder tab cannot show an album collection, so that opens a
-        /// collection tab.</summary>
+        /// <summary>The collection the sidebar picked. The collection page is pointed at it, and a
+        /// folder tab goes to a linked folder's own folder. A folder tab cannot show an album
+        /// collection, so that brings the collection page back.</summary>
         public void SetSource(string source)
         {
             if (FilesActive)
@@ -101,10 +100,10 @@ namespace KillerShot.Shell
                     NavigateFilesSource();
                     return;
                 }
-                if (_source == source && FileBrowser.LastTab(collection: true) is { } open && open.Source == source)
+                if (_source == source && FileBrowser.LibraryTab.Source == source)
                     return;
                 _source = source;
-                _ = FileBrowser.NewCollectionTab(source);
+                FileBrowser.ShowCollection(source);
                 return;
             }
             if (_source == source && FileBrowser.ActiveTab.Source == source) return;
@@ -293,7 +292,7 @@ namespace KillerShot.Shell
                 {
                     SearchBox.Clear();
                     FileBrowser.ResetMissingSources(s => s is "all" or "c0" || FolderCaptures.IsSource(s));
-                    foreach (var tab in FileBrowser.Tabs) tab.Search = "";
+                    FileBrowser.LibraryTab.Search = "";
                 }
                 _source = FileBrowser.ActiveTab.IsCollection ? FileBrowser.ActiveTab.Source : _source;
                 _shelfFront.Clear();
@@ -794,20 +793,19 @@ namespace KillerShot.Shell
         {
             if (view is not ("shelves" or "grid" or "timeline" or "files")) return;
             Settings.Set("LibraryView", view);
-            // Files is a folder tab and the capture views belong to collection tabs, so picking
-            // one brings the last tab of that kind forward, or opens one. The tab switch reloads.
+            // Files is a folder tab and the capture views belong to the collection page, so Files
+            // brings the last folder tab forward, or opens one. The page switch reloads.
             if (view == "files")
             {
                 if (FilesActive) return;
-                if (FileBrowser.LastTab(collection: false) is { } folder) _ = FileBrowser.SelectTab(folder);
+                if (FileBrowser.LastFolderTab() is { } folder) _ = FileBrowser.SelectTab(folder);
                 else _ = FileBrowser.NewTab(CaptureSettings.OutputFolder);
                 return;
             }
             _view = view;
             if (FilesActive)
             {
-                if (FileBrowser.LastTab(collection: true) is { } open) _ = FileBrowser.SelectTab(open);
-                else _ = FileBrowser.NewCollectionTab(_source);
+                _ = FileBrowser.SelectTab(FileBrowser.LibraryTab);
                 return;
             }
             Reload();
@@ -1114,7 +1112,6 @@ namespace KillerShot.Shell
             menu.Items.Add(ShotCards.Header(menu, title, FolderCaptures.PathForSource(folderSource)));
             var open = new List<CardTile>
             {
-                new("\uE8A7", Loc("Str_Tab_OpenCollection"), null, () => _ = FileBrowser.NewCollectionTab(folderSource)) { Shown = Loc("Str_Tab_Open") },
                 new("\uE8B7", Loc("Str_Tab_BrowseFolder"), null, () => _ = FileBrowser.NewTab(FolderCaptures.PathForSource(folderSource))) { Shown = Loc("Str_Tab_Browse") },
                 new("\uE838", Loc("Str_Lib_OpenFolder"), null, () => ShowInExplorer(null, folderSource)) { Shown = Loc("Str_Tab_Explorer") },
             };
@@ -1148,8 +1145,6 @@ namespace KillerShot.Shell
             }));
             var use = new List<CardTile>
             {
-                new("\uE8A7", Loc("Str_Tab_OpenCollection"), null,
-                    () => { if (CaptureLibrary.Session == session) _ = FileBrowser.NewCollectionTab(source); }) { Shown = Loc("Str_Tab_Open") },
                 new("\uE8AC", Loc("Str_Lib_RenameCollection"), null, () =>
                 {
                     var dlg = new PromptDialog(Loc("Str_Lib_RenameCollectionTitle"), "", Loc("Str_Lib_Rename"), initialText: name) { Owner = OwnerWindow };

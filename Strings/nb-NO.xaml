@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-innstilling</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Dupliser</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Rediger tekst</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Ny fane</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Åpne i en ny fane</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Bla gjennom</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Bla gjennom mappen i en ny Filer-fane</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Filutforsker</sys:String>

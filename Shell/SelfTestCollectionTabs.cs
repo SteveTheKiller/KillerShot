@@ -12,9 +12,9 @@ using KillerShot.Services;
 
 namespace KillerShot.Shell;
 
-/// <summary>Collections open as tabs beside folder tabs in one strip: the library's own view is
-/// the page of a collection tab, a folder tab keeps its Files page, and the sidebar retargets the
-/// active tab when it can show the place and opens a tab when it cannot, as KillerShell does.</summary>
+/// <summary>Collections live on one collection page, never on the tab strip: the strip holds
+/// folder tabs only, the sidebar and picker point the collection page at a collection, and the
+/// strip shows only while a folder tab is active and there is more than one.</summary>
 internal static class SelfTestCollectionTabs
 {
     internal static bool TryRun(string[] args)
@@ -61,6 +61,15 @@ internal static class SelfTestCollectionTabs
                 Settings.Set("LibraryView", "grid");
                 Settings.Set("Files.Tabs", "{\"Active\":0,\"Tabs\":[{\"Folder\":" + System.Text.Json.JsonSerializer.Serialize(CaptureSettings.OutputFolder) + "}]}");
             }
+            else if (mode == "oldtabs")
+            {
+                // A session written while collections had tabs of their own: two collection tabs
+                // around a folder tab, the second collection active.
+                var ids = File.ReadAllText(Path.Combine(folder, "ids.txt")).Split(' ');
+                Settings.Set("LibraryView", "grid");
+                Settings.Set("Files.Tabs", "{\"Active\":2,\"Tabs\":[{\"Kind\":\"collection\",\"Source\":\"c" + ids[0] + "\"},{\"Folder\":"
+                    + System.Text.Json.JsonSerializer.Serialize(CaptureSettings.OutputFolder) + "},{\"Kind\":\"collection\",\"Source\":\"c" + ids[1] + "\"}]}");
+            }
             long first, second;
             if (mode.Length == 0)
             {
@@ -87,100 +96,98 @@ internal static class SelfTestCollectionTabs
             window.Show();
             await Settle(library);
             var workspace = library.FilesWorkspace;
+            var tabBar = (FrameworkElement)workspace.FindName("TabBar");
 
             if (mode == "restore")
             {
-                Check(workspace.Tabs.Count == 3, "restart restores three tabs");
-                Check(workspace.Tabs[0].IsCollection && workspace.Tabs[1].IsFolder && workspace.Tabs[2].IsCollection,
-                    "restart restores each tab's kind in order");
-                Check(workspace.ActiveTab == workspace.Tabs[2] && workspace.ActiveTab.Source == secondSource,
-                    "restart restores the active collection tab and its collection");
-                Check(library.CurrentSource == secondSource && !library.FilesActive, "restart shows the active collection in the library");
-                Check(workspace.ActiveTab.Title == SecondName, "a restored collection tab takes its name from the open album");
-                Check(workspace.Tabs[0].Source == firstSource && workspace.Tabs[0].Title == FirstName,
-                    "an inactive restored collection tab keeps its collection");
-                await workspace.SelectTab(workspace.Tabs[1]);
+                Check(workspace.Tabs.Count == 2 && workspace.Tabs.All(tab => tab.IsFolder), "restart restores the two folder tabs");
+                Check(workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == secondSource,
+                    "restart restores the collection page and its collection");
+                Check(library.CurrentSource == secondSource && !library.FilesActive, "restart shows the collection in the library");
+                Check(workspace.LibraryTab.Title == SecondName, "the restored collection takes its name from the open album");
+                Check(tabBar.Visibility != Visibility.Visible, "the collection page shows no tab strip");
+                await workspace.SelectTab(workspace.Tabs[0]);
                 await library.FilesNavigation;
                 Check(library.FilesActive && workspace.ActiveView!.Navigation.CurrentFolder == CaptureSettings.OutputFolder,
                     "a restored folder tab lists its folder");
+                Check(tabBar.Visibility == Visibility.Visible, "two restored folder tabs show the tab strip");
             }
             else if (mode == "legacy")
             {
-                Check(workspace.Tabs.Count == 2, "an old folder-only session gains the library's collection tab");
-                Check(workspace.Tabs[0].IsCollection && workspace.Tabs[0].Source == "all" && workspace.ActiveTab == workspace.Tabs[0],
-                    "the library opens where it was left, on the collection tab ahead of the folder tabs");
-                Check(workspace.Tabs[1].IsFolder, "the old session's folder tab is kept");
+                Check(workspace.Tabs.Count == 1 && workspace.Tabs[0].IsFolder, "the old session's folder tab is kept");
+                Check(workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == "all",
+                    "the library opens where it was left, on the collection page");
                 Check(library.CurrentView == "grid" && !library.FilesActive, "the old capture view still shows");
+            }
+            else if (mode == "oldtabs")
+            {
+                Check(workspace.Tabs.Count == 1 && workspace.Tabs[0].IsFolder, "old collection tabs leave only the folder tab on the strip");
+                Check(workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == firstSource,
+                    "the first old collection tab becomes the collection page");
+                Check(!library.FilesActive, "the library opens on the collection page");
             }
             else
             {
-                Check(workspace.Tabs.Count == 1 && workspace.ActiveTab.IsCollection && workspace.ActiveTab.Source == "all",
-                    "a new library opens one collection tab showing every capture");
-                Check(!library.FilesActive && library.CurrentView == "shelves", "the collection tab shows the library's own view");
-                Check(((FrameworkElement)workspace.FindName("TabBar")).Visibility != Visibility.Visible, "one tab shows no tab strip");
-                Check(workspace.ActiveTab.Title == LocaleManager.Loc("Str_Strip_All"), "the all-captures tab is named for it");
+                Check(workspace.Tabs.Count == 0 && workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == "all",
+                    "a new library opens the collection page on every capture, with no tabs");
+                Check(!library.FilesActive && library.CurrentView == "shelves", "the collection page shows the library's own view");
+                Check(tabBar.Visibility != Visibility.Visible, "the collection page shows no tab strip");
+                Check(workspace.LibraryTab.Title == LocaleManager.Loc("Str_Strip_All"), "the collection page is named for every capture");
 
                 library.SetView("files");
                 await library.FilesNavigation;
-                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab.IsFolder && library.FilesActive,
-                    "Files opens a folder tab beside the collection tab");
-                Check(((FrameworkElement)workspace.FindName("TabBar")).Visibility == Visibility.Visible, "two tabs show the tab strip");
+                Check(workspace.Tabs.Count == 1 && workspace.ActiveTab.IsFolder && library.FilesActive, "Files opens one folder tab");
+                Check(tabBar.Visibility != Visibility.Visible, "one folder tab shows no tab strip");
                 Check(library.CurrentView == "files", "the footer reads Files while a folder tab is active");
                 Check(CollectionPage(library).Visibility != Visibility.Visible && workspace.ActiveView!.Visibility == Visibility.Visible,
                     "a folder tab shows its Files page, not the library");
+
+                Check(workspace.HandleTabKey(Key.T, ModifierKeys.Control), "Ctrl+T works over a folder tab");
+                await library.FilesNavigation;
+                await Settle(library);
+                Check(workspace.Tabs.Count == 2 && workspace.Tabs.All(tab => tab.IsFolder), "Ctrl+T opens a second folder tab");
+                Check(tabBar.Visibility == Visibility.Visible, "two folder tabs show the tab strip");
                 var folderTab = workspace.ActiveTab;
 
                 library.SetView("grid");
                 await Settle(library);
-                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == workspace.Tabs[0],
-                    "a capture view returns to the collection tab instead of opening another");
-                Check(library.CurrentView == "grid" && !library.FilesActive, "the collection tab takes the chosen capture view");
-                Check(CollectionPage(library).Visibility == Visibility.Visible, "a collection tab shows the library");
+                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == workspace.LibraryTab,
+                    "a capture view goes to the collection page without opening a tab");
+                Check(library.CurrentView == "grid" && !library.FilesActive, "the collection page takes the chosen capture view");
+                Check(CollectionPage(library).Visibility == Visibility.Visible, "the collection page shows the library");
+                Check(tabBar.Visibility != Visibility.Visible, "the collection page hides the folder tab strip");
+                Check(!workspace.HandleTabKey(Key.T, ModifierKeys.Control) && workspace.Tabs.Count == 2,
+                    "Ctrl+T does nothing on the collection page");
 
                 library.SetSource(firstSource);
                 await Settle(library);
-                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab.Source == firstSource,
-                    "picking a collection retargets the active collection tab");
-                Check(workspace.ActiveTab.Title == FirstName, "the retargeted tab is named for its collection");
+                Check(workspace.Tabs.Count == 2 && workspace.LibraryTab.Source == firstSource,
+                    "picking a collection points the collection page at it");
+                Check(workspace.LibraryTab.Title == FirstName, "the collection page is named for its collection");
 
                 await workspace.SelectTab(folderTab);
                 await library.FilesNavigation;
                 library.SetSource(secondSource);
                 await Settle(library);
-                Check(workspace.Tabs.Count == 3 && workspace.ActiveTab.IsCollection && workspace.ActiveTab.Source == secondSource,
-                    "picking a collection over a folder tab opens a collection tab");
-                Check(workspace.Tabs.IndexOf(workspace.ActiveTab) == 2, "the new collection tab opens at the end");
-                Check(library.CurrentSource == secondSource, "the library shows the new tab's collection");
-
-                Check(workspace.HandleTabKey(Key.T, ModifierKeys.Control), "Ctrl+T works over a collection tab");
-                await Settle(library);
-                Check(workspace.Tabs.Count == 4 && workspace.ActiveTab.IsCollection && workspace.ActiveTab.Source == secondSource,
-                    "Ctrl+T on a collection tab opens another tab of that collection");
-                Check(workspace.HandleTabKey(Key.W, ModifierKeys.Control), "Ctrl+W works over a collection tab");
-                await Settle(library);
-                Check(workspace.Tabs.Count == 3, "Ctrl+W closes the collection tab");
-
-                await workspace.SelectTab(workspace.Tabs[0]);
-                await Settle(library);
-                Check(library.CurrentSource == firstSource && !library.FilesActive,
-                    $"switching tabs brings the library to that tab's collection (library {library.CurrentSource}, tabs {string.Join(",", workspace.Tabs.Select(t => (t.IsCollection ? t.Source : "folder") + (t.IsActive ? "*" : "")))})");
-                await workspace.SelectTab(workspace.Tabs[2]);
-                await Settle(library);
-                Check(library.CurrentSource == secondSource, "each collection tab keeps its own collection");
+                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == secondSource,
+                    "picking a collection over a folder tab brings the collection page back instead of opening a tab");
+                Check(library.CurrentSource == secondSource && !library.FilesActive, "the library shows the picked collection");
 
                 workspace.SaveSession();
                 string session = Settings.Get("Files.Tabs") ?? "";
-                Check(session.Contains(firstSource) && session.Contains(secondSource), "the session stores each collection tab's id");
+                Check(session.Contains(secondSource), "the session stores the collection page's id");
                 Check(!session.Contains(FirstName) && !session.Contains(SecondName),
                     "the plain settings file never holds a name from inside the encrypted album");
 
+                await workspace.SelectTab(folderTab);
+                await library.FilesNavigation;
                 foreach (var theme in new[] { Theme.Dark, Theme.Light, Theme.SE98 })
                 {
                     ThemeManager.Apply(theme);
                     await Idle();
                     window.UpdateLayout();
                     var strip = (ItemsControl)workspace.FindName("TabStrip");
-                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 3 && Descendants<TextBlock>(strip).Count(label => label.Name == "tabLbl" && label.IsVisible) == 3, $"{theme} renders three tab labels and close buttons");
+                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 2 && Descendants<TextBlock>(strip).Count(label => label.Name == "tabLbl" && label.IsVisible) == 2, $"{theme} renders two folder tab labels and close buttons");
                     var bitmap = new RenderTargetBitmap((int)library.ActualWidth, (int)library.ActualHeight, 96, 96, PixelFormats.Pbgra32);
                     bitmap.Render(library);
                     var encoder = new PngBitmapEncoder();
@@ -190,19 +197,18 @@ internal static class SelfTestCollectionTabs
                 }
                 ThemeManager.Apply(Theme.Dark);
 
-                // Leave the session the restore run expects: the first collection, the folder,
-                // then the second collection, active. A deleted collection is checked on a
-                // throwaway tab so the restore fixture keeps both.
-                var doomed = await workspace.NewCollectionTab(firstSource);
+                // A deleted collection sends the collection page back to every capture.
                 long gone = CaptureLibrary.CreateCollection("Doomed collection");
                 library.SetSource("c" + gone.ToString(CultureInfo.InvariantCulture));
                 await Settle(library);
                 CaptureLibrary.DeleteCollection(gone);
                 library.Reload();
                 await Settle(library);
-                Check(doomed.Source == "all" && library.CurrentSource == "all", "a deleted collection's tab falls back to every capture");
-                await workspace.CloseTab(doomed);
-                await workspace.SelectTab(workspace.Tabs[2]);
+                Check(workspace.LibraryTab.Source == "all" && library.CurrentSource == "all", "a deleted collection falls back to every capture");
+
+                // Leave the session the restore run expects: two folder tabs and the collection
+                // page on the second collection, active.
+                library.SetSource(secondSource);
                 await Settle(library);
                 workspace.SaveSession();
             }

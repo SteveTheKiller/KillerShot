@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows 設定</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">建立副本</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">編輯文字</sys:String>
-    <sys:String x:Key="Str_Tab_Open">新分頁</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">在新分頁中開啟</sys:String>
     <sys:String x:Key="Str_Tab_Browse">瀏覽</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">在新的「檔案」分頁中瀏覽資料夾</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">檔案總管</sys:String>

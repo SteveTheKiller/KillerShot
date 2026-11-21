@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows-Einstellung</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Duplizieren</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Text bearbeiten</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Neuer Tab</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">In neuem Tab öffnen</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Durchsuchen</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Ordner in einem neuen Tab „Dateien“ durchsuchen</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Explorer</sys:String>

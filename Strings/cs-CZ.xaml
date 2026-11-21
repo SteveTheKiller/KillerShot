@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavení Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Duplikovat</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Upravit text</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Nová karta</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Otevřít na nové kartě</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Procházet</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Procházet složku na nové kartě Soubory</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Průzkumník</sys:String>

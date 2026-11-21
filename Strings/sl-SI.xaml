@@ -572,8 +572,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Nastavitev sistema Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Podvoji</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Uredi besedilo</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Nov zavihek</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Odpri v novem zavihku</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Prebrskaj</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Prebrskaj mapo v novem zavihku Datoteke</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Raziskovalec</sys:String>

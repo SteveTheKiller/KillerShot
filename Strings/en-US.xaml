@@ -583,8 +583,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Windows setting</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Duplicate</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Edit text</sys:String>
-    <sys:String x:Key="Str_Tab_Open">New tab</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Open in a new tab</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Browse</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Browse the folder in a new Files tab</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Explorer</sys:String>

@@ -577,8 +577,6 @@
     <sys:String x:Key="Str_Card_WindowsSettingShort">Ajuste de Windows</sys:String>
     <sys:String x:Key="Str_Card_DuplicateShort">Duplicar</sys:String>
     <sys:String x:Key="Str_Card_EditTextShort">Editar texto</sys:String>
-    <sys:String x:Key="Str_Tab_Open">Nueva pestaña</sys:String>
-    <sys:String x:Key="Str_Tab_OpenCollection">Abrir en una pestaña nueva</sys:String>
     <sys:String x:Key="Str_Tab_Browse">Explorar</sys:String>
     <sys:String x:Key="Str_Tab_BrowseFolder">Explorar la carpeta en una pestaña Archivos nueva</sys:String>
     <sys:String x:Key="Str_Tab_Explorer">Explorador</sys:String>
