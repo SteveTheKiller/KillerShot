@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">In Windows ist keine Texterkennungssprache installiert. Fügen Sie eine unter Einstellungen, Zeit und Sprache, Sprache und Region hinzu.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">{0} Zeichen kopiert.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Text des Albums neu lesen</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Text neu lesen</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Der Text des Albums wird im Hintergrund neu gelesen.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Nach rechts drehen</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Nach links drehen</sys:String>

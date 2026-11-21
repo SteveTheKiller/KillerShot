@@ -2,16 +2,18 @@
 
 ## [1.2.1]
 
-KillerShot 1.2.1 carries Trash Polka into the Files view and fixes how the album's views scroll.
+KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums window as tiles, and fixes how the album's views scroll.
 
 ### Fixed
 - Shelves, Grid and Timeline show the edge shadows while more captures lie above or below. The captures also scroll to the pane's edges instead of stopping short of the bottom.
 - A window capture of KillerShot keeps its own dialog when one sits over the window.
 - Make PDF shows only for folders that have pictures in them, in the album's folder cards and in the Files view.
 - Opening KillerShot on the Files view no longer draws the editor's frame around it.
+- The selected album in the Albums window uses the same solid highlight as every other list, instead of a dim blend of it.
 
 ### Changed
 - Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.
+- The Albums window shows its actions as icon tiles in one row under the list and one under the library settings. The Keep captures list is sized to its choices.
 
 ## [1.2.0] - 2026-11-21
 

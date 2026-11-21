@@ -307,6 +307,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows has no text recognition language installed. Add one in Settings, Time and language, Language and region.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">Copied {0} characters.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Read the album's text again</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Read text again</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Reading the album's text again in the background.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Rotate right</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Rotate left</sys:String>

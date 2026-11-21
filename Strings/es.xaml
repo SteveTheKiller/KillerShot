@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows no tiene instalado ningún idioma de reconocimiento de texto. Añade uno en Configuración, Hora e idioma, Idioma y región.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">Se copiaron {0} caracteres.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Volver a leer el texto del álbum</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Releer el texto</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Volviendo a leer el texto del álbum en segundo plano.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Girar a la derecha</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Girar a la izquierda</sys:String>

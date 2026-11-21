@@ -1359,12 +1359,6 @@
                                 KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
                         <TextBlock x:Name="AlbumsHeading" Text="{DynamicResource Str_Album_Title}" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
-                        <WrapPanel Margin="0,0,0,10">
-                            <Button Content="{DynamicResource Str_Album_New}" Style="{StaticResource OutlineButton}"
-                                    Padding="10,4" Margin="0,0,6,4" Click="AlbumNew_Click"/>
-                            <Button Content="{DynamicResource Str_Album_OpenFile}" Style="{StaticResource OutlineButton}"
-                                    Padding="10,4" Margin="0,0,0,4" Click="AlbumImport_Click"/>
-                        </WrapPanel>
                         <!-- The album list is the family database list (KillerNotes' DatabasesDialog): a recessed
                              pane with its shadow on a childless sibling, the crossed sunken bevel, grain under the
                              rows, and rows selected with DatabaseSelectionBrush (Services/DatabaseRowPalette.cs). -->
@@ -1398,8 +1392,10 @@
                                                                 <Setter TargetName="AlbumRowGrain" Property="Visibility" Value="Visible"/>
                                                             </Trigger>
                                                             <Trigger Property="IsSelected" Value="True">
-                                                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource DatabaseSelectionBrush}"/>
-                                                                <Setter Property="Foreground" Value="{DynamicResource DatabaseSelectionTextBrush}"/>
+                                                                <!-- The same solid selection as every other list in the app. -->
+                                                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                                                <Setter TargetName="AlbumRowGrain" Property="Visibility" Value="Collapsed"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource SelectionFg}"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
@@ -1413,42 +1409,44 @@
                             <Border IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelDarkBrush}" BorderThickness="{DynamicResource BevelLightThickness}"/>
                             <Border IsHitTestVisible="False" BorderBrush="{DynamicResource PaneBevelLightBrush}" BorderThickness="{DynamicResource BevelDarkThickness}"/>
                         </Grid>
-                        <WrapPanel Margin="0,0,0,8">
-                            <Button x:Name="AlbumOpenBtn" Content="{DynamicResource Str_Lib_Open}" Style="{StaticResource OutlineButton}"
-                                    Padding="10,4" Margin="0,0,6,4" Click="AlbumOpen_Click"/>
-                            <Button x:Name="AlbumRenameBtn" Content="{DynamicResource Str_Lib_Rename}" Style="{StaticResource OutlineButton}"
-                                    Padding="10,4" Margin="0,0,0,4" Click="AlbumRename_Click"/>
-                        </WrapPanel>
+                        <!-- Album actions as card tiles, glyph over caption, the way the right-click cards show them. -->
+                        <UniformGrid x:Name="AlbumTiles" Columns="4" Margin="0,0,0,6">
+                            <Button x:Name="AlbumOpenBtn" Style="{StaticResource CardQuickButton}" Content="&#xE8DA;" Tag="{DynamicResource Str_Lib_Open}"
+                                    Margin="0,0,4,0" Click="AlbumOpen_Click"/>
+                            <Button x:Name="AlbumRenameBtn" Style="{StaticResource CardQuickButton}" Content="&#xE8AC;" Tag="{DynamicResource Str_Lib_Rename}"
+                                    Margin="0,0,4,0" Click="AlbumRename_Click"/>
+                            <Button Style="{StaticResource CardQuickButton}" Content="&#xE710;" Tag="{DynamicResource Str_Album_New}"
+                                    Margin="0,0,4,0" Click="AlbumNew_Click"/>
+                            <Button Style="{StaticResource CardQuickButton}" Content="&#xE8E5;" Tag="{DynamicResource Str_Album_OpenFile}"
+                                    ToolTip="{DynamicResource Str_Album_CopyHint}" Click="AlbumImport_Click"/>
+                        </UniformGrid>
                         <TextBlock Text="{DynamicResource Str_Album_CopyHint}" FontSize="11" Foreground="{DynamicResource DimTextBrush}"
                                    TextWrapping="Wrap" Margin="0,0,0,14"/>
                         <TextBlock x:Name="ActiveAlbumHeading" theme:HeadingAccent.Enabled="True" FontFamily="{DynamicResource HeadingFont}"
                                    FontSize="13" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- The choices are short, so the list is sized to them instead of the card's width. -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <TextBlock x:Name="LibraryKeepLabel" Text="{DynamicResource Str_CS_Keep}" FontSize="12"
                                        VerticalAlignment="Center" Margin="0,0,12,0"/>
-                            <DockPanel Grid.Column="1">
-                                <Button x:Name="LibraryKeepSaveBtn" DockPanel.Dock="Right" Content="{DynamicResource Str_Lib_Save}"
-                                        Style="{StaticResource OutlineButton}" Padding="10,3" Margin="6,0,0,0"
-                                        IsEnabled="False" Click="LibraryKeepSave_Click"/>
-                                <ComboBox x:Name="LibraryKeepCombo" SelectionChanged="LibraryKeepCombo_Changed"
-                                          AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
-                            </DockPanel>
-                        </Grid>
+                            <ComboBox x:Name="LibraryKeepCombo" Width="150" SelectionChanged="LibraryKeepCombo_Changed"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=LibraryKeepLabel}"/>
+                            <Button x:Name="LibraryKeepSaveBtn" Content="{DynamicResource Str_Lib_Save}"
+                                    Style="{StaticResource OutlineButton}" Padding="10,3" Margin="6,0,0,0"
+                                    IsEnabled="False" Click="LibraryKeepSave_Click"/>
+                        </StackPanel>
                         <CheckBox x:Name="LibraryFolderToggle" FontSize="11" Margin="0,0,0,8"
                                   Checked="LibraryFolderToggle_Changed" Unchecked="LibraryFolderToggle_Changed"/>
                         <TextBlock x:Name="LibraryStatusText" Foreground="{DynamicResource DimTextBrush}" FontSize="11"
                                    TextWrapping="Wrap" Margin="0,0,0,6"/>
-                        <WrapPanel>
-                            <Button x:Name="LibraryPasswordBtn" Style="{StaticResource OutlineButton}" Padding="10,3" Click="LibraryPassword_Click"/>
-                            <Button x:Name="LibraryRemovePasswordBtn" Content="{DynamicResource Str_CS_RemovePassword}" Style="{StaticResource OutlineButton}"
-                                    Padding="10,3" Margin="6,0,0,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
-                        </WrapPanel>
-                        <Button x:Name="LibraryReindexBtn" Content="{DynamicResource Str_Ocr_Reindex}" Style="{StaticResource OutlineButton}"
-                                HorizontalAlignment="Left" Padding="10,3" Margin="0,8,0,0" Click="LibraryReindex_Click"/>
+                        <!-- Library actions on the same four-column tile grid as the album actions. -->
+                        <UniformGrid x:Name="LibraryTiles" Columns="4" HorizontalAlignment="Stretch">
+                            <Button x:Name="LibraryPasswordBtn" Style="{StaticResource CardQuickButton}" Content="&#xE72E;"
+                                    Margin="0,0,4,0" Click="LibraryPassword_Click"/>
+                            <Button x:Name="LibraryRemovePasswordBtn" Style="{StaticResource CardQuickButton}" Content="&#xE785;"
+                                    Tag="{DynamicResource Str_CS_RemovePassword}" Margin="0,0,4,0" Click="LibraryRemovePassword_Click" Visibility="Collapsed"/>
+                            <Button x:Name="LibraryReindexBtn" Style="{StaticResource CardQuickButton}" Content="&#xE8D2;"
+                                    Tag="{DynamicResource Str_Ocr_ReindexShort}" ToolTip="{DynamicResource Str_Ocr_Reindex}" Margin="0,0,4,0" Click="LibraryReindex_Click"/>
+                        </UniformGrid>
                     </StackPanel>
                     </ScrollViewer>
                     <Border Style="{StaticResource FlyoutGrain}"/>

@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows жүйесінде мәтінді тану тілі орнатылмаған. Параметрлер, Уақыт және тіл, Тіл және аймақ бөлімінен қосыңыз.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">{0} таңба көшірілді.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Альбом мәтінін қайта оқу</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Мәтінді қайта оқу</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Альбом мәтіні фонда қайта оқылуда.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Оңға бұру</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Солға бұру</sys:String>

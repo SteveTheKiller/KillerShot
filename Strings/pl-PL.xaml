@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">W systemie Windows nie zainstalowano języka rozpoznawania tekstu. Dodaj go w Ustawienia, Czas i język, Język i region.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">Skopiowano {0} znaków.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Odczytaj ponownie tekst albumu</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Odczytaj tekst ponownie</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Ponowne odczytywanie tekstu albumu w tle.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Obróć w prawo</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Obróć w lewo</sys:String>

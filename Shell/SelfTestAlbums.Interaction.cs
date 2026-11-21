@@ -48,7 +48,7 @@ internal static partial class SelfTestAlbums
         }
         Button Named(string name) => (Button)window.FindName(name);
         Button NewButton() => ManagerVisuals(window.TestAlbumsCard!).OfType<Button>()
-            .Single(button => Equals(button.Content, LocaleManager.Loc("Str_Album_New")));
+            .Single(button => Equals(button.Tag, LocaleManager.Loc("Str_Album_New")));
         void Select(string path)
         {
             list.SelectedItem = list.Items.OfType<ListBoxItem>().Single(row => row.Tag is CaptureLibrary.AlbumInfo album

@@ -117,10 +117,11 @@ namespace KillerShot.Shell
                 {
                     var content = new StackPanel { Margin = new Thickness(8, 5, 8, 5) };
                     var name = new TextBlock { Text = album.Name + (album.Active ? " (" + Loc("Str_Album_Active") + ")" : ""), FontWeight = album.Active ? FontWeights.SemiBold : FontWeights.Normal, TextTrimming = TextTrimming.CharacterEllipsis };
-                    // The name takes the row's foreground, so a selected row's text follows DatabaseSelectionTextBrush.
+                    // The name takes the row's foreground, so a selected row's text follows SelectionFg.
                     content.Children.Add(name);
                     var details = new TextBlock { Text = album.Modified.ToString("g") + "   " + string.Format(Loc("Str_Size_Kb"), (album.Bytes / 1024d).ToString("N0")), FontSize = 10, Margin = new Thickness(0, 3, 0, 0) };
-                    details.SetResourceReference(TextBlock.ForegroundProperty, "DatabaseMetadataBrush");
+                    // The details take the row's own text color, dimmed, so they stay readable on the solid selection.
+                    details.Opacity = 0.75;
                     content.Children.Add(details);
                     var row = new ListBoxItem { Content = content, Tag = album, ToolTip = album.Path };
                     System.Windows.Automation.AutomationProperties.SetName(row, name.Text);
@@ -325,7 +326,7 @@ namespace KillerShot.Shell
                 ?? (!open && CaptureLibrary.NeedsPassword ? Loc("Str_CS_LibraryLocked")
                 : !open ? Loc("Str_Lib_NotOpen")
                 : pw ? Loc("Str_CS_LibraryPassword") : Loc("Str_CS_LibraryAccount"));
-            LibraryPasswordBtn.Content = Loc(pw ? "Str_CS_ChangePassword" : "Str_CS_SetPassword");
+            LibraryPasswordBtn.Tag = Loc(pw ? "Str_CS_ChangePassword" : "Str_CS_SetPassword");
             LibraryPasswordBtn.IsEnabled = open;
             LibraryRemovePasswordBtn.Visibility = pw ? Visibility.Visible : Visibility.Collapsed;
             LibraryRemovePasswordBtn.IsEnabled = open;

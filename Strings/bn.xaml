@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows-এ কোনো লেখা শনাক্তকরণ ভাষা ইনস্টল নেই। সেটিংস, সময় ও ভাষা, ভাষা ও অঞ্চল থেকে একটি যোগ করুন।</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">{0}টি অক্ষর কপি হয়েছে।</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">অ্যালবামের লেখা আবার পড়ুন</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">লেখা আবার পড়ুন</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">পটভূমিতে অ্যালবামের লেখা আবার পড়া হচ্ছে।</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">ডানে ঘোরান</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">বামে ঘোরান</sys:String>

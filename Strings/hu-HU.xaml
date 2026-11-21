@@ -303,6 +303,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">A Windowsban nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet: Gépház, Idő és nyelv, Nyelv és régió.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">{0} karakter másolva.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Az album szövegének újraolvasása</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Szöveg újraolvasása</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Az album szövegének újraolvasása a háttérben.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Forgatás jobbra</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Forgatás balra</sys:String>

@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows'ta yüklü bir metin tanıma dili yok. Ayarlar, Saat ve dil, Dil ve bölge bölümünden bir dil ekleyin.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">{0} karakter kopyalandı.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Albümün metnini yeniden oku</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Metni yeniden oku</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Albümün metni arka planda yeniden okunuyor.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Sağa döndür</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Sola döndür</sys:String>

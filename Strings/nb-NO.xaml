@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows har ikke noe språk for tekstgjenkjenning installert. Legg til et i Innstillinger, Tid og språk, Språk og område.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">Kopierte {0} tegn.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Les albumets tekst på nytt</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Les teksten på nytt</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Leser albumets tekst på nytt i bakgrunnen.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Roter mot høyre</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Roter mot venstre</sys:String>

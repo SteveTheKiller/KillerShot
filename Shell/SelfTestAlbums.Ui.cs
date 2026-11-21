@@ -16,7 +16,7 @@ internal static partial class SelfTestAlbums
         foreach (string name in new[] { "Work", "Personal", "Support captures" }) CaptureLibrary.CreateAlbum(name);
         FolderCaptures.UseFolder(Path.Combine(folder, "screenshots"));
         FolderCaptures.Enabled = false;
-        foreach (var (theme, locale) in new[] { (Theme.Dark, Locale.EnUS), (Theme.SE98, Locale.EnUS), (Theme.Dark, Locale.De) })
+        foreach (var (theme, locale) in new[] { (Theme.Dark, Locale.EnUS), (Theme.SE98, Locale.EnUS), (Theme.Dark, Locale.De), (Theme.TrashPolka, Locale.EnUS) })
         {
             ThemeManager.Apply(theme);
             LocaleManager.Apply(locale);

@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">Windows 未安裝文字辨識語言。請在「設定 > 時間與語言 > 語言與地區」中新增。</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">已複製 {0} 個字元。</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">重新讀取相簿文字</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">重新讀取文字</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">正在背景重新讀取相簿文字。</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">向右旋轉</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">向左旋轉</sys:String>

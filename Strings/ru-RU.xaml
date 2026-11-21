@@ -304,6 +304,7 @@
     <sys:String x:Key="Str_Ocr_Unavailable">В Windows не установлен язык распознавания текста. Добавьте его в разделе Параметры, Время и язык, Язык и регион.</sys:String>
     <sys:String x:Key="Str_Ocr_Copied">Скопировано символов: {0}.</sys:String>
     <sys:String x:Key="Str_Ocr_Reindex">Заново прочитать текст альбома</sys:String>
+    <sys:String x:Key="Str_Ocr_ReindexShort">Перечитать текст</sys:String>
     <sys:String x:Key="Str_Ocr_Reindexing">Текст альбома заново читается в фоне.</sys:String>
     <sys:String x:Key="Str_Img_RotateRight">Повернуть вправо</sys:String>
     <sys:String x:Key="Str_Img_RotateLeft">Повернуть влево</sys:String>
