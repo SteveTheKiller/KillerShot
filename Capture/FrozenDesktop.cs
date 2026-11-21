@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using KillerShot.Native;
@@ -11,6 +11,10 @@ internal sealed record MonitorBounds(IntPtr Handle, Win32.RECT Bounds, bool Prim
 /// <summary>A capturable top-level window and its visible frame, recorded at freeze time.</summary>
 internal sealed record WindowBounds(IntPtr Handle, Win32.RECT Bounds);
 
+/// <summary>A visible top-level window recorded at freeze time, with its process and whether it is a
+/// captionless popup: a context menu, flyout or tooltip that floats over its app's window.</summary>
+internal sealed record TopWindow(IntPtr Handle, uint ProcessId, Win32.RECT Bounds, bool Popup);
+
 /// <summary>A copy of the whole virtual desktop taken the moment a capture starts. Region,
 /// monitor and all-monitor modes crop from it, so open menus and tooltips stay in the picture
 /// and the selection overlay can never appear in the result.</summary>
@@ -22,14 +26,50 @@ internal sealed class FrozenDesktop
     public IReadOnlyList<MonitorBounds> Monitors { get; }
     /// <summary>Capturable windows, topmost first, as they were when the desktop was frozen.</summary>
     public IReadOnlyList<WindowBounds> Windows { get; }
+    /// <summary>Every visible top-level window, topmost first, popups included.</summary>
+    public IReadOnlyList<TopWindow> TopWindows { get; }
     private readonly byte[] _pixels;   // BGRA rows, top-down, stride Bounds.Width * 4
 
-    internal FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors, IReadOnlyList<WindowBounds> windows)
+    internal FrozenDesktop(Win32.RECT bounds, byte[] pixels, IReadOnlyList<MonitorBounds> monitors, IReadOnlyList<WindowBounds> windows,
+        IReadOnlyList<TopWindow>? topWindows = null)
     {
         Bounds = bounds;
         _pixels = pixels;
         Monitors = monitors;
         Windows = windows;
+        TopWindows = topWindows ?? [];
+    }
+
+    /// <summary>Visible top-level windows in z-order, topmost first, with their process and popup style.</summary>
+    public static IReadOnlyList<TopWindow> EnumerateTopWindows()
+    {
+        var list = new List<TopWindow>();
+        Win32.EnumWindows((h, _) =>
+        {
+            if (!Win32.IsWindowVisible(h)) return true;
+            if (Win32.DwmGetWindowAttribute(h, Win32.DWMWA_CLOAKED, out int cloaked, 4) == 0 && cloaked != 0) return true;
+            if (!Win32.GetWindowRect(h, out Win32.RECT r) || r.IsEmpty) return true;
+            Win32.GetWindowThreadProcessId(h, out uint pid);
+            uint style = unchecked((uint)Win32.GetWindowLong(h, Win32.GWL_STYLE));
+            bool popup = (style & Win32.WS_POPUP) != 0 && (style & Win32.WS_CAPTION) != Win32.WS_CAPTION;
+            list.Add(new TopWindow(h, pid, r, popup));
+            return true;
+        }, IntPtr.Zero);
+        return list;
+    }
+
+    /// <summary>The app's own popups that sat over <paramref name="window"/> when the desktop froze: its context
+    /// menus, flyouts and tooltips. Window capture reads only the window's surface, so these come from the
+    /// frozen desktop instead.</summary>
+    public IEnumerable<Win32.RECT> PopupsOver(IntPtr window)
+    {
+        var owner = TopWindows.FirstOrDefault(t => t.Handle == window);
+        if (owner is null) yield break;
+        foreach (var t in TopWindows)
+        {
+            if (t.Handle == window) yield break;
+            if (t.Popup && t.ProcessId == owner.ProcessId) yield return t.Bounds;
+        }
     }
 
     /// <summary>Visible, capturable top-level windows in z-order, topmost first.</summary>
@@ -101,7 +141,7 @@ internal sealed class FrozenDesktop
             GdiFlush();
             var pixels = new byte[(long)w * h * 4];
             Marshal.Copy(bits, pixels, 0, pixels.Length);
-            return new FrozenDesktop(new Win32.RECT(x, y, x + w, y + h), pixels, EnumerateMonitors(), EnumerateWindows());
+            return new FrozenDesktop(new Win32.RECT(x, y, x + w, y + h), pixels, EnumerateMonitors(), EnumerateWindows(), EnumerateTopWindows());
         }
         finally
         {

@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using KillerShot.Native;
 
@@ -89,6 +89,7 @@ internal static class WindowCapture
 
         var (px, w, h) = shot.Value;
         CompositeOverDesktop(px, w, h, bounds.Value, desk, deskRect);
+        PastePopups(px, w, h, bounds.Value, frozen, hwnd);
         return (FrozenDesktop.ToBitmap(px, w, h), true);
     }
 
@@ -117,6 +118,20 @@ internal static class WindowCapture
                 px[i + 2] = (byte)Math.Min(255, px[i + 2] + (dr * inv + 127) / 255);
                 px[i + 3] = 255;
             }
+        }
+    }
+
+    /// <summary>A context menu or flyout is a separate popup window, so Graphics Capture of the app window leaves
+    /// it out. The frozen desktop holds it as it looked, so its pixels are copied over the window's.</summary>
+    private static void PastePopups(byte[] px, int w, int h, Win32.RECT bounds, FrozenDesktop frozen, IntPtr hwnd)
+    {
+        var shot = new Win32.RECT(bounds.Left, bounds.Top, bounds.Left + w, bounds.Top + h);
+        foreach (var popup in frozen.PopupsOver(hwnd))
+        {
+            var (desk, r) = frozen.CopyPixels(Win32.RECT.Intersect(popup, shot));
+            if (r.IsEmpty) continue;
+            for (int row = 0; row < r.Height; row++)
+                Buffer.BlockCopy(desk, row * r.Width * 4, px, ((r.Top - shot.Top + row) * w + (r.Left - shot.Left)) * 4, r.Width * 4);
         }
     }
 
