@@ -423,7 +423,10 @@
             </Border>
             <Grid>
                 <Border x:Name="ResultsSurfaceGrain" IsHitTestVisible="False" CornerRadius="0" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
-                <Border IsHitTestVisible="False" Background="{DynamicResource ListPaneBrush}" Visibility="{Binding Visibility, ElementName=ResultsList}" />
+                <!-- Trash Polka shows its lighter pane stretch of the sleeve here, like KillerPDF's document card
+                     and KillerScan's results pane; the column header above stays matte. -->
+                <Border IsHitTestVisible="False" Background="{DynamicResource ListPaneBrush}" Visibility="{Binding Visibility, ElementName=ResultsList}"
+                        local:ThemeMotif.Part="Window" local:ThemeMotif.BaseBrush="ListPaneBrush" />
                 <Border IsHitTestVisible="False" Visibility="{Binding Visibility, ElementName=ResultsList}" BorderBrush="{DynamicResource PaneBevelDarkBrush}" BorderThickness="{DynamicResource PaneBevelLightThickness}" />
                 <Border IsHitTestVisible="False" Visibility="{Binding Visibility, ElementName=ResultsList}" BorderBrush="{DynamicResource PaneBevelLightBrush}" BorderThickness="{DynamicResource PaneBevelDarkThickness}" />
                 <Border IsHitTestVisible="False" Visibility="{Binding Visibility, ElementName=ResultsList}" Margin="{DynamicResource PaneBevelInnerMargin}" BorderBrush="{DynamicResource PaneBevelDark2Brush}" BorderThickness="{DynamicResource PaneBevel2LightThickness}" />
