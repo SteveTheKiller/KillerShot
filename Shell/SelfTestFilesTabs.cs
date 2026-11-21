@@ -85,7 +85,19 @@ internal static class SelfTestFilesTabs
                 for (int i = 0; i < 180; i++) File.WriteAllText(Path.Combine(firstFolder, $"item-{i:000}.txt"), "owned");
                 File.WriteAllText(Path.Combine(secondFolder, "other.txt"), "second");
                 var first = workspace.ActiveTab;
-                await first.View!.NavigateTo(child);
+                var statusBar = (FrameworkElement)first.View!.FindName("StatusBar");
+                var commandStatus = (TextBlock)first.View.FindName("CommandStatus");
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Collapsed, "an idle Files page shows no empty status strip");
+                commandStatus.Text = "status";
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Visible, "a status message brings the strip back");
+                commandStatus.Text = "";
+                await Idle();
+                Check(statusBar.Visibility == Visibility.Collapsed, "the strip leaves with the message");
+                Check(IconCache.IsPhoto(Path.Combine(firstFolder, "clip.mp4"), false) && !IconCache.IsPhoto(Path.Combine(firstFolder, "notes.txt"), false),
+                    "videos are drawn as thumbnails, other files as icons");
+                await first.View.NavigateTo(child);
                 await first.View.NavigateTo(firstFolder);
                 first.View.SetView(2);
                 first.View.SetDensity(3);
@@ -160,8 +172,8 @@ internal static class SelfTestFilesTabs
                     Check(Math.Abs(first.View.ActualWidth - frame!.ActualWidth) < 1,
                         $"{theme} page reaches both pane edges");
                     double inner = frame.ActualWidth - frame.BorderThickness.Left - frame.BorderThickness.Right;
-                    Check(Math.Abs(top!.ActualWidth - inner) < 1 && Math.Abs(bottom!.ActualWidth - inner) < 1,
-                        $"{theme} top and bottom menu bands span the full page width");
+                    Check(Math.Abs(top!.ActualWidth - inner) < 1, $"{theme} top menu band spans the full page width");
+                    Check(bottom!.Visibility == Visibility.Collapsed, $"{theme} idle page has no bottom status strip");
                     var bitmap = new RenderTargetBitmap((int)workspace.ActualWidth, (int)workspace.ActualHeight, 96, 96, PixelFormats.Pbgra32);
                     bitmap.Render(workspace);
                     var encoder = new PngBitmapEncoder();

@@ -53,10 +53,19 @@ namespace KillerShot.Files
             ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".webp"
         };
 
+        // Videos get the frame Windows' thumbnail handler makes, the same poster the library shows
+        // for a recording. A type with no handler installed falls back to its file-type icon.
+        private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".mp4", ".m4v", ".mov", ".wmv", ".avi", ".mkv", ".webm"
+        };
+
+        private static bool HasThumbnail(string ext) => ImageExtensions.Contains(ext) || VideoExtensions.Contains(ext);
+
         /// <summary>True when For() answers this path with a real picture thumbnail rather than a
         /// shared file-type icon - the tiles use it to decide which art casts a drop shadow.</summary>
         public static bool IsPhoto(string filePath, bool isDirectory)
-            => !isDirectory && ImageExtensions.Contains(System.IO.Path.GetExtension(filePath));
+            => !isDirectory && HasThumbnail(System.IO.Path.GetExtension(filePath));
 
         // ── Brand icon pack (brand\icons, normalized into Resources\icons) ───────────────
         //
@@ -225,7 +234,7 @@ namespace KillerShot.Files
             try
             {
                 string? full = null;
-                try { if (!isDirectory && ImageExtensions.Contains(Path.GetExtension(path))) full = Path.GetFullPath(path); }
+                try { if (!isDirectory && HasThumbnail(Path.GetExtension(path))) full = Path.GetFullPath(path); }
                 catch { }
                 if (full != null)
                 {
@@ -317,7 +326,7 @@ namespace KillerShot.Files
             // the write time so an edited image's thumbnail refreshes instead of showing a stale
             // cached decode.
             //
-            if (!skipThumbnail && !isDirectory && ImageExtensions.Contains(ext))
+            if (!skipThumbnail && !isDirectory && HasThumbnail(ext))
             {
                 var thumb = ImageThumbnail(filePath, px, shil);
                 if (thumb != null) return thumb;
@@ -405,7 +414,9 @@ namespace KillerShot.Files
                     return hit.Value.Image;
                 }
             }
-            ImageSource? image = ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
+            ImageSource? image = VideoExtensions.Contains(Path.GetExtension(filePath))
+                ? Services.VideoCaptures.Poster(filePath, Math.Max(px, 32))
+                : ImageOrientation.Load(filePath, px, ignoreColorProfile: true);
             long currentTimestamp;
             try { currentTimestamp = File.GetLastWriteTimeUtc(filePath).Ticks; }
             catch { return null; }

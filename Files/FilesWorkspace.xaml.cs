@@ -301,18 +301,17 @@ public partial class FilesWorkspace : UserControl, IDisposable
         SaveSession();
         return tab;
     }
-    /// <summary>Shows the collection page, pointed at this collection.</summary>
-    public void ShowCollection(string source)
+    /// <summary>Points the collection page at this collection without switching to it, so a
+    /// folder tab stays in front until the footer changes the view.</summary>
+    public void SetCollection(string source)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_library.Source != source)
-        {
-            _library.Source = source;
-            _library.Search = "";
-            _library.ScrollOffset = 0;
-        }
-        SelectCore(_library);
-        SaveSession();
+        if (_library.Source == source) return;
+        _library.Source = source;
+        _library.Search = "";
+        _library.ScrollOffset = 0;
+        _library.Notify();
+        QueueSave();
     }
     /// <summary>The most recently active folder tab, so F9 goes back to the tab it left
     /// instead of opening another.</summary>

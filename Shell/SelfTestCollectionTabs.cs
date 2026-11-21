@@ -168,10 +168,16 @@ internal static class SelfTestCollectionTabs
                 await workspace.SelectTab(folderTab);
                 await library.FilesNavigation;
                 library.SetSource(secondSource);
+                await library.FilesNavigation;
                 await Settle(library);
-                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == workspace.LibraryTab && workspace.LibraryTab.Source == secondSource,
-                    "picking a collection over a folder tab brings the collection page back instead of opening a tab");
-                Check(library.CurrentSource == secondSource && !library.FilesActive, "the library shows the picked collection");
+                Check(workspace.Tabs.Count == 2 && workspace.ActiveTab == folderTab && library.FilesActive && library.CurrentView == "files",
+                    "picking a collection in Files keeps the view on the folder tab");
+                Check(workspace.ActiveView!.Navigation.CurrentFolder == CaptureSettings.OutputFolder,
+                    "an album collection picked in Files opens the capture folder");
+                Check(workspace.LibraryTab.Source == secondSource, "the collection page takes the picked collection for later");
+                library.SetView("grid");
+                await Settle(library);
+                Check(library.CurrentSource == secondSource && !library.FilesActive, "the footer's capture view shows the picked collection");
 
                 workspace.SaveSession();
                 string session = Settings.Get("Files.Tabs") ?? "";
@@ -197,7 +203,17 @@ internal static class SelfTestCollectionTabs
                 }
                 ThemeManager.Apply(Theme.Dark);
 
-                // A deleted collection sends the collection page back to every capture.
+                // The mouse's side buttons and the keyboard's browser keys read as back and forward.
+                Check(MainWindow.MouseHistoryDirection(0x020C, new IntPtr(1 << 16), IntPtr.Zero) == -1
+                    && MainWindow.MouseHistoryDirection(0x020C, new IntPtr(2 << 16), IntPtr.Zero) == 1, "XButton1 is back and XButton2 is forward");
+                Check(MainWindow.MouseHistoryDirection(0x0319, IntPtr.Zero, new IntPtr(1 << 16)) == -1
+                    && MainWindow.MouseHistoryDirection(0x0319, IntPtr.Zero, new IntPtr(2 << 16)) == 1
+                    && MainWindow.MouseHistoryDirection(0x0319, IntPtr.Zero, new IntPtr(8 << 16)) == 0, "browser back and forward commands map, others do not");
+
+                // A deleted collection sends the collection page back to every capture. The capture
+                // listing does that, so it is checked in the capture view.
+                library.SetView("grid");
+                await Settle(library);
                 long gone = CaptureLibrary.CreateCollection("Doomed collection");
                 library.SetSource("c" + gone.ToString(CultureInfo.InvariantCulture));
                 await Settle(library);

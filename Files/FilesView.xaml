@@ -97,7 +97,22 @@
     </UserControl.Resources>
     <local:PickerBorder x:Name="PaneFrame" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource PaneEdgeBrush}" BorderThickness="{DynamicResource PaneEdgeSideThickness}" CornerRadius="{DynamicResource PanelCornerRadius}" Effect="{DynamicResource PaneShadowEffect}">
         <DockPanel PreviewKeyDown="Files_KeyDown">
+            <!-- Shown only while it has something to say: a file operation's progress and Cancel,
+                 or a result or error line. The footer already carries the item counts. -->
             <DockPanel x:Name="StatusBar" DockPanel.Dock="Bottom" LastChildFill="True" MinHeight="24" Background="{DynamicResource MenuBackgroundBrush}">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Text, ElementName=CommandStatus}" Value="" />
+                                    <Condition Binding="{Binding Visibility, ElementName=CancelOperationButton}" Value="Collapsed" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
                 <Button x:Name="CancelOperationButton" DockPanel.Dock="Right" Visibility="Collapsed" Content="{DynamicResource Str_Btn_Cancel}" Style="{StaticResource SurfaceButton}" Click="CancelOperation_Click" />
                 <TextBlock x:Name="CommandStatus" FontFamily="{DynamicResource UiFont}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="8,2" />
             </DockPanel>

@@ -87,23 +87,17 @@ namespace KillerShot.Shell
         public event Action<string>? CountChanged;
         private string _source = "all";
 
-        /// <summary>The collection the sidebar picked. The collection page is pointed at it, and a
-        /// folder tab goes to a linked folder's own folder. A folder tab cannot show an album
-        /// collection, so that brings the collection page back.</summary>
+        /// <summary>The collection the sidebar picked. The collection page is pointed at it. Only
+        /// the footer changes the view, so in Files the folder tab stays in front: a linked folder
+        /// opens its own folder and an album collection opens the capture folder.</summary>
         public void SetSource(string source)
         {
             if (FilesActive)
             {
-                if (FolderCaptures.IsSource(source))
-                {
-                    _source = source;
-                    NavigateFilesSource();
-                    return;
-                }
-                if (_source == source && FileBrowser.LibraryTab.Source == source)
-                    return;
+                if (_source == source) return;
                 _source = source;
-                FileBrowser.ShowCollection(source);
+                FileBrowser.SetCollection(source);
+                NavigateFilesSource();
                 return;
             }
             if (_source == source && FileBrowser.ActiveTab.Source == source) return;

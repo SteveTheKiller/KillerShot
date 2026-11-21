@@ -51,6 +51,15 @@ namespace KillerShot.Shell
                 handled = true;
                 return IntPtr.Zero;
             }
+            // The mouse's back and forward buttons (MouseHistory.cs). Handled either way, so a
+            // side-button release never also comes back as WM_APPCOMMAND.
+            if (MouseHistoryDirection(msg, wParam, lParam) is int direction and not 0)
+            {
+                HistoryStep(direction);
+                handled = true;
+                return new IntPtr(1);   // TRUE: both messages ask for it when processed
+
+            }
             return IntPtr.Zero;
         }
 
