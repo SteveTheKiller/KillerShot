@@ -1383,13 +1383,16 @@
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListBoxItem">
-                                                        <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter/>
-                                                        </Border>
+                                                        <Grid>
+                                                            <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}"/>
+                                                            <!-- Grain over the hover fill, under the album's name, as on menu rows and card tiles. -->
+                                                            <Border x:Name="AlbumRowGrain" IsHitTestVisible="False" Visibility="Collapsed" CornerRadius="{DynamicResource SmallCornerRadius}" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                                            <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                                                        </Grid>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
                                                                 <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                                                <Setter TargetName="AlbumRowGrain" Property="Visibility" Value="Visible"/>
                                                             </Trigger>
                                                             <Trigger Property="IsSelected" Value="True">
                                                                 <Setter TargetName="bg" Property="Background" Value="{DynamicResource DatabaseSelectionBrush}"/>

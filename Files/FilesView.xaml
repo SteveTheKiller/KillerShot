@@ -286,12 +286,16 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}" Padding="8,4,10,4">
-                                                    <ContentPresenter />
-                                                </Border>
+                                                <Grid>
+                                                    <Border x:Name="bg" Background="Transparent" CornerRadius="{DynamicResource SmallCornerRadius}" />
+                                                    <!-- Grain over the hover fill, under the row's words, as on menu rows and card tiles. -->
+                                                    <Border x:Name="ExportRowGrain" IsHitTestVisible="False" Visibility="Collapsed" CornerRadius="{DynamicResource SmallCornerRadius}" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
+                                                    <ContentPresenter Margin="8,4,10,4" />
+                                                </Grid>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}" />
+                                                        <Setter TargetName="ExportRowGrain" Property="Visibility" Value="Visible" />
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>

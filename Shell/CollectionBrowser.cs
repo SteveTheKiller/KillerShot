@@ -171,12 +171,15 @@ internal sealed class CollectionBrowser : ListBox
                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
                 <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}"/>
                 <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="row" Background="Transparent"
-                            CornerRadius="{DynamicResource ControlCornerRadius}" Padding="{TemplateBinding Padding}">
-                        <ContentPresenter/>
-                    </Border>
+                    <Grid>
+                        <Border x:Name="row" Background="Transparent" CornerRadius="{DynamicResource ControlCornerRadius}"/>
+                        <!-- Grain over the hover fill, under the row's content, as on menu rows and card tiles. -->
+                        <Border x:Name="RowGrain" IsHitTestVisible="False" Visibility="Collapsed" CornerRadius="{DynamicResource ControlCornerRadius}"
+                                Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                        <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/><Setter TargetName="RowGrain" Property="Visibility" Value="Visible"/></Trigger>
                         <Trigger Property="c:DropHighlight.IsActive" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
                         <Trigger Property="IsSelected" Value="True"><Setter TargetName="row" Property="Background" Value="{DynamicResource SelectionBg}"/><Setter Property="Foreground" Value="{DynamicResource SelectionFg}"/></Trigger>
                     </ControlTemplate.Triggers>
