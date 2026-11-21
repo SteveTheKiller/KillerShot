@@ -12,6 +12,8 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - Recording exports stay tied to their album, and failed cleanup identifies the original unencrypted file that remains.
 
 ### Fixed
+- Theme and language menu labels line up with their radio buttons and check boxes again, instead of sitting a pixel high.
+- The theme and language menus keep 8px between their rows and the card edge on every side, and the language menu's divider has the same gap on each side.
 - Update downloads verify again. The updater could not read the release checksum list and refused every release, and once that was fixed it would still have refused the release exe because a single-file build has no assembly header to read the version from. KillerShot 1.0.0 to 1.1.1 cannot update themselves, so those copies need 1.2.0 downloaded by hand once.
 - An all-users installation applies automatic updates again. The elevated update step opened a second copy of the app as administrator instead of installing, and the verified download was thrown away once that copy closed.
 - A per-user or portable update that fails now reopens KillerShot instead of leaving it closed, including when antivirus or a locked-down PowerShell stops the update helper from loading, and a published copy that fails its final check is swapped back for the previous version and never started.

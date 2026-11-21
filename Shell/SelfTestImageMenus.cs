@@ -379,6 +379,7 @@ internal static class SelfTestImageMenus
             if (!themeMenu.IsOpen || themeMenu.Placement != System.Windows.Controls.Primitives.PlacementMode.Custom
                 || ReferenceEquals(themeMenu.PlacementTarget, themeButton))
                 throw new InvalidOperationException("The theme flyout does not open in the content pane's corner.");
+            report.Add("Theme flyout inset: " + CheckThemeMenuInset(themeMenu) + " PASS");
             themeMenu.IsOpen = false;
             FrameworkElement[] expectedRail = [dockButton,
                 (Button)window.FindName("LibrarySearchButton"),
@@ -502,6 +503,37 @@ internal static class SelfTestImageMenus
             yield return item;
             if (item is ItemsControl child) foreach (object nested in Descendants(child)) yield return nested;
         }
+    }
+
+    // Family rule: the hover rows, the accent pills, the first row and Film Grain sit 8px from the
+    // theme card's outer edge on every side. Measured from the live menu's layout.
+    private static string CheckThemeMenuInset(ContextMenu menu)
+    {
+        menu.ApplyTemplate(); menu.UpdateLayout();
+        if (menu.ActualWidth == 0)
+        {
+            menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            menu.Arrange(new Rect(menu.DesiredSize)); menu.UpdateLayout();
+        }
+        var card = Visuals(menu).OfType<FrameworkElement>().First(e => e.Margin == new Thickness(22, 18, 22, 26));
+        Rect Bounds(FrameworkElement e) => e.TransformToAncestor(card).TransformBounds(new Rect(0, 0, e.ActualWidth, e.ActualHeight));
+        var parts = new List<Rect>(); int pills = 0;
+        foreach (var control in Visuals(menu).OfType<System.Windows.Controls.Primitives.ToggleButton>())
+        {
+            if (!control.IsVisible || control.ActualWidth == 0) continue;
+            if (control.Template?.FindName("bd", control) is FrameworkElement hover) parts.Add(Bounds(hover));
+            else if (control is RadioButton { GroupName: "ThemeAccentGroup" }) { parts.Add(Bounds(control)); pills++; }
+        }
+        double w = card.ActualWidth, h = card.ActualHeight;
+        double left = parts.Min(r => r.Left), top = parts.Min(r => r.Top);
+        double right = w - parts.Max(r => r.Right), bottom = h - parts.Max(r => r.Bottom);
+        // Layout rounding snaps to device pixels, so at a fractional scale an edge can land one
+        // device pixel off (8.67 at 150%); anything more is a real layout error.
+        double pixel = 1 / VisualTreeHelper.GetDpi(card).DpiScaleX;
+        string measured = $"L{left:0.##} T{top:0.##} R{right:0.##} B{bottom:0.##} at {1 / pixel:0.##}x, {pills} pills";
+        if (pills == 0 || new[] { left, top, right, bottom }.Any(gap => Math.Abs(gap - 8) > pixel + 0.01))
+            throw new InvalidOperationException("The theme flyout's rows and pills must sit 8px from every card edge: " + measured + ".");
+        return measured;
     }
 
     private static IEnumerable<DependencyObject> Visuals(DependencyObject root)

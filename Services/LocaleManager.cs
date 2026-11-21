@@ -45,9 +45,10 @@ namespace KillerShot.Services
         private static ResourceDictionary? _override;
 
         /// <summary>Localized string for a Str_ key. Falls back to the key itself when it is
-        /// missing, so a translation gap shows up as itself instead of as blank UI.</summary>
+        /// missing, so a translation gap shows up as itself instead of as blank UI. With no
+        /// Application at all (a headless export), every key falls back the same way.</summary>
         public static string Loc(string key) =>
-            Application.Current.TryFindResource(key) as string ?? key;
+            Application.Current?.TryFindResource(key) as string ?? key;
 
         // ---- Translator test mode (KillerPDF #211) ----
         // --lang-file <path> reads an external translation file into the override slot, winning
@@ -83,6 +84,17 @@ namespace KillerShot.Services
             }
             ApplyInternal(_current);
         }
+
+        /// <summary>Setup and uninstall: apply the saved language, else the Windows display
+        /// language, without saving a choice. The first normal start saves it.</summary>
+        internal static void InitializeForSetup()
+        {
+            _current = SetupLocale(ThemeManager.GetSetting("Locale"), CultureInfo.CurrentUICulture);
+            ApplyInternal(_current);
+        }
+
+        internal static Locale SetupLocale(string? saved, CultureInfo culture)
+            => ParseSaved(saved) ?? LocaleForCulture(culture);
 
         /// <summary>
         /// The saved "Locale" setting, including names an app stored before the enum was unified:
@@ -216,6 +228,10 @@ namespace KillerShot.Services
                 CultureInfo.DefaultThreadCurrentUICulture = culture;
             }
 
+            // The UI fonts follow the interface language even while the thread cultures keep the
+            // Windows region, so Chinese and Japanese text draws in that language's face.
+            ThemeManager.SetUiLanguage(CultureFor(locale).Name);
+
             var merged = Application.Current.Resources.MergedDictionaries;
             LanguageTag = "en-US";
 
@@ -231,9 +247,7 @@ namespace KillerShot.Services
                 // Unreadable for a moment (mid-save): the last good file stays applied, as it
                 // does on a live reload, and the watcher picks up the finished save.
                 if (_lastExternal is not null) { SetOverride(_lastExternal); EnsureWatcher(); return; }
-                if (!_externalLoadedOnce)
-                    MessageBox.Show($"Could not load the translation file:\n{ExternalFile}\n\nCheck the path and the file's XML, then start {AppInfo.DisplayName} again.",
-                                    $"{AppInfo.DisplayName} --lang-file", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (!_externalLoadedOnce) ShowExternalFailure();
                 // Fall through to the normal locale so the app still comes up usable.
             }
 
@@ -280,6 +294,23 @@ namespace KillerShot.Services
                 if (merged[i].Source?.OriginalString.EndsWith("Strings/en-US.xaml", StringComparison.OrdinalIgnoreCase) == true)
                     return i;
             return 2;
+        }
+
+        /// <summary>The family dialog, not a raw MessageBox, for a --lang-file that will not load.
+        /// It can come up during startup before any app window exists, so it carries the installer
+        /// theme, and the app is kept from shutting down when this, its only window, closes.</summary>
+        private static void ShowExternalFailure()
+        {
+            var app = Application.Current;
+            var mode = app?.ShutdownMode ?? ShutdownMode.OnLastWindowClose;
+            if (app != null) app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            try
+            {
+                new Controls.ConfirmDialog("Could not load the translation file",
+                    $"{ExternalFile}\n\nCheck the path and the file's XML, then start {AppInfo.DisplayName} again.",
+                    "OK", installer: true, notice: true).ShowDialog();
+            }
+            finally { if (app != null) app.ShutdownMode = mode; }
         }
 
         /// <summary>Loads <see cref="ExternalFile"/> into the override slot. False on any parse or
