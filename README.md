@@ -2,39 +2,34 @@
   <a href="https://killershot.net"><img src="docs/banner.png" height="180" alt="KillerShot - Encrypted Screenshot Album for Windows"></a>
 </p>
 
-**Encrypted Screenshot Album for Windows.** KillerShot is a free and open-source screenshot and screen recording tool that copies exactly what you select, pixel for pixel, with an editor for marking it up and a recorder for MP4 and GIF. Captures go straight to the clipboard, so a picture is ready to paste before you let go of the mouse.
+**Encrypted Screenshot Album for Windows.** KillerShot is a free, open-source screenshot and screen recording tool. It captures exactly what you select, pixel for pixel, keeps every capture in an encrypted album you can search, and puts the picture on the clipboard before you let go of the mouse.
 
-[Download KillerShot.exe](https://github.com/SteveTheKiller/KillerShot/releases/latest/download/KillerShot.exe) from the latest release. It runs portable, or installs per user from its footer badge, or machine-wide with `KillerShot.exe /silent` from an elevated prompt.
+[Download KillerShot.exe](https://github.com/SteveTheKiller/KillerShot/releases/latest/download/KillerShot.exe) from the latest release. It runs portable, installs per user or for everyone from its footer badge, or installs machine-wide with `KillerShot.exe /silent` from an elevated prompt.
 
-How-tos and every shortcut are on the [help page](https://killershot.net/help.html). The capture and recording pipelines, DPI handling and encoder limits are on the [technical page](https://killershot.net/technical.html).
+How-tos and every shortcut are on the [help page](https://killershot.net/help.html). The capture and recording pipelines, album encryption, DPI handling and encoder limits are on the [technical page](https://killershot.net/technical.html).
 
 ## Features
 
-- Print Screen taken over: plain Print Screen starts a region rectangle, Alt+Print Screen takes the active window, Ctrl+Print Screen the monitor under the pointer, Shift+Print Screen every monitor, and Ctrl+Shift+Print Screen starts or stops a recording. Every shortcut can be changed or turned off
-- Region capture over a frozen copy of the whole desktop, so open menus and tooltips stay in the picture and the selection overlay never does. Drag a rectangle across monitors with different scaling; Window mode handles click-to-pick
-- Window capture through Windows Graphics Capture, so a partly covered window still comes out whole, with its rounded corners filled from the desktop behind it
-- Every capture goes to the clipboard as PNG and as a standard bitmap, and can also save straight into a folder as PNG or JPEG, named from a pattern with the date, time, mode and size
-- An editor with pen, highlighter, arrow, rectangle, ellipse, text, redaction and crop, plus select and move, 50 steps of undo and redo, and export at the capture's exact pixel size
-- Redaction is an opaque block, not a blur, so nothing hidden rides along in the saved file or the clipboard copy
-- Screen recording of a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. The recording frame and the Pause, Stop and Discard bar never appear in the video
-- MP4 uses the H.264 and AAC encoders built into Windows. Recordings larger than 4096 x 2304 are scaled down to fit the encoder; GIF keeps the full size
-- A GIF encoder written for KillerShot that stores only what changed in each frame, with its own palette, and lets you set the size, color count, frame rate and looping
-- Every capture is kept in an encrypted library (SQLCipher, AES-256) that opens with your Windows account, or with a password you set. Choose a collection in the sidebar, with Stack, Tiny grid, Mini carousel or Scattered pile previews. Browse its photos in a Single carousel, Multiple carousels, Grid or Timeline, grouped by date or collection, and search window titles, program names, notes and image text. Keep everything, or only the last captures or days. Windows' Screenshots folder shows as a live collection beside your own
-- Add folder collection in the collection menu links any local directory, mapped drive, or network share, including subfolders. Images remain in their original locations. Background scans check for changes about every 10 seconds and retry unavailable folders. Remove folder collection removes only the saved link
-- Files (F9) browses folders in KillerShell-style tabs with list, icons and details layouts, filtering, sorting and live updates. Each tab keeps its history, selection, scroll position and display options across library switches and restarts. Ctrl+T opens a tab, Ctrl+W closes it, and Ctrl+Tab or Ctrl+Shift+Tab switches tabs. Drag tabs to reorder them. Rename, copy, move and recycle files, drag them between folders, or open images in the editor. Files remain in their original folders
-- Collection navigation stays on the left or right beside both the album and editor. The selected collection's photo carousel sits above or below the large open image. Alt+Shift+Left or Right moves the sidebar; Alt+Shift+Up or Down moves the carousel. Each has its own size and collapse state
-- Drag image files into the album to import them, or into the editor to open them. Drag photos out as full-size PNG copies with a small preview under the grab cursor. In a carousel, drag across its scrolling direction to pick up a photo; in the editor, use Select on the image
-- The capture can be printed from the editor or the tray
-- A headless command line for scripts and scheduled tasks, with JSON output and dependable exit codes; run `KillerShot.exe --cli help` for the commands
-- Works with KillerMCP, so connected agents can list monitors and windows, take screenshots and recordings, and open an image in the editor
-- Lives in the notification area and can start with Windows
-- Fourteen themes with Dark and Teal as the default, eight accents on Dark, Light, Black, 98SE and Trash Polka, Film Grain on or off, and 20 languages. F1 shows every shortcut as a list or a keyboard map
-- Private by design: no account, no analytics, no update check, and nothing uploaded
+- **Print Screen, taken over.** Print Screen captures a region, Alt+Print Screen the active window, Ctrl+Print Screen the monitor under the pointer and Shift+Print Screen every monitor. Ctrl+Shift+Print Screen starts or stops a recording, and every shortcut can be changed or turned off.
+- **A frozen desktop.** Region capture works over a still copy of the whole desktop, so open menus and tooltips stay in the picture and the selection overlay never does. Covered windows come out whole through Windows Graphics Capture.
+- **An encrypted album.** Every capture goes into a SQLCipher (AES-256) library that opens with your Windows account or a password you set. Browse it as shelves of carousels, a grid or a timeline, by collection or by date, and search window titles, program names, notes and the text inside each picture.
+- **Files (F9).** Browse folders in tabs with list, icons and details views, the way KillerShell does. Rename, copy, move and recycle files, star your folders, export a listing as CSV or HTML, and open images in the editor.
+- **Recordings in the library.** Record a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. Keep recordings as plain video files or move them into the encrypted album.
+- **An editor built for screenshots.** It has pen, highlighter, arrow, line, rectangle, ellipse, fill, text, numbered steps, callouts, redaction and crop, with 50 steps of undo. Exports keep the capture's exact pixel size.
+- **Redaction that sticks.** Redaction is an opaque block, not a blur. Auto redact finds email addresses, card numbers, phone numbers, US Social Security numbers, IP addresses, keys and passwords, and can cover them on every new capture before it is saved or copied.
+- **Text and QR reading.** Copy the text out of a picture or a dragged region with Windows text recognition, and read QR codes with local checks for disguised links. Nothing is sent anywhere.
+- **Scrolling capture.** Pick a region, scroll the page yourself, and KillerShot stitches the result, keeping sticky headers once.
+- **Linked folders.** Link any local folder, mapped drive or network share as a collection. The pictures stay where they are, and Windows' Screenshots folder shows as a live collection beside your own.
+- **Make PDF.** With KillerPDF installed, a folder's or a collection's pictures become one PDF from its right-click card.
+- **Clipboard and files.** Every capture goes to the clipboard as PNG and as a standard bitmap, and can save to a folder as PNG or JPEG, named from a pattern.
+- **Scripts and agents.** A headless command line with JSON output and dependable exit codes covers capture, recording, the album, text and QR reading. Run `KillerShot.exe --help` for the commands. KillerMCP gives connected agents the same tools.
+- **Fourteen themes.** Dark with Teal is the default, and the new Trash Polka puts a tattoo-style ink background behind everything in your accent color. Eight accents, Film Grain on or off, and 20 languages. F1 shows every shortcut as a list or a keyboard map.
+- **Private by design.** There's no account, no analytics and nothing uploaded. The only network request is the update check against GitHub releases, which you can turn off in About.
 
 ## Requirements
 
 - Windows 11 (build 22000 or later), x64
-- Running a build from source needs the .NET 10 Desktop Runtime
+- The `KillerShot.exe` download needs the .NET 10 Desktop Runtime. The Microsoft Store copy carries its own runtime.
 
 ## Build from source
 
@@ -45,13 +40,13 @@ dotnet build KillerShot.csproj -c Release
 dotnet build KillerShot.Cli\KillerShot.Cli.csproj -c Release
 ```
 
-Requires the .NET 10 SDK. `KillerShot.csproj` builds the app, which also runs the command line behind `--cli`. `KillerShot.Cli.csproj` builds `KillerShot.Cli.exe`, a console entry point for the same commands so their output shows in a terminal without redirection.
+Building requires the .NET 10 SDK. `KillerShot.csproj` builds the app, which also runs the command line. `KillerShot.Cli.csproj` builds `KillerShot.Cli.exe`, a console entry point for the same commands, so their output shows in a terminal without redirection.
 
-`brand/` holds the working artwork and is not tracked. Everything the app consumes is generated into `Resources/`, which is tracked, so a fresh clone builds without it.
+`brand/` holds the working artwork and is not tracked. Everything the app uses is generated into `Resources/`, which is tracked, so a fresh clone builds without it.
 
 ## Command line in scripts
 
-`KillerShot.exe` is a Windows app, so a PowerShell or Command Prompt line does not wait for it and `$LASTEXITCODE` does not hold its result. Start it and wait for the exit code instead:
+`KillerShot.exe` is a Windows app, so PowerShell and Command Prompt don't wait for it, and `$LASTEXITCODE` doesn't hold its result. Start it and wait for the exit code instead:
 
 ```powershell
 $run = Start-Process KillerShot.exe -ArgumentList '--cli', 'capture', '--monitor', '1', '--json' -Wait -PassThru -NoNewWindow
@@ -62,7 +57,9 @@ Exit code `0` means success, `1` a failed command and `2` a usage error. Add `-R
 
 ## Uninstalling from scripts
 
-Run `KillerShot.exe /uninstall-silent` from the installed folder. Exit code `997` means removal is pending and finishes after the app closes. It is an accepted handoff, not completed removal. The command prints the operation folder containing `status.json`; check that receipt for `Completed` and exit code `0`, or `Failed` and its error. Albums and captures are kept. Deployment manifests must include `997` in their accepted installer success codes when using this deferred uninstall command.
+Run `KillerShot.exe /uninstall-silent` from the installed folder. Albums and captures are kept.
+
+Exit code `997` means removal is pending and finishes after the app closes. It's an accepted handoff, not a finished removal. The command prints the operation folder that holds `status.json`, which reads `Completed` with exit code `0`, or `Failed` with its error. Deployment manifests that use this command must accept `997` as a success code.
 
 ## Translations
 
@@ -74,12 +71,12 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-GPLv3. See [LICENSE.txt](LICENSE.txt). If you fork, modify, or redistribute KillerShot, your version must also be released under GPLv3 with source available.
+GPLv3. See [LICENSE.txt](LICENSE.txt). If you fork, modify or redistribute KillerShot, your version must also be released under GPLv3 with its source available.
 
-The library uses SQLCipher, built from upstream source as `third_party/sqlcipher/e_sqlcipher.dll` (see the README there), under its BSD-style license.
+The album uses SQLCipher, built from upstream source as `third_party/sqlcipher/e_sqlcipher.dll` (see the README there), under its BSD-style license.
 
 Bundled fonts keep their own licenses:
 
-- Killer Sans and Killer Sans UI - SIL OFL 1.1 ([license](Fonts/KillerSans-OFL.txt))
-- Lacquer - SIL OFL 1.1 ([license](Fonts/Lacquer-OFL.txt))
+- Killer Sans and Killer Sans UI: SIL OFL 1.1 ([license](Fonts/KillerSans-OFL.txt))
+- Lacquer: SIL OFL 1.1 ([license](Fonts/Lacquer-OFL.txt))
 - Punktype ([license](Fonts/Punktype-LICENSE.txt))

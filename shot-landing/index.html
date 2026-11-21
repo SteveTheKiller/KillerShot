@@ -274,8 +274,11 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 (function () {
   // Actual app renders of a demo album filled from Killer Tools screenshots, screened for private text.
   // Each localized description supplies alt text, a tooltip and the lightbox caption.
-  var screenshots = ['shot_shelves', 'shot_grid_collection', 'shot_docked', 'shot_grid', 'shot_timeline',
-    'shot_editor', 'shot_files_icons', 'shot_files_details', 'shot_settings', 'shot_classic'];
+  // Strip order, top first: each entry pairs a description key with its file in screenshots/.
+  // Trash Polka leads because 1.2.0 features the theme.
+  var screenshots = [['shot_settings', '09'], ['shot_shelves', '01'], ['shot_grid_collection', '02'],
+    ['shot_docked', '03'], ['shot_grid', '04'], ['shot_timeline', '05'], ['shot_editor', '06'],
+    ['shot_files_icons', '07'], ['shot_files_details', '08'], ['shot_classic', '10']];
   var sbThumbs = document.getElementById('sbThumbs');
   var empty = sbThumbs.querySelector('.sb-empty');
   var lightbox = document.getElementById('lightbox');
@@ -285,9 +288,9 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
   var lastTrigger = null;
   var background = [];
 
-  function file(n) { return 'screenshots/' + (n < 10 ? '0' : '') + n + '.jpg'; }
+  function file(n) { return 'screenshots/' + screenshots[n - 1][1] + '.jpg'; }
   function descriptionFor(n) {
-    var caption = document.querySelector('[data-i18n="' + screenshots[n - 1] + '"]');
+    var caption = document.querySelector('[data-i18n="' + screenshots[n - 1][0] + '"]');
     return caption ? caption.textContent : '';
   }
   function refreshDescriptions() {
@@ -340,7 +343,7 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
     if (e.key === 'Escape') { closeLightbox(); e.preventDefault(); }
   });
 
-  // Probe each still before adding its thumbnail, in numeric order whichever loads first,
+  // Probe each still before adding its thumbnail, in strip order whichever loads first,
   // so a missing file leaves the rest of the strip usable.
   screenshots.forEach(function (_, i) {
     var n = i + 1, img = new Image();
