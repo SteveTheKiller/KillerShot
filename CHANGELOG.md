@@ -97,7 +97,7 @@ KillerShot 1.2.0 adds folder browsing, auto redact, Make PDF and the Trash Polka
 - Keyboard focus cues respect the theme, Windows contrast refreshes are coalesced and restore frame colors, and picker selections keep text and icons shadow-free.
 - On 98SE, the window and dialog close buttons draw the Windows 98 pixel X instead of a smoothed font glyph.
 - On a narrow window with the portable badge showing, the version number no longer runs into the corner grip once the copyright hides to make room.
-- In a short window, the theme and language menus stay inside the window and scroll. The theme menu used to run past the window's bottom edge.
+- In a short window, the theme and language menus show every row inside the window, rising above the content pane as far as they need. The theme menu used to run past the window's bottom edge, and they scroll only at the smallest window size.
 
 ### Changed
 

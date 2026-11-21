@@ -89,10 +89,13 @@ internal static class SelfTestFlyoutSide
             // A short window, at 100% and a larger app size: the big menus stay inside the pane
             // and scroll, instead of running past the bottom of the window.
             window.TestNavigationDock.DockTo(DockSide.Left);
-            foreach (double scale in new[] { 1.0, 1.2 })
+            // 580 tall: the pane is shorter than the theme menu but the window is not, so the whole
+            // menu shows, its foot in the pane's corner, rising as high as it needs. The minimum
+            // height is the one case with too little window, where it scrolls instead.
+            foreach (var (scale, height) in new[] { (1.0, 580.0), (1.0, 0.0), (1.2, 0.0) })
             {
                 window.ApplyAppScale(scale);
-                window.Height = window.MinHeight;
+                window.Height = height > 0 ? height : window.MinHeight;
                 window.UpdateLayout();
                 await Task.Delay(400);
                 await PaneSettled(window, pane);
@@ -107,14 +110,20 @@ internal static class SelfTestFlyoutSide
                     double top = card.PointToScreen(new Point()).Y, bottom = card.PointToScreen(new Point(0, card.ActualHeight)).Y;
                     double paneTop = pane.PointToScreen(new Point()).Y, paneBottom = pane.PointToScreen(new Point(0, pane.ActualHeight)).Y;
                     var scroll = Descendants(card).OfType<ScrollViewer>().First();
-                    report.Add($"short window {scale:0.##} {menuName}: card {top:0}-{bottom:0}, pane {paneTop:0}-{paneBottom:0}, scrollable {scroll.ScrollableHeight:0.#}");
+                    report.Add($"window {window.ActualHeight:0} at {scale:0.##} {menuName}: card {top:0}-{bottom:0}, pane {paneTop:0}-{paneBottom:0}, scrollable {scroll.ScrollableHeight:0.#}");
                     Point windowTopLeft = window.PointToScreen(new Point());
                     Point windowBottomRight = window.PointToScreen(new Point(window.ActualWidth, window.ActualHeight));
                     SaveShot(windowTopLeft, windowBottomRight, Path.Combine(folder, $"short-{scale:0.##}-{menuName}.png"));
                     var face = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(menu.ActualWidth), (int)Math.Ceiling(menu.ActualHeight), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
                     face.Render(menu);
                     ImageOutput.Save(face, Path.Combine(folder, $"short-{scale:0.##}-{menuName}-card.png"));
-                    bool fits = top >= paneTop - 1 && bottom <= paneBottom + 1;
+                    var client = (FrameworkElement)window.Content;
+                    double clientTop = client.PointToScreen(new Point()).Y, clientBottom = client.PointToScreen(new Point(0, client.ActualHeight)).Y;
+                    double inset8 = pane.PointToScreen(new Point(0, 8)).Y - paneTop;
+                    bool fits = top >= clientTop - 1 && bottom <= clientBottom + 1
+                        && Math.Abs(bottom - (paneBottom - inset8)) <= 2;
+                    if (height > 0 && scroll.ScrollableHeight > 0)
+                        throw new InvalidOperationException($"{menuName} scrolls in a {height}-tall window that has room for all of it ({top:0}-{bottom:0}, window {clientTop:0}-{clientBottom:0}).");
                     bool reachable = true;
                     if (scroll.ScrollableHeight > 0)
                     {
@@ -126,7 +135,7 @@ internal static class SelfTestFlyoutSide
                     }
                     menu.IsOpen = false;
                     await Task.Delay(100);
-                    if (!fits) throw new InvalidOperationException($"{menuName} runs outside the pane in a short window at {scale:0.##} ({top:0}-{bottom:0} vs {paneTop:0}-{paneBottom:0}).");
+                    if (!fits) throw new InvalidOperationException($"{menuName} must sit in the pane's corner and inside the window at {scale:0.##} ({top:0}-{bottom:0}, pane foot {paneBottom:0}, window {clientTop:0}-{clientBottom:0}).");
                     if (!reachable) throw new InvalidOperationException($"{menuName}'s last row cannot be scrolled into view at {scale:0.##}.");
                 }
             }
