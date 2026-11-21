@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$Output,
-    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value')][string]$Case = 'all'
+    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact')][string]$Case = 'all'
 )
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Output) { throw 'Use a new scratch output folder for each test.' }
@@ -55,6 +55,33 @@ if ($Case -in @('all', 'saved-file')) {
     $bytes = [IO.File]::ReadAllBytes($saved)
     if ($bytes.Length -lt 24 -or [Convert]::ToHexString($bytes[0..7]) -ne '89504E470D0A1A0A' -or [Convert]::ToHexString($bytes[16..23]) -ne '0000000200000002') { throw 'The saved output is not the expected 2x2 PNG.' }
     Write-Output 'PASS: saved partial output exists and has the requested dimensions'
+}
+if ($Case -in @('all', 'redact')) {
+    # Scan every capture covers CLI captures too: the stand-in reader finds an email at 4,4 24x12
+    # and the box is filled magenta, a color the screen under the capture never has.
+    Add-Type -AssemblyName PresentationCore
+    function Get-Pixel([string]$Path, [int]$X, [int]$Y) {
+        $frame = [Windows.Media.Imaging.BitmapFrame]::Create([Uri]::new($Path), [Windows.Media.Imaging.BitmapCreateOptions]::None, [Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+        $bgra = [Windows.Media.Imaging.FormatConvertedBitmap]::new($frame, [Windows.Media.PixelFormats]::Bgra32, $null, 0)
+        $px = [byte[]]::new(4)
+        $bgra.CopyPixels([Windows.Int32Rect]::new($X, $Y, 1, 1), $px, 4, 0)
+        '{0:X2}{1:X2}{2:X2}' -f $px[2], $px[1], $px[0]
+    }
+    $redacted = Join-Path $Output 'redacted.png'
+    Invoke-CaptureCase 'redact-found' 'redact' @('capture', '--mode', 'region', '--rect', '16,16,32,24', '--delay', '0', '--no-shutter', '--no-cursor', '--no-clipboard', '--out', $redacted, '--json') 0 ''
+    $result = Get-Content -LiteralPath (Join-Path $Output 'redact-found\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.redactionChecked -ne $true -or $result.redactions -ne 1) { throw "A CLI capture with Scan every capture on did not report its redaction: $($result | ConvertTo-Json -Compress)" }
+    foreach ($point in @(@(8, 8), @(16, 10), @(26, 14))) {
+        $color = Get-Pixel $redacted $point[0] $point[1]
+        if ($color -ne 'FF00FF') { throw "The saved CLI capture shows $color at $($point -join ',') where the found email should be covered." }
+    }
+    Write-Output 'PASS: CLI capture is redacted before it is saved'
+    $unchecked = Join-Path $Output 'unchecked.png'
+    Invoke-CaptureCase 'redact-failed' 'redact-failed' @('capture', '--mode', 'region', '--rect', '16,16,32,24', '--delay', '0', '--no-shutter', '--no-cursor', '--no-clipboard', '--out', $unchecked, '--json') 0 'not checked for sensitive text'
+    $result = Get-Content -LiteralPath (Join-Path $Output 'redact-failed\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.redactionChecked -ne $false -or $result.redactions -ne 0 -or !(Test-Path -LiteralPath $unchecked -PathType Leaf)) { throw "A CLI capture whose scan failed did not save the original and say so: $($result | ConvertTo-Json -Compress)" }
+    if ((Get-Pixel $unchecked 16 10) -eq 'FF00FF') { throw 'A CLI capture whose scan failed was boxed anyway.' }
+    Write-Output 'PASS: a failed scan saves the original and warns that it was not checked'
 }
 if ($Case -in @('all', 'account')) {
     Invoke-CaptureCase 'account-only' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard', '--json') 0 ''

@@ -199,7 +199,7 @@ internal sealed partial class CaptureController
         if (mode != CaptureMode.Qr && RedactSettings.ScanEveryCapture)
         {
             scanned = new EditorDocument(result, null, taken);
-            int found = await RedactAsync(scanned, result);
+            int found = await RedactBoxes.ScanNewCaptureAsync(scanned, result, ReadWordsAsync);
             if (found > 0) result = scanned.Render();
             // The original still goes out, but it was not checked, so the user hears about it.
             else if (found < 0) _tray.ShowWarning(Loc("Str_Redact_ScanFailedTitle"), Loc("Str_Redact_ScanFailed"));
@@ -216,22 +216,6 @@ internal sealed partial class CaptureController
             return;
         }
         Publish(result, taken, mode, interval, scanned: scanned);
-    }
-
-    /// <summary>Boxes what the redaction scan finds in a new capture: the number of boxes, 0 when it
-    /// finds nothing or Windows cannot read text, and -1 when the scan fails. The document is fresh
-    /// and has no marks yet, so recognition reads the captured picture itself.</summary>
-    private async Task<int> RedactAsync(EditorDocument doc, BitmapSource picture)
-    {
-        var kinds = RedactSettings.Kinds;
-        if (kinds == RedactKinds.None) return 0;
-        try
-        {
-            var lines = await ReadWordsAsync(picture);
-            return lines == null ? 0 : RedactBoxes.AddFound(doc, RedactionFinder.Find(lines, kinds));
-        }
-        // A scan that fails for any reason lets the original out as before; it never loses the capture.
-        catch (Exception error) when (error is not OutOfMemoryException) { return -1; }
     }
 
     /// <summary>Scrolling capture: pick a region, scroll it, and the stitched page is delivered like

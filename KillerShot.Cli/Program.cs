@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using KillerShot.Capture;
+using KillerShot.Editor;
 using KillerShot.Native;
 using KillerShot.Services;
 using KillerShot.Shell;
@@ -32,6 +33,13 @@ public static class Program
     internal const int ExitFailed = 1;
     internal const int ExitUsage = 2;
     internal const int ExitCancelled = 3;
+
+    /// <summary>Reads the words in a capture for Scan every capture. Self-tests replace it.</summary>
+    internal static Func<BitmapSource, Task<IReadOnlyList<IReadOnlyList<OcrWord>>?>> ReadWordsAsync { get; set; } = TextRecognition.ReadWordsAsync;
+
+    /// <summary>Freezes the desktop for capture; the argument says whether to draw the pointer.
+    /// Self-tests replace it, because a hidden test desktop cannot be copied.</summary>
+    internal static Func<bool, FrozenDesktop> Freeze { get; set; } = FrozenDesktop.Capture;
 
     private static TextWriter Out = Console.Out;
     private static TextWriter Err = Console.Error;
@@ -530,7 +538,7 @@ public static class Program
                 throw new CliException("No capturable window is in front. Pass --window with a handle or title, or --pick.", ExitFailed);
         }
 
-        var frozen = FrozenDesktop.Capture(cursor);
+        var frozen = Freeze(cursor);
         if (shutter) ShutterSound.Play();
         BitmapSource? bmp = null;
         bool usedGraphicsCapture = false;
@@ -585,6 +593,20 @@ public static class Program
 
         var taken = DateTime.Now;
         var warnings = new List<string>();
+        // Scan every capture covers command line captures too, so the scan runs before the
+        // library, the file or the clipboard gets anything. Review first is an editor step and
+        // has no place in a command line capture.
+        int redactions = 0;
+        bool redactionChecked = false;
+        if (RedactSettings.ScanEveryCapture)
+        {
+            var scanned = new EditorDocument(bmp, null, taken);
+            int found = await RedactBoxes.ScanNewCaptureAsync(scanned, bmp, ReadWordsAsync);
+            if (found > 0) bmp = scanned.Render();
+            redactions = Math.Max(found, 0);
+            redactionChecked = found >= 0;
+            if (found < 0) warnings.Add("The redaction scan failed, so the capture was not checked for sensitive text.");
+        }
         long? libraryId = null;
         string? libraryRef = null;
         if (recent)
@@ -638,6 +660,8 @@ public static class Program
                 j.WriteNumber("width", bmp.PixelWidth);
                 j.WriteNumber("height", bmp.PixelHeight);
                 j.WriteBoolean("clipboard", copied);
+                j.WriteBoolean("redactionChecked", redactionChecked);
+                j.WriteNumber("redactions", redactions);
                 if (mode == CaptureMode.Monitor && monitor != null) j.WriteNumber("monitor", MonitorNumber(monitor));
                 if (window != IntPtr.Zero)
                 {

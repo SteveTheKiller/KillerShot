@@ -4,6 +4,9 @@
 
 KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums window as tiles, and fixes how the album's views scroll.
 
+### Security
+- Command line and KillerMCP captures now follow Scan every capture, so found text is boxed before the file, clipboard or album gets the picture. When the scan fails, the original is kept and the command says it was not checked.
+
 ### Fixed
 - Shelves, Grid and Timeline show the edge shadows while more captures lie above or below. The captures also scroll to the pane's edges instead of stopping short of the bottom.
 - A window capture of KillerShot keeps its own dialog when one sits over the window.

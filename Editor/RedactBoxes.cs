@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using KillerShot.Services;
 
 namespace KillerShot.Editor;
@@ -34,5 +35,23 @@ internal static class RedactBoxes
         }
         if (added > 0) doc.Apply(doc.State with { Items = items.ToImmutable() });
         return added;
+    }
+
+    /// <summary>Scan every capture for a new capture, shared by the app and the command line.
+    /// Boxes what the scan finds and returns the number of boxes: 0 when it finds nothing or
+    /// Windows cannot read text, and -1 when the scan fails. The document is fresh and has no
+    /// marks yet, so recognition reads the captured picture itself.</summary>
+    public static async Task<int> ScanNewCaptureAsync(EditorDocument doc, BitmapSource picture,
+        Func<BitmapSource, Task<IReadOnlyList<IReadOnlyList<OcrWord>>?>> readWords)
+    {
+        var kinds = RedactSettings.Kinds;
+        if (kinds == RedactKinds.None) return 0;
+        try
+        {
+            var lines = await readWords(picture);
+            return lines == null ? 0 : AddFound(doc, RedactionFinder.Find(lines, kinds));
+        }
+        // A scan that fails for any reason lets the original out as before; it never loses the capture.
+        catch (Exception error) when (error is not OutOfMemoryException) { return -1; }
     }
 }
