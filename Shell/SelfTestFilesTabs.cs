@@ -159,7 +159,7 @@ internal static class SelfTestFilesTabs
                     await Idle();
                     window.UpdateLayout();
                     var strip = (ItemsControl)workspace.FindName("TabStrip");
-                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 4, $"{theme} renders two tab labels and close buttons");
+                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 2 && Descendants<TextBlock>(strip).Count(label => label.Name == "tabLbl" && label.IsVisible) == 2, $"{theme} renders two tab labels and close buttons");
                     var frame = first.View.FindName("PaneFrame") as Border;
                     var top = first.View.FindName("MenuBars") as FrameworkElement;
                     var bottom = first.View.FindName("StatusBar") as FrameworkElement;

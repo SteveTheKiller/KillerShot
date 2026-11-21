@@ -54,13 +54,7 @@
 <TextBlock x:Name="tabCollectionGlyph" DockPanel.Dock="Left" Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="13" Width="{DynamicResource TabIconSize}" TextAlignment="Center" Margin="{DynamicResource TabIconMargin}" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryBrush}" Visibility="Collapsed"/>
 <Image x:Name="tabFolderIcon" DockPanel.Dock="Left" Width="{DynamicResource TabIconSize}" Height="{DynamicResource TabIconSize}" Stretch="Uniform" Margin="{DynamicResource TabIconMargin}" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Icon}">
 </Image>
-<Button x:Name="tabLbl" Content="{Binding Title}" Style="{StaticResource MenuRowButton}" Padding="2,0" FontFamily="{DynamicResource MonoFont}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalContentAlignment="Left" VerticalAlignment="Center" Click="SelectTab_Click">
-<Button.ContentTemplate>
-<DataTemplate>
-<TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
-</DataTemplate>
-</Button.ContentTemplate>
-</Button>
+<TextBlock x:Name="tabLbl" Text="{Binding Title}" FontFamily="{DynamicResource MonoFont}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" Padding="2,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
 </DockPanel>
 </Grid>
 </kc:TabSurfaceBorder>

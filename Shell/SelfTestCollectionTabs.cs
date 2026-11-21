@@ -180,7 +180,7 @@ internal static class SelfTestCollectionTabs
                     await Idle();
                     window.UpdateLayout();
                     var strip = (ItemsControl)workspace.FindName("TabStrip");
-                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 6, $"{theme} renders three tab labels and close buttons");
+                    Check(Descendants<Button>(strip).Count(button => button.IsVisible) == 3 && Descendants<TextBlock>(strip).Count(label => label.Name == "tabLbl" && label.IsVisible) == 3, $"{theme} renders three tab labels and close buttons");
                     var bitmap = new RenderTargetBitmap((int)library.ActualWidth, (int)library.ActualHeight, 96, 96, PixelFormats.Pbgra32);
                     bitmap.Render(library);
                     var encoder = new PngBitmapEncoder();

@@ -42,7 +42,7 @@ namespace KillerShot.Shell
                 FooterLibraryViews.Children.Add(button);
             }
             FooterLibraryViews.Children.Add(FooterSeparator());
-            foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8B7", "Str_Lib_ByCollection") })
+            foreach (var (group, glyph, key) in new[] { ("date", "\uE787", "Str_Lib_ByDate"), ("collection", "\uE8A9", "Str_Lib_ByCollection") })
             {
                 string target = group;
                 var button = FooterRadio("FooterLibraryGroup", glyph, key, null, () => ShowLibraryGroup(target));

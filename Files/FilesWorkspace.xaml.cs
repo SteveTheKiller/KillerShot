@@ -496,7 +496,6 @@ public partial class FilesWorkspace : UserControl, IDisposable
     private Task<FilesTab> DuplicateActive() => ActiveTab.IsCollection ? NewCollectionTab(ActiveTab.Source) : NewTab();
     private async void NewTab_Click(object sender, RoutedEventArgs e) => await DuplicateActive();
     private async void CloseTab_Click(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).DataContext is FilesTab tab) await CloseTab(tab); e.Handled = true; }
-    private async void SelectTab_Click(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).DataContext is FilesTab tab) await SelectTab(tab); }
     private async void Tab_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (((FrameworkElement)sender).DataContext is not FilesTab tab) return;
