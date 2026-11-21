@@ -33,6 +33,17 @@ public partial class MainWindow
 
     private void EditorBack_Click(object sender, RoutedEventArgs e) => HistoryStep(-1);
 
+    // Where the library stood when it came up over the open picture. Forward returns to the picture
+    // only from that same place: once the user moves to another view, collection or folder, the
+    // picture is no longer the next step, the way a browser drops forward history on a new visit.
+    private string? _pictureReturnPlace;
+
+    private string LibraryPlace() => Library.CurrentView + "|" + Library.CurrentSource + "|"
+        + (Library.FilesActive ? Library.Files.Navigation.CurrentFolder : "");
+
+    /// <summary>Call whenever the library comes up over the open picture.</summary>
+    private void RememberPictureReturn() => _pictureReturnPlace = _doc != null && _libraryShown ? LibraryPlace() : null;
+
     /// <summary>One step back or forward. Returns whether anything moved.</summary>
     internal bool HistoryStep(int direction)
     {
@@ -45,7 +56,7 @@ public partial class MainWindow
             return false;
         }
         if (files && Library.Files.Navigation.CanGoForward) { _ = Library.Files.GoForward(); return true; }
-        if (_doc != null && _libraryShown) { ToggleLibrary(); return true; }
+        if (_doc != null && _libraryShown && _pictureReturnPlace == LibraryPlace()) { ToggleLibrary(); return true; }
         return false;
     }
 }

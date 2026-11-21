@@ -121,6 +121,7 @@ public partial class App : Application
         if (SelfTestVideoOutput.TryRun(e.Args)) return;
         if (SelfTestFilesCore.TryRun(e.Args)) return;
         if (SelfTestFilesTabs.TryRun(e.Args)) return;
+        if (SelfTestMouseHistory.TryRun(e.Args)) return;
         if (SelfTestCollectionTabs.TryRun(e.Args)) return;
         if (SelfTestFilesView.TryRun(e.Args)) return;
         if (SelfTestFilesInteraction.TryRun(e.Args)) return;

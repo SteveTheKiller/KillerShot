@@ -497,6 +497,7 @@ namespace KillerShot.Shell
             Editor.CommitText();
             _libraryShown = _doc != null && !_libraryShown;
             SyncLibraryVisibility();
+            RememberPictureReturn();
             if (Library.IsVisible) Library.Focus();
         }
 
@@ -596,7 +597,7 @@ namespace KillerShot.Shell
             }
             menu.Items.Add(new Separator());
             var library = new MenuItem { Header = Loc("Str_Recent_ShowLibrary"), InputGestureText = "Ctrl+L" };
-            library.Click += (_, _) => { if (_doc != null) { _libraryShown = true; SyncLibraryVisibility(); } };
+            library.Click += (_, _) => { if (_doc != null) { _libraryShown = true; SyncLibraryVisibility(); RememberPictureReturn(); } };
             menu.Items.Add(library);
         }
 
