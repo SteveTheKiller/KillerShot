@@ -169,7 +169,7 @@
 <text x="475" y="146" font-size="12.5" fill="var(--muted)">PBKDF2-HMAC-SHA512</text>
 <text x="475" y="163" font-size="12.5" fill="var(--muted)">256,000 rounds</text>
 <rect x="10" y="190" width="600" height="380" rx="12" fill="none" stroke="var(--accent)" stroke-dasharray="7 6"/>
-<text x="310" y="216" text-anchor="middle" font-size="14" fill="var(--accent)">SQLCipher 4.18: AES-256-CBC on every 4 KB page</text>
+<text x="310" y="216" text-anchor="middle" font-size="14" fill="var(--accent)">SQLCipher 4.20: AES-256-CBC on every 4 KB page</text>
 <text x="310" y="234" text-anchor="middle" font-size="12.5" fill="var(--muted)">random IV and HMAC-SHA512 per page</text>
 <rect x="40" y="248" width="540" height="300" rx="9" fill="var(--panel)" stroke="var(--pane-border)"/>
 <text x="310" y="278" text-anchor="middle" font-size="18" fill="var(--accent)">Library.kshot</text>
@@ -200,7 +200,7 @@
 </figure>
 <p data-i18n="t_album_2"><b>The key.</b> By default the album uses a random 256-bit key from the system's cryptographic random number generator. KillerShot hands it to SQLCipher in raw-key form and protects it with Windows DPAPI in <code>Library.key</code>, scoped to the current Windows user with app-specific entropy. This lets KillerShot open it without a prompt under that account. It does not protect an open album from software running as that user.</p>
 <p data-i18n="t_album_5"><b>A password.</b> Setting a password rewrites the album under the password and deletes <code>Library.key</code>, so only the password opens it. SQLCipher stretches the password with PBKDF2-HMAC-SHA512 over 256,000 rounds, with a random salt kept at the start of the file. Removing the password rewrites the album again under a fresh random key sealed to your account. A forgotten password cannot be recovered, and the password check compares in constant time.</p>
-<p data-i18n="t_album_6"><b>The cipher.</b> SQLCipher encrypts each 4 KB page with AES-256 in CBC mode under its own random IV and signs it with HMAC-SHA512, so a changed or damaged page is refused instead of being read as garbage. The native library is built from the upstream SQLCipher 4.18.0 source with LibTomCrypt, embedded in KillerShot.exe and code signed.</p>
+<p data-i18n="t_album_6"><b>The cipher.</b> SQLCipher encrypts each 4 KB page with AES-256 in CBC mode under its own random IV and signs it with HMAC-SHA512, so a changed or damaged page is refused instead of being read as garbage. The native library is built from the upstream SQLCipher 4.20.0 source with LibTomCrypt, embedded in KillerShot.exe and code signed.</p>
 <p data-i18n="t_album_7"><b>Rekeying.</b> A password change uses <code>sqlcipher_export</code> to write a new encrypted database under the new key. KillerShot closes the connections and clears the pool before replacing the old file, then updates or removes <code>Library.key</code> and reopens the album. This avoids changing the active database in place with <code>PRAGMA rekey</code>.</p>
 </div>
 <div class="tech-sec" id="pipeline">
@@ -222,15 +222,19 @@
 <div class="tech-column">
 <div class="tech-sec" id="model">
 <h2 data-i18n="t_model">The data model</h2>
-<p data-i18n="t_model_1">The album stores capture data, collections, QR results, search data and schema metadata inside the encrypted database. Times are stored in UTC and shown in local time.</p>
+<p data-i18n="t_model_1">The album stores capture data, edits, recordings, collections, QR results, search data and schema metadata inside the encrypted database. Times are stored in UTC and shown in local time.</p>
 <table class="spec-table"><tr><th data-i18n="t_table">Table</th><th data-i18n="t_holds">What it holds</th></tr>
 <tr><td><code>captures</code></td><td data-i18n="t_model_cap">One row per capture: when it was taken, its width and height in pixels, the capture mode, the window title and program it came from, its collection, a note, the text Windows read from it, a JPEG thumbnail no larger than 512 pixels on its long side, and the full picture as a lossless PNG</td></tr>
 <tr><td><code>collections</code></td><td data-i18n="t_model_col">Each collection's name and when it was made. Deleting a collection keeps its captures and leaves them in no collection</td></tr>
+<tr><td><code>capture_marks</code></td><td data-i18n="t_model_marks">The editable marks on an edited capture, with the original picture and the finished one, so the edits can be changed later</td></tr>
+<tr><td><code>capture_revisions</code></td><td data-i18n="t_model_rev">A revision number per capture that goes up with each edit, so previews and thumbnails refresh</td></tr>
+<tr><td><code>capture_videos</code></td><td data-i18n="t_model_videos">Recordings kept in the album: the file type, the length and the video itself</td></tr>
+<tr><td><code>capture_video_chunks</code></td><td data-i18n="t_model_chunks">Large recordings, stored in numbered pieces</td></tr>
 <tr><td><code>capture_qr</code></td><td data-i18n="t_model_qr">Decoded QR results for each capture, including their text and positions in the picture</td></tr>
 <tr><td><code>capture_search</code></td><td data-i18n="t_model_fts">An FTS5 full-text index with one row per capture, keyed by the capture's id: the window title, the program, the note, the text read from the picture and the collection name</td></tr>
 <tr><td><code>meta</code></td><td data-i18n="t_model_meta">Key and value pairs, holding the schema version</td></tr>
 </table>
-<p data-i18n="t_model_2">One shared connection serves the app, with database operations guarded by a lock. Capture changes update the search index, and history pruning removes associated search and QR rows. Card and collection colors are display settings and live in <code>settings.json</code>, outside the encrypted album.</p>
+<p data-i18n="t_model_2">One shared connection serves the app, with database operations guarded by a lock. Capture changes update the search index, and history pruning removes associated search and QR rows. Card and collection colors are display settings and live in <code>settings.json</code>, outside the encrypted album. The album keeps a write-ahead log, which KillerShot folds back into the album file whenever it closes, renames, copies or backs it up. The log does not work over a network, so an album folder on a network share is refused.</p>
 </div>
 <div class="tech-sec" id="search">
 <h2 data-i18n="t_search">Search and the text in pictures</h2>
@@ -249,7 +253,7 @@
 <tr><td>Settings</td><td data-i18n="t_settings"><code>%APPDATA%\KillerShot\settings.json</code></td></tr>
 <tr><td>Capture library</td><td data-i18n="t_recent"><code>%LOCALAPPDATA%\KillerShot\Library.kshot</code>, every capture as PNG with a thumbnail, in one SQLCipher database (AES-256). The key is a random 256-bit key sealed with Windows DPAPI to your account in <code>Library.key</code>, or your password</td></tr>
 <tr><td>Screenshots</td><td data-i18n="t_shots">Windows' Screenshots known folder, usually <code>Pictures\Screenshots</code>, unless you choose another</td></tr>
-<tr><td>Recordings</td><td data-i18n="t_videos"><code>Videos\Screen Recordings</code>, unless you choose another</td></tr>
+<tr><td>Recordings</td><td data-i18n="t_videos"><code>Videos\Screen Recordings</code>, unless you choose another, or the album's encrypted Recordings collection if you keep them there</td></tr>
 </table>
 <p data-i18n="t_clip_2">Saved files are written to a temporary name and then moved into place, so a failed write never leaves a cut-off image behind.</p>
 </div>
@@ -268,7 +272,7 @@
 <div class="tech-sec" id="privacy">
 <h2 data-i18n="t_privacy">Privacy &amp; footprint</h2>
 <p data-i18n="t_privacy_1">KillerShot has no account and no analytics. Its one network request is the update check: on startup unless you turn it off on the About card (F12), and whenever you open About, it asks GitHub for the latest release. Installing an update is always your choice, and the release notes link opens the GitHub releases page in your browser.</p>
-<p data-i18n="t_privacy_2">Encryption protects the album at rest, including its image data, metadata and search index. PNG and JPEG exports and MP4 and GIF recordings are ordinary files outside it. The live Windows Screenshots collection reads existing files without encrypting them; adding one to the album does not encrypt or remove the original. Clipboard copies follow Windows clipboard history and sync settings, which can send a copy to other devices if enabled.</p>
+<p data-i18n="t_privacy_2">Encryption protects the album at rest, including its image data, metadata and search index. PNG and JPEG exports and recordings kept as plain video files are ordinary files outside it. A recording kept in the album plays from a temporary decrypted copy, which is deleted when the album closes and when KillerShot exits. The live Windows Screenshots collection reads existing files without encrypting them; adding one to the album does not encrypt or remove the original. Clipboard copies follow Windows clipboard history and sync settings, which can send a copy to other devices if enabled.</p>
 <p data-i18n="t_privacy_3">To redact before anything leaves KillerShot, turn on Review before copying or saving in capture settings. Each capture then waits in the editor, and nothing reaches the clipboard, a file, another program or email until you choose Copy and save. The album still keeps the encrypted original, and anything copied or saved from the album is the edited result.</p>
 </div>
 </div>
@@ -285,7 +289,7 @@
 </footer>
 <div class="egg-toast" id="eggToast"></div>
 <div class="dlightbox" id="diagram-lightbox" role="dialog" aria-modal="true" aria-label="Expanded diagram" hidden><div class="dlb-inner"><button type="button" class="dlb-close" aria-label="Close diagram">&times;</button><div class="dlb-image"></div></div></div>
-<script src="kst-i18n.js?v=7"></script>
+<script src="kst-i18n.js?v=9"></script>
 <script src="kst.js?v=3"></script>
 <script>
 (function(){

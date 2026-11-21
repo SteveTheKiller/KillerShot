@@ -185,12 +185,12 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerShot is written in C# and WPF on .NET 10 for Windows 11.<br><br>The album is a SQLCipher database encrypted with AES-256, with a full-text index over the text Windows reads from each picture.<br><br>Captures crop from one copy of the whole desktop taken at 96 DPI, one image pixel per screen pixel, so nothing is rescaled.<br><br>MP4 uses the H.264 and AAC encoders built into Windows. The GIF encoder, the region selector and the editor were written for KillerShot.<br><br>The <a href="technical.html">Technical</a> page explains the album and the capture and recording pipelines.</p></div>
 <div class="blurb"><h3 data-i18n="b1_t">Fully featured</h3><ul class="blurb-list" data-i18n="b1_d">
 <li>An encrypted album of every capture, searchable by the text in each picture</li>
-<li>Collections, notes, and shelf, carousel, grid and timeline views</li>
+<li>Collections, notes, and shelf, grid, timeline and Files views</li>
 <li>Region, window, monitor and all-monitor capture from Print Screen</li>
 <li>A frozen desktop, so menus and tooltips stay in the picture</li>
 <li>Covered windows captured whole through Windows Graphics Capture</li>
 <li>PNG and bitmap on the clipboard, PNG or JPEG to a folder</li>
-<li>Editor with arrows, shapes, text, highlighter, redaction and crop</li>
+<li>Editor with arrows, shapes, text, numbered steps, callouts, redaction, auto redact and crop</li>
 <li>MP4 with system sound and microphone, or animated GIF</li>
 <li>Headless command line and KillerMCP tools for scripts and agents</li>
 <li>Fourteen themes, eight accents and 20 languages</li>
@@ -202,20 +202,20 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <h2 data-i18n="features_h">What it does</h2>
 <div class="feature-grid">
 <div class="feature-card"><h3 data-i18n="f_recent_t">Encrypted screenshot album</h3><p data-i18n="f_recent_d">Screenshots, thumbnails, notes and searchable text live together in an AES-256 encrypted database. Its key is protected by your Windows account by default, or you can set an album password. <a href="technical.html#album">See how the encryption works.</a></p></div>
-<div class="feature-card"><h3 data-i18n="f_protection_t">Know what stays protected</h3><p data-i18n="f_protection_d">Album encryption protects the saved library. Exported PNGs and JPEGs, MP4 and GIF recordings, and pictures in the live Screenshots folder are ordinary files. Clipboard copies follow your Windows history and sync settings.</p></div>
+<div class="feature-card"><h3 data-i18n="f_protection_t">Know what stays protected</h3><p data-i18n="f_protection_d">Album encryption protects the saved library, including recordings you move into it. Exported PNGs and JPEGs, recordings kept as plain video files, and pictures in the live Screenshots folder are ordinary files. Clipboard copies follow your Windows history and sync settings.</p></div>
 <div class="feature-card"><h3 data-i18n="f_search_t">Search inside your screenshots</h3><p data-i18n="f_search_d">Windows reads the text in every capture in the background, so a search finds the screenshot with the error code in it. Window titles, program names, notes and collection names are searched too.</p></div>
-<div class="feature-card"><h3 data-i18n="f_views_t">Shelves, carousels and timelines</h3><p data-i18n="f_views_d">Browse the album as shelves of carousels by day or collection, one large carousel, a grid or a timeline. Sort captures into collections, add notes, and keep everything or only the last 100 to 5,000 captures or 30 to 365 days.</p></div>
+<div class="feature-card"><h3 data-i18n="f_views_t">Shelves, grids and timelines</h3><p data-i18n="f_views_d">Browse the album as shelves of carousels, a grid or a timeline, by collection or by day. Sort captures into collections by dragging them onto one, add notes, and keep everything or only the last 100 to 5,000 captures or 30 to 365 days.</p></div>
 <div class="feature-card"><h3 data-i18n="f_strip_t">The collection strip</h3><p data-i18n="f_strip_d">With a picture open, the rest of its collection runs in a photo carousel above or below it, and the collections sit in a sidebar to the left or right. Move either with Alt+Shift and an arrow key, or minimize the sidebar to one line per collection.</p></div>
 <div class="feature-card"><h3 data-i18n="f_folder_t">Your Screenshots folder, live</h3><p data-i18n="f_folder_d">Windows' own Screenshots folder shows up as a collection, read straight from the files, so new pictures appear as they arrive. Add any of them to the encrypted album to keep it there.</p></div>
-<div class="feature-card"><h3><span data-i18n="hk_files">Files</span> (F9)</h3><p data-i18n="f_files_d">Press F9 to browse folders in list, icons or details view. Rename, copy, move and recycle files, or open images in the editor. Files stay in their original folders.</p></div>
+<div class="feature-card"><h3><span data-i18n="hk_files">Files</span> (F9)</h3><p data-i18n="f_files_d">Press F9 to browse folders in tabs, in list, icons or details view. Rename, copy, move and recycle files, star the folders you use, export a listing as CSV or HTML, open images in the editor, or turn a folder of pictures into one PDF with Make PDF when KillerPDF is installed. Files stay in their original folders.</p></div>
 <div class="feature-card"><h3 data-i18n="f_prtsc_t">Print Screen, taken over</h3><p data-i18n="f_prtsc_d">Plain Print Screen starts a region rectangle. Alt+Print Screen takes the active window, Ctrl+Print Screen the monitor under the pointer, Shift+Print Screen every monitor, and Ctrl+Shift+Print Screen starts or stops a recording. One switch, in About or the tray menu, takes Print Screen back from Snipping Tool. Every shortcut can be changed or turned off.</p></div>
 <div class="feature-card"><h3 data-i18n="f_frozen_t">Frozen desktop</h3><p data-i18n="f_frozen_d">The whole desktop is copied the moment you press the key, so open menus and tooltips stay in the picture and the selection overlay never does. Drag a rectangle across monitors with different scaling; Window mode lets you highlight and click a window. Escape or a right-click cancels with nothing copied.</p></div>
 <div class="feature-card"><h3 data-i18n="f_window_t">Window capture</h3><p data-i18n="f_window_d">Window mode uses Windows Graphics Capture, so a window that is partly covered still comes out whole, and its rounded corners are filled from the desktop behind it. Turn on window picking to click the window you want instead of taking the active one.</p></div>
 <div class="feature-card"><h3 data-i18n="f_clipboard_t">Clipboard first</h3><p data-i18n="f_clipboard_d">Every capture goes straight to the clipboard as PNG for apps that read it and as a standard bitmap for everything else. A clipboard another program is holding is retried, then reported instead of silently skipped.</p></div>
 <div class="feature-card"><h3 data-i18n="f_save_t">Save without asking</h3><p data-i18n="f_save_d">Captures can also save straight into a folder, Windows' own Screenshots folder by default, named from a pattern with the date, time, mode and size. Choose PNG or JPEG with a quality setting, add a delay of up to 30 seconds, or have KillerShot ask where to save each one.</p></div>
-<div class="feature-card"><h3 data-i18n="f_editor_t">Editor</h3><p data-i18n="f_editor_d">Pen, highlighter, arrow, rectangle, ellipse, text, redaction and crop, plus select and move, 50 steps of undo and redo, Fit and 100% zoom. The finished picture exports at the capture's exact pixel size, and the colors you pick are the colors you get.</p></div>
-<div class="feature-card"><h3 data-i18n="f_redact_t">Redaction that holds</h3><p data-i18n="f_redact_d">Redaction is an opaque block, not a blur. The saved file and the clipboard copy carry the flattened pixels, so nothing hidden rides along underneath.</p></div>
-<div class="feature-card"><h3 data-i18n="f_record_t">Screen recording</h3><p data-i18n="f_record_d">Record a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. A countdown, then a frame and a Pause, Stop and Discard bar that never appear in the video.</p></div>
+<div class="feature-card"><h3 data-i18n="f_editor_t">Editor</h3><p data-i18n="f_editor_d">Pen, highlighter, arrow, line, rectangle, ellipse, fill, text, numbered steps, callouts, redaction and crop, plus select and move, 50 steps of undo and redo, Fit and 100% zoom. The finished picture exports at the capture's exact pixel size, and the colors you pick are the colors you get.</p></div>
+<div class="feature-card"><h3 data-i18n="f_redact_t">Redaction that holds</h3><p data-i18n="f_redact_d">Redaction is an opaque block, not a blur. Auto redact finds email addresses, card numbers, phone numbers, US Social Security numbers, IP addresses, keys and passwords, and covers each one with a box you can remove before saving. The saved file and the clipboard copy carry the flattened pixels, so nothing hidden rides along underneath.</p></div>
+<div class="feature-card"><h3 data-i18n="f_record_t">Screen recording</h3><p data-i18n="f_record_d">Record a region, window or monitor to MP4 with system sound, the microphone or both, or to an animated GIF. A countdown, then a frame and a Pause, Stop and Discard bar that never appear in the video. Recordings show up in the library, as plain video files or inside the encrypted album, your choice.</p></div>
 <div class="feature-card"><h3 data-i18n="f_gif_t">GIFs that stay small</h3><p data-i18n="f_gif_d">The GIF encoder was written for KillerShot. Each frame stores only what changed, with its own palette, and the size, color count, frame rate and looping are yours to set.</p></div>
 <div class="feature-card"><h3 data-i18n="f_print_t">Print</h3><p data-i18n="f_print_d">Print the capture from the editor with Ctrl+P or straight from the tray, with options to shrink, enlarge and rotate it to fit the page.</p></div>
 <div class="feature-card"><h3 data-i18n="f_cli_t">Command line ready</h3><p data-i18n="f_cli_d">Capture a monitor, window, rectangle or every monitor, record for a set time, and list, search, copy or export library captures from scripts and scheduled tasks, with JSON output and dependable exit codes. <a href="help.html#command-line">See every command.</a></p></div>
@@ -255,27 +255,27 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 </div>
 
 <div hidden id="screenshotDescriptions">
-<span data-i18n="shot_shelves">Dark theme: the album as shelves, one carousel per collection of Killer Tools screenshots.</span>
-<span data-i18n="shot_carousel">Blood theme: one large carousel with the capture's title, date, size and program under it.</span>
-<span data-i18n="shot_grid">Light theme with a blue accent: the grid by date, with the collection strip above it.</span>
-<span data-i18n="shot_timeline">Black theme with a purple accent: the timeline, one day per row.</span>
-<span data-i18n="shot_search">Cyanotic theme: a search for "theme" that matches text Windows read inside the pictures.</span>
-<span data-i18n="shot_editor">A KillerScan capture open in the editor, with its collection running across the top as a carousel.</span>
-<span data-i18n="shot_docked">Ectoplasm theme: collections docked on the right and the strip along the bottom.</span>
-<span data-i18n="shot_settings">Delirium theme: capture settings with global shortcuts, what happens after a capture, and the output file.</span>
-<span data-i18n="shot_classic">98SE theme: shelves by date in the classic look.</span>
-<span data-i18n="shot_files">Files view in the Dark theme.</span>
+<span data-i18n="shot_shelves">Dark theme with a red accent: shelves by collection, one carousel per week of screenshots, with the sidebar on the left.</span>
+<span data-i18n="shot_grid_collection">Cyanotic theme: the grid by collection, with the photo carousel across the top.</span>
+<span data-i18n="shot_docked">Ectoplasm theme: the sidebar docked on the right and the photo carousel along the bottom.</span>
+<span data-i18n="shot_grid">Mourning theme: the grid by date, newest day first, with the sidebar on the right.</span>
+<span data-i18n="shot_timeline">Malaise theme: the timeline, one day per row with each capture's time.</span>
+<span data-i18n="shot_editor">Delirium theme: a KillerPDF capture open in the editor, with its collection running along the bottom.</span>
+<span data-i18n="shot_files_icons">Light theme: the Files view in icons, browsing the Screenshots folder.</span>
+<span data-i18n="shot_files_details">Blood theme: the Files view in details, with each file's size, date and type.</span>
+<span data-i18n="shot_settings">Trash Polka theme: capture settings with global shortcuts, what happens after a capture, and the output file.</span>
+<span data-i18n="shot_classic">98SE theme: shelves by date in the classic look, with the sidebar on the right.</span>
 </div>
 
-<script src="kst-i18n.js?v=8"></script>
+<script src="kst-i18n.js?v=9"></script>
 <script src="kst.js?v=3"></script>
 <script src="feature-carousel.js?v=4"></script>
 <script>
 (function () {
-  // Actual app renders from the privacy-reviewed demo album and public Windows wallpaper folder.
+  // Actual app renders of a demo album filled from Killer Tools screenshots, screened for private text.
   // Each localized description supplies alt text, a tooltip and the lightbox caption.
-  var screenshots = ['shot_shelves', 'shot_carousel', 'shot_grid', 'shot_timeline', 'shot_search',
-    'shot_editor', 'shot_docked', 'shot_settings', 'shot_classic', 'shot_files'];
+  var screenshots = ['shot_shelves', 'shot_grid_collection', 'shot_docked', 'shot_grid', 'shot_timeline',
+    'shot_editor', 'shot_files_icons', 'shot_files_details', 'shot_settings', 'shot_classic'];
   var sbThumbs = document.getElementById('sbThumbs');
   var empty = sbThumbs.querySelector('.sb-empty');
   var lightbox = document.getElementById('lightbox');

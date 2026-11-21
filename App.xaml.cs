@@ -202,6 +202,7 @@ public partial class App : Application
         if (SelfTestReviewFixes.TryRun(e.Args)) return;
         if (SelfTestPileEdges.TryRun(e.Args)) return;
         if (SelfTestDemo.TryRun(e.Args)) return;
+        if (SelfTestGallery.TryRun(e.Args)) return;
 
         // Install switches. /silent installs without UI (machine-wide with admin rights, for the
         // current user without); Add/Remove Programs runs /uninstall and package managers
