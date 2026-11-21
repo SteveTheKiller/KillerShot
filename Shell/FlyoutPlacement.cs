@@ -113,7 +113,26 @@ namespace KillerShot.Controls
             menu.HorizontalOffset = menu.VerticalOffset = 0;
             menu.ApplyTemplate();
             Thickness halo = menu.Template?.FindName("MenuRoot", menu) is FrameworkElement card ? card.Margin : DefaultCardHalo;
+            FitPane(menu, halo);
             menu.CustomPopupPlacementCallback = (popupSize, _, _) => Place(menu, popupSize, halo, anchor);
+        }
+
+        /// <summary>
+        /// A menu taller than the pane would pin to the pane's top and run on past the window's
+        /// bottom (the theme menu in a short window, 2026-11-21). Its visible card is held to the
+        /// pane less the eight pixels at each end, and the template's ScrollViewer scrolls the rest.
+        /// Measured in the unscaled root's DIPs, the units the menu itself lays out in.
+        /// </summary>
+        private static void FitPane(ContextMenu menu, Thickness halo)
+        {
+            var root = Root;
+            if (_pane == null || root == null || !_pane.IsDescendantOf(root) || _pane.ActualHeight <= 0)
+            {
+                menu.ClearValue(FrameworkElement.MaxHeightProperty);
+                return;
+            }
+            double paneHeight = _pane.TransformToAncestor(root).TransformBounds(new Rect(_pane.RenderSize)).Height;
+            menu.MaxHeight = Math.Max(0, paneHeight - 2 * Inset) + halo.Top + halo.Bottom;
         }
 
         /// <summary>
