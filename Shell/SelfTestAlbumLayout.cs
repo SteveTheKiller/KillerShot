@@ -441,6 +441,43 @@ internal static class SelfTestAlbumLayout
                 "Selecting a distant collection must filter the album without opening a photo.");
             Render(root, Path.Combine(folder, "browser-large-collection-list.png"));
             report.Add("same_edge_width_restoration_and_125_virtualized_collection_rows=True");
+
+            // Shelves that scroll: the family's edge shadows show at whichever edge has more
+            // rows past it, and the rows run to the pane's edges instead of stopping short of
+            // the bottom.
+            for (int day = 2; day < 8; day++)
+                for (int i = 0; i < 6; i++) CaptureLibrary.AddNow(image, DateTime.Today.AddDays(-day), "region", "Scroll sample", null);
+            browser.SelectedIndex = 0;
+            library.SetGroup("date");
+            library.SetView("shelves");
+            await library.ListingTask;
+            for (int wait = 0; wait < 100 && Shelves().Length < 4; wait++) { await Task.Delay(20); Layout(root); }
+            var rowsList = (ItemsControl)library.FindName("RowsList");
+            var rowsScroll = Visuals(rowsList).OfType<ScrollViewer>().First();
+            rowsScroll.ScrollToVerticalOffset(rowsScroll.ScrollableHeight / 2);
+            Layout(root);
+            await Task.Delay(100);
+            Layout(root);
+            Border? Cue(string style) => Visuals(rowsScroll).OfType<Border>()
+                .FirstOrDefault(border => ReferenceEquals(border.Style, App.Instance.TryFindResource(style)));
+            Render(root, Path.Combine(folder, "shelves-scrolled.png"));
+            report.Add($"shelves: scrollable={rowsScroll.ScrollableHeight:0.#} offset={rowsScroll.VerticalOffset:0.#} padding={rowsScroll.Padding}");
+            Check(rowsScroll.ScrollableHeight > 0, "The shelves fixture must scroll.");
+            Check(Cue("ScrollTopCue")?.IsVisible == true && Cue("ScrollBottomCue")?.IsVisible == true,
+                "Scrolled shelves must show the edge shadows at the top and bottom.");
+            var presenter = Visuals(rowsScroll).OfType<ScrollContentPresenter>().First();
+            var presenterBounds = presenter.TransformToAncestor(rowsScroll).TransformBounds(new Rect(presenter.RenderSize));
+            report.Add($"shelves: viewer={rowsScroll.ActualHeight:0.#} presenter_top={presenterBounds.Top:0.#} presenter_bottom={presenterBounds.Bottom:0.#}");
+            Check(presenterBounds.Top < 0.5 && rowsScroll.ActualHeight - presenterBounds.Bottom < 0.5,
+                "Shelf rows must run to the pane's top and bottom edges while scrolling, not stop short of them.");
+            rowsScroll.ScrollToBottom();
+            Layout(root);
+            await Task.Delay(100);
+            Layout(root);
+            Render(root, Path.Combine(folder, "shelves-end.png"));
+            Check(Cue("ScrollTopCue")?.IsVisible == true && Cue("ScrollBottomCue")?.IsVisible != true,
+                "Shelves scrolled to the end must drop the bottom shadow and keep the top one.");
+            report.Add("shelves_scroll_edge_shadows_and_full_height=True");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }
