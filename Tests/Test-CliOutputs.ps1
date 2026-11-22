@@ -63,6 +63,7 @@ try {
         if (-not [regex]::IsMatch($help, '^\s*' + $command + '(?=\s|$)', 'Multiline')) { throw "help no longer has a line starting with '$command', so KillerMCP drops that tool." }
     }
     if (-not [regex]::IsMatch($help, '^\s*--search\s+<words>', 'Multiline')) { throw "help no longer lists '--search <words>', so KillerMCP drops recent search." }
+    if (-not [regex]::IsMatch($help, '^\s*--clipboard, --no-clipboard\s+Copy the finished file', 'Multiline')) { throw "help no longer lists record's '--clipboard, --no-clipboard', so KillerMCP stops leaving the clipboard alone during recordings." }
     if (-not $help.Contains('text --languages')) { throw "help no longer mentions 'text --languages', so KillerMCP drops the language list." }
     Write-Output 'PASS: version and help keep the lines KillerMCP discovers tools from'
 
