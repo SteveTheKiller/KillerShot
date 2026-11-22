@@ -24,6 +24,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 - The `record` command follows Copy file to clipboard, the way `capture` follows Copy to clipboard. `--no-clipboard` leaves the clipboard alone.
 
 ### Added
+- Make PDF shows on the Files view card when every picked item is a picture. The pages follow the order the list shows.
 - The `recent` command's actions take `id:<id>` with the id from `--json`. A list position moves when a new capture arrives, but an id always names the same capture.
 
 ## [1.2.0] - 2026-11-21
