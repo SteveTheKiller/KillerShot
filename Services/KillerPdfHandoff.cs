@@ -72,6 +72,22 @@ internal static class KillerPdfHandoff
         catch (Exception) { return false; }
     }
 
+    /// <summary>Whether a card should offer Make PDF for the folder. Cards build on the UI thread,
+    /// so a network folder is never listed here: a slow or dead share would hold the menu for the
+    /// whole SMB timeout. Its row shows, and the click reports a folder with no pictures.</summary>
+    internal static bool OffersMakePdf(string folder) => IsNetworkPath(folder) || HasImages(folder);
+
+    private static bool IsNetworkPath(string folder)
+    {
+        try
+        {
+            if (folder.StartsWith(@"\\", StringComparison.Ordinal)) return true;
+            string? root = Path.GetPathRoot(folder);
+            return !string.IsNullOrEmpty(root) && new DriveInfo(root).DriveType == DriveType.Network;
+        }
+        catch (Exception) { return false; }
+    }
+
     [System.Runtime.InteropServices.DllImport("shlwapi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     private static extern int StrCmpLogicalW(string a, string b);
 

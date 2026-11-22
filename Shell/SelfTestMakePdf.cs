@@ -63,6 +63,16 @@ internal static partial class SelfTestMakePdf
                 && !KillerPdfHandoff.AllImages([Path.Combine(pictures, "b 2.png"), Path.Combine(pictures, "notes.txt")])
                 && !KillerPdfHandoff.AllImages([]), "the card offers Make PDF only when every picked item is a picture");
 
+            // A card builds on the UI thread, so a network folder is never listed to decide the
+            // row: a dead share would hold the menu for the whole SMB timeout. The click checks.
+            var probe = Stopwatch.StartNew();
+            bool remote = KillerPdfHandoff.OffersMakePdf(@"\\killershot-selftest.invalid\share\pictures");
+            probe.Stop();
+            report.Add($"remote probe: {remote} {probe.ElapsedMilliseconds} ms");
+            Check(remote && probe.ElapsedMilliseconds < 250, "a network folder offers Make PDF without listing it");
+            Check(KillerPdfHandoff.OffersMakePdf(pictures) && !KillerPdfHandoff.OffersMakePdf(Path.Combine(folder, "sub-missing")),
+                "a local folder offers Make PDF only when it has pictures");
+
             string empty = Path.Combine(folder, "empty");
             Directory.CreateDirectory(empty);
             Check(KillerPdfHandoff.MakePdf(empty) == KillerPdfHandoff.Result.NoImages, "empty folder says so");

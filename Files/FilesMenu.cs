@@ -77,7 +77,7 @@ public partial class FilesView
             // Make PDF shows for one folder that has pictures in it, or for a pick that is all
             // pictures, whose pages then follow the order the list shows.
             if (KillerPdfHandoff.IsInstalled && count == 1 && ResultsList.SelectedItem is FileEntry { IsDirectory: true } folderEntry
-                && KillerPdfHandoff.HasImages(folderEntry.FilePath))
+                && KillerPdfHandoff.OffersMakePdf(folderEntry.FilePath))
                 edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folderEntry.FilePath)));
             else if (PickedPictures() is { } picked && KillerPdfHandoff.IsInstalled)
                 edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(picked)));
@@ -110,7 +110,7 @@ public partial class FilesView
                 Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
             };
             string folder = Navigation.CurrentFolder;
-            if (KillerPdfHandoff.IsInstalled && KillerPdfHandoff.HasImages(folder))
+            if (KillerPdfHandoff.IsInstalled && KillerPdfHandoff.OffersMakePdf(folder))
                 here.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folder)));
             groups.Add(here);
             groups.Add([Tile("refresh", "\uE72C", "Str_Btn_Reload", () => StartCommand(NavigateTo(Navigation.CurrentFolder)), "F5")]);
