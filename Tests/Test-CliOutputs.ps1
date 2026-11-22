@@ -50,6 +50,22 @@ try {
     if ($run.ExitCode -ne 1) { throw "The README's Start-Process -Wait -PassThru pattern read exit code $($run.ExitCode), expected 1." }
     Write-Output 'PASS: the documented Start-Process pattern reads the command exit code'
 
+    # KillerMCP finds its KillerShot tools by reading these. version must print a bare version
+    # number, and each command it offers must start a help line, so a help rewrite that moves
+    # one of them silently drops a tool.
+    $version = Invoke-Cli 'version'
+    $parsed = $null
+    if ($version.Exit -ne 0 -or -not [version]::TryParse($version.Out.Trim(), [ref]$parsed)) {
+        throw "version printed '$($version.Out.Trim())' with exit $($version.Exit); KillerMCP needs a bare version number."
+    }
+    $help = (Invoke-Cli 'help').Out
+    foreach ($command in 'text', 'qr', 'recording', 'edit') {
+        if (-not [regex]::IsMatch($help, '^\s*' + $command + '(?=\s|$)', 'Multiline')) { throw "help no longer has a line starting with '$command', so KillerMCP drops that tool." }
+    }
+    if (-not [regex]::IsMatch($help, '^\s*--search\s+<words>', 'Multiline')) { throw "help no longer lists '--search <words>', so KillerMCP drops recent search." }
+    if (-not $help.Contains('text --languages')) { throw "help no longer mentions 'text --languages', so KillerMCP drops the language list." }
+    Write-Output 'PASS: version and help keep the lines KillerMCP discovers tools from'
+
     $languages = (Invoke-Cli 'text --languages --json').Out | ConvertFrom-Json
     $tag = @($languages.languages)[0].tag
     if ($tag) {

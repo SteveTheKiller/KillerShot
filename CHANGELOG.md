@@ -18,6 +18,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 ### Changed
 - Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.
 - The Albums window shows its actions as icon tiles in one row under the list and one under the library settings. The Keep captures list is sized to its choices.
+- The command line help names the settings scripts follow and the app-only steps they skip. It also says `recent` lists the album only.
 
 ### Added
 - The `recent` command's actions take `id:<id>` with the id from `--json`. A list position moves when a new capture arrives, but an id always names the same capture.

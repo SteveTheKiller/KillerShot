@@ -1818,8 +1818,15 @@ public static class Program
         folder, and it cannot be copied as a picture.
         A capture n is a position in the list, or id:<id> with the id from --json. A position
         moves when a new capture arrives; an id never does, so scripts should use it.
+        The recent command lists the album only, not the Screenshots folder or linked
+        folders, and a password-protected album has to be opened in the app.
 
-        Options left out follow your KillerShot settings.
+        Capture and record options left out follow your KillerShot settings for mode, delay,
+        format, quality, folder, file name, cursor, sound and Scan every capture, and a
+        capture follows Copy to clipboard. A recording copies only with --clipboard. The
+        steps that wait on you in the app (Ask to save, Review first, Open the editor,
+        notifications, Copy file path, Open with, Email and the recording countdown) apply
+        to app captures only.
         Exit codes: 0 success, 1 failure, 2 invalid command line, 3 cancelled.
 
         """;
