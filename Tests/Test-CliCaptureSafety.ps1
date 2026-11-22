@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$App,
     [Parameter(Mandatory = $true)][string]$Output,
-    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact', 'recent-id', 'recent-recording')][string]$Case = 'all'
+    [ValidateSet('all', 'no-output', 'protected', 'failed-write', 'saved-file', 'account', 'option-value', 'redact', 'recent-id', 'recent-recording', 'record-copy')][string]$Case = 'all'
 )
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Output) { throw 'Use a new scratch output folder for each test.' }
@@ -114,6 +114,20 @@ if ($Case -in @('all', 'recent-recording')) {
     if (Test-Path -LiteralPath (Join-Path $Output 'poster.png')) { throw 'A recording was exported as a picture.' }
     Invoke-CaptureCase 'recording-copy' 'recording' @('recent', '--copy', '1') 1 'is a recording'
     Write-Output 'PASS: recordings export as their clip and are not copied as pictures'
+}
+if ($Case -in @('all', 'record-copy')) {
+    # With Copy file to clipboard on, a recording copies without --clipboard, and
+    # --no-clipboard still leaves the clipboard alone.
+    $marker = Join-Path $Output 'record-follows\copied.txt'
+    $clip = Join-Path $Output 'follows.gif'
+    Invoke-CaptureCase 'record-follows' 'record-copy' @('record', '--mode', 'region', '--rect', '16,16,32,24', '--seconds', '1', '--format', 'gif', '--no-cursor', '--out', $clip, '--json') 0 ''
+    $result = Get-Content -LiteralPath (Join-Path $Output 'record-follows\stdout.txt') -Raw | ConvertFrom-Json
+    if (-not $result.clipboard -or -not (Test-Path -LiteralPath $marker) -or (Get-Content -LiteralPath $marker -Raw) -ne $clip) { throw "record ignored Copy file to clipboard: $($result | ConvertTo-Json -Compress)" }
+    $kept = Join-Path $Output 'kept.gif'
+    Invoke-CaptureCase 'record-no-clipboard' 'record-copy' @('record', '--mode', 'region', '--rect', '16,16,32,24', '--seconds', '1', '--format', 'gif', '--no-cursor', '--no-clipboard', '--out', $kept, '--json') 0 ''
+    $result = Get-Content -LiteralPath (Join-Path $Output 'record-no-clipboard\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.clipboard -or (Test-Path -LiteralPath (Join-Path $Output 'record-no-clipboard\copied.txt'))) { throw 'record --no-clipboard still copied the recording.' }
+    Write-Output 'PASS: record follows Copy file to clipboard and --no-clipboard overrides it'
 }
 if ($Case -in @('all', 'account')) {
     Invoke-CaptureCase 'account-only' 'account' @('capture', '--mode', 'region', '--rect', '16,16,2,2', '--delay', '0', '--no-shutter', '--no-cursor', '--no-save', '--no-clipboard', '--json') 0 ''

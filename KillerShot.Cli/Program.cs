@@ -41,6 +41,10 @@ public static class Program
     /// Self-tests replace it, because a hidden test desktop cannot be copied.</summary>
     internal static Func<bool, FrozenDesktop> Freeze { get; set; } = FrozenDesktop.Capture;
 
+    /// <summary>Puts a finished recording on the clipboard. Self-tests replace it so a check never
+    /// touches the real clipboard.</summary>
+    internal static Func<string, bool> CopyRecording { get; set; } = CopyFileDrop;
+
     private static TextWriter Out = Console.Out;
     private static TextWriter Err = Console.Error;
 
@@ -693,7 +697,7 @@ public static class Program
 
     private static readonly string[] RecordValues = ["mode", "monitor", "window", "rect", "out", "format", "seconds", "fps", "sound",
         "quality", "gif-colors", "gif-size"];
-    private static readonly string[] RecordFlags = ["json", "cursor", "no-cursor", "clipboard", "pick", "overwrite", "loop", "no-loop"];
+    private static readonly string[] RecordFlags = ["json", "cursor", "no-cursor", "clipboard", "no-clipboard", "pick", "overwrite", "loop", "no-loop"];
 
     private static async Task<int> RecordAsync(string[] args, IEnumerable<IAudioCaptureSource>? audioSources)
     {
@@ -715,6 +719,7 @@ public static class Program
         int gifSize = o.Int("gif-size", 10, 100) ?? VideoSettings.GifSize;
         bool loop = o.Switch("loop", "no-loop") ?? VideoSettings.GifLoop;
         bool cursor = o.Switch("cursor", "no-cursor") ?? VideoSettings.IncludeCursor;
+        bool copy = o.Switch("clipboard", "no-clipboard") ?? VideoSettings.CopyFile;
 
         Win32.RECT? rect = o.Value("rect") is { } r ? ParseRect(r) : null;
         IntPtr window = mode == CaptureMode.Window && o.Value("window") is { } w ? ResolveWindow(w) : IntPtr.Zero;
@@ -826,7 +831,7 @@ public static class Program
 
         bool copied = false;
         if (recordingWarning != null) Err.WriteLine("Recording saved with a warning: " + OneLine(recordingWarning.Message));
-        if (o.Has("clipboard")) copied = CopyFileDrop(path);
+        if (copy) copied = CopyRecording(path);
 
         if (o.Has("json"))
         {
@@ -855,7 +860,7 @@ public static class Program
             Out.WriteLine(path);
         }
 
-        if (o.Has("clipboard") && !copied)
+        if (copy && !copied)
         {
             Err.WriteLine("The clipboard is busy, so the file was not copied.");
             return ExitFailed;
@@ -1800,7 +1805,7 @@ public static class Program
           --gif-size <10-100>             GIF size as a percentage of the recorded area.
           --loop, --no-loop               Loop the GIF.
           --cursor, --no-cursor           Include the mouse pointer.
-          --clipboard                     Copy the finished file to the clipboard.
+          --clipboard, --no-clipboard     Copy the finished file to the clipboard.
           --overwrite, --json             The same as for capture.
 
         recent options:
@@ -1822,9 +1827,8 @@ public static class Program
         folders, and a password-protected album has to be opened in the app.
 
         Capture and record options left out follow your KillerShot settings for mode, delay,
-        format, quality, folder, file name, cursor, sound and Scan every capture, and a
-        capture follows Copy to clipboard. A recording copies only with --clipboard. The
-        steps that wait on you in the app (Ask to save, Review first, Open the editor,
+        format, quality, folder, file name, cursor, sound, clipboard and Scan every capture.
+        The steps that wait on you in the app (Ask to save, Review first, Open the editor,
         notifications, Copy file path, Open with, Email and the recording countdown) apply
         to app captures only.
         Exit codes: 0 success, 1 failure, 2 invalid command line, 3 cancelled.

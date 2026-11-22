@@ -37,6 +37,13 @@ internal static class SelfTestCliSafety
                 ? _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([[new OcrWord("jane.doe@example.com", new Rect(4, 4, 24, 12))]])
                 : _ => throw new InvalidOperationException("Synthetic recognition failure.");
         }
+        if (args[2] == "record-copy")
+        {
+            // Copy file to clipboard is on. The stand-in copy writes a marker beside the test
+            // instead of replacing whatever is on the real clipboard.
+            VideoSettings.CopyFile = true;
+            Cli.Program.CopyRecording = path => { File.WriteAllText(Path.Combine(dir, "copied.txt"), path); return true; };
+        }
         if (args[2] == "protected")
         {
             if (!CaptureLibrary.OpenAuto()) throw new InvalidOperationException(CaptureLibrary.LoadError);
