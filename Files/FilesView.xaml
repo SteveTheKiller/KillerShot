@@ -13,8 +13,26 @@
         <ItemsPanelTemplate x:Key="PanelWrapVertical">
             <local:VirtualizingWrapPanel Orientation="Vertical" ItemWidth="{Binding Tag.ListItemWidth, RelativeSource={RelativeSource AncestorType=ListBox}}" ItemHeight="{Binding Tag.ListItemHeight, RelativeSource={RelativeSource AncestorType=ListBox}}" />
         </ItemsPanelTemplate>
+        <!-- Grain over a row's hover fill, under its words, as on menu rows and card tiles. It sits
+             first inside the row's own Border, so that Border's IsMouseOver drives it. A selected
+             row keeps its plain selection fill. -->
+        <Style x:Key="RowHoverGrain" TargetType="Border">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Background" Value="{DynamicResource GrainTileBrush}" />
+            <Setter Property="Opacity" Value="{DynamicResource GrainOpacity}" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}" Value="True" />
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
         <DataTemplate x:Key="TileTemplate" DataType="{x:Type files:FileEntry}">
-            <Border x:Name="TileBd" CornerRadius="4" Cursor="Hand" BorderThickness="1" Margin="{Binding Tag.TileMargin, RelativeSource={RelativeSource AncestorType=ListBox}}" Padding="{Binding Tag.TilePad, RelativeSource={RelativeSource AncestorType=ListBox}}" Tag="{Binding FilePath}" ToolTip="{Binding FilePath}">
+            <Border x:Name="TileBd" CornerRadius="4" Cursor="Hand" BorderThickness="1" Margin="{Binding Tag.TileMargin, RelativeSource={RelativeSource AncestorType=ListBox}}" Tag="{Binding FilePath}" ToolTip="{Binding FilePath}">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Background" Value="Transparent" />
@@ -30,10 +48,13 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <StackPanel>
+                <Grid>
+                <Border Style="{StaticResource RowHoverGrain}" CornerRadius="3" />
+                <StackPanel Margin="{Binding Tag.TilePad, RelativeSource={RelativeSource AncestorType=ListBox}}">
                     <Image HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" MaxWidth="{Binding Tag.TileSize, RelativeSource={RelativeSource AncestorType=ListBox}}" Height="{Binding Tag.TileSize, RelativeSource={RelativeSource AncestorType=ListBox}}" shellns:TileArt.Path="{Binding FilePath}" shellns:TileArt.IsDirectory="{Binding IsDirectory}" shellns:TileArt.Size="{Binding Tag.TileSize, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                     <TextBlock Text="{Binding NameLabel, Mode=OneWay}" Style="{StaticResource TileResultText}" FontFamily="{DynamicResource MonoFont}" FontSize="10.5" TextAlignment="Center" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="30" Margin="{Binding Tag.TileNamePad, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                 </StackPanel>
+                </Grid>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="CompactListRowTemplate" DataType="{x:Type files:FileEntry}">
@@ -51,14 +72,17 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
+                <Grid>
+                <Border Style="{StaticResource RowHoverGrain}" />
                 <StackPanel Orientation="Horizontal" Margin="4,2">
                     <Image Width="{Binding Tag.RowIconSize, RelativeSource={RelativeSource AncestorType=ListBox}}" Height="{Binding Tag.RowIconSize, RelativeSource={RelativeSource AncestorType=ListBox}}" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" shellns:TileArt.Path="{Binding FilePath}" shellns:TileArt.IsDirectory="{Binding IsDirectory}" shellns:TileArt.Size="{Binding Tag.RowIconSize, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                     <TextBlock Text="{Binding NameLabel, Mode=OneWay}" Style="{StaticResource ResultText}" Margin="6,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
+                </Grid>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="DetailsRowTemplate" DataType="{x:Type files:FileEntry}">
-            <Border Cursor="Hand" Tag="{Binding FilePath}" Padding="{Binding Tag.RowPad, RelativeSource={RelativeSource AncestorType=ListBox}}">
+            <Border Cursor="Hand" Tag="{Binding FilePath}">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Background" Value="Transparent" />
@@ -74,6 +98,8 @@
                     </Style>
                 </Border.Style>
                 <Grid>
+                <Border Style="{StaticResource RowHoverGrain}" />
+                <Grid Margin="{Binding Tag.RowPad, RelativeSource={RelativeSource AncestorType=ListBox}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="{Binding Tag.RowIconColumn, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                         <ColumnDefinition Width="{Binding Tag.NameWidth, RelativeSource={RelativeSource AncestorType=ListBox}}" />
@@ -91,6 +117,7 @@
                     <TextBlock Grid.Column="4" Text="{Binding ModifiedLabel}" Style="{StaticResource ResultMuted}" FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
                     <TextBlock Grid.Column="5" Text="{Binding TypeName}" Style="{StaticResource ResultMuted}" FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
                     <TextBlock Grid.Column="6" Text="{Binding CreatedLabel}" Style="{StaticResource ResultMuted}" FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </Grid>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -357,7 +384,9 @@
                     </Popup>
                 </StackPanel>
             </Grid>
-            <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed" Background="{DynamicResource TableHeaderBrush}" BorderBrush="{DynamicResource HeaderLineBrush}" BorderThickness="0,0,0,1" ContextMenuOpening="DetailsHeader_ContextMenuOpening">
+            <!-- The column header wears the toolbar's surface above it, so Trash Polka's sleeve runs
+                 through both rows instead of stopping at a flat gray band. -->
+            <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed" Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource HeaderLineBrush}" BorderThickness="0,0,0,1" ContextMenuOpening="DetailsHeader_ContextMenuOpening">
                 <Border.ContextMenu>
                     <ContextMenu Placement="Bottom" />
                 </Border.ContextMenu>
@@ -424,7 +453,7 @@
             <Grid>
                 <Border x:Name="ResultsSurfaceGrain" IsHitTestVisible="False" CornerRadius="0" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}" />
                 <!-- Trash Polka shows its lighter pane stretch of the sleeve here, like KillerPDF's document card
-                     and KillerScan's results pane; the column header above stays matte. -->
+                     and KillerScan's results pane. -->
                 <Border IsHitTestVisible="False" Background="{DynamicResource ListPaneBrush}" Visibility="{Binding Visibility, ElementName=ResultsList}"
                         local:ThemeMotif.Part="Window" local:ThemeMotif.BaseBrush="ListPaneBrush" />
                 <Border IsHitTestVisible="False" Visibility="{Binding Visibility, ElementName=ResultsList}" BorderBrush="{DynamicResource PaneBevelDarkBrush}" BorderThickness="{DynamicResource PaneBevelLightThickness}" />

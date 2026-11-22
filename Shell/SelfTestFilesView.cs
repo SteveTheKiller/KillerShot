@@ -243,7 +243,8 @@ internal static class SelfTestFilesView
                     throw new InvalidOperationException("View/sort/hidden options did not restore.");
                 checks++;
             }
-            foreach (Theme theme in new[] { Theme.Dark, Theme.SE98 })
+            // Trash Polka is here for its sleeve, which the toolbar and the column header share.
+            foreach (Theme theme in new[] { Theme.Dark, Theme.SE98, Theme.TrashPolka })
             {
                 ThemeManager.Apply(theme);
                 foreach (int mode in new[] { 0, 1, 2 })

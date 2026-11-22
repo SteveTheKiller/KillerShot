@@ -17,7 +17,8 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 - The selected album in the Albums window uses the same solid highlight as every other list, instead of a dim blend of it. The other albums read in the theme's text color instead of black.
 
 ### Changed
-- Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header stays matte.
+- Under Trash Polka, the Files pane shows the lighter stretch of the ink behind its rows, the way the editor's card does. The column header wears the toolbar's surface above it.
+- Hovering a row or tile in the Files view adds the grain, as menu rows do.
 - The Albums window shows its actions as icon tiles in one row under the list and one under the library settings. The Keep captures list is sized to its choices.
 - The command line help names the settings scripts follow and the app-only steps they skip. It also says `recent` lists the album only.
 - The `record` command follows Copy file to clipboard, the way `capture` follows Copy to clipboard. `--no-clipboard` leaves the clipboard alone.
