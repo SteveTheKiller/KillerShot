@@ -874,7 +874,7 @@ public static class Program
 
     private static int Recent(string[] args)
     {
-        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "delete", "move", "to", "note", "text", "out"], ["json", "overwrite", "yes"]);
+        var o = Options.Parse(args, ["limit", "search", "copy", "export", "open", "delete", "move", "to", "note", "text", "out"], ["json", "overwrite", "yes"], emptyValues: ["text"]);
         o.NoPositionals();
         string[] actions = ["copy", "export", "open", "delete", "move", "note"];
         var chosen = actions.Where(o.Has).ToArray();
@@ -1847,7 +1847,9 @@ public static class Program
         private readonly Dictionary<string, string?> _items = new(StringComparer.OrdinalIgnoreCase);
         public List<string> Positionals { get; } = [];
 
-        public static Options Parse(string[] args, string[] values, string[] flags)
+        /// <param name="emptyValues">Value options that may be empty, such as a note's --text,
+        /// where empty text is how the value is cleared.</param>
+        public static Options Parse(string[] args, string[] values, string[] flags, string[]? emptyValues = null)
         {
             var o = new Options();
             for (int i = 0; i < args.Length; i++)
@@ -1873,7 +1875,8 @@ public static class Program
                     string? value = inline ?? (i + 1 < args.Length ? args[++i] : null);
                     // The next option is not this one's value: "--out --json" leaves --out empty
                     // instead of writing a file named --json. "--out=--json" still names one.
-                    if (string.IsNullOrWhiteSpace(value) || inline == null && value.StartsWith("--", StringComparison.Ordinal))
+                    bool emptyOk = emptyValues != null && Array.IndexOf(emptyValues, name) >= 0;
+                    if (value == null || !emptyOk && string.IsNullOrWhiteSpace(value) || inline == null && value.StartsWith("--", StringComparison.Ordinal))
                         throw new CliException($"--{name} needs a value.");
                     o._items[name] = value;
                 }

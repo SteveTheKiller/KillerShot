@@ -13,6 +13,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 - Make PDF shows only for folders that have pictures in them, in the album's folder cards and in the Files view.
 - Opening KillerShot on the Files view no longer draws the editor's frame around it.
 - The `recent` command exports a recording as its clip instead of its poster frame, and says it can't copy one as a picture.
+- `recent --note` with empty `--text` clears the note, as the help says, instead of being refused.
 - The selected album in the Albums window uses the same solid highlight as every other list, instead of a dim blend of it. The other albums read in the theme's text color instead of black.
 
 ### Changed

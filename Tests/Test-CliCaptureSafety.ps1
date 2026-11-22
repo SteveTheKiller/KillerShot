@@ -94,6 +94,10 @@ if ($Case -in @('all', 'recent-id')) {
     Invoke-CaptureCase 'recent-note-id' 'two-captures' @('recent', '--note', "id:$($older.id)", '--text', 'picked by id', '--json') 0 ''
     $result = Get-Content -LiteralPath (Join-Path $Output 'recent-note-id\stdout.txt') -Raw | ConvertFrom-Json
     if ($result.id -ne $older.id -or $result.index -ne 2 -or $result.action -ne 'note') { throw "recent --note id: acted on the wrong capture: $($result | ConvertTo-Json -Compress)" }
+    # The help says empty text clears a note, so an empty --text must be accepted.
+    Invoke-CaptureCase 'recent-note-clear' 'two-captures' @('recent', '--note', "id:$($older.id)", '--text', '', '--json') 0 ''
+    Invoke-CaptureCase 'recent-note-clear-inline' 'two-captures' @('recent', '--note', "id:$($older.id)", '--text=', '--json') 0 ''
+    Invoke-CaptureCase 'recent-note-missing' 'two-captures' @('recent', '--note', "id:$($older.id)", '--text') 2 '--text needs a value'
     Invoke-CaptureCase 'recent-missing-id' 'two-captures' @('recent', '--delete', 'id:999999', '--yes') 1 'No capture has the id 999999'
     Invoke-CaptureCase 'recent-bad-id' 'two-captures' @('recent', '--open', 'id:abc') 2 'needs a capture id'
     Invoke-CaptureCase 'recent-id-search' 'two-captures' @('recent', '--copy', "id:$($older.id)", '--search', 'Older') 2 'does not go with --search'
