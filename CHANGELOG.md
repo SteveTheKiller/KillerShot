@@ -1,6 +1,6 @@
 # KillerShot Changelog
 
-## [1.2.2]
+## [1.2.2] - 2026-11-21
 
 KillerShot 1.2.2 puts the Trash Polka ink behind the album views, takes the gray box off the capture cards, and opens Capture Settings and Video Settings in their own windows.
 
