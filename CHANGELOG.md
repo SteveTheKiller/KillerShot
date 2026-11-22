@@ -1,5 +1,14 @@
 # KillerShot Changelog
 
+## [1.2.2]
+
+KillerShot 1.2.2 puts the Trash Polka ink behind the album views and takes the gray box off the capture cards.
+
+### Fixed
+- In Trash Polka, the album pane behind Shelves, Grid, Timeline and Files carries the ink artwork instead of a flat gray fill.
+- Grid and Timeline captures sit straight on the pane in every theme, without a gray box behind each one. A card color you pick still paints the card.
+- The capture cards no longer draw a second grain layer over the pane's grain.
+
 ## [1.2.1] - 2026-11-21
 
 KillerShot 1.2.1 runs Scan every capture on command line and KillerMCP captures, lets scripts name a capture by its id, carries Trash Polka into the Files view, adds Make PDF for picked pictures, and lays out the Albums window as tiles.
@@ -8,7 +17,6 @@ KillerShot 1.2.1 runs Scan every capture on command line and KillerMCP captures,
 - Command line and KillerMCP captures now follow Scan every capture, so found text is boxed before the file, clipboard or album gets the picture. When the scan fails or Windows has no text recognition language, the original is kept and the command says it was not checked.
 
 ### Fixed
-- In Trash Polka, the album pane behind Shelves, Grid, Timeline and Files carries the ink artwork instead of a flat gray fill.
 - Shelves, Grid and Timeline show the edge shadows while more captures lie above or below. The captures also scroll to the pane's edges instead of stopping short of the bottom.
 - A window capture of KillerShot keeps its own dialog when one sits over the window, including a dialog opened from another dialog.
 - Make PDF shows only for folders that have pictures in them, in the album's folder cards and in the Files view. Network folders always show it, so a slow share never holds up the card.
