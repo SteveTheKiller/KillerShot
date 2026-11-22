@@ -74,6 +74,23 @@ internal static class SelfTestAlbumSurfaces
                     report.Add($"{theme}/{view}: opaque pane and separate cards PASS");
                 }
             }
+            // Trash Polka: the album pane carries the ink piece like KillerPDF's document canvas, never the flat fill.
+            ThemeManager.Apply(Theme.TrashPolka);
+            foreach (string view in new[] { "shelves", "grid", "timeline", "files" })
+            {
+                window.TestShowLibraryView(view);
+                await Task.Delay(400);
+                var pane = (Border)window.FindName("ContentPane");
+                for (int wait = 0; wait < 400 && pane.Background is SolidColorBrush; wait++) { await Task.Delay(50); window.UpdateLayout(); }
+                if (pane.Background is SolidColorBrush flat)
+                    throw new InvalidOperationException($"TrashPolka/{view}: album pane is a flat {flat.Color} fill without the ink piece.");
+                var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+                bitmap.Render((Visual)window.Content);
+                ImageOutput.SavePng(bitmap, Path.Combine(folder, $"TrashPolka-{view}.png"));
+                report.Add($"TrashPolka/{view}: album pane carries the ink piece PASS");
+            }
+            ThemeManager.Apply(Theme.Dark);
+
             window.TestShowLibraryView("grid");
             CardColors.SetCard(Colors.MediumPurple);
             await Task.Delay(180);

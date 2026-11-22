@@ -290,7 +290,10 @@
                 <kl:DockHost.Body>
                 <kl:DockHost x:Name="StripDock">
                 <kl:DockHost.Body>
+                <!-- Trash Polka: the library and editor pane carries the window piece, like KillerPDF's document
+                     canvas. The main window's root is marked by hand, so the all-windows pass never reaches this. -->
                 <Border x:Name="ContentPane"
+                        icons:ThemeMotif.Part="Window" icons:ThemeMotif.BaseBrush="ContentPaneBrush"
                         Background="{DynamicResource ContentPaneBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
                         BorderThickness="{DynamicResource ContentPaneBaseBorderThickness}"
                         CornerRadius="{DynamicResource PanelCornerRadius}" Margin="{DynamicResource ContentPaneMargin}">
