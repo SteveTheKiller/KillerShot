@@ -623,10 +623,11 @@
             <Line X1="13" Y1="8" X2="8" Y2="13" Stroke="{DynamicResource BevelLightBrush}"/>
         </Canvas>
 
-        <!-- ================= CAPTURE SETTINGS OVERLAY =================
-             Shortcut recorders and capture options. Same card chrome as About. -->
-        <Grid x:Name="CaptureSettingsOverlay" Grid.RowSpan="3" Panel.ZIndex="8800" Visibility="Collapsed"
-              Background="#88000000" MouseLeftButtonDown="CaptureSettingsOverlay_Click">
+        <!-- ================= CAPTURE SETTINGS =================
+             Shortcut recorders and capture options, in the About card's chrome. The card is shown in
+             its own modeless window (Controls/CaptureSettingsWindow.cs); this collapsed grid only
+             holds it, with its styles, while the window is closed. -->
+        <Grid x:Name="CaptureSettingsHome" Grid.RowSpan="3" Visibility="Collapsed">
             <Grid.Resources>
                 <Style x:Key="CsHeading" TargetType="TextBlock">
                     <Setter Property="Foreground" Value="{DynamicResource DimTextBrush}"/>
@@ -645,8 +646,7 @@
                     <EventSetter Event="Unchecked" Handler="CaptureOption_Changed"/>
                 </Style>
             </Grid.Resources>
-            <Grid x:Name="CaptureSettingsCard" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
-                <Grid.RenderTransform><TranslateTransform x:Name="CaptureSettingsOffset"/></Grid.RenderTransform>
+            <Grid x:Name="CaptureSettingsCard" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
                 <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
@@ -659,10 +659,9 @@
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
                                 Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
 
-                        <!-- The card's top band moves it, like a title bar. -->
+                        <!-- The card's top band moves the window, like a title bar. -->
                         <Border Height="36" VerticalAlignment="Top" Background="Transparent" Cursor="SizeAll" Panel.ZIndex="1"
-                                MouseLeftButtonDown="CaptureSettingsDrag_Down" MouseMove="CaptureSettingsDrag_Move"
-                                MouseLeftButtonUp="CaptureSettingsDrag_Up"/>
+                                MouseLeftButtonDown="CaptureSettingsDrag_Down"/>
 
                         <Button Content="&#x2715;" Click="CaptureSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
                                 ToolTip="{DynamicResource Str_Sys_Close}"
@@ -673,8 +672,7 @@
                         <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
                                 Visibility="{DynamicResource AboutCaptionVisibility}"
                                 Background="{DynamicResource DialogTitleBarBrush}"
-                                MouseLeftButtonDown="CaptureSettingsDrag_Down" MouseMove="CaptureSettingsDrag_Move"
-                                MouseLeftButtonUp="CaptureSettingsDrag_Up">
+                                MouseLeftButtonDown="CaptureSettingsDrag_Down">
                             <Grid Margin="4,0,2,0">
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" VerticalAlignment="Center"
                                            FontFamily="Tahoma" FontSize="11" FontWeight="Bold"

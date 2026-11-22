@@ -339,7 +339,7 @@ internal static class SelfTestContextMenus
             report.Add("toggling during a slide reverses it and never shrinks the saved width: PASS");
             // The Print Screen switch lives in About (and the tray menu), not in Capture settings.
             var printScreen = (CheckBox?)window.FindName("PrintScreenKeyToggle");
-            Check(printScreen != null && !IsInside(printScreen, (FrameworkElement)window.FindName("CaptureSettingsOverlay")),
+            Check(printScreen != null && !IsInside(printScreen, (FrameworkElement)window.FindName("CaptureSettingsCard")),
                 "The Print Screen switch must be in About, not Capture settings.");
             report.Add("Print Screen switch is in About: PASS");
 

@@ -18,8 +18,7 @@ namespace KillerShot.Shell
         private bool AnyOverlayOpen =>
             ShortcutsOverlay.Visibility == Visibility.Visible ||
             VideoSettingsOverlay.Visibility == Visibility.Visible ||
-            AboutOverlay.Visibility == Visibility.Visible ||
-            CaptureSettingsOverlay.Visibility == Visibility.Visible;
+            AboutOverlay.Visibility == Visibility.Visible;
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -40,8 +39,7 @@ namespace KillerShot.Shell
 
             if (e.Key == Key.Escape)
             {
-                if (CaptureSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(CaptureSettingsOverlay);
-                else if (VideoSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(VideoSettingsOverlay);
+                if (VideoSettingsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(VideoSettingsOverlay);
                 else if (ShortcutsOverlay.Visibility == Visibility.Visible) FadeOverlayOut(ShortcutsOverlay);
                 else if (AboutOverlay.Visibility == Visibility.Visible) FadeOverlayOut(AboutOverlay);
                 else if (_libraryShown && !TypingInField()) ToggleLibrary();   // back to the open image

@@ -201,12 +201,7 @@ internal static class SelfTestUi
             async Task Shot(string name)
             {
                 await Wait(450);
-                w.UpdateLayout();
-                var root = (FrameworkElement)w.Content;
-                var dpi = VisualTreeHelper.GetDpi(w);
-                var rtb = new RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth * dpi.DpiScaleX), (int)Math.Ceiling(root.ActualHeight * dpi.DpiScaleY),
-                    96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, PixelFormats.Pbgra32);
-                rtb.Render(root);
+                var rtb = w.TestRenderScene();
                 ImageOutput.SavePng(rtb, Path.Combine(dir, name + ".png"));
                 log.AppendLine($"shot {name} {rtb.PixelWidth}x{rtb.PixelHeight}");
             }

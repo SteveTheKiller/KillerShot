@@ -141,13 +141,7 @@ internal static class SelfTestGallery
     {
         // Thumbnails load in the background; give them time to land before the render.
         await Task.Delay(3000);
-        w.UpdateLayout();
-        var root = (FrameworkElement)w.Content;
-        var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(w);
-        var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth * dpi.DpiScaleX), (int)Math.Ceiling(root.ActualHeight * dpi.DpiScaleY),
-            96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, System.Windows.Media.PixelFormats.Pbgra32);
-        rtb.Render(root);
-        ImageOutput.SavePng(rtb, path);
+        ImageOutput.SavePng(w.TestRenderScene(), path);
     }
 
     /// <summary>Two thirds of the count are the newest pictures in a row, so the date views fill

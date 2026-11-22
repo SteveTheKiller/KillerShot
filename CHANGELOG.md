@@ -2,12 +2,15 @@
 
 ## [1.2.2]
 
-KillerShot 1.2.2 puts the Trash Polka ink behind the album views and takes the gray box off the capture cards.
+KillerShot 1.2.2 puts the Trash Polka ink behind the album views, takes the gray box off the capture cards, and opens Capture Settings in its own window.
 
 ### Fixed
 - In Trash Polka, the album pane behind Shelves, Grid, Timeline and Files carries the ink artwork instead of a flat gray fill.
 - Grid and Timeline captures sit straight on the pane in every theme, without a gray box behind each one. A card color you pick still paints the card.
 - The capture cards no longer draw a second grain layer over the pane's grain.
+
+### Changed
+- Capture Settings opens in its own window. It moves anywhere on the desktop instead of getting cut off at the edge of the main window, and the main window stays usable while it is open.
 
 ## [1.2.1] - 2026-11-21
 

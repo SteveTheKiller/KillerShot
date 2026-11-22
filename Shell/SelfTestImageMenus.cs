@@ -179,7 +179,7 @@ internal static class SelfTestImageMenus
                 await Task.Delay(50);
             if (!window.TestAlbumsOpen || !((FrameworkElement)window.FindName("LibraryKeepCombo")).IsVisible
                 || Window.GetWindow((FrameworkElement)window.FindName("LibraryKeepCombo")) is not AlbumsDialog
-                || ((FrameworkElement)window.FindName("CaptureSettingsOverlay")).IsVisible)
+                || window.CaptureSettingsOpen)
                 throw new InvalidOperationException("The title-bar button must open the album manager window.");
             window.TestCloseAlbums();
             if (CaptureLibrary.Keep != keepBefore) throw new InvalidOperationException("Opening library settings changed retention.");

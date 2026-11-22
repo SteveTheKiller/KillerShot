@@ -17,6 +17,36 @@ namespace KillerShot.Shell
 
         internal void TestShowCaptureSettings() => ShowCaptureSettings();
 
+        /// <summary>Self-test shots: the window content, with an open Capture Settings window drawn
+        /// over it where it sits on screen (centered when it has no position yet).</summary>
+        internal System.Windows.Media.Imaging.RenderTargetBitmap TestRenderScene()
+        {
+            UpdateLayout();
+            var root = (FrameworkElement)Content;
+            var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
+            System.Windows.Media.Imaging.RenderTargetBitmap Render(System.Windows.Media.Visual visual, double width, double height)
+            {
+                var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(width * dpi.DpiScaleX), (int)Math.Ceiling(height * dpi.DpiScaleY),
+                    96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, System.Windows.Media.PixelFormats.Pbgra32);
+                bitmap.Render(visual);
+                return bitmap;
+            }
+            var main = Render(root, root.ActualWidth, root.ActualHeight);
+            if (_captureSettingsWindow is not { IsVisible: true } settings || settings.ActualWidth <= 0) return main;
+            settings.UpdateLayout();
+            // The settings window's content, card margin (shadow halo) included.
+            var card = Render((System.Windows.Media.Visual)settings.Content, settings.ActualWidth, settings.ActualHeight);
+            double x = double.IsNaN(settings.Left) || double.IsNaN(Left) ? (root.ActualWidth - settings.ActualWidth) / 2 : settings.Left - Left;
+            double y = double.IsNaN(settings.Top) || double.IsNaN(Top) ? (root.ActualHeight - settings.ActualHeight) / 2 : settings.Top - Top;
+            var scene = new System.Windows.Media.DrawingVisual();
+            using (var dc = scene.RenderOpen())
+            {
+                dc.DrawImage(main, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
+                dc.DrawImage(card, new Rect(x, y, settings.ActualWidth, settings.ActualHeight));
+            }
+            return Render(scene, root.ActualWidth, root.ActualHeight);
+        }
+
         /// <summary>Clicks the shortcut recorder for <paramref name="action"/>.</summary>
         internal bool TestStartRecording(Capture.ShortcutAction action)
         {
@@ -42,11 +72,12 @@ namespace KillerShot.Shell
 
         internal void TestCloseOverlays()
         {
-            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay, VideoSettingsOverlay })
+            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, VideoSettingsOverlay })
             {
                 o.BeginAnimation(OpacityProperty, null);
                 o.Visibility = Visibility.Collapsed;
             }
+            CloseCaptureSettings();
             ClassicFrameChrome.Opacity = 1;
         }
 

@@ -40,18 +40,36 @@ internal static class SelfTestFlyoutScroll
                 var root = (FrameworkElement)window.Content;
                 var contentRoot = (FrameworkElement)window.FindName("RootGrid");
                 contentRoot.Opacity = 1;
+                // Capture Settings is its own window, fitted to the screen. The test fits it to the
+                // sizes the overlays get and lets the shown window lay itself out (the self-test runs
+                // on its own desktop, so nothing appears on screen).
+                window.ShowActivated = false;
+                var captureCard = (FrameworkElement)window.FindName("CaptureSettingsCard");
+                async Task SettleOn(FrameworkElement layoutRoot, double width, double height)
+                {
+                    if (layoutRoot != captureCard) { await Settle(layoutRoot, width, height); return; }
+                    var settings = window.TestCaptureSettingsWindow!;
+                    settings.UpdateLayout();
+                    await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+                    captureCard.BeginAnimation(UIElement.OpacityProperty, null);
+                    captureCard.Opacity = 1;
+                    settings.UpdateLayout();
+                }
                 // Measure the real window content without creating an HWND or moving focus.
                 foreach (string kind in new[] { "Capture", "Video", "Help" })
                 {
                     Layout(root, 1024, 460);
+                    window.CaptureSettingsLimit = new Size(1024, 460);
                     if (kind == "Capture") window.TestShowCaptureSettings();
                     else if (kind == "Video") window.TestShowVideoSettings();
                     else window.TestShowShortcuts(false);
-                    var overlay = (FrameworkElement)window.FindName(kind == "Help" ? "ShortcutsOverlay" : kind + "SettingsOverlay");
+                    var overlay = kind == "Capture" ? captureCard
+                        : (FrameworkElement)window.FindName(kind == "Help" ? "ShortcutsOverlay" : kind + "SettingsOverlay");
+                    var layoutRoot = kind == "Capture" ? captureCard : root;
                     var scroll = (ScrollViewer)window.FindName(kind == "Help" ? "KsListHostScroll" : kind + "SettingsScroll");
                     overlay.BeginAnimation(UIElement.OpacityProperty, null);
                     overlay.Opacity = 1;
-                    await Settle(root, 1024, 460);
+                    await SettleOn(layoutRoot, 1024, 460);
                     var card = (FrameworkElement)VisualTreeHelper.GetParent(scroll);
                     if (kind == "Help") card = (FrameworkElement)VisualTreeHelper.GetParent(card);
                     var close = Descendants<Button>(card).First(b => b.Visibility == Visibility.Visible
@@ -66,11 +84,11 @@ internal static class SelfTestFlyoutScroll
                     Render(card, Path.Combine(folder, prefix + "-top.png"));
                     CheckCues(scroll, false, true, theme, prefix + " top", failures);
                     scroll.ScrollToVerticalOffset(scroll.ScrollableHeight / 2);
-                    await Settle(root, 1024, 460);
+                    await SettleOn(layoutRoot, 1024, 460);
                     CheckCues(scroll, true, true, theme, prefix + " middle", failures);
                     Render(card, Path.Combine(folder, prefix + "-middle.png"));
                     scroll.ScrollToBottom();
-                    await Settle(root, 1024, 460);
+                    await SettleOn(layoutRoot, 1024, 460);
                     CheckCues(scroll, true, false, theme, prefix + " bottom", failures);
                     Render(card, Path.Combine(folder, prefix + "-bottom.png"));
                     if (kind == "Capture")
@@ -83,24 +101,21 @@ internal static class SelfTestFlyoutScroll
                     }
                     window.TestCloseOverlays();
                 }
-                Layout(root, 1024, 820);
+                window.CaptureSettingsLimit = new Size(1024, 820);
                 window.TestShowCaptureSettings();
-                var normalOverlay = (FrameworkElement)window.FindName("CaptureSettingsOverlay");
-                normalOverlay.BeginAnimation(UIElement.OpacityProperty, null);
-                normalOverlay.Opacity = 1;
-                await Settle(root, 1024, 820);
+                await SettleOn(captureCard, 1024, 820);
                 var normalScroll = (ScrollViewer)window.FindName("CaptureSettingsScroll");
+                Check(window.TestCaptureSettingsWindow?.Content == captureCard, theme + " capture settings must sit in its own window", failures);
                 Check(normalScroll.ScrollableHeight == 0, theme + " normal capture settings must fit", failures);
                 CheckCues(normalScroll, false, false, theme, theme + " normal", failures);
                 Render((FrameworkElement)VisualTreeHelper.GetParent(normalScroll), Path.Combine(folder, theme + "-Capture-normal.png"));
                 window.TestCloseOverlays();
-                Layout(root, 640, 460);
+                Check(captureCard.Parent == window.FindName("CaptureSettingsHome"), theme + " a closed settings window must hand the card back", failures);
+                window.CaptureSettingsLimit = new Size(640, 460);
                 window.TestShowCaptureSettings();
-                normalOverlay.BeginAnimation(UIElement.OpacityProperty, null);
-                normalOverlay.Opacity = 1;
-                await Settle(root, 640, 460);
+                await SettleOn(captureCard, 640, 460);
                 normalScroll.ScrollToTop();
-                await Settle(root, 640, 460);
+                await SettleOn(captureCard, 640, 460);
                 var narrowCard = (FrameworkElement)VisualTreeHelper.GetParent(normalScroll);
                 var narrowBar = (ScrollBar)normalScroll.Template.FindName("PART_VerticalScrollBar", normalScroll);
                 Check(narrowCard.ActualWidth <= 592, theme + " narrow settings must fit inside the window", failures);

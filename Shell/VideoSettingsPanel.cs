@@ -25,7 +25,7 @@ namespace KillerShot.Shell
 
         private void ShowVideoSettings()
         {
-            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, CaptureSettingsOverlay })
+            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay })
                 if (o.Visibility == Visibility.Visible) o.Visibility = Visibility.Collapsed;
             SyncVideoOptions();
             BuildShortcutRows();
