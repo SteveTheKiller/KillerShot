@@ -494,10 +494,27 @@ internal static class SelfTestAlbumLayout
                 [], KillerShot.Capture.FrozenDesktop.EnumerateWindows(), KillerShot.Capture.FrozenDesktop.EnumerateTopWindows());
             var pasted = frozenDesktop.PopupsOver(mainHandle).ToList();
             report.Add($"owned_dialog: style=0x{KillerShot.Native.Win32.GetWindowLong(noticeHandle, KillerShot.Native.Win32.GWL_STYLE):X} rect={noticeRect} pasted={string.Join(";", pasted)}");
-            notice.Close();
             Check(pasted.Any(r => r.Left == noticeRect.Left && r.Top == noticeRect.Top && r.Right == noticeRect.Right && r.Bottom == noticeRect.Bottom),
                 "A window capture of KillerShot must keep its own dialog that sits over it.");
             report.Add("window_capture_keeps_owned_dialog=True");
+
+            // A dialog opened from that dialog belongs to it too. Its root owner is the main
+            // window, so a capture of the first dialog has to follow the whole owner chain.
+            var nested = new KillerShot.Controls.ConfirmDialog("Nested fixture", "", "Close", notice: true)
+            { Owner = notice, ShowActivated = false };
+            nested.Show();
+            await Task.Delay(250);
+            var nestedHandle = new System.Windows.Interop.WindowInteropHelper(nested).Handle;
+            KillerShot.Native.Win32.GetWindowRect(nestedHandle, out var nestedRect);
+            var nestedDesktop = new KillerShot.Capture.FrozenDesktop(new KillerShot.Native.Win32.RECT(0, 0, 1, 1), new byte[4],
+                [], KillerShot.Capture.FrozenDesktop.EnumerateWindows(), KillerShot.Capture.FrozenDesktop.EnumerateTopWindows());
+            var nestedPasted = nestedDesktop.PopupsOver(noticeHandle).ToList();
+            report.Add($"nested_dialog: rect={nestedRect} pasted={string.Join(";", nestedPasted)}");
+            nested.Close();
+            notice.Close();
+            Check(nestedPasted.Any(r => r.Left == nestedRect.Left && r.Top == nestedRect.Top && r.Right == nestedRect.Right && r.Bottom == nestedRect.Bottom),
+                "A window capture of a KillerShot dialog must keep the dialog it opened over it.");
+            report.Add("window_capture_keeps_nested_dialog=True");
             code = 0;
         }
         catch (Exception error) { report.Add(error.ToString()); }

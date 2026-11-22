@@ -13,7 +13,7 @@ internal sealed record WindowBounds(IntPtr Handle, Win32.RECT Bounds);
 
 /// <summary>A visible top-level window recorded at freeze time, with its process and whether it is a
 /// captionless popup: a context menu, flyout or tooltip that floats over its app's window.</summary>
-internal sealed record TopWindow(IntPtr Handle, uint ProcessId, Win32.RECT Bounds, bool Popup, IntPtr RootOwner = default);
+internal sealed record TopWindow(IntPtr Handle, uint ProcessId, Win32.RECT Bounds, bool Popup, IReadOnlyList<IntPtr>? Owners = null);
 
 /// <summary>A copy of the whole virtual desktop taken the moment a capture starts. Region,
 /// monitor and all-monitor modes crop from it, so open menus and tooltips stay in the picture
@@ -52,29 +52,31 @@ internal sealed class FrozenDesktop
             Win32.GetWindowThreadProcessId(h, out uint pid);
             uint style = unchecked((uint)Win32.GetWindowLong(h, Win32.GWL_STYLE));
             bool popup = (style & Win32.WS_POPUP) != 0 && (style & Win32.WS_CAPTION) != Win32.WS_CAPTION;
-            list.Add(new TopWindow(h, pid, r, popup, RootOwner(h)));
+            list.Add(new TopWindow(h, pid, r, popup, OwnerChain(h)));
             return true;
         }, IntPtr.Zero);
         return list;
     }
 
     // GetAncestor's root owner follows GetParent, which skips the owner of a window without WS_POPUP,
-    // and WPF dialogs have none. The owner chain itself is what ties a dialog to its window.
-    private static IntPtr RootOwner(IntPtr h)
+    // and WPF dialogs have none. The owner chain itself is what ties a dialog to its window. The
+    // whole chain is kept, not just its top, so a dialog opened from a dialog still belongs to the
+    // dialog when that is the window being captured.
+    private static IReadOnlyList<IntPtr> OwnerChain(IntPtr h)
     {
-        IntPtr root = IntPtr.Zero;
+        var owners = new List<IntPtr>();
         for (int i = 0; i < 16; i++)
         {
             IntPtr next = Win32.GetWindow(h, Win32.GW_OWNER);
             if (next == IntPtr.Zero) break;
-            root = h = next;
+            owners.Add(h = next);
         }
-        return root;
+        return owners;
     }
 
     /// <summary>The app's own popups that sat over <paramref name="window"/> when the desktop froze: its context
     /// menus, flyouts and tooltips. Window capture reads only the window's surface, so these come from the
-    /// frozen desktop instead. Dialogs the window owns count too, since they read as part of it on screen.</summary>
+    /// frozen desktop instead. Dialogs the window owns count too, directly or through another dialog, since they read as part of it on screen.</summary>
     public IEnumerable<Win32.RECT> PopupsOver(IntPtr window)
     {
         var owner = TopWindows.FirstOrDefault(t => t.Handle == window);
@@ -83,7 +85,7 @@ internal sealed class FrozenDesktop
         {
             if (t.Handle == window) yield break;
             if (t.ProcessId != owner.ProcessId) continue;
-            if (t.Popup || t.RootOwner == window) yield return t.Bounds;
+            if (t.Popup || t.Owners?.Contains(window) == true) yield return t.Bounds;
         }
     }
 

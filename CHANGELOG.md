@@ -9,7 +9,7 @@ KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums wi
 
 ### Fixed
 - Shelves, Grid and Timeline show the edge shadows while more captures lie above or below. The captures also scroll to the pane's edges instead of stopping short of the bottom.
-- A window capture of KillerShot keeps its own dialog when one sits over the window.
+- A window capture of KillerShot keeps its own dialog when one sits over the window, including a dialog opened from another dialog.
 - Make PDF shows only for folders that have pictures in them, in the album's folder cards and in the Files view. Network folders always show it, so a slow share never holds up the card.
 - Opening KillerShot on the Files view no longer draws the editor's frame around it.
 - The `recent` command exports a recording as its clip instead of its poster frame, and says it can't copy one as a picture.
