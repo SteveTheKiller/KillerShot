@@ -77,11 +77,8 @@
                     <ControlTemplate TargetType="Button">
                         <kc:PhotoCardBorder x:Name="tile" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
-                            <Grid>
-                                <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"
-                                        CornerRadius="{DynamicResource ControlCornerRadius}" IsHitTestVisible="False"/>
-                                <ContentPresenter Margin="5"/>
-                            </Grid>
+                            <!-- No grain of its own: the pane under the card already carries the grain. -->
+                            <ContentPresenter Margin="5"/>
                         </kc:PhotoCardBorder>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
