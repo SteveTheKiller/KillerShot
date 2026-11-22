@@ -1,8 +1,8 @@
 # KillerShot Changelog
 
-## [1.2.1]
+## [1.2.1] - 2026-11-21
 
-KillerShot 1.2.1 carries Trash Polka into the Files view, lays out the Albums window as tiles, and fixes how the album's views scroll.
+KillerShot 1.2.1 runs Scan every capture on command line and KillerMCP captures, lets scripts name a capture by its id, carries Trash Polka into the Files view, adds Make PDF for picked pictures, and lays out the Albums window as tiles.
 
 ### Security
 - Command line and KillerMCP captures now follow Scan every capture, so found text is boxed before the file, clipboard or album gets the picture. When the scan fails or Windows has no text recognition language, the original is kept and the command says it was not checked.
