@@ -223,19 +223,39 @@ internal static class KillerPdfHandoff
         _ => "Str_MakePdf_Failed",
     };
 
+    private static bool IsImage(string path) => ImageExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Whether a Files view pick is all pictures, so the card can offer Make PDF for it.</summary>
+    internal static bool AllImages(IReadOnlyCollection<string> paths) => paths.Count > 0 && paths.All(IsImage);
+
     /// <summary>Starts KillerPDF on the folder's pictures. The working directory is the folder and
     /// the arguments are bare names, so a large folder still fits the command line.</summary>
     internal static Result MakePdf(string folder)
     {
         string? exe = FindKillerPdf();
         if (exe == null) return Result.NotInstalled;
-        var images = ImagesIn(folder);
+        return Start(exe, folder, ImagesIn(folder));
+    }
+
+    /// <summary>Starts KillerPDF on pictures picked in the Files view, in the order given, which is
+    /// the order the list shows. A picture outside the first one's folder goes over as a full path.</summary>
+    internal static Result MakePdf(IReadOnlyList<string> files)
+    {
+        string? exe = FindKillerPdf();
+        if (exe == null) return Result.NotInstalled;
+        var images = files.Where(IsImage).ToList();
+        if (images.Count == 0) return Result.NoImages;
+        return Start(exe, Path.GetDirectoryName(images[0]) ?? "", images);
+    }
+
+    private static Result Start(string exe, string folder, List<string> images)
+    {
         if (images.Count == 0) return Result.NoImages;
         var info = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = folder };
         int length = exe.Length + 3;
         foreach (var image in images)
         {
-            string name = Path.GetFileName(image);
+            string name = string.Equals(Path.GetDirectoryName(image), folder, StringComparison.OrdinalIgnoreCase) ? Path.GetFileName(image) : image;
             length += name.Length + 3;
             if (length > MaxCommandLine) return Result.TooMany;
             info.ArgumentList.Add(name);

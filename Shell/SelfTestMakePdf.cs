@@ -48,6 +48,21 @@ internal static partial class SelfTestMakePdf
             Check(names.SequenceEqual(["a 10.JPG", "b 2.png", "c.tiff"]), "passes only the folder's own pictures, as bare names");
             Check(started?.WorkingDirectory == pictures, "working directory is the folder");
 
+            // Picked pictures from the Files view go over in the order the list shows them, not
+            // name order, and only the picked ones.
+            started = null;
+            var picked = KillerPdfHandoff.MakePdf([Path.Combine(pictures, "c.tiff"), Path.Combine(pictures, "a 10.JPG")]);
+            var pickedNames = started?.ArgumentList.ToArray() ?? [];
+            report.Add("picked: " + string.Join(" | ", pickedNames));
+            Check(picked == KillerPdfHandoff.Result.Started && pickedNames.SequenceEqual(["c.tiff", "a 10.JPG"]) && started?.WorkingDirectory == pictures,
+                "picked pictures go over in list order, as bare names, from their folder");
+            started = null;
+            Check(KillerPdfHandoff.MakePdf([Path.Combine(pictures, "notes.txt")]) == KillerPdfHandoff.Result.NoImages && started == null,
+                "a pick with no pictures says so");
+            Check(KillerPdfHandoff.AllImages([Path.Combine(pictures, "b 2.png"), Path.Combine(pictures, "c.tiff")])
+                && !KillerPdfHandoff.AllImages([Path.Combine(pictures, "b 2.png"), Path.Combine(pictures, "notes.txt")])
+                && !KillerPdfHandoff.AllImages([]), "the card offers Make PDF only when every picked item is a picture");
+
             string empty = Path.Combine(folder, "empty");
             Directory.CreateDirectory(empty);
             Check(KillerPdfHandoff.MakePdf(empty) == KillerPdfHandoff.Result.NoImages, "empty folder says so");

@@ -74,10 +74,13 @@ public partial class FilesView
                 Tile("rename", "\uE8AC", "Str_Menu_Rename", () => BeginRename(), "F2", CanRename),
                 Tile("newfolder", "\uE8F4", "Str_Menu_NewFolder", () => StartCommand(NewFolder()), "Ctrl+Shift+N", CanPaste),
             };
-            // Make PDF shows only for one folder that has pictures in it.
+            // Make PDF shows for one folder that has pictures in it, or for a pick that is all
+            // pictures, whose pages then follow the order the list shows.
             if (KillerPdfHandoff.IsInstalled && count == 1 && ResultsList.SelectedItem is FileEntry { IsDirectory: true } folderEntry
                 && KillerPdfHandoff.HasImages(folderEntry.FilePath))
                 edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(folderEntry.FilePath)));
+            else if (PickedPictures() is { } picked && KillerPdfHandoff.IsInstalled)
+                edit.Add(Tile("makepdf", "\uEA90", "Str_Menu_MakePdf", () => MakePdf(picked)));
             groups.Add(edit);
             string[] paths = SelectedPaths.ToArray();
             groups.Add(
@@ -129,6 +132,22 @@ public partial class FilesView
     {
         string? problem = KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(folder));
         if (problem != null) SetCommandError(Loc(problem));
+    }
+
+    /// <summary>Make PDF on picked pictures, in the order the list shows them.</summary>
+    private void MakePdf(IReadOnlyList<string> pictures)
+    {
+        string? problem = KillerPdfHandoff.MessageKey(KillerPdfHandoff.MakePdf(pictures));
+        if (problem != null) SetCommandError(Loc(problem));
+    }
+
+    /// <summary>The selection's paths in list order when every picked item is a picture, else null.</summary>
+    internal List<string>? PickedPictures()
+    {
+        var picked = ResultsList.SelectedItems.OfType<FileEntry>().ToHashSet();
+        if (picked.Count == 0 || picked.Any(e => e.IsDirectory)) return null;
+        var paths = ResultsList.Items.OfType<FileEntry>().Where(picked.Contains).Select(e => e.FilePath).ToList();
+        return KillerPdfHandoff.AllImages(paths) ? paths : null;
     }
 
     /// <summary>The tiles in a card's grid item (or a header's buttons), in order.</summary>

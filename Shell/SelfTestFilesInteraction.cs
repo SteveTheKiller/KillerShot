@@ -403,6 +403,45 @@ internal static class SelfTestFilesInteraction
             Check(view.CommandError == null && StatusColor("MutedTextBrush")
                 && File.ReadAllText(Path.Combine(pasteRecovery, "independent.txt")) == "independent",
                 "successful paste clears error color after clipboard read refusal");
+            // Picked pictures get Make PDF on their card, with pages in the list's order however they
+            // were picked; a pick with anything else in it leaves the tile out.
+            string pdfPick = Directory.CreateDirectory(Path.Combine(folder, "pdf-pick")).FullName;
+            foreach (string name in new[] { "one.png", "two.png", "three.png" })
+                using (var stream = File.Create(Path.Combine(pdfPick, name)))
+                {
+                    var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(System.Windows.Media.Imaging.BitmapSource.Create(
+                        2, 2, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, new byte[16], 8)));
+                    encoder.Save(stream);
+                }
+            File.WriteAllText(Path.Combine(pdfPick, "notes.txt"), "notes");
+            string fakePdf = Path.Combine(folder, "KillerPDF.exe");
+            File.WriteAllBytes(fakePdf, [0]);
+            System.Diagnostics.ProcessStartInfo? pdfStart = null;
+            KillerPdfHandoff.FindOverride = () => fakePdf;
+            KillerPdfHandoff.StartOverride = info => pdfStart = info;
+            try
+            {
+                await view.NavigateTo(pdfPick);
+                var listed = view.ResultsList.Items.OfType<FileEntry>().Where(e => e.FileName.EndsWith(".png", StringComparison.Ordinal)).ToList();
+                view.ResultsList.SelectedItems.Clear();
+                foreach (var entry in Enumerable.Reverse(listed)) view.ResultsList.SelectedItems.Add(entry);
+                var pdfTile = SelfTestCards.Tiles(view.BuildFilesMenu(listed[^1])).SingleOrDefault(tile => tile.Uid == "makepdf");
+                Check(pdfTile is { IsEnabled: true }, "picked pictures offer Make PDF on their card");
+                if (pdfTile != null) SelfTestCards.Click(pdfTile);
+                var pages = pdfStart?.ArgumentList.ToArray() ?? [];
+                report.AppendLine("Make PDF pick: " + string.Join(" | ", pages));
+                Check(pages.SequenceEqual(listed.Select(e => e.FileName)) && pdfStart?.WorkingDirectory == pdfPick,
+                    "Make PDF sends picked pictures in the list's order, not the order they were picked");
+                view.ResultsList.SelectedItems.Add(view.ResultsList.Items.OfType<FileEntry>().Single(e => e.FileName == "notes.txt"));
+                Check(!SelfTestCards.Tiles(view.BuildFilesMenu(listed[0])).Any(tile => tile.Uid == "makepdf"),
+                    "a pick with a non-picture in it does not offer Make PDF");
+            }
+            finally
+            {
+                KillerPdfHandoff.FindOverride = null;
+                KillerPdfHandoff.StartOverride = null;
+            }
             await view.NavigateTo(independent);
             view.ResultsList.SelectedItem = view.Navigation.Results.Single();
             var missingData = new DataObject();
