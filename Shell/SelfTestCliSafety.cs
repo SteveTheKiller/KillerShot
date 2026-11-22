@@ -21,10 +21,11 @@ internal static class SelfTestCliSafety
         CaptureLibrary.UseFolder(Path.Combine(dir, "library"));
         CaptureLibrary.BackgroundWork = false;
         if (args[2] is "cursor-on" or "cursor-off") CaptureSettings.IncludeCursor = args[2] == "cursor-on";
-        if (args[2] is "redact" or "redact-failed")
+        if (args[2] is "redact" or "redact-failed" or "redact-no-ocr")
         {
-            // Scan every capture is on. The stand-in reader finds an email at a fixed spot, or
-            // fails, so the check does not depend on what is on the screen.
+            // Scan every capture is on. The stand-in reader finds an email at a fixed spot, fails,
+            // or reads nothing the way Windows does without a text recognition language, so the
+            // check does not depend on what is on the screen.
             RedactSettings.Kinds = RedactKinds.Email;
             RedactSettings.Fill = Color.FromRgb(0xFF, 0x00, 0xFF);
             RedactSettings.Feather = 0;
@@ -33,9 +34,12 @@ internal static class SelfTestCliSafety
             Array.Fill(white, (byte)0xFF);
             var area = new Native.Win32.RECT(0, 0, 200, 200);
             Cli.Program.Freeze = _ => new Capture.FrozenDesktop(area, white, [new Capture.MonitorBounds(IntPtr.Zero, area, true)], []);
-            Cli.Program.ReadWordsAsync = args[2] == "redact"
-                ? _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([[new OcrWord("jane.doe@example.com", new Rect(4, 4, 24, 12))]])
-                : _ => throw new InvalidOperationException("Synthetic recognition failure.");
+            Cli.Program.ReadWordsAsync = args[2] switch
+            {
+                "redact" => _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>([[new OcrWord("jane.doe@example.com", new Rect(4, 4, 24, 12))]]),
+                "redact-no-ocr" => _ => Task.FromResult<IReadOnlyList<IReadOnlyList<OcrWord>>?>(null),
+                _ => _ => throw new InvalidOperationException("Synthetic recognition failure."),
+            };
         }
         if (args[2] == "record-copy")
         {

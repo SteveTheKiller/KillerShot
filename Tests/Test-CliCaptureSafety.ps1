@@ -82,6 +82,12 @@ if ($Case -in @('all', 'redact')) {
     if ($result.redactionChecked -ne $false -or $result.redactions -ne 0 -or !(Test-Path -LiteralPath $unchecked -PathType Leaf)) { throw "A CLI capture whose scan failed did not save the original and say so: $($result | ConvertTo-Json -Compress)" }
     if ((Get-Pixel $unchecked 16 10) -eq 'FF00FF') { throw 'A CLI capture whose scan failed was boxed anyway.' }
     Write-Output 'PASS: a failed scan saves the original and warns that it was not checked'
+    # Without a text recognition language nothing is read, so the capture was not checked either.
+    $unread = Join-Path $Output 'unread.png'
+    Invoke-CaptureCase 'redact-no-ocr' 'redact-no-ocr' @('capture', '--mode', 'region', '--rect', '16,16,32,24', '--delay', '0', '--no-shutter', '--no-cursor', '--no-clipboard', '--out', $unread, '--json') 0 'not checked for sensitive text'
+    $result = Get-Content -LiteralPath (Join-Path $Output 'redact-no-ocr\stdout.txt') -Raw | ConvertFrom-Json
+    if ($result.redactionChecked -ne $false -or $result.redactions -ne 0 -or !(Test-Path -LiteralPath $unread -PathType Leaf)) { throw "A CLI capture that Windows could not read reported it was checked: $($result | ConvertTo-Json -Compress)" }
+    Write-Output 'PASS: a capture Windows cannot read is not reported as checked'
 }
 if ($Case -in @('all', 'recent-id')) {
     # recent actions take id:<id> from --json, so a script acts on the capture it listed even

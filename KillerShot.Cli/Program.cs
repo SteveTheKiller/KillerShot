@@ -604,12 +604,23 @@ public static class Program
         bool redactionChecked = false;
         if (RedactSettings.ScanEveryCapture)
         {
+            // The scan returns 0 both for "read, nothing found" and for "nothing was read", which
+            // happens when Windows has no text recognition language or no kinds are picked. Only a
+            // capture whose words were actually read counts as checked.
+            bool asked = false, read = false;
             var scanned = new EditorDocument(bmp, null, taken);
-            int found = await RedactBoxes.ScanNewCaptureAsync(scanned, bmp, ReadWordsAsync);
+            int found = await RedactBoxes.ScanNewCaptureAsync(scanned, bmp, async image =>
+            {
+                asked = true;
+                var words = await ReadWordsAsync(image);
+                read = words != null;
+                return words;
+            });
             if (found > 0) bmp = scanned.Render();
             redactions = Math.Max(found, 0);
-            redactionChecked = found >= 0;
+            redactionChecked = found >= 0 && read;
             if (found < 0) warnings.Add("The redaction scan failed, so the capture was not checked for sensitive text.");
+            else if (asked && !read) warnings.Add("Windows has no text recognition language, so the capture was not checked for sensitive text.");
         }
         long? libraryId = null;
         string? libraryRef = null;
