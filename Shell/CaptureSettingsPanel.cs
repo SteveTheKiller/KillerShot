@@ -39,86 +39,9 @@ namespace KillerShot.Shell
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
             if (AboutOverlay.Visibility == Visibility.Visible) AboutOverlay.Visibility = Visibility.Collapsed;
-            if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
             SyncCaptureOptions();
             BuildShortcutRows();
-            if (_captureSettingsWindow != null) { _captureSettingsWindow.Activate(); return; }
-
-            // Capture Settings is its own modeless window: the main window stays usable while it is
-            // open, and the window moves anywhere on the desktop. The card is lent to it.
-            var card = CaptureSettingsCard;
-            CaptureSettingsHome.Children.Remove(card);
-            // The window grows to fit the card and scrolls only on a screen too short for it; on a
-            // narrow screen the two panels wrap to one column.
-            var limit = CaptureSettingsLimit ?? new Size(SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
-            CaptureSettingsScroll.MaxHeight = Math.Max(200, limit.Height - 110) + CaptureSettingsScroll.Padding.Top + CaptureSettingsScroll.Padding.Bottom;
-            card.MaxWidth = Math.Max(320, limit.Width - card.Margin.Left - card.Margin.Right);
-            var window = new Controls.CaptureSettingsWindow(this, card);
-            // A self-test window that shows without focus, or invisibly, gets a settings window that does too.
-            window.ShowActivated = ShowActivated;
-            if (Opacity < 1) window.Opacity = Opacity;
-            window.PreviewKeyDown += CaptureSettingsWindow_PreviewKeyDown;
-            // A recorder only listens while its window has the keyboard.
-            window.Deactivated += (_, _) => StopRecording(apply: null);
-            window.Closed += (_, _) => ReturnCaptureSettingsCard(window);
-            _captureSettingsWindow = window;
-            PresentCaptureSettings(window);
-        }
-
-        /// <summary>Takes the card back from a closed window. Runs once per window.</summary>
-        private void ReturnCaptureSettingsCard(Controls.CaptureSettingsWindow window)
-        {
-            if (_captureSettingsWindow != window) return;
-            StopRecording(apply: null);
-            _captureSettingsWindow = null;
-            window.Release();
-            CaptureSettingsHome.Children.Add(CaptureSettingsCard);
-            if (IsActive) CaptureSettingsButton.Focus();
-        }
-
-        private Controls.CaptureSettingsWindow? _captureSettingsWindow;
-
-        /// <summary>Self-tests: the screen size the window is fitted to, instead of the work area.</summary>
-        internal Size? CaptureSettingsLimit { get; set; }
-
-        internal Window? TestCaptureSettingsWindow => _captureSettingsWindow;
-
-        /// <summary>True while the Capture Settings window is open.</summary>
-        internal bool CaptureSettingsOpen => _captureSettingsWindow?.IsVisible == true;
-
-        /// <summary>How the window is shown: activated for the user; self-tests swap in an
-        /// inactive, invisible show so nothing appears on screen.</summary>
-        internal Action<Window> PresentCaptureSettings { get; set; } = window => window.Show();
-
-        /// <summary>The main window hides for a capture and when it goes to the tray. An owned
-        /// window does not hide with it, so Capture Settings follows it by hand.</summary>
-        private void FollowOwnerVisibility(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (_captureSettingsWindow is not { } window) return;
-            if (IsVisible) { if (!window.IsVisible) window.Show(); }
-            else if (window.IsVisible) window.Hide();
-        }
-
-        private void CaptureSettingsWindow_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            // A shortcut recorder owns every key while it is listening.
-            if (_recording != null) { RecorderKey(e); return; }
-            if (e.Key != Key.Escape) return;
-            // An open drop-down takes Escape first, the way it does everywhere else.
-            if (Keyboard.FocusedElement is DependencyObject focused
-                && (focused as ComboBox ?? ItemsControl.ItemsControlFromItemContainer(focused) as ComboBox
-                    ?? FindAncestor<ComboBox>(focused)) is { IsDropDownOpen: true }) return;
-            e.Handled = true;
-            CloseCaptureSettings();
-        }
-
-        // The card's top band moves the window, like a title bar.
-        private void CaptureSettingsDrag_Down(object sender, MouseButtonEventArgs e)
-        {
-            if (e.OriginalSource is DependencyObject source && FindAncestor<ButtonBase>(source) != null) return;
-            if (_captureSettingsWindow == null) return;
-            e.Handled = true;
-            _captureSettingsWindow.DragFrom(e);
+            OpenSettingsWindow(CaptureCard);   // its own window (SettingsWindows.cs)
         }
 
         private static T? FindAncestor<T>(DependencyObject? node) where T : DependencyObject
@@ -233,10 +156,7 @@ namespace KillerShot.Shell
 
         private void CloseCaptureSettings()
         {
-            StopRecording(apply: null);
-            if (_captureSettingsWindow is not { } window) return;
-            window.Close();
-            ReturnCaptureSettingsCard(window);   // a window a self-test never showed raises no Closed
+            CloseSettingsWindow(CaptureCard);
         }
 
         private void CaptureSettingsClose_Click(object sender, RoutedEventArgs e) => CloseCaptureSettings();

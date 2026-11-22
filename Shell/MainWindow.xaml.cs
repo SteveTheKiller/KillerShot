@@ -20,7 +20,7 @@ namespace KillerShot.Shell
             InitializeComponent();
             InitChromeExtras();
             new KillerFamily.Accessibility.OverlayFocus(this)
-                .Track(ShortcutsOverlay, AboutOverlay, VideoSettingsOverlay);
+                .Track(ShortcutsOverlay, AboutOverlay);
             IsVisibleChanged += FollowOwnerVisibility;
             var titleFrames = System.Windows.Media.Imaging.BitmapDecoder.Create(
                 new System.Uri("pack://application:,,,/Resources/kst-icon.ico"),

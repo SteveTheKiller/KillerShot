@@ -40,32 +40,34 @@ internal static class SelfTestFlyoutScroll
                 var root = (FrameworkElement)window.Content;
                 var contentRoot = (FrameworkElement)window.FindName("RootGrid");
                 contentRoot.Opacity = 1;
-                // Capture Settings is its own window, fitted to the screen. The test fits it to the
-                // sizes the overlays get and lets the shown window lay itself out (the self-test runs
-                // on its own desktop, so nothing appears on screen).
+                // Capture and Video Settings are their own windows, fitted to the screen. The test fits
+                // them to the sizes the overlays get and lets the shown window lay itself out (the
+                // self-test runs on its own desktop, so nothing appears on screen).
                 window.ShowActivated = false;
                 var captureCard = (FrameworkElement)window.FindName("CaptureSettingsCard");
+                var videoCard = (FrameworkElement)window.FindName("VideoSettingsCard");
                 async Task SettleOn(FrameworkElement layoutRoot, double width, double height)
                 {
-                    if (layoutRoot != captureCard) { await Settle(layoutRoot, width, height); return; }
-                    var settings = window.TestCaptureSettingsWindow!;
+                    if (layoutRoot != captureCard && layoutRoot != videoCard) { await Settle(layoutRoot, width, height); return; }
+                    var settings = Window.GetWindow(layoutRoot)!;
                     settings.UpdateLayout();
                     await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
-                    captureCard.BeginAnimation(UIElement.OpacityProperty, null);
-                    captureCard.Opacity = 1;
+                    layoutRoot.BeginAnimation(UIElement.OpacityProperty, null);
+                    layoutRoot.Opacity = 1;
                     settings.UpdateLayout();
                 }
                 // Measure the real window content without creating an HWND or moving focus.
                 foreach (string kind in new[] { "Capture", "Video", "Help" })
                 {
                     Layout(root, 1024, 460);
-                    window.CaptureSettingsLimit = new Size(1024, 460);
+                    window.SettingsWindowLimit = new Size(1024, 460);
                     if (kind == "Capture") window.TestShowCaptureSettings();
                     else if (kind == "Video") window.TestShowVideoSettings();
                     else window.TestShowShortcuts(false);
-                    var overlay = kind == "Capture" ? captureCard
-                        : (FrameworkElement)window.FindName(kind == "Help" ? "ShortcutsOverlay" : kind + "SettingsOverlay");
-                    var layoutRoot = kind == "Capture" ? captureCard : root;
+                    var overlay = kind == "Capture" ? captureCard : kind == "Video" ? videoCard
+                        : (FrameworkElement)window.FindName("ShortcutsOverlay");
+                    var layoutRoot = kind == "Help" ? root : overlay;
+                    Check(kind == "Help" || Window.GetWindow(overlay) is Controls.SettingsCardWindow, theme + "-" + kind + " settings must open in their own window", failures);
                     var scroll = (ScrollViewer)window.FindName(kind == "Help" ? "KsListHostScroll" : kind + "SettingsScroll");
                     overlay.BeginAnimation(UIElement.OpacityProperty, null);
                     overlay.Opacity = 1;
@@ -101,7 +103,7 @@ internal static class SelfTestFlyoutScroll
                     }
                     window.TestCloseOverlays();
                 }
-                window.CaptureSettingsLimit = new Size(1024, 820);
+                window.SettingsWindowLimit = new Size(1024, 820);
                 window.TestShowCaptureSettings();
                 await SettleOn(captureCard, 1024, 820);
                 var normalScroll = (ScrollViewer)window.FindName("CaptureSettingsScroll");
@@ -111,7 +113,7 @@ internal static class SelfTestFlyoutScroll
                 Render((FrameworkElement)VisualTreeHelper.GetParent(normalScroll), Path.Combine(folder, theme + "-Capture-normal.png"));
                 window.TestCloseOverlays();
                 Check(captureCard.Parent == window.FindName("CaptureSettingsHome"), theme + " a closed settings window must hand the card back", failures);
-                window.CaptureSettingsLimit = new Size(640, 460);
+                window.SettingsWindowLimit = new Size(640, 460);
                 window.TestShowCaptureSettings();
                 await SettleOn(captureCard, 640, 460);
                 normalScroll.ScrollToTop();

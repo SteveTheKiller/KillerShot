@@ -430,11 +430,11 @@ internal static class SelfTestShellReview
     private static async Task CheckShortcutsDim(MainWindow window)
     {
         window.TestCloseOverlays();
-        // Capture Settings is its own window now; Video Settings is the overlay that still dims the frame.
-        window.TestShowVideoSettings();
+        // The settings cards are their own windows now; About is the other overlay that dims the frame.
+        window.TestShowAbout();
         await Task.Delay(300);
         var fadeOut = typeof(MainWindow).GetMethod("FadeOverlayOut", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        fadeOut.Invoke(window, [window.VideoSettingsOverlay]);
+        fadeOut.Invoke(window, [window.AboutOverlay]);
         await Task.Delay(40);
         window.TestShowShortcuts(false);
         await Task.Delay(500);

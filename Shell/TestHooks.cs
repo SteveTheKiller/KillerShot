@@ -17,8 +17,8 @@ namespace KillerShot.Shell
 
         internal void TestShowCaptureSettings() => ShowCaptureSettings();
 
-        /// <summary>Self-test shots: the window content, with an open Capture Settings window drawn
-        /// over it where it sits on screen (centered when it has no position yet).</summary>
+        /// <summary>Self-test shots: the window content, with an open settings window drawn over it
+        /// where it sits on screen (centered when it has no position yet).</summary>
         internal System.Windows.Media.Imaging.RenderTargetBitmap TestRenderScene()
         {
             UpdateLayout();
@@ -32,7 +32,7 @@ namespace KillerShot.Shell
                 return bitmap;
             }
             var main = Render(root, root.ActualWidth, root.ActualHeight);
-            if (_captureSettingsWindow is not { IsVisible: true } settings || settings.ActualWidth <= 0) return main;
+            if (LentCards.Select(l => l.Window).FirstOrDefault(w => w is { IsVisible: true, ActualWidth: > 0 }) is not { } settings) return main;
             settings.UpdateLayout();
             // The settings window's content, card margin (shadow halo) included.
             var card = Render((System.Windows.Media.Visual)settings.Content, settings.ActualWidth, settings.ActualHeight);
@@ -72,12 +72,13 @@ namespace KillerShot.Shell
 
         internal void TestCloseOverlays()
         {
-            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay, VideoSettingsOverlay })
+            foreach (var o in new UIElement[] { ShortcutsOverlay, AboutOverlay })
             {
                 o.BeginAnimation(OpacityProperty, null);
                 o.Visibility = Visibility.Collapsed;
             }
             CloseCaptureSettings();
+            CloseVideoSettings();
             ClassicFrameChrome.Opacity = 1;
         }
 

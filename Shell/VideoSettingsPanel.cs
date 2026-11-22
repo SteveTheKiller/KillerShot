@@ -14,7 +14,6 @@ namespace KillerShot.Shell
         private bool _syncingVideo;
 
         private void VideoSettingsButton_Click(object sender, RoutedEventArgs e) => ShowVideoSettings();
-        private void VideoSettingsOverlay_Click(object sender, MouseButtonEventArgs e) => CloseVideoSettings();
         private void VideoSettingsClose_Click(object sender, RoutedEventArgs e) => CloseVideoSettings();
 
         private void RecordBtn_Click(object sender, RoutedEventArgs e)
@@ -29,15 +28,10 @@ namespace KillerShot.Shell
                 if (o.Visibility == Visibility.Visible) o.Visibility = Visibility.Collapsed;
             SyncVideoOptions();
             BuildShortcutRows();
-            VideoSettingsScroll.MaxHeight = Math.Max(200, RootGrid.ActualHeight - 110) + VideoSettingsScroll.Padding.Top + VideoSettingsScroll.Padding.Bottom;
-            FadeOverlayIn(VideoSettingsOverlay);
+            OpenSettingsWindow(VideoCard);   // its own window (SettingsWindows.cs)
         }
 
-        private void CloseVideoSettings()
-        {
-            StopRecording(apply: null);
-            FadeOverlayOut(VideoSettingsOverlay);
-        }
+        private void CloseVideoSettings() => CloseSettingsWindow(VideoCard);
 
         private static ComboBoxItem Item(string text, object tag) => new() { Content = text, Tag = tag };
 

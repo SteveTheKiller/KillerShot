@@ -28,13 +28,10 @@ namespace KillerShot.Shell
             RefreshPortableBadge();
             BuildCaptureMenu();
             RefreshDocumentUi();
-            if (_captureSettingsWindow is { } settingsWindow)
-            {
-                settingsWindow.Title = "KillerShot - " + Loc("Str_CS_Title");
-                SyncCaptureOptions();
-                BuildShortcutRows();
-            }
-            if (VideoSettingsOverlay.Visibility == Visibility.Visible) { SyncVideoOptions(); BuildShortcutRows(); }
+            RelocalizeSettingsWindows();
+            if (CaptureSettingsOpen) SyncCaptureOptions();
+            if (VideoSettingsOpen) SyncVideoOptions();
+            if (CaptureSettingsOpen || VideoSettingsOpen) BuildShortcutRows();
             if (_albumsDialog != null || LibrarySettingsPopup.IsOpen) RefreshAlbumManager();
             StatusText.Text = "";
             App.Instance.Tray?.Relocalize();

@@ -19,7 +19,6 @@ namespace KillerShot.Shell
         void IAboutExtras.SyncExtraRows()
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) ShortcutsOverlay.Visibility = Visibility.Collapsed;
-            if (VideoSettingsOverlay.Visibility == Visibility.Visible) VideoSettingsOverlay.Visibility = Visibility.Collapsed;
             SyncRenderModeRadios();
             _syncingCloseToTray = true;
             CloseToTrayCheck.IsChecked = App.CloseToTray;

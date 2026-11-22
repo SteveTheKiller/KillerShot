@@ -625,7 +625,7 @@
 
         <!-- ================= CAPTURE SETTINGS =================
              Shortcut recorders and capture options, in the About card's chrome. The card is shown in
-             its own modeless window (Controls/CaptureSettingsWindow.cs); this collapsed grid only
+             its own modeless window (Shell/SettingsWindows.cs); this collapsed grid only
              holds it, with its styles, while the window is closed. -->
         <Grid x:Name="CaptureSettingsHome" Grid.RowSpan="3" Visibility="Collapsed">
             <Grid.Resources>
@@ -661,7 +661,7 @@
 
                         <!-- The card's top band moves the window, like a title bar. -->
                         <Border Height="36" VerticalAlignment="Top" Background="Transparent" Cursor="SizeAll" Panel.ZIndex="1"
-                                MouseLeftButtonDown="CaptureSettingsDrag_Down"/>
+                                MouseLeftButtonDown="SettingsDrag_Down"/>
 
                         <Button Content="&#x2715;" Click="CaptureSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
                                 ToolTip="{DynamicResource Str_Sys_Close}"
@@ -672,7 +672,7 @@
                         <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
                                 Visibility="{DynamicResource AboutCaptionVisibility}"
                                 Background="{DynamicResource DialogTitleBarBrush}"
-                                MouseLeftButtonDown="CaptureSettingsDrag_Down">
+                                MouseLeftButtonDown="SettingsDrag_Down">
                             <Grid Margin="4,0,2,0">
                                 <TextBlock Text="{DynamicResource Str_CS_Title}" VerticalAlignment="Center"
                                            FontFamily="Tahoma" FontSize="11" FontWeight="Bold"
@@ -794,9 +794,10 @@
             </Grid>
         </Grid>
 
-        <!-- ================= VIDEO SETTINGS OVERLAY ================= -->
-        <Grid x:Name="VideoSettingsOverlay" Grid.RowSpan="3" Panel.ZIndex="8800" Visibility="Collapsed"
-              Background="#88000000" MouseLeftButtonDown="VideoSettingsOverlay_Click">
+        <!-- ================= VIDEO SETTINGS =================
+             Shown in its own modeless window (Shell/SettingsWindows.cs); this collapsed grid only
+             holds the card, with its styles, while the window is closed. -->
+        <Grid x:Name="VideoSettingsHome" Grid.RowSpan="3" Visibility="Collapsed">
             <Grid.Resources>
                 <Style x:Key="VsHeading" TargetType="TextBlock">
                     <Setter Property="Foreground" Value="{DynamicResource DimTextBrush}"/>
@@ -820,7 +821,7 @@
                     <EventSetter Event="SelectionChanged" Handler="VideoCombo_Changed"/>
                 </Style>
             </Grid.Resources>
-            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24" MouseLeftButtonDown="AboutCard_Click">
+            <Grid x:Name="VideoSettingsCard" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
                 <Border Background="{DynamicResource OverlayWindowBrush}" CornerRadius="{DynamicResource PanelCornerRadius}" IsHitTestVisible="False">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="{DynamicResource AboutShadowOpacity}"/>
@@ -832,6 +833,11 @@
                     <Grid>
                         <Border IsHitTestVisible="False" CornerRadius="{DynamicResource PanelCornerRadius}"
                                 Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+
+                        <!-- The card's top band moves the window, like a title bar. -->
+                        <Border Height="36" VerticalAlignment="Top" Background="Transparent" Cursor="SizeAll" Panel.ZIndex="1"
+                                MouseLeftButtonDown="SettingsDrag_Down"/>
+
                         <Button Content="&#x2715;" Click="VideoSettingsClose_Click" Style="{StaticResource OverlayCloseButton}"
                                 ToolTip="{DynamicResource Str_Sys_Close}"
                                 HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -839,7 +845,8 @@
                                 Visibility="{DynamicResource AboutModernCloseVisibility}"/>
                         <Border Height="20" VerticalAlignment="Top" Panel.ZIndex="3"
                                 Visibility="{DynamicResource AboutCaptionVisibility}"
-                                Background="{DynamicResource DialogTitleBarBrush}">
+                                Background="{DynamicResource DialogTitleBarBrush}"
+                                MouseLeftButtonDown="SettingsDrag_Down">
                             <Grid Margin="4,0,2,0">
                                 <TextBlock Text="{DynamicResource Str_VS_Title}" VerticalAlignment="Center"
                                            FontFamily="Tahoma" FontSize="11" FontWeight="Bold"

@@ -235,8 +235,7 @@ namespace KillerShot.Shell
         {
             if (ShortcutsOverlay.Visibility == Visibility.Visible) { FadeOverlayOut(ShortcutsOverlay); return; }
             // Only one overlay at a time - About and this one would otherwise stack.
-            foreach (var o in new UIElement[] { AboutOverlay, VideoSettingsOverlay })
-                if (o.Visibility == Visibility.Visible) o.Visibility = Visibility.Collapsed;
+            if (AboutOverlay.Visibility == Visibility.Visible) AboutOverlay.Visibility = Visibility.Collapsed;
             ApplyShortcutView(read: true);
             FadeOverlayIn(ShortcutsOverlay);
         }
