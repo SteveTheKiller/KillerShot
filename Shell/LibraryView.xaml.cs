@@ -687,7 +687,6 @@ namespace KillerShot.Shell
                     Text = row.Timeline ? item.Taken.ToString("t", CultureInfo.CurrentCulture) : item.Taken.ToString("g", CultureInfo.CurrentCulture),
                     FontSize = 10, Width = w, TextTrimming = TextTrimming.CharacterEllipsis,
                 };
-                // A subtle secondary surface separates default cards from the content pane.
                 bool picked = !CardColors.CardIsDefault;
                 caption.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardTextBrush" : "TextBrush");
                 detail.SetResourceReference(TextBlock.ForegroundProperty, picked ? "CaptureCardMutedBrush" : "MutedTextBrush");
@@ -696,7 +695,9 @@ namespace KillerShot.Shell
                 content.Children.Add(caption);
                 content.Children.Add(detail);
                 var tile = new Button { Style = (Style)FindResource("LibTile"), Content = content, Tag = item };
-                tile.SetResourceReference(BackgroundProperty, picked ? "CaptureCardBrush" : "SurfaceBrush");
+                // No card box unless the user picked a card color: the capture, title and date sit on the pane.
+                if (picked) tile.SetResourceReference(BackgroundProperty, "CaptureCardBrush");
+                else tile.Background = Brushes.Transparent;
                 if (!SystemParameters.HighContrast && CardColors.Collection(item.CollectionId) is Color own)
                 {
                     tile.BorderBrush = new SolidColorBrush(own);

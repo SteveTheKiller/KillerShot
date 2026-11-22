@@ -61,8 +61,8 @@ internal static class SelfTestAlbumSurfaces
                     if (view is "grid" or "timeline")
                     {
                         var tile = Visuals(window.Library).OfType<Button>().First(b => b.Tag is CaptureItem);
-                        if (tile.Background is not SolidColorBrush card || card.Color.A != 255 || card.Color == background.Color)
-                            throw new InvalidOperationException($"{theme}/{view}: info card does not separate from its content pane.");
+                        if (tile.Background is not SolidColorBrush { Color.A: 0 })
+                            throw new InvalidOperationException($"{theme}/{view}: the capture still sits on a gray card box.");
                         var thumbnail = Visuals(tile).OfType<Image>().Single();
                         for (int wait = 0; wait < 100 && thumbnail.Source == null; wait++) await Task.Delay(30);
                         if (thumbnail.Source == null) throw new InvalidOperationException("The card thumbnail did not load.");
@@ -71,7 +71,7 @@ internal static class SelfTestAlbumSurfaces
                     var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
                     bitmap.Render((Visual)window.Content);
                     ImageOutput.SavePng(bitmap, Path.Combine(folder, $"{theme}-{view}.png"));
-                    report.Add($"{theme}/{view}: opaque pane and separate cards PASS");
+                    report.Add($"{theme}/{view}: opaque pane and no card box PASS");
                 }
             }
             // Trash Polka: the album pane carries the ink piece like KillerPDF's document canvas, never the flat fill.
@@ -84,6 +84,12 @@ internal static class SelfTestAlbumSurfaces
                 for (int wait = 0; wait < 400 && pane.Background is SolidColorBrush; wait++) { await Task.Delay(50); window.UpdateLayout(); }
                 if (pane.Background is SolidColorBrush flat)
                     throw new InvalidOperationException($"TrashPolka/{view}: album pane is a flat {flat.Color} fill without the ink piece.");
+                if (view is "grid" or "timeline")
+                {
+                    var tile = Visuals(window.Library).OfType<Button>().First(b => b.Tag is CaptureItem);
+                    if (tile.Background is not SolidColorBrush { Color.A: 0 })
+                        throw new InvalidOperationException($"TrashPolka/{view}: the capture still sits on a gray card box.");
+                }
                 var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
                 bitmap.Render((Visual)window.Content);
                 ImageOutput.SavePng(bitmap, Path.Combine(folder, $"TrashPolka-{view}.png"));
